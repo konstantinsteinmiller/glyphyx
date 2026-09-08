@@ -103,7 +103,7 @@ try {
   const title = await evaluate('document.title')
   const heading = await evaluate("document.querySelector('.art-sheets h1')?.textContent ?? ''")
   console.log(`page: ${title} / ${heading}`)
-  if (!/survivalist/i.test(title)) throw new Error(`not survivalist: title is "${title}"`)
+  if (!/glyphyx/i.test(title)) throw new Error(`not glyphyx: title is "${title}"`)
   if (!heading.includes('Art sheets')) throw new Error('not the art bench')
 
   // ── Press export ──

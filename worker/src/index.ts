@@ -1,5 +1,5 @@
 /**
- * ─── Survivalist leaderboard ────────────────────────────────────────────────
+ * ─── glyphyx leaderboard ────────────────────────────────────────────────
  *
  * A Cloudflare Worker over one D1 table. Two routes:
  *

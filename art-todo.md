@@ -1,6 +1,6 @@
 # Art todo — drop-in manifest
 
-Survivalist draws **everything** from code: the survivors and the monster cast
+glyphyx draws **everything** from code: the survivors and the monster cast
 are hand-inked vector art baked to frame strips at runtime, and the lane, gates,
 crates, rounds and effects are Canvas 2D. Nothing below is required for the game
 to ship — each entry is an *optional upgrade* that replaces a procedural drawing

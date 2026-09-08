@@ -1,7 +1,7 @@
 import type { BossKind, MinibossKind } from '@/game/threats'
 import type { WeaponId } from '@/game/weapons'
 /**
- * ─── Survivalist — the rules in one file ────────────────────────────────────
+ * ─── glyphyx — the rules in one file ────────────────────────────────────
  *
  * A crowd runner. The player steers ONE thing (a squad of survivors that runs
  * forward on its own) and every other verb in the game is a consequence of
@@ -747,8 +747,21 @@ export const earlyCrateHpMul = (stage: number): number =>
 export const earlyMinibossHpMul = (stage: number): number =>
   stage <= 3 ? 0.7 : stage <= 5 ? 0.8 : stage <= 6 ? 0.9 : 1
 
-export const earlyBossHpMul = (stage: number): number =>
-  stage <= 3 ? 0.6 : stage <= 5 ? 0.8 : 1
+/**
+ * The boss's own onboarding discount used to live here, as
+ * `earlyBossHpMul` — 0.6 on stages 1-3, 0.8 on 4-5, against an authored bar.
+ *
+ * It is gone rather than retuned. A flat discount is the right shape only if
+ * every player arrives at the door with roughly the same firepower, and measured
+ * they do not: the spread between a run that reads the road and one that barely
+ * steers is 65x on stage 5. A single multiplier can be a climax for one of them
+ * or the other, never both, which is why the same number produced a boss that
+ * melted for the good player and one that was unkillable for the bad one.
+ *
+ * Stages 1-5 now price the boss against the run instead — see
+ * `game/adaptive.ts`. Everything else in this block still applies: the road's
+ * relief is about the ROAD, and it is untouched.
+ */
 
 /**
  * How hard a boss's slam and an elite's sweep hit in the opening stages.

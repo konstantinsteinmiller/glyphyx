@@ -168,7 +168,7 @@ export const CHEST_DAY_KEY = 'ts_chest_day'
 /**
  * The player's stable leaderboard id — the primary key of their row.
  *
- * Mirrored to a standalone `survivalist_uid` localStorage entry OUTSIDE this
+ * Mirrored to a standalone `glyphyx_uid` localStorage entry OUTSIDE this
  * prefix (see `usePlayerIdentity.ts`), because a hydrate from an older cloud
  * blob can hand the game a save with no id in it and the game would mint a
  * second one.

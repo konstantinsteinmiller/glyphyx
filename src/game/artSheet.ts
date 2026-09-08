@@ -10,7 +10,7 @@ import { BANNER } from '@/game/uiArt'
 /**
  * ─── Art sheet manifest ─────────────────────────────────────────────────────
  *
- * Survivalist draws everything procedurally, which is wonderful for payload and
+ * glyphyx draws everything procedurally, which is wonderful for payload and
  * useless for one specific job: handing the art to somebody — or something —
  * that paints. There is no folder of PNGs to send. This module describes the
  * REFERENCE SHEETS that bake the whole cast out of the renderer, so the art can
@@ -701,7 +701,7 @@ export const STILLS: StillSpec[] = [
     'The shield skill\'s button icon: a heater shield of cold steel with a heavy near-black rim and a raised iron boss, a cold blue witch-light glowing in its centre band — the same cold blue as the dome it raises over the crowd. Bold and simple, read at 24 px on a round button; the same silhouette as the reference.',
     { maxEdge: 128 }),
   still('ui', 'logo', 'Title logo',
-    'The game\'s title logo: the single word SURVIVALIST in carved bone-and-black-iron dark-fantasy lettering, cracked and chipped, a faint ember glow at the edges. Spelled exactly S-U-R-V-I-V-A-L-I-S-T, in one line, readable at 192 px. Centred, filling about nine tenths of the width.',
+    'The game\'s title logo: the single word glyphyx in carved bone-and-black-iron dark-fantasy lettering, cracked and chipped, a faint ember glow at the edges. Spelled exactly S-U-R-V-I-V-A-L-I-S-T, in one line, readable at 192 px. Centred, filling about nine tenths of the width.',
     {
       // The file IS the PWA's 512 icon, so 512 is exact rather than a cap the
       // slicer's 256 default may lower.

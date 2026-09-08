@@ -305,7 +305,7 @@ export const ICON_PATHS: Record<GameIconName, string[]> = {
     'M15.25 18.8A2.95 2.95 0 1 1 21.15 18.8A2.95 2.95 0 1 1 15.25 18.8Z'
   ],
 
-  // ── Survivalist's own run nouns ───────────────────────────────────────────
+  // ── glyphyx's own run nouns ───────────────────────────────────────────
   //
   // Lifted VERBATIM out of `RunHud.vue` and `UpgradeModal.vue`, where the same
   // three shapes lived twice as copy-pasted `d` strings. They are the five

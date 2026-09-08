@@ -1,257 +1,306 @@
-# Survivalist — game design document
-
-## One line
-
-A vertical crowd runner: shoot the gates to make them worth more, run your squad
-through them, and turn three survivors into two hundred before the boss at the
-end of the stage takes them apart.
-
-## The loop
-
-```
-steer  →  hold fire on a gate  →  COMMIT to one leaf  →  run through  →  crowd changes
-   ↑                                                                        ↓
-   └── break green crates (+damage) · break blue crates (+fire rate)
-       dodge everything solid · kill the pack · kill the miniboss
-                                                                            ↓
-                                          boss  →  stage clear  →  coins  →  upgrades
-```
-
-Every decision in the game is the same decision, asked at a different speed:
-**keep shooting this, or move now — and to which side?** Standing still on a
-`+N` gate makes it worth more and lets the monsters walk into you. Taking the
-`×3` instead of the `+18` is worth it only if your crowd is already big. And you
-cannot have both: there is a pillar between the leaves and it kills.
-
-## Core rules
-
-| Rule | Value | Where |
-| --- | --- | --- |
-| Squad starts at | 3 survivors (+1 per Squad upgrade level) | `game/survival.ts` |
-| Crowd radius | capped at **1.65** — fits through one gate leaf (half-width 2.05) when aimed, clips the pillar when not | `CROWD_MAX_R` |
-| Auto-run speed | 5.1 u/s, +0.11 per stage, capped at 7.4 | `stageSpeed()` |
-| Damage | `squad × damage × fireRate` DPS; 14 visible tracer streams | `SHOOTERS` |
-| Fire rate | starts at **1.9** shots/s and rises **only** from blue crates (+0.55 each, three per stage, cap 6.5) — the one stat a run must earn | `BASE_FIRE_RATE` |
-| Gun range | rounds die **15 % of the screen short of the top edge** (10.8 units ahead of the crowd). Nothing off-screen can be shot, so obstacles arrive intact and a gate has to be approached before it can be pumped | `BULLET_RANGE` |
-| Reach (shop) | +3 %/level to **+30 % at level 10**, clamped at the top of the screen (13.7 u). The only track that buys TIME rather than force — every extra unit is more seconds of fire on each gate, crate and wall before the crowd reaches it — and the clamp is what stops the upgrade re-introducing "obstacles deleted above the camera" as a reward | `RANGE_PER_LEVEL`, `effectiveBulletRange()` |
-| Gate growth | **+1 per 500 ms of sustained fire**, lost after 400 ms of silence, `add` **and `sub`** leaves | `GATE_TICK_MS` |
-| `-N` doors | the mirror of `+N`, and the point is that the crowd fires FORWARD automatically: aim at a `-N` while you approach and the bill grows. The skill is *shoot the door you are not taking* | `GateOp.sub` |
-| Dilemma banks | `÷N` against `-N` — every door hostile, no right answer, only a cheaper wrong one. A division is cheap for a small crowd and ruinous for a big one; a subtraction is the other way round. One per stage from stage 4, never back to back, never the closing bank | `legalise()` rule 6 |
-| Gate bank | two or **three** doors + a lethal pillar between each pair; no two doors may ever be worth the same | `track.bank()` |
-| Gate claim | **one bank, one door.** The door holding the most survivors claims the bank and pays in full; every other offer is destroyed on the spot, pillars included | `claimBank()` |
-| Gate payout | `add`: `+N`; `mul`: `×N` on the survivors that went through; `div`: **kills** all but `1/N` of them; `sub`: takes `N` off the top | `claimBank()` |
-| Trap rungs | `÷2` from stage 2, **`÷3` from stage 4**, `÷5` from stage 6. Three rungs, because `÷2` is absorbable and `÷5` ends runs — the middle one is where a hard choice lives, and it is the value most often paired against a `-N` | `rollDiv()` |
-| No back-to-back multipliers | `×2` then `×2` is a free quadruple for anyone who can aim twice. A multiplier now always lands on a crowd the player had to keep alive through something else first | `canMul()` |
-| Funnel | the crowd squeezes to fit the door it is aimed at and spills back out after — which is what lets a bank have three narrow doors instead of two wide ones | `funnelRadius()` |
-| Passages | every **3rd–4th** bank (rolled, so it cannot be counted) grows a rib of unbreakable stone back down the road out of its pillar, splitting the approach into one corridor per door. Both offers are in plain sight the whole way in — that is the split second being sold — but once the crowd is in a corridor the other door is behind a wall it cannot shoot. Two-door banks only, from stage 6 | `passage()`, `PASSAGE_SECONDS` |
-| …and the corridor squeezes | the crowd funnels to fit the corridor exactly as it funnels for a door. The rib is only as wide as the pillar it grows from, so it takes nothing off the safe band a bank already had — but the pillar GRINDS and the rib KILLS, and a 0.35-wide band is not one a player can hold against that. Squeezing restores a ±0.4 window | `passageFit()`, `PASSAGE_FIT_MARGIN` |
-| Solid = lethal | **whoever touches a wall or a boulder dies, that frame** — no rate, no grace — and the rest of the swarm streams past on both sides. The bill is the LINE you ran, not the seconds you spent: clip an edge and lose the handful that clipped it, drive the middle of the crowd through and lose the column | `crushAgainst()` |
-| …except the two that grind | a gate **pillar** and an unbroken **crate** still cost `squad × fraction` a second and shove the rest clear. Deliberate: a pillar is a blade between two doors the player is aiming AT (a lethal one deletes a zero-input run at 67 % of stage 1 — the onboarding floor), and a crate is a REWARD the player was invited to chase | `grindAgainst()` |
-| Monsters knock a rank down | every foe is **solid** — no survivor ever stands inside a sprite — and running squarely into one **kills every second survivor that hits it**. Not all of them: a wall stands still, so a lethal wall is a question about your line, but a monster HOMES on the crowd, so all-or-nothing contact would be an undodgeable ~half of the squad against a designed bite of 0.4–1.8 % | `collideFoe()` |
-| …bounded twice, on purpose | the survivors of a collision get **10 frames of immunity** (per SURVIVOR — a pack shoulder to shoulder cannot bill the same body six times in one instant), and each monster can only knock a rank down **once per 0.6 s** (per MONSTER — one creep walking through the crowd's whole depth takes a rank, not a column). Without the second bound the body bills a fresh unprotected rank on every frame of its walk, which is the wall rule by another route | `FOE_COLLIDE_IFRAMES_MS`, `FOE_COLLIDE_CD` |
-| …and only the core kills | the whole body **pushes**, the middle **60 %** of it kills. Clip a flank and you are shoved aside; run into it squarely and your leading rank pays. A creep's contact box is 0.69 against a crowd 1.65 in radius, so "the edge of the shadow" is a very generous definition of running into something — and at the full body a competent no-ads career walls at stage 4 | `FOE_COLLIDE_CORE` |
-| Bite vs body | the two do not double-bill and are not the same event. The **mouth** reaches `FOE_REACH + UNIT_R` (further than the body), takes `max(flat 1–5, squad × 0.4–1.8 %)` and is metered by `biteCd`; the **body** takes half of what runs into it. Immunity covers the body only — a bite is an attack, not a collision | `stepFoes()` |
-| Boulders | **cannot be shot** — they eat the round and shrug. Two ranks with OFFSET gaps, so the crowd commits to a line and then has to change it. The one hazard whose difficulty does not decay as damage grows, which is what keeps steering a skill at stage 25 | `boulderField()` |
-| Crate tiers | every box prints its HP. **light 0.6× / standard 1× / heavy 2.1×** — a heavy crate is deliberately out of reach of an unupgraded squad, so it is walked past once and cracked open two upgrades later | `crateTierFor()`, `crateTierHp()` |
-| Monsters pay | a dead monster **drops loose coins** where it fell, on top of its bounty. Drops must be driven over, so the pack in your lane pays and the one you steered around does not — and Scavenging finally has a customer who fights | `FOE_COIN_DROP_PER_BOUNTY` |
-| Rounds pierce gates | a doorway is not armour — fire passes through a gate to whatever stands behind it, and still charges the gate on the way | `resolveBullet()` |
-| Walls pay | a barricade block shot down drops **2–4 loose coins**, so removing one is a question rather than pure cost | `spillCoins()` |
-| Coin magnet | starts at **0.55** past the crowd's own body — the trails are a route, not scenery — and is what the Scavenging track sells, to **+3.4** at level 10 | `COIN_MAGNET_BASE`, `coinMagnetBonus` |
-| Foes | 5 archetypes (creep / husk / hound / brute / flyer), introduced across stages 1–7 | `game/foes.ts` |
-| Bite | the LARGER of the archetype's flat cost (1–5) and a **share of the whole crowd** (0.4–1.8 %) — a brute frightens thirty survivors and is still worth fearing at a thousand | `biteShareFor()` |
-| Minibosses | 1 from stage 2, 2 from stage 6; ~13 % / ~15 % of the end boss's health | `track.minibossHp()` |
-| Miniboss hold | it **plants and blocks the road** `ELITE_HOLD_AHEAD` in front of the crowd instead of walking through it, for up to `ELITE_HOLD_MAX` = 4.5 s, then breaks off | `stepFoes()`, `stepAnchor()` |
-| Miniboss clearance | the generator guarantees **12 units of clear road behind** every elite — clearance is asymmetric, because only the road behind eats the approach | `nudgeClearElite()` |
-| Miniboss sweep | the block is a fight, not a wait: **0.3 s** wind-up, then an arc across the **whole lane** reaching 4.3 u down the road, taking **a fifth of the current squad**. Every **1.5 s**, alternating direction | `ELITE_TELEGRAPH`, `ELITE_SWEEP_CD`, `ELITE_SWEEP_FRACTION`, `ELITE_SWEEP_REACH` |
-| …and why it is not dodgeable | deliberate. The boss asks *where are you standing*; the elite asks *how hard do you hit*. A lane-wide arc has no safe side, so the only answer is DPS — and the 4.5 s leash is what keeps it survivable (three sweeps, ~half the squad left) | `ELITE_HOLD_MAX` |
-| Boss | One per stage, slams **where the crowd is** on a **1.0 s** telegraph, capped at **31 %** of the squad | `stepBoss()` |
-| Boss guard | at **66 %** and **33 %** health it plants, becomes untouchable and swings — overkill is forfeited, so no amount of DPS skips the climax | `damageBoss()` |
-| Boss rage | every swing thrown brings the next one **0.17 s sooner** (floor 0.95 s) and **0.07 u wider** (ceiling 2.55 u) — a long fight is a losing fight | `stepBoss()` |
-| Charged swing | **every third slam** is charged: **double the radius**, a **1.7×** wind-up, and an aim that leads the crowd's drift at 0.8 instead of 0.35. A perfect dodger takes 0 % of ordinary slams — this is the swing that does not accept that answer. The RADIUS is doubled and not the damage: the toll is `squad × slamShare` off whoever is inside the ring, so the radius decides whether it lands and the share decides what it costs once it has | `CHARGED_EVERY`, `slamRadiusFor()` |
-| Stage length | `120 + 9 × stage` world units (~35–50 s) | `stageLength()` |
-| Failure | Squad reaches 0 → wipe; still pays out coins scaled by progress | `wipeReward()` |
-| Retry relief | a stage that has beaten you comes back softer, and softer again each time: 80 % → 72 % → 66 % → 62 % enemy health, and a slam that takes 40 % less | `reliefFor()` |
-| Autobalancer | every stage cleared in a row makes the next one 13 % harder (health) plus denser packs and costlier bites, up to 30; **one loss wipes the streak entirely** | `challengeFactor()` |
-
-## Difficulty
-
-The curve is carried by five independent knobs rather than one multiplier, so it
-can be tuned finely and so failure always has a legible cause:
-
-1. **Enemy health** — `foeHpScale` (+34 %/stage) and `bossHpScale` (×1.55/stage
-   to stage 12, then +12 %/stage).
-2. **Density** — `packSize`, `beatGap` and the arrangement table in `track.ts`.
-3. **Routing pressure** — trap-gate frequency (`trapChance`), barricade gap
-   width, and how far off the line the crates sit (`CRATE_DETOUR_X`).
-4. **The player's own arc** — fire rate starts crawling, so a run that skips the
-   blue crates is measurably weaker at the boss than one that took the detours.
-   This is the main lever that *punishes suboptimal play* rather than punishing
-   the player for being on a high stage.
-5. **The autobalancer**, which is the one that tracks the PLAYER rather than
-   the stage. A streak of clears winds the next stage up a little at a time; a
-   single loss wipes the streak completely, so the handicap can never be the
-   reason somebody is stuck. Underneath it, minibosses break the stage into
-   winnable chunks, and a stage that has beaten the player comes back softer
-   each time it does — 80 % → 72 % → 66 % → 62 % enemy health, plus a slam that
-   takes 40 % less of the squad. (Health alone did nothing measurable:
-   14 of 15 simulated retries moved the clear rate by exactly zero, because most
-   of a failing run's losses are slams, which enemy HP never touches.) Neither
-   makes a good run easier; both stop a bad one becoming a wall.
-
-Balance is measured, not guessed: `tests/sim/` drives the real simulation with
-five scripted player policies (optimal / good / average / careless / coin-trail)
-and reports clear rate, time-to-clear, peak squad, DPS at the boss and
-cause-of-death per stage. `tests/sim/REPORT.md` carries the current numbers.
-
-Where it stands (10 seeds per cell):
-
-| stage | optimal | good | average | careless |
-| --- | --- | --- | --- | --- |
-| 1 | 100 % | 100 % | **100 %** | 0 % |
-| 2 | 100 % | 100 % | 80 % | 0 % |
-| 3 | 100 % | 100 % | 60 % | 0 % |
-| 4 | 100 % | 80 % | 100 % | 0 % |
-| 5 | 100 % | 100 % | 100 % | 0 % |
-
-A sloppy player gets stage 1 and then has to actually play; a player who never
-touches the screen reaches the stage-1 boss and loses to it, every time. The
-spread between playing well and playing badly is **1.8×–5.8× DPS at the boss**,
-and it comes almost entirely from crates rather than from squad size — the gates
-hand roughly the same crowd to everybody.
-
-### The whole campaign, and what it took to make it a campaign
-
-Thirty-stage careers were then simulated end to end — every scripted policy
-against every purchasing strategy, carrying the save between stages — and the
-first pass returned a flat verdict: **every player who touched the screen
-cleared all thirty stages, on any strategy, including buying nothing at all.**
-From stage 8 onward the boss died before it swung once. The cause was structural
-rather than numerical: the crowd grows *exponentially* through gates while the
-road's toll was *absolute*, so the outcome of every late stage was settled
-before it started.
-
-Three rules closed it, and the same careers were re-measured after:
-
-* **The bite is a share** (`biteShareFor`) — a monster costs what it was
-  authored to cost, or a slice of the crowd, whichever is worse.
-* **The boss guards** at 66 % and 33 % (`damageBoss`) — overkill is forfeited,
-  so the climax always happens.
-* **The boss rages** — each swing shortens and widens the next, turning "not
-  enough damage" from *slow* into *fatal*.
-
-| what changed | before | after |
-| --- | --- | --- |
-| a competent player who never spends a coin | clears all 30 | **walls at 13** |
-| an average player who never spends a coin | clears all 30 | **walls at 10** |
-| "buy only scavenging" | ties the best strategy | **walls at 13** |
-| boss swings thrown, stage 8+ | 0 | **2–9** |
-| slams as a cause of death | early stages only | **top cause on most stages** |
-| a full career | 31–33 runs for 30 stages | **31–45**, losses scattered throughout |
-
-A perfect-play policy still clears everything with an empty wallet, which is the
-intended ceiling: the game is beatable by skill alone and the shop is what lets
-everybody else get there.
-
-### The road has no end
-
-Stages 1–5 are hand-authored, 6–30 are the measured campaign, and **there is no
-stage 31 in the sense of a wall** — the generator has always answered any number
-handed to it. What it did not do was keep *scaling*: measured across stages
-1–300, fourteen separate knobs hit a hard cap somewhere between stage 17 and
-stage 34, so a stage-100 road was a stage-34 road with more enemy health on it.
-
-Endless means the knobs never stop moving, and that every promise the road makes
-stays true at depth:
-
-| knob | used to stop at | now |
-| --- | --- | --- |
-| `gateAddBase` | linear forever → overran `MAX_SQUAD` by stage 86 | logarithmic knee past stage 30: 24 → 33 → 41 → 55 at stage 300 |
-| `packSize` | 16, reached at stage 19 | linear to 22, then log toward a **screen** limit of 34 |
-| `beatGap` | flat 7 from stage 30 — every deep stage beat-for-beat identical | keeps closing toward 5.2 (6.0 at stage 100) |
-| `maxTriples` / `mulLeaves` / `mulThrees` | flat from stages 22 / 6 / 8 | grow with the number of banks a stage actually has, so the *ratio* holds |
-| `MAX_SQUAD` | 1 600 — a thirty-stage ceiling | **4 000**, and the log knee is what keeps doors honest past it |
-| `GATE_MAX_VALUE` | 99 — banks printed **two identical doors from stage 161** | 999 |
-| pack / wall beat weights | floors reached at stages 34 / 32, then crowded out by hazards | floors drift up with the stage |
-
-The honest limit, stated rather than hidden: no finite `MAX_SQUAD` survives an
-unbounded sum. The theoretical best-case additive total first crosses 4 000
-around **stage 240** — roughly three hours of unbroken play, and a figure that
-ignores attrition, so a real run never approaches it.
-
-## Progression
-
-* **In-run:** squad size, per-survivor damage and fire rate — all three reset
-  every stage, all three built entirely from what the player does on the road.
-* **Between runs:** five coin-bought tracks (Squad / Firepower / Fire Rate /
-  Reach / Scavenging). Deliberately five, not forty: the meta exists to make the
-  *next* attempt feel different within thirty seconds.
-* **…and three of them never max.** Squad, Firepower and Scavenging are
-  uncapped, because a road with no last stage cannot have a shop with a last
-  level: measured, a benchmark career reached stage 80 with **every track maxed
-  and 893 063 coins unspent**. Fire Rate and Reach stay capped, and that is a
-  rule rather than an omission — both are bounded by something physical (the
-  bullet budget, the camera), so an endless level on either would sell a number
-  that cannot move. The endless tail is priced *gentler* than the authored head
-  (×1.16 a level against ×1.38–1.55): continuing the authored slope would put
-  level 21 tens of stages away, and "endless" would mean "locked".
-* **Standing:** highest stage ever reached, posted to a global board, with squad
-  size as the tie-breaking second column. Read once per page load, written only
-  when the player beats their own posted record — the board is a decoration on a
-  game that works perfectly without it, and every failure path ends in "no rank
-  shown".
-* **Persistence:** one `tower_state` blob, one localStorage key, mirrored to
-  whichever platform cloud the build targets. The stage number alone rebuilds
-  the layout, so a reload resumes exactly where the player was.
-
-## Art direction
-
-Hand-inked cel art, drawn procedurally and baked to frame strips at runtime —
-**zero gameplay bitmaps ship with the game**. One shared vocabulary
-(`inkArt.ts` / `monsterKit.ts`) means the survivors and the monsters look like
-one artist drew them: one ink colour, one key light, three line weights, three
-tone cuts.
-
-* Survivors are drawn **from behind** (pack, shoulders, bobbing hood) — the only
-  angle a vertical runner ever shows, and the only one that reads at 30 px.
-* Monsters come from the 13-design cast in `monsters.ts`, baked by
-  `monsterSprites.ts`.
-* The lane never changes hue; only the sky does, one palette per stage, so the
-  thing the player reads every frame keeps its contrast.
-
-## Feel (the non-negotiables)
-
-* Gate ticks play a **rising pentatonic ladder** — pumping a gate is audibly
-  winding something up.
-* A gate pass costs a beat of **slow motion** (0.45× for ~150 ms), a white
-  flash, a 40-particle burst and a screen shake scaled by the haul.
-* Every hit flashes its target white by re-blitting its own sprite additively.
-* Losing survivors turns the frame edges red and plays a short falling cry —
-  the crowd has to feel like people, or the numbers mean nothing.
-* Target 60 fps on mid-tier Android: pooled particles in typed arrays, baked
-  sprite strips, one canvas, DPR clamped to 2, quality tiers driven by a rolling
-  FPS average.
-
-## Deliberately not in the game
-
-Battle pass, achievements wall, daily-login calendar, daily missions,
-rewarded-video buttons, treasure chest. They were removed because every one of
-them puts a screen between the player and the road. Interstitials remain at the
-natural break (between stages, ad **before** the result screen).
+# GAME DESIGN DOCUMENT: GLYPHYX
+**Project Name:** Glyphyx (Momentum Strategy)  
+**Document Version:** 1.0.0  
+**Target Platforms:** Mobile (iOS / Android) primary; Web / Desktop secondary  
+**Genre:** Fast-Paced Tactical Grid Battler / Momentum Puzzle Strategy  
+**Target Audience:** Casual & Mid-Core Strategy Players, Puzzle Fans, "Lazy Learners"  
+**Session Length:** ~90 seconds per match | 10–20 minutes average session  
+**KPI Benchmarks:** >50% D1 Retention, >15 min Average Daily Session Length
 
 ---
 
-## Standard requirements block
+## 1. EXECUTIVE SUMMARY & CORE CONCEPT
 
-> In GENERAL for all work: Do your work on a high-fidelity basis, don't do just
-> good enough. Make the interactions feel good, add vfx juice where applicable
-> (optimize to not overload the CPU/GPU). Don't take shortcuts. After planning,
-> write the plan into `game-implementation-plan.md` to continue from if a
-> session ends unexpectedly.
-> The game starts right into the first scene, no main menu.
-> Fully responsive: all mobile orientations, min portrait 320×658px, tablet and
-> desktop up to fullscreen. No fixed px where avoidable — use %, vw/vh. Respect
-> safe-area insets. Images are not selectable/draggable like normal web content
-> but must allow drag and click events for game logic.
-> Optimize for web-game standards: fast jump into gameplay (hot-path loading),
-> delay uncritical assets until after first paint.
-> Save ALL state variables in one object named `<game>_state`.
+### 1.1 High-Level Overview
+**Glyphyx** is a ultra-fast, visually intuitive tactical grid game played on a 4x4 board. Players drag stone pebble runes with glowing elemental symbols onto board tiles, swipe to set their facing direction, and watch turns resolve simultaneously in dramatic, action-packed combat rounds.
+
+The game eliminates tedious tutorials and reading. Every mechanic is taught through instant visual feedback, high-impact combat animations, and screen-shattering destruction effects. With 90-second match times, zero loading delays, and deep strategic synergies created by unit stacking and directional targeting, *Glyphyx* delivers an addictive "just one more round" gameplay loop.
+
+```
+       [ PLAYER DECK / HAND ]
+       (Melee) (Archer) (Mage) (Defense) (Support)
+                  |
+                  v  (Drag & Swipe Direction)
+   +---+---+---+---+
+   |   |   | E | E |  <- Enemy Territory
+   +---+---+---+---+
+   |   |   |   |   |
+   +---+---+---+---+
+   |   | P |   |   |  <- Active Combat Zone
+   +---+---+---+---+
+   | P | P |   |   |  <- Player Territory
+   +---+---+---+---+
+   (Goal: Conquer 8 total tiles to instantly win)
+```
+
+### 1.2 Core Design Pillars
+1. **Zero-Text Onboarding ("Lazy Learner Friendly"):** Absolutely no text walls or mandatory tutorial popups. Every rule is self-explanatory within 3 seconds of interaction.
+2. **Instant Dopamine Hook:** Players win their first round within 15 seconds, accompanied by celebratory particle bursts, gold coins, and immediate progress.
+3. **Simultaneous Turn Momentum:** Both sides plan in secret during a 5-second window, leading to simultaneous high-stakes reveals and action resolution.
+4. **Low Barrier, High Ceiling:** Only 1 rune placed per turn, keeping short-term choices trivial while emergent combinations create vast long-term strategic depth.
+5. **Hyper-Snappy Game Loop:** 0.2-second match resets allow players to lose, adapt, and retry instantly without friction or loading fatigue.
+
+---
+
+## 2. CORE GAME MECHANICS & RULES
+
+### 2.1 The Grid & Win Conditions
+* **Grid Dimensions:** 4x4 board (16 tiles total).
+* **Conquest Threshold:** The first player (or side) to control **8 or more tiles** simultaneously at the end of a resolution phase wins immediately.
+* **Secondary Win Condition:** If the turn limit (10 turns / 90 seconds) is reached, the player controlling the highest number of tiles wins. Ties trigger a sudden-death over-drive turn.
+
+### 2.2 Turn Execution Cycle
+Each match is played in rapid, synchronized turns following a strict 3-step loop:
+
+```
++-------------------------------------------------------------------+
+| 1. PLANNING PHASE (5 sec) -> 2. REVEAL PHASE -> 3. RESOLUTION    |
+| - Drag pebble onto tile    - Both moves shown  - All runes fire   |
+| - Swipe to aim direction   - Preview paths      - Tiles captured  |
++-------------------------------------------------------------------+
+```
+
+#### Step 1: Planning Phase (5-Second Countdown)
+* Players select 1 pebble from their available hand (3 random pebbles drawn from a 5-rune deck).
+* Drag the pebble to any **unoccupied tile** OR onto a **friendly occupied tile** to stack.
+* While holding the finger down, a small swipe sets the rune's facing direction.
+* Defense and Support runes auto-lock without requiring directional swipes.
+
+#### Step 2: Reveal Phase (0.3 Seconds)
+* The board locks. Both players' choices are revealed at once.
+* Glowing directional arrows highlight the trajectory of all attacks and spells.
+
+#### Step 3: Resolution Phase (1.2 Seconds)
+* All active runes on the board fire simultaneously.
+* Damage is calculated and applied to target tiles.
+* Runes reduced to 0 HP shatter into stone rubble, neutralizing the tile.
+* Surviving runes on enemy or neutral tiles claim ownership of that tile for the controlling player.
+
+---
+
+## 3. RUNE & GLYPH SYSTEM
+
+Runes are represented as smooth, dark river pebbles with glowing neon glyphs carved into their surface.
+
+```
+       [ STONE PEBBLE RUNE LAYOUT ]
+             /--------------\
+            /   [GLYPH ICON]  \
+           |   (Glowing Neon)  |
+           |    [SWIPE ARROW]  |
+            \    [HP / LVL]   /
+             \--------------/
+```
+
+### 3.1 Complete Rune Roster
+
+| Rune Type | Glyph Icon & Color | Targeting & Direction | Base Stats (Lv. 1) | Ability & Attack Behavior | Level 2 Stacked Bonus |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Melee** | Crimson Sword | Cardinal (Up, Down, Left, Right) | HP: 3 | Atk: 2 | Attacks the 1 adjacent tile in facing direction. Deals direct physical damage. | **HP: 6 | Atk: 4.** Adds knockback effect—pushes enemy back 1 tile if target survives. |
+| **Archer** | Emerald Bow | Cardinal (Up, Down, Left, Right) | HP: 2 | Atk: 2 | **Skips 1st tile**, strikes the 2nd tile ahead. Bypasses frontline units completely. | **HP: 4 | Atk: 4.** Fires a 2-arrow volley hitting both 2nd and 3rd tiles ahead. |
+| **Mage** | Amethyst Arcane Orb | Diagonal (4 Diagonal Angles) | HP: 2 | Atk: 3 | Fires a diagonal energy beam penetrating through **2 diagonal tiles**, damaging all targets. | **HP: 4 | Atk: 5.** Expands into a 3x3 cross-explosion around the end destination tile. |
+| **Defense** | Sapphire Shield | **Omni-Directional** (No swipe needed) | HP: 6 | Atk: 0 | Absorbs incoming attacks. Automatically mitigates 1 extra damage from all directions. | **HP: 12 | Atk: 0.** Grants +1 HP shield aura to all adjacent friendly runes at round start. |
+| **Support** | Topaz Radiant Cross | **Omni-Directional** (No swipe needed) | HP: 3 | Atk: 0 | Restores **+1 HP** to all adjacent friendly runes at the end of each resolution phase. | **HP: 6 | Atk: 0.** Heals **+2 HP** and grants +1 bonus Attack power to adjacent friendly runes. |
+
+---
+
+### 3.2 Stacking & Upgrade Mechanics
+* **Mechanic:** Dragging an identical rune onto a tile already occupied by that rune merges them into a **Level 2 Rune**.
+* **Visual FX:** A golden burst ring expands from the stone pebble; the carved glyph glows brighter with a metallic border, and a "Lv. 2" badge appears.
+* **Benefits:**
+    * Immediately doubles current and maximum HP.
+    * Amplifies attack damage or support effectiveness.
+    * Unlocks enhanced secondary abilities (e.g., Archer multi-shot, Mage AoE explosion).
+* **Cap:** Max Level 2 per tile to preserve strategic mobility and prevent invincible mega-towers.
+
+---
+
+## 4. GAME MODES & CAMPAIGN STRUCTURE
+
+### 4.1 Mode 1: 1v1 Classic Battle (PvP & Casual AI)
+* **Setup:** Standard 4x4 grid. Player occupies bottom row (4 tiles); opponent occupies top row (4 tiles). Middle 8 tiles are neutral gray stone.
+* **Goal:** Expand across the center line and secure 8 total tiles before the opponent.
+
+```
++---+---+---+---+  Row 4 (Enemy Base)
+| E | E | E | E |
++---+---+---+---+  Row 3 (Neutral)
+| . | . | . | . |
++---+---+---+---+  Row 2 (Neutral)
+| . | . | . | . |
++---+---+---+---+  Row 1 (Player Base)
+| P | P | P | P |
++---+---+---+---+
+```
+
+---
+
+### 4.2 Mode 2: 1v3 Siege Campaign (PvE Territory Expansion)
+In campaign mode, the player acts as a surrounded commander holding the center of the board against 3 distinct enemy AI factions.
+
+```
+          [ NORTH FACTION: ORC BERSERKERS ]
+                 +---+---+---+---+
+                 | E1| E1| E1| E1|
+                 +---+---+---+---+
+[ WEST FACTION:  | E2| P | P | E3|  [ EAST FACTION:
+ GOBLIN ARCHERS] +---+---+---+---+   UNDEAD MAGES ]
+                 | E2| P | P | E3|
+                 +---+---+---+---+
+                 | . | . | . | . |
+                 +---+---+---+---+
+```
+
+* **Board Configuration:**
+    * **Player Starting Area:** Central 2x2 grid (4 tiles).
+    * **Enemy Factions:**
+        1. **North (Orcs):** High HP Melee heavy hitters.
+        2. **West (Goblins):** Rapid ranged archers.
+        3. **East (Undead):** Diagonal Mage spammers.
+* **Rogue-lite Campaign Map:**
+    * The campaign world map is divided into chapters, each containing 8 territory nodes.
+    * Conquering a node awards permanent **Rune Chests**, unlocking new runes and rune cosmetics.
+
+---
+
+## 5. FIRST 15 SECONDS ONBOARDING & RETENTION ENGINE
+
+### 5.1 The "Lazy Learner" Onboarding Script
+
+To guarantee zero cognitive drop-off and maximize Day 1 retention (>50%), Level 1-1 uses zero text and forces instant dopamine delivery:
+
+```
+[00:00 - App Launch] -> Instant transition directly to Level 1-1 Arena (No Loading Screens)
+[00:02 - Ghost Hint] -> Faint animated finger drags Sword Pebble to tile (0,1) & swipes UP
+[00:04 - User Drag ] -> Player replicates gesture in < 2 seconds with soft haptic snap
+[00:05 - Resolution] -> Player Sword attacks 1-HP Skeleton. Skeleton shatters with Screen Shake
+[00:07 - Victory!  ] -> Gold explosion, "VICTORY!" audio cue, Chest pops open
+[00:10 - Claim     ] -> Player taps chest -> Unlocks Archer Rune
+[00:15 - Level 1-2 ] -> Next level starts immediately
+```
+
+```
++-----------------------------------------------------------------------+
+| ONBOARDING DESIGN PRINCIPLES FOR LAZY LEARNERS                        |
++-----------------------------------------------------------------------+
+| 1. NO DIALOGUE BOXES: Never show a "Tap to Continue" text window.     |
+| 2. NO TUTORIAL POPUPS: Teach rules through visual combat outcomes.   |
+| 3. FORCED EARLY SUCCESS: Level 1-1 to 1-3 cannot be lost.             |
+| 4. REWARD DENSITY: Award a chest or new rune every 45 seconds early on.|
++-----------------------------------------------------------------------+
+```
+
+---
+
+### 5.2 Retention Engine & Session Length Drivers
+
+To maintain an average session length of **10–20 minutes** with **>50% D1 Retention**, the game implements three core psychological drivers:
+
+#### 1. Frictionless Match Iteration
+* **0.2-Second Replay:** Tapping "Play Again" instantly wipes the board with a glowing wave effect and resets the grid without returning to the main menu.
+* **Micro-Matches:** A full game takes 60–90 seconds, allowing players to squeeze in 10–15 matches per 15-minute session.
+
+#### 2. AFK / Offline Rune Forge
+* Generating passive **Rune Shards** every hour offline ensures players are greeted with valuable loot upon opening the app on Day 1.
+
+#### 3. Win-Streak Momentum Multipliers
+* Winning consecutive matches grants visual flame aura effects on the player's board avatar and multiplies conquest gold rewards by up to 3x.
+
+---
+
+## 6. USER INTERFACE & ART DIRECTION
+
+### 6.1 Visual Style & Theme
+* **Aesthetic:** Mythic Stone & Neon Magic.
+* **Colors:** Dark slate stone background tiles accented by vibrant glowing neon rune symbols (Crimson Red, Amethyst Purple, Sapphire Blue, Emerald Green, Topaz Gold).
+* **Tactile Feedback:** Pebble placements produce a heavy stone "thud" audio effect accompanied by haptic controller rumble.
+
+### 6.2 Screen Layout (Mobile Portrait)
+
+```
++---------------------------------------+
+| [Profile]   [Stage 3-4]   [Settings]  |
+| [ Conquest Progress: |||||||.. 7/8 ]  |
++---------------------------------------+
+|                                       |
+|            4x4 GAME BOARD             |
+|                                       |
+|    +-----+-----+-----+-----+          |
+|    | (E) | (E) |     |     |          |
+|    +-----+-----+-----+-----+          |
+|    |     | [M] |     |     |          |
+|    +-----+-----+-----+-----+          |
+|    | [S] |     | [A] |     |          |
+|    +-----+-----+-----+-----+          |
+|    | [D] | [D] |     |     |          |
+|    +-----+-----+-----+-----+          |
+|                                       |
++---------------------------------------+
+|        [ TIMER: 00:04 ]               |
++---------------------------------------+
+|  HAND DECK:                           |
+|  +---+  +---+  +---+                  |
+|  | S |  | A |  | M |    [REROLL]      |
+|  +---+  +---+  +---+                  |
++---------------------------------------+
+```
+
+---
+
+## 7. BALANCE MATRIX & NUMERICAL FORMULAS
+
+### 7.1 Combat Resolution Priority
+When multiple runes fire simultaneously, interactions resolve in the following deterministic sequence:
+
+1. **Defense / Shields:** Passive mitigation values active.
+2. **Support Healing:** Heals applied to existing damaged runes.
+3. **Ranged Attacks (Archer & Mage):** Projectiles hit target tiles simultaneously.
+4. **Melee Attacks:** Sword strikes resolve.
+5. **Tile Control Recalculation:** Neutralization and conquest ownership updated.
+
+---
+
+### 7.2 Numerical Scaling Formula
+
+The HP and Damage values follow a strictly linear progression to keep mental math trivial:
+
+$$	ext{Base Damage (Lv. 2)} = 	ext{Base Damage (Lv. 1)} 	imes 2$$
+
+$$	ext{Base HP (Lv. 2)} = 	ext{Base HP (Lv. 1)} 	imes 2$$
+
+$$	ext{Conquest Condition} = \lceil 	ext{Total Board Tiles} 	imes 0.5
+ceil = 8 	ext{ Tiles}$$
+
+---
+
+## 8. TECHNICAL SPECIFICATIONS & INPUT HANDLING
+
+### 8.1 Input State Machine
+The drag-and-swipe control scheme uses a simple 3-state machine designed for low-latency mobile touchscreens and mouse input:
+
+```
+[ TOUCH DOWN ] -> Detect pebble in Hand Deck
+       |
+       v
+[ DRAG MOVEMENT ] -> Project 3D ghost pebble onto grid + hover target visual
+       |
+       v
+[ TOUCH RELEASE + SWIPE VECTOR ]
+       |---> If swipe magnitude < threshold: Snap default direction (UP)
+       |---> If swipe magnitude >= threshold: Snap angle to nearest 45° / 90° vector
+```
+
+### 8.2 Network & Determinism Architecture
+* **Simultaneous Turn Synchronization:** Inputs are transmitted as lightweight 8-byte packets containing `(RuneID, TileIndex, DirectionVector)`.
+* **Client-Side Simulation:** Combat outcome is completely deterministic, allowing both client devices to simulate identical visual animations locally without state lag.
+
+---
+
+## 9. FUTURE EXPANSION ROADMAP
+
+* **Phase 1 (Launch):** Core 5 Runes, 1v1 Mode, 1v3 Campaign Chapter 1 (40 Nodes).
+* **Phase 2 (v1.1):** 3 New Hybrid Runes (e.g., Flame Mage, Shield-Bash Guardian).
+* **Phase 3 (v1.2):** Guild Boss Raids (Co-op 2v4 Board Defense).
+
+---
+*End of Game Design Document.*

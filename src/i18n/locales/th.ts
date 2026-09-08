@@ -1,5 +1,5 @@
 export default {
-  'gameName': 'Survivalist',
+  'gameName': 'glyphyx',
   'cancel': 'ยกเลิก',
   'close': 'ปิด',
   'ok': 'ตกลง',
