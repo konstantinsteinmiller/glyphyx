@@ -1,82 +1,52 @@
-import { stageDesigns, rosterDesigns, bossDesign, arenaKit } from '@/game/foes'
-import { THREAT_POOL_FROM_STAGE, minibossKindFor, bossKindFor, SUMMON_DESIGN } from '@/game/threats'
-import { OUTFITS } from '@/game/heroSprites'
-import { stageHasWeapon, weaponForStage } from '@/game/weapons'
-import { allMonsterIds } from '@/game/monsterSprites'
-import { ART_CATALOGUE } from '@/game/artCatalogue'
-import { artSettled, artOverridesEnabled, type ArtWant } from '@/game/art'
-import { getState } from '@/use/useTowerState'
-import { STAGE_KEY } from '@/keys'
+import {
+  FACTION_DEFS, RUNE_TYPES, SKIN_IDS, SKINS, STARTING_RUNES, STARTING_SKIN,
+  type Faction, type NodeConfig, type RuneType, type SkinId
+} from './rules'
+import { ART_CATALOGUE, allArtIds, enemyStoneIds, playerStoneIds } from './artCatalogue'
+import { artOverridesEnabled, artSettled, type ArtWant } from './art'
+import { getState } from '@/use/useGlyphyxState'
+import { NODE_KEY, SKIN_KEY, UNLOCKED_RUNES_KEY } from '@/keys'
 
 /**
  * ─── Staged art loading ─────────────────────────────────────────────────────
  *
- * With painted art on, the naive version fetches the whole set at once: every
- * strip, every prop, every round and effect — fifty-odd files, most of them for
- * things a first-time player will not see for ten minutes. A brute debuts on
- * stage 7 and the healer's bolt on stage 4; a first-time player on a phone
- * would pay for both on stage 1.
+ * With painted art on, an unstaged build fetches everything: ninety-six player
+ * stones, sixty-four enemy stones, tiles, chips, effects, four commanders —
+ * 204 files, most of them for things a first-time player will not see for
+ * twenty minutes. An ember-skin orb is bought in chapter 3; a mortar is not
+ * handed over until 3-1. A first-time player on a phone would pay for both at
+ * node 1-1.
  *
- * So the set is staged, and the stages are DERIVED from the game's own tables
- * rather than listed: a design's tier is the first stage it can walk on, read
- * off `foeRoster` through `stageDesigns`; a round's tier is the first stage
- * its miniboss or boss kind can be fielded. Balance changes move the art with
- * them, and nothing here goes stale when a stage is retuned.
+ * So the set is staged, and the stages are DERIVED from the save rather than
+ * listed: which skin is equipped, which node the player resumes to, which
+ * factions that node's chapter fields. A balance change moves the art with it.
  *
  *   tier 0 — behind the splash, `fetchPriority: high`. What the FIRST SCREEN
- *            shows: the squad, the roster walking at them, the horizon, the
- *            gates and the post between their leaves, the pickups, and the
- *            effects every shot makes.
- *   tier 1 — once the page's own load is done and the thread has an idle slot,
- *            normal priority, one at a time, in the order the stage reaches
- *            them: the skills, the elite's crown, the weapon puzzle, the boss
- *            and what it throws, then the next stage on the same terms.
- *   tier 2 — after tier 1 has settled, `fetchPriority: low`, in one batch.
- *            Everything else, so nothing a resuming player skipped past is
- *            orphaned. Skipped outright on a data-saver connection.
+ *            shows: the board (tiles, frame), the horizon, the HUD chips, the
+ *            player's commander, the commanders of the resumed node, the
+ *            stones of the player's EQUIPPED skin FOR THE RUNES THEY HAVE
+ *            UNLOCKED, and the effects every resolution makes. A brand-new
+ *            player holds one rune, so that is two stones behind the splash
+ *            rather than sixteen — the roster is a campaign-long unlock, and
+ *            tier 0 is only ever what the first screen can actually show.
+ *   tier 1 — right after the splash, normal priority, ONE AT A TIME in order
+ *            of need: the resumed node's own factions' stones first, then the
+ *            rest of the chapter's factions, then the remaining effects, then
+ *            the equipped skin's still-locked stones — those are wanted the
+ *            moment a chest opens, which is the soonest a locked rune can be
+ *            drawn. A slow connection gets the stones the first reveal shows
+ *            before the ones three nodes away — a parallel burst would let
+ *            the biggest file win.
+ *   tier 2 — on an idle slot after tier 1 has settled, `fetchPriority: low`,
+ *            one batch: every other skin, every other faction, the glyph
+ *            icons, the other commanders. By then order no longer matters and
+ *            the browser's scheduler fits them around play.
  *
- * Nothing waits on tiers 1 or 2. A design whose strip has not arrived when it
- * first walks on simply draws its procedural body, exactly as it does with the
- * art switched off.
- *
- * ─── What tier 0 is FOR ─────────────────────────────────────────────────────
- *
- * The first-time player, on stage 1, from a cold cache. They are the only
- * player who sees the game for the first time, and what they must see is a
- * finished picture — so the splash holds for everything on screen in the
- * opening seconds and for nothing that arrives later, however certain it is to
- * arrive. Every file moved out of tier 0 is time off that player's first
- * impression; every file left in that they cannot see yet is time spent on
- * nothing.
- *
- * The line, therefore, is WHEN IT IS ON SCREEN, not whether the stage has it:
- * the boss stands a stage away, the elite is a midpoint, the weapon puzzle is
- * an optional beat partway down the road. All three are tier 1, and tier 1
- * starts the moment the splash is down.
- *
- * ─── …and why sound is not here at all ──────────────────────────────────────
- *
- * `useAssets` runs the SFX decode only once this module's promise resolves —
- * i.e. after every painting has landed — and the music element is pointed at a
- * track by `useSound` when a battle starts, so it is fetched on demand and
- * never competes. An SFX that has not decoded is a frame of latency the first
- * time it fires; a strip that has not arrived is a red ellipse in the middle of
- * the screen. The art wins every time.
+ * Nothing waits on tiers 1 or 2. A painting that has not arrived when it is
+ * first needed simply means the drawing stays up, exactly as with the art off.
+ * And with the art off — every portal build until the paintings are in — not
+ * one request is made: every tier checks the flag before it asks for anything.
  */
-
-/**
- * The stage the player is about to play, or 1 for a new player.
- *
- * `ts_stage` is the campaign position — the stage a wipe restarts — and the
- * loader already reads it for the sprite bake, so it is the right key here
- * too: the enemies it names are the ones the first frame will show.
- */
-export const resumeStage = (): number => {
-  try {
-    const raw = Number(getState(STAGE_KEY, 1))
-    return Number.isFinite(raw) && raw >= 1 ? Math.floor(raw) : 1
-  } catch { return 1 }
-}
 
 const uniq = (wants: ArtWant[]): ArtWant[] => {
   const seen = new Set<string>()
@@ -88,149 +58,129 @@ const uniq = (wants: ArtWant[]): ArtWant[] => {
   })
 }
 
-/** The rounds and effects a stage's elite and boss kinds actually throw. */
-const threatWants = (stage: number): ArtWant[] => {
-  const wants: ArtWant[] = []
-  // The meteor's ring is every boss's slam telegraph, and the guard and its
-  // crest are every boss's mid-fight shield.
-  wants.push(['fx', 'ring-heat'], ['fx', 'guard'], ['fx', 'crest-guard'])
-  const boss = bossKindFor(stage)
-  if (boss === 'meteor') wants.push(['round', 'meteor'])
-  if (boss === 'healer') wants.push(['round', 'bolt-boss'], ['fx', 'ring-heal'])
-  if (boss === 'summoner') wants.push(['monster', SUMMON_DESIGN])
-  if (stage >= THREAT_POOL_FROM_STAGE) {
-    for (const index of [0, 1]) {
-      const kind = minibossKindFor(stage, index)
-      if (kind === 'roller') wants.push(['round', 'roller'])
-      if (kind === 'bomber') wants.push(['round', 'bomb'])
-      if (kind === 'gunner') wants.push(['round', 'bolt-gunner'])
-    }
-  }
-  if (arenaKit(stage).barrels > 0) wants.push(['prop', 'barrel'])
-  return wants
+/** The node the player is about to play, or 1 for a new player. Any surprise → 1. */
+export const resumeNode = (): number => {
+  try {
+    const raw = Number(getState(NODE_KEY, 1))
+    return Number.isFinite(raw) && raw >= 1 ? Math.floor(raw) : 1
+  } catch { return 1 }
 }
 
 /**
- * The weapon puzzle's furniture, on the stages that carry one.
- *
- * Not tier 0, and the reason is the beat's own shape: it sits partway down the
- * road, on a shoulder, and it is OPTIONAL — a player who never looks at it pays
- * nothing. Half the campaign's roads carry no puzzle at all, so holding a first
- * screen for five files that may not be on this stage, and are a minute away
- * when they are, is a slower start bought for nothing.
- *
- * It does go out FIRST in tier 1, though, ahead of the boss and its rounds. The
- * whole mechanic is a test of attention — the levers are cheap to break and
- * expensive to find — and a lever that arrives as a grey drawing and repaints
- * itself two seconds later is the game moving the one thing it is asking the
- * player to notice.
+ * The runes the player can actually place, or just the starting sword. Any
+ * surprise → the starting roster: this decides what tier 0 fetches, and a
+ * garbled blob must make the splash SHORTER, never longer.
  */
-const weaponPuzzleWants = (stage: number): ArtWant[] => {
-  if (!stageHasWeapon(stage)) return []
-  const wants: ArtWant[] = [
-    // The levers, then their cover, then the prize behind it: the order the
-    // player's eye travels the beat.
-    ['prop', 'lever-post'], ['prop', 'lever-arm'], ['prop', 'guard-plate'],
-    ['prop', 'weapon-box'], ['prop', 'weapon-box-open']
-  ]
-  // The launcher's rocket, on the stages whose box holds it — which is every
-  // other puzzle stage, not every other stage. See `weaponForStage`.
-  if (weaponForStage(stage) === 'rocket') wants.push(['round', 'rocket'])
-  return wants
+export const resumeRunes = (): RuneType[] => {
+  const out: RuneType[] = []
+  try {
+    const raw = getState<unknown>(UNLOCKED_RUNES_KEY)
+    if (Array.isArray(raw)) {
+      for (const v of raw) {
+        if (typeof v === 'string' && (RUNE_TYPES as readonly string[]).includes(v) && !out.includes(v as RuneType)) {
+          out.push(v as RuneType)
+        }
+      }
+    }
+  } catch { /* fall through to the starting roster */ }
+  for (const s of STARTING_RUNES) if (!out.includes(s)) out.push(s)
+  return out
 }
+
+/** The skin the player's stones wear, or the starting skin. Any surprise → the starting skin. */
+export const resumeSkin = (): SkinId => {
+  try {
+    const raw = getState<unknown>(SKIN_KEY, STARTING_SKIN)
+    return typeof raw === 'string' && (SKIN_IDS as readonly string[]).includes(raw) ? raw as SkinId : STARTING_SKIN
+  } catch { return STARTING_SKIN }
+}
+
+const ALL_FACTIONS = Object.keys(FACTION_DEFS) as Faction[]
+
+/** The enemy factions of `config`, or every faction when the config is unknown. */
+const factionsOf = (config: NodeConfig | null): Faction[] => {
+  if (config) return [...new Set(config.enemies.map((e) => e.faction))]
+  return ALL_FACTIONS
+}
+
+/**
+ * The stones of one skin — both levels of every rune type, or only of `types`
+ * when the caller has a narrower need (tier 0 passes the unlocked roster).
+ */
+export const skinStoneWants = (skin: SkinId, types?: readonly RuneType[]): ArtWant[] =>
+  playerStoneIds()
+    .filter((id) => id.includes(`-${skin}-`))
+    .filter((id) => !types || types.some((t) => id.startsWith(`${t}-`)))
+    .map((id): ArtWant => ['rune', id])
+
+/** The sixteen stones of one enemy faction. */
+export const factionStoneWants = (faction: Faction): ArtWant[] =>
+  enemyStoneIds().filter((id) => id.includes(`-e-${faction}-`)).map((id): ArtWant => ['rune', id])
+
+/**
+ * The effects the very first resolution can make: a hit, a capture, a heal, a
+ * shield, a shatter — and the laurel, which is not an effect at all but the
+ * wreath every level-2 stone wears. It rides in tier 0 with the stones it sits
+ * on: arriving late means a hand of Lv 2 stones bakes with the DRAWN wreath and
+ * repaints when the painted one lands.
+ */
+const FIRST_FX: ArtWant[] = [
+  ['fx', 'ring-heal'], ['fx', 'ring-shock'], ['fx', 'shield'], ['fx', 'guard'], ['fx', 'smoke'], ['fx', 'scorch'], ['fx', 'muzzle'],
+  ['fx', 'laurel-pebble'],
+  ['round', 'bolt']
+]
 
 /**
  * Tier 0: what the splash holds for — the first screen, and only that.
  *
- * A resuming player's first screen is their own stage, not stage 1. Fetching
- * the starting cast for someone on stage 9 means the brutes they are about to
- * meet pop in mid-run, which is the one moment the swap is most visible.
+ * `config` is the node the save resumes to when the caller knows it. `null`
+ * fetches every commander, which is four small strips rather than one.
  */
-export const criticalArtWants = (): ArtWant[] => {
-  const stage = resumeStage()
+export const criticalArtWants = (config: NodeConfig | null): ArtWant[] => uniq([
+  ['bg', 'sky'], ['bg', 'ridge-far'], ['bg', 'ridge-near'],
+  ['tile', 'player'], ['tile', 'enemy'], ['tile', 'neutral'], ['tile', 'frame'],
+  ['ui', 'chest'], ['ui', 'ribbon'], ['ui', 'coin'], ['ui', 'forge'], ['ui', 'reroll'],
+  ['hero', 'teal'],
+  ...factionsOf(config).map((f): ArtWant => ['monster', FACTION_DEFS[f].avatar]),
+  ...skinStoneWants(resumeSkin(), resumeRunes()),
+  ['fx', `laurel-${SKINS[resumeSkin()].shape}`],
+  ...FIRST_FX
+])
+
+/**
+ * Tier 1: the stones the first reveals show, in order of need.
+ *
+ * `chapterFactions` is every faction the resumed chapter fields, resolved by
+ * the caller (the campaign module is imported lazily so the loader's own chunk
+ * stays small); the resumed node's own factions go first.
+ */
+export const earlyArtWants = (config: NodeConfig | null, chapterFactions: Faction[]): ArtWant[] => {
+  const own = factionsOf(config)
+  const ordered = [...own, ...chapterFactions.filter((f) => !own.includes(f))]
+  // With the node unknown `own` is every faction already; the chapter adds nothing.
   return uniq([
-    // The squad, and the roster walking at it.
-    //
-    // The ROSTER, not `stageDesigns` — which is the roster PLUS the boss. As
-    // the tables stand the split saves nothing at all: every design in
-    // `BOSS_DESIGNS` is also a road foe, so a stage's boss is the creep it has
-    // been fighting all along and tier 0 was already fetching it as scenery.
-    // It is written this way because the RULE is the point. A boss stands at
-    // `arenaY`, a whole stage from the first frame; the day the cast grows a
-    // design that only ever appears at the end of a road, the splash must not
-    // silently grow by the heaviest strip in the set. Tier 1 picks it up.
-    ...OUTFITS.map((o): ArtWant => ['hero', o.id]),
-    ...rosterDesigns(stage).map((id): ArtWant => ['monster', id]),
-    // The horizon, and what every road has on it.
-    ['bg', 'ridge-far'], ['bg', 'ridge-near'],
-    // The pickups and the road furniture, all of it inside the first screen or
-    // a few seconds past it.
-    ['prop', 'crate-damage'], ['prop', 'crate-rate'], ['prop', 'barricade'],
-    ['prop', 'boulder-1'], ['prop', 'boulder-2'], ['prop', 'boulder-3'],
-    ['prop', 'coin'],
-    // The divider post between two gate leaves. It is part of the gate as far
-    // as the player is concerned — a bank drawn with painted frames and a grey
-    // post between them reads as a half-finished gate, not as a late prop.
-    ['prop', 'pillar'],
-    // Gates: the paying door is on every stage, the trap from stage 2, the
-    // bill from stage 3 (see `track.ts`), the multiplier from the first bank
-    // that rolls one.
-    ['gate', 'frame-add'], ['gate', 'frame-mul'],
-    ...(stage >= 2 ? [['gate', 'frame-div'] as ArtWant] : []),
-    ...(stage >= 3 ? [['gate', 'frame-sub'] as ArtWant] : []),
-    // What every second of play shows.
-    ['round', 'tracer'], ['fx', 'muzzle'], ['fx', 'smoke'], ['fx', 'scorch'], ['fx', 'ring-shock'],
-    // The chest, the shop button and the grenade button are on screen from the
-    // first second of every run — and the grenade's own round is 5 kB, so the
-    // one thing a first-time player DOES reach for is painted when they reach.
-    // The chest leads: it is the first thing a new player is ever paid by, and
-    // it is claimable before the road has moved.
-    ['ui', 'chest'], ['ui', 'forge'], ['ui', 'skill-grenade'], ['round', 'grenade']
+    ...ordered.flatMap(factionStoneWants),
+    ...ART_CATALOGUE.fx.map((id): ArtWant => ['fx', id]),
+    ['round', 'spark'],
+    // The equipped skin's still-locked stones. `artTiers` drops whatever tier 0
+    // already took, so this is exactly the roster the player has not earned yet.
+    ...skinStoneWants(resumeSkin())
   ])
 }
 
-/**
- * Tier 1: the rest of THIS stage, in the order the road reaches it, and then
- * the next stage on the same terms.
- *
- * The order is the whole value here, because tier 1 is awaited one file at a
- * time: on a slow connection the thing the player meets in twenty seconds has
- * to finish before the thing they meet in two minutes starts.
- */
-export const earlyArtWants = (): ArtWant[] => {
-  const stage = resumeStage()
-  const have = new Set(criticalArtWants().map(([k, id]) => `${k}/${id}`))
-  return uniq([
-    // Bought and thrown inside the first minute.
-    ['fx', 'shield'], ['fx', 'crest-shield'], ['ui', 'skill-shield'],
-    // The midpoint fight: an elite is a scaled-up roster design that is already
-    // here, so all it needs is the crown it wears.
-    ...(stage >= 2 ? [['ui', 'crown'] as ArtWant] : []),
-    // The optional beat on the shoulder, ahead of the boss because it is the
-    // one thing the player has to NOTICE.
-    ...weaponPuzzleWants(stage),
-    // The thing at the end of the road, and everything it throws.
-    ['monster', bossDesign(stage)],
-    ...threatWants(stage),
-    // The banner the stage ends on.
-    ['ui', 'ribbon'],
-    // …then the next stage, so a player who clears this one never waits again.
-    ...stageDesigns(stage + 1).map((id): ArtWant => ['monster', id]),
-    ...weaponPuzzleWants(stage + 1),
-    ...threatWants(stage + 1),
-    // Stage 1 is the one road with no elite on it, and its player is two
-    // minutes from the stage that has one.
-    ['ui', 'crown']
-  ]).filter(([k, id]) => !have.has(`${k}/${id}`))
-}
+/** Every painting the game can ask for, in one low-priority sweep — tier 2 is whatever the first two left. */
+export const allArtWants = (): ArtWant[] => uniq(allArtIds().map(([kind, id]): ArtWant => [kind, id]))
 
-/** Tier 2: every painting the game can ask for, in one low-priority sweep. */
-export const allArtWants = (): ArtWant[] => uniq([
-  ...OUTFITS.map((o): ArtWant => ['hero', o.id]),
-  ...allMonsterIds().map((id): ArtWant => ['monster', id]),
-  ...(Object.entries(ART_CATALOGUE) as [Exclude<keyof typeof ART_CATALOGUE, never>, readonly string[]][])
-    .flatMap(([kind, ids]) => ids.map((id): ArtWant => [kind, id]))
-])
+/** The three tiers as disjoint lists, for a test and for `__art.status()`. */
+export const artTiers = (config: NodeConfig | null, chapterFactions: Faction[]): [ArtWant[], ArtWant[], ArtWant[]] => {
+  const t0 = criticalArtWants(config)
+  const key = (w: ArtWant): string => `${w[0]}/${w[1]}`
+  const seen = new Set(t0.map(key))
+  const t1 = earlyArtWants(config, chapterFactions).filter((w) => !seen.has(key(w)))
+  for (const w of t1) seen.add(key(w))
+  const t2 = allArtWants().filter((w) => !seen.has(key(w)))
+  return [t0, t1, t2]
+}
 
 /** How long the tiers will wait for the page's own load before going anyway. */
 const LOAD_CEILING_MS = 5000
@@ -244,22 +194,6 @@ const idle = (timeout: number): Promise<void> => new Promise<void>((resolve) => 
   else setTimeout(resolve, Math.min(timeout, 1500))
 })
 
-/**
- * Hold until the browser is done with the page's own load, and then until the
- * main thread has a slot to spare.
- *
- * Tier 1 is forty-odd files that nobody is waiting for, and it used to start
- * the instant the splash came down — straight into the window where the scene
- * is mounting, the first frames are being composed and the document's own
- * subresources may still be in flight. On a phone that is the moment the
- * connection is busiest and the thread is most contended, spent on art for a
- * fight a minute away.
- *
- * `load` is the honest signal for "the page has what it came for". It is
- * bounded, because a single stalled subresource must never strand the tiers
- * behind it, and followed by an idle slot so a busy thread gets one more
- * chance to finish what it is doing first.
- */
 const networkQuiet = async (): Promise<void> => {
   if (typeof window !== 'undefined' && typeof document !== 'undefined'
     && document.readyState !== 'complete') {
@@ -272,47 +206,55 @@ const networkQuiet = async (): Promise<void> => {
   await idle(3000)
 }
 
-/**
- * Has the player asked not to be spent?
- *
- * `saveData` is an explicit setting, not a guess about the network, and tier 2
- * is the one tier that fetches art for stages the player may never reach. The
- * procedural renderer is exactly the fallback a data saver is asking for, so
- * the sweep is skipped outright — tiers 0 and 1 still run, because those are
- * what is actually on screen.
- */
 const dataSaver = (): boolean => {
   if (typeof navigator === 'undefined') return false
   return !!(navigator as { connection?: { saveData?: boolean } }).connection?.saveData
 }
 
+/**
+ * The factions the resumed chapter fields, read off the campaign table. The
+ * campaign module is imported lazily so a failure here only widens tier 1 to
+ * every faction — never blocks it.
+ */
+const chapterFactionsOf = async (node: number): Promise<{ config: NodeConfig | null; factions: Faction[] }> => {
+  try {
+    const { nodeConfig, chapterOf, nodeId, NODES_PER_CHAPTER } = await import('./campaign')
+    const chapter = chapterOf(node)
+    const config = nodeConfig(node, 'medium')
+    const factions = new Set<Faction>()
+    for (let i = 1; i <= NODES_PER_CHAPTER; i++) {
+      for (const e of nodeConfig(nodeId(chapter, i), 'medium').enemies) factions.add(e.faction)
+    }
+    return { config, factions: [...factions] }
+  } catch {
+    return { config: null, factions: ALL_FACTIONS }
+  }
+}
+
 let started = false
 
 /**
- * Tiers 1 and 2. Idempotent; call it once the splash is down.
- *
- * RESOLVES when the last painting has landed, and that is load-bearing:
- * `useAssets` sequences the SFX decode behind this promise, so sound never
- * takes bandwidth from a bitmap that is still on the wire. With overrides off
- * it returns immediately and the sounds start as they always did.
- *
- * Tier 1 is awaited one file at a time so that a slow connection still gets
- * the next stage's first newcomer before its last — a parallel burst would
- * let the biggest file win. Tier 2 goes out in one low-priority batch after
- * another idle slot, because by then order no longer matters and the browser's
- * own scheduler does a better job of fitting it around play than a chain
- * would.
+ * Tiers 1 and 2. Idempotent; call it once the splash is down. Resolves when
+ * tier 1 has landed — `useAssets` sequences the SFX decode behind it so sound
+ * never takes bandwidth from a stone still on the wire. With overrides off it
+ * returns at once, having asked for nothing.
  */
 export const preloadRemainingArt = async (): Promise<void> => {
   if (started || !artOverridesEnabled()) return
   started = true
-
   await networkQuiet()
-  for (const [kind, id] of earlyArtWants()) await artSettled(kind, id)
 
+  const { config, factions } = await chapterFactionsOf(resumeNode())
+  const [, tier1, tier2] = artTiers(config, factions)
+
+  // Tier 1, one at a time: the first reveal's stones before the third node's.
+  for (const [kind, id] of tier1) await artSettled(kind, id)
+
+  // Tier 2 is a courtesy on a data-saver connection, not a need — the drawn
+  // field is exactly the fallback that setting asks for.
   if (dataSaver()) return
-  await idle(8000)
-  await Promise.allSettled(allArtWants().map(([kind, id]) => artSettled(kind, id, 'low')))
+  await idle(3000)
+  await Promise.allSettled(tier2.map(([kind, id]) => artSettled(kind, id, 'low')))
 }
 
 /** Test seam: forget that the tiers have run. */

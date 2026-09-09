@@ -35,7 +35,7 @@ export const SEED_FILE = resolve(
 )
 
 /** How many players the board claims. */
-const TOTAL = 154_331
+const TOTAL = 154_331 // modelled population; the score axis is the campaign NODE reached
 
 /** Rows the board publishes, matching the Worker's `TOP_N`. */
 const TOP_N = 100
@@ -203,10 +203,12 @@ export const buildSeed = () => {
         rank: entries.length + 1,
         name: mintName(r),
         score,
-        // Squad is only loosely tied to depth on the real board (rank 10 has
-        // 4 000, rank 25 has 43), so this is a wide band with a mild upward
-        // trend rather than a function of the score.
-        flair: Math.min(4000, Math.round(120 + score * 34 * (0.35 + r() * 1.5)))
+        // The second column is the player's best WIN STREAK. It travels on the
+        // wire as `squad` because the deployed Worker's schema predates the
+        // rename (see `useLeaderboard.ts`). Loosely tied to depth: a player
+        // deep in the campaign has had more chances at a long streak, but a
+        // streak is fragile, so it is a wide band with a mild upward trend.
+        squad: Math.min(15, Math.round(1 + score / 7 + r() * 4))
       })
     }
     if (entries.length >= TOP_N) break

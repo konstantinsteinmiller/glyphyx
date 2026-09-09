@@ -1,31 +1,37 @@
 import { computed, ref, type ComputedRef, type Ref } from 'vue'
-import { getState, setState } from '@/use/useTowerState'
-import { POSTED_NAME_KEY, SUBMITTED_STAGE_KEY } from '@/keys'
+import { getState, setState } from '@/use/useGlyphyxState'
+import { POSTED_NAME_KEY, SUBMITTED_NODE_KEY } from '@/keys'
 import { resolveIdentity, type PlayerIdentity } from '@/use/usePlayerIdentity'
 import { boardSnapshot, rankFromDist } from '@/use/leaderboardSnapshot'
 
 /**
  * ─── The global board, client side ──────────────────────────────────────────
  *
- * THE SCORE IS THE HIGHEST STAGE EVER REACHED. Not a run total and not a point
- * count — the game's whole progression is "how deep did you get", so the board
- * is a depth chart and `score` is a small integer that grows by one at a time.
- * `squad` rides along as a second column because two players on stage 40 are
- * not the same player, and the biggest squad is the thing they compare.
+ * THE SCORE IS THE HIGHEST CAMPAIGN NODE EVER CLEARED. Not a match total and
+ * not a point count — the game's whole progression is "how far did you get",
+ * so the board is a depth chart and `score` is a small integer that grows by
+ * one at a time. The best WIN STREAK rides along as a second column because two
+ * players on node 40 are not the same player, and the streak is the thing they
+ * compare.
+ *
+ * ON THE WIRE the second column is still called `squad`: the deployed Worker
+ * (`worker/src/index.ts`) validates and stores that field name, and renaming
+ * it here would 400 every post until the Worker is redeployed. So `streak`
+ * travels as `squad` and nothing else changes.
  *
  * ONE RULE ABOVE ALL: NOTHING IN HERE MAY EVER THROW, BLOCK OR DELAY A RUN.
  * Every network call is wrapped, every failure is swallowed, every entry point
  * returns a resolved promise. The board is a decoration on a game that works
  * perfectly without it — a dead endpoint, a captive-portal wifi login page
  * answering 200 with HTML, a portal iframe with no network at all, all have to
- * end in "no rank shown" and nothing else. That is why `reportRun` is called
+ * end in "no rank shown" and nothing else. That is why `reportMatch` is called
  * with `void` and never awaited at the call site.
  *
  * THE SECOND RULE IS THE QUOTA. This ships on Cloudflare's free tier against a
  * D1 database, and a client that posts at the end of every run would cost one
  * write per ~40 s of play per player. So: read the board at most once per page
  * load, and write ONLY when the player beat their own posted record. See
- * `reportRun`, which is the only function the game itself calls.
+ * `reportMatch`, which is the only function the game itself calls.
  */
 
 /** Trailing slashes stripped so `${ENDPOINT}/top` can never become `//top` —
@@ -44,7 +50,7 @@ const SECRET: string = import.meta.env.VITE_LEADERBOARD_SECRET ?? ''
  * request, Yandex rejects third-party storage URLs at moderation — and they now
  * ship a BAKED board rather than no board at all.
  *
- * So `ensureBoard`, `submitScore` and `reportRun` gate on this; everything the
+ * So `ensureBoard`, `submitScore` and `reportMatch` gate on this; everything the
  * player can see gates on `leaderboardEnabled`. Confusing the two would post a
  * run to `''`.
  */
@@ -76,7 +82,9 @@ export const OUTSIDE_BOARD = -1
 interface BoardEntry {
   rank: number
   name: string
+  /** The best node reached. */
   score: number
+  /** The best win streak — the Worker's field is called `squad` (see the header). */
   squad: number
 }
 
@@ -221,7 +229,7 @@ let boardSource: BoardSource = null
 let fetched = false
 
 /**
- * Deliberately NOT a `ts_`-prefixed key and not a field inside `tower_state`.
+ * Deliberately NOT a `gx_`-prefixed key and not a field inside `glyphyx_state`.
  *
  * Both of those round-trip to the platform's cloud save (see `isPayloadKey`),
  * and this is a ~6 kB cache of PUBLIC data that is identical for every player.
@@ -229,7 +237,7 @@ let fetched = false
  * save, against Poki's 1 MB ceiling — to protect a device that has its own copy
  * anyway. It is a per-device cache, so it lives per-device.
  */
-const BOARD_CACHE_KEY = 'tower_board_cache'
+const BOARD_CACHE_KEY = 'glyphyx_board_cache'
 
 const readBoardCache = (): Board | null => {
   try {
@@ -254,7 +262,7 @@ const writeBoardCache = (b: Board): void => {
  * This is what removes the spinner and the error state from a returning
  * player's experience entirely: `pending` and `failed` are both still false and
  * the table is already populated, so the modal opens onto rows and the result
- * chip has a rank on the first stage of the session. When the live fetch lands
+ * chip has a rank on the first match of the session. When the live fetch lands
  * a moment later it silently replaces all of it.
  */
 const seedOfflineBoard = (): void => {
@@ -268,7 +276,7 @@ const seedOfflineBoard = (): void => {
   // (the snapshot's is weeks old), and seeding it would show a rank out of the
   // stale total that then shifts when the live board lands. There is nothing to
   // buy by it either: a player's rank is hidden until they have cleared a
-  // stage, by which time the fetch has long resolved. The snapshot is reached
+  // node, by which time the fetch has long resolved. The snapshot is reached
   // only once a fetch has actually failed, where nothing can contradict it.
   const cached = readBoardCache()
   if (cached && adoptBoard(cached)) boardSource = 'cache'
@@ -343,11 +351,13 @@ export const ensureBoard = async (): Promise<void> => {
  * score as posted after a `true`, so a failed write is retried on the next run
  * instead of being silently forgotten.
  */
-export const submitScore = async (score: number, squad: number): Promise<boolean> => {
+export const submitScore = async (score: number, streak: number): Promise<boolean> => {
   if (!LIVE) return false
   pending.value = true
   try {
     const { id, name } = await identity()
+    // `squad` is the Worker's name for the second column — see the header.
+    const squad = streak
     const body: Record<string, unknown> = { id, name, score, squad }
     // Only when this build was given a secret. An unsigned request against a
     // worker with `SCORE_SECRET` set is a 401; a signed one against a worker
@@ -390,24 +400,25 @@ export const submitScore = async (score: number, squad: number): Promise<boolean
 }
 
 /**
- * A run posts at most this often, however many records it sets.
+ * A session posts at most this often, however many records it sets.
  *
- * `reportRun` fires on every cleared stage, and a good run beats its own best
- * on nearly all of them — a climb to stage 42 was up to forty-two POSTs, each
- * one a write and a rate-limit check on a free tier. Since every post carries
- * the CURRENT best rather than a delta, skipping one loses nothing: the next
- * one carries the higher number, so the throttle coalesces rather than drops.
+ * `reportMatch` fires after every finished match, and a player on a roll beats
+ * their own best on most of them — a climb through a whole chapter would be
+ * eight POSTs, each one a write and a rate-limit check on a free tier. Since
+ * every post carries the CURRENT best rather than a delta, skipping one loses
+ * nothing: the next one carries the higher number, so the throttle coalesces
+ * rather than drops.
  *
- * The run's END bypasses it (`force`), so the score a player finished on is
+ * A match's END bypasses it (`force`), so the score a player finished on is
  * always the score the board gets.
  */
 const WRITE_MIN_GAP_MS = 180_000
 /** When the last write was ATTEMPTED — success or not. A backend that is
- *  refusing must not be asked again on the next stage clear. */
+ *  refusing must not be asked again on the next cleared node. */
 let lastWriteAt = 0
 
 /**
- * THE ENTRY POINT. Called once per finished run, with `void`, never awaited.
+ * THE ENTRY POINT. Called once per finished match, with `void`, never awaited.
  *
  * Read once per page load, write only on a personal record — that sentence is
  * the entire quota design, and this function is where it is enforced:
@@ -421,11 +432,14 @@ let lastWriteAt = 0
  *   • NEITHER → no write at all, and at most one read for the whole session
  *     (`ensureBoard` no-ops once the board is in hand).
  *
- * A player grinding stage 30 for an hour therefore costs the backend one GET,
+ * A player replaying node 30 for an hour therefore costs the backend one GET,
  * served from the edge cache.
+ *
+ * @param bestNode   the highest node ever cleared (`useCampaign.bestNode`)
+ * @param bestStreak the best win streak (`useStreak.bestStreak`) — the second column
  */
-export const reportRun = async (
-  bestStage: number, bestSquad: number, o: { force?: boolean } = {}
+export const reportMatch = async (
+  bestNode: number, bestStreak: number, o: { force?: boolean } = {}
 ): Promise<void> => {
   // A baked build has nothing to report TO. The rank it shows comes from the
   // snapshot, which no run can change, so this is the one entry point that stays
@@ -434,28 +448,28 @@ export const reportRun = async (
   try {
     // Both numbers come off the save blob, which a cloud restore can hand back
     // anything for, and the worker rejects a non-integer outright.
-    const stage = Math.max(0, Math.trunc(Number(bestStage) || 0))
-    const squad = Math.max(0, Math.trunc(Number(bestSquad) || 0))
-    const posted = Math.max(0, Math.trunc(Number(getState(SUBMITTED_STAGE_KEY, 0)) || 0))
+    const node = Math.max(0, Math.trunc(Number(bestNode) || 0))
+    const streak = Math.max(0, Math.trunc(Number(bestStreak) || 0))
+    const posted = Math.max(0, Math.trunc(Number(getState(SUBMITTED_NODE_KEY, 0)) || 0))
     const { name } = await identity()
 
     // The first record of a session goes straight out; the rest wait their turn
-    // unless this is the end of the run.
+    // unless this is the end of a match.
     const due = o.force === true || lastWriteAt === 0 ||
       Date.now() - lastWriteAt >= WRITE_MIN_GAP_MS
 
-    if (stage > posted && due) {
+    if (node > posted && due) {
       lastWriteAt = Date.now()
-      if (await submitScore(stage, squad)) {
-        setState(SUBMITTED_STAGE_KEY, stage)
+      if (await submitScore(node, streak)) {
+        setState(SUBMITTED_NODE_KEY, node)
         setState(POSTED_NAME_KEY, name)
       }
     } else if (posted > 0 && due && getState<string>(POSTED_NAME_KEY, '') !== name) {
       lastWriteAt = Date.now()
-      if (await submitScore(posted, squad)) setState(POSTED_NAME_KEY, name)
+      if (await submitScore(posted, streak)) setState(POSTED_NAME_KEY, name)
     }
 
-    // HOWEVER the run was reported, end with a board to rank against.
+    // HOWEVER the match was reported, end with a board to rank against.
     //
     // This used to `return` after a write, and that hid the rank in the one
     // case the player cares about most. A personal record takes the write path,
@@ -475,10 +489,10 @@ export const reportRun = async (
   } catch {
     // Unreachable in practice — everything above already swallows — but this is
     // the function the game calls without awaiting, and an unhandled rejection
-    // here would surface as a console error on a player's first finished run.
+    // here would surface as a console error on a player's first finished match.
     //
     // `identity()` is the one call here that can throw before anything has
-    // loaded a board, so the last rung is taken here too. A run must never end
+    // loaded a board, so the last rung is taken here too. A match must never end
     // with no rank because minting a player id went wrong.
     fallBackToSnapshot()
   }
@@ -487,32 +501,33 @@ export const reportRun = async (
 // ─── Ranking ────────────────────────────────────────────────────────────────
 
 /**
- * What rank a score would hold, best-effort.
+ * What rank a node would hold, best-effort.
  *
  * The server's answer wins whenever it can: it counted every row in the table,
  * not just the hundred that got published. It is only valid for the score it
  * was computed against though — `score >= submittedScore` — because a player
- * who posted stage 12 and is now looking at stage 5 is not still rank 40.
+ * who posted node 12 and is now looking at node 5 is not still rank 40.
  *
  * Otherwise derive it from the cached table, counting STRICTLY greater scores
  * so ties share a rank exactly as the worker's `COUNT(*) WHERE score > ?` does.
- * Two players on stage 40 are both #7; nobody is #8 because they arrived later.
+ * Two players on node 40 are both #7; nobody is #8 because they arrived later.
  *
  * @returns a 1-based rank, `OUTSIDE_BOARD` when the score is below the whole
  *   published table, or `0` when there is simply nothing to say yet.
  */
-export const rankFor = (score: number): number => {
+export const rankFor = (node: number): number => {
+  const score = node
   if (!leaderboardEnabled) return 0
   // EXACT match, not `>=`. The server's answer belongs to the score it counted
   // and to no other, and the difference only became visible once the client
-  // stopped posting every single stage: with `>=`, a player who posted at stage
+  // stopped posting every single node: with `>=`, a player who posted at node
   // 10 and climbed to 42 kept being shown the rank they held at 10, because
   // every later score still satisfied it. Anything else is derived below from
   // the histogram — which is now the same arithmetic the Worker runs, so the
   // two cannot disagree about anything but the age of the population.
   if (serverRank.value > 0 && score === submittedScore.value) return serverRank.value
 
-  // A player who has not finished a stage has no standing to report. Without
+  // A player who has not cleared a node has no standing to report. Without
   // this the derivation below hands a fresh install `above + 1` = **#1** on an
   // empty board — the game congratulating someone for a run they have not had,
   // on the first screen they ever see.
@@ -520,11 +535,11 @@ export const rankFor = (score: number): number => {
 
   // On a baked build the histogram IS the board, and it answers for the whole
   // population: no published cut to fall off, no `OUTSIDE_BOARD`, and a real
-  // number — "#1847 of 2363" — from the player's very first cleared stage.
+  // number — "#1847 of 2363" — from the player's very first cleared node.
   //
   // That is why the snapshot carries a histogram and not just rows. The top-100
   // alone would have been useless: on a board of a few thousand the hundredth
-  // row sits around stage 13, well past where a first session reaches, so every
+  // row sits around node 13, well past where a first session reaches, so every
   // new player would have seen `#100+` and nothing else — in exactly the
   // session Poki's fit test grades.
   //

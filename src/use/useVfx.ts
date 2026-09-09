@@ -1,283 +1,28 @@
 import { ref } from 'vue'
-import type { GateOp } from '@/game/survival'
-import type { WeaponId } from '@/game/weapons'
 import {
   bakeRadialSprite, getRamp, getSprite, putRamp, putSprite, rgbString
 } from '@/use/useGradientRamps'
 import { spriteFor } from '@/game/art'
 
 /**
- * ─── VFX: event bus + pooled particle system ────────────────────────────────
+ * ─── VFX: pooled particles, floating text, decals, quality tiers ─────────────
  *
- * The simulation never touches pixels. It pushes semantic events ("a gate
- * ticked up here", "a crate burst") into a ring buffer; the renderer drains it
- * once per frame and turns each event into particles, floating text, screen
- * shake and sound.
+ * The domain never touches pixels: a resolution is a list of time-stamped
+ * events (`ResolveEvent` in `rules.ts`) and the renderer (`useArenaArt`)
+ * turns each one into the particles, text, shake and sound it deserves. This
+ * module is the pool those effects are drawn from, plus the FPS-driven quality
+ * controller every renderer pass reads.
  *
- * That split is what lets the whole feel of the game be re-tuned without ever
- * opening the simulation — and it is why the sim stays unit-testable in jsdom,
- * where there is no canvas at all.
+ * Coordinates are whatever the caller projects with: the arena renderer works
+ * in CSS pixels with y DOWN, so it emits with the y axis flipped (world y =
+ * -screen y) and projects back with `toY = (wy) => -wy`. That keeps gravity a
+ * positive number and the spark streaks pointing along their velocity.
  *
  * PERFORMANCE: particles live in flat typed arrays with a swap-remove free
  * list, so a 400-particle gate burst allocates nothing. Draw order is bucketed
  * by blend mode, so the canvas switches `globalCompositeOperation` exactly
  * twice per frame instead of once per particle.
  */
-
-// ─── Events ─────────────────────────────────────────────────────────────────
-
-export type FxEvent =
-  /**
-   * A survivor fired. Cheap and very frequent — throttled downstream.
-   *
-   * `weapon` is which gun it left, because a launch is not a rifle shot. It
-   * shipped without this and the loudest weapon in the game played the squad's
-   * own tick — the only rocket sound anywhere was the one the BLAST made, a
-   * quarter of a second later and in the wrong place.
-   */
-  | { kind: 'shoot'; x: number; y: number; weapon?: WeaponId | null }
-  /** A round landed on something. `on` picks the impact's colour and weight. */
-  | { kind: 'hit'; x: number; y: number; on: 'gate' | 'crate' | 'barricade' | 'rock' | 'foe' | 'boss' }
-  /** Sustained fire pushed a `+N` gate up by one — THE feedback moment — or a
-   *  `-N` gate DOWN by one, which is the same clock costing the player instead
-   *  of paying them. `hostile` is which of the two just happened; the mixer and
-   *  the renderer both need it, because they must not celebrate. */
-  | { kind: 'gateTick'; x: number; y: number; value: number; hostile?: boolean }
-  /** The crowd ran through a gate. `gain` is the change in squad size: positive
-   *  for `add` / `mul`, NEGATIVE for the `div` and `sub` doors. */
-  | { kind: 'gatePass'; x: number; y: number; op: GateOp; value: number; gain: number }
-  /**
-   * A leaf of the bank the player did NOT take, blowing itself apart.
-   *
-   * One bank, one door: the instant the crowd commits, every other offer is
-   * destroyed. This is the headline VFX of the whole game — it is the moment
-   * the player's decision becomes irreversible, and it has to look like it.
-   */
-  | {
-      kind: 'gateDismiss'
-      x: number
-      y: number
-      halfW: number
-      op: GateOp
-      value: number
-      /** How far this leaf is from the one that was taken, in world units —
-       *  the shockwave arrives later the further away it is. */
-      distance: number
-    }
-  /** A supply crate burst. `crate` picks which stat went up and `value` is the
-   *  new total, so the floating text can read "DMG 4" or "RATE 2.4". */
-  | { kind: 'crateBreak'; x: number; y: number; crate: 'damage' | 'rate'; value: number }
-  | { kind: 'barricadeBreak'; x: number; y: number }
-  | { kind: 'foeDie'; x: number; y: number; big: boolean }
-  /** A miniboss walked on / died. Worth its own announcement either way. */
-  | { kind: 'eliteSpawn'; x: number; y: number }
-  /**
-   * A miniboss's arc across the road. `x` / `y` are the elite's own feet, which
-   * is where the arc is swung from; `reach` is how far down the road it
-   * travelled, and it is the same number the kill was measured against.
-   *
-   * `dir` is which way it swung (±1), so the dust and the bodies leave along
-   * the arc rather than away from a point. `heavy` is the archetype's weight,
-   * not its damage: a brute plants and turns, a hound throws itself. Same
-   * numbers, opposite rhythm — the renderer and the mixer both read it to keep
-   * the two readable apart.
-   */
-  | { kind: 'eliteSweep'; x: number; y: number; reach: number; dir: number; heavy: boolean }
-  | { kind: 'eliteDie'; x: number; y: number }
-  /** The player pulled the pin — the throw itself. */
-  /**
-   * ─── The casts ────────────────────────────────────────────────────────────
-   *
-   * A big attack's TELEGRAPH, as a thing that travels rather than a mark on the
-   * floor.
-   *
-   * The ring that closes on the ground was legible in isolation and invisible in
-   * practice: the player is watching the boss, or watching their own thumb, and
-   * the one place they are not looking is the patch of road they are about to be
-   * standing on. So the hit landed out of nowhere and the game read as taking
-   * survivors for reasons the player could not see — which is the difference
-   * between a hard fight and an unfair one.
-   *
-   * These are emitted at the START of the wind-up and carry `ttl` — the exact
-   * time until the damage lands — so the animation arrives on the beat rather
-   * than near it. The ring stays; this is what draws the eye to it.
-   */
-  | {
-      kind: 'meteorCast'; x: number; y: number
-      /** Ground footprint, so the shadow matches the ring already being drawn. */
-      radius: number
-      /** Seconds until impact. The fall is scaled to land exactly then. */
-      ttl: number
-      /** The charged swing: a bigger, burning boulder rather than a stone. */
-      charged: boolean
-    }
-  | {
-      kind: 'sliceCast'; x: number; y: number
-      reach: number
-      /** Which way the arc travels — chosen at wind-up, same as the hit. */
-      dir: number
-      ttl: number
-    }
-  /**
-   * ─── …and the three pool minibosses' own tells ────────────────────────────
-   *
-   * Same contract as the two casts above and for the same reason: emitted ONCE,
-   * at the start of the wind-up, carrying the exact seconds until the damage
-   * lands. An effect that arrives late teaches the player the wrong moment to
-   * move, which is worse than no effect at all.
-   *
-   * The roller has no cast, and that is deliberate rather than an omission: its
-   * telegraph is the ball itself rolling down the road for a second and a half,
-   * and a wind-up event on top of a two-and-a-quarter-unit object already
-   * filling half the screen would be a second warning for the same thing.
-   * `drawRollers` paints the lane it owns instead, straight from the world.
-   */
-  /** A bomber armed. `radius` is the blast it will throw, `ttl` its fuse. */
-  | { kind: 'bombCast'; x: number; y: number; radius: number; ttl: number }
-  /** …and it went off. */
-  | { kind: 'bombBlast'; x: number; y: number; radius: number }
-  /**
-   * A gunner locked a shot. `tx` / `ty` are where it is aiming, so the line the
-   * player is shown is the line the bolt actually takes — the aim is locked at
-   * the start of the window exactly as the boss's slam is.
-   */
-  | { kind: 'boltCast'; x: number; y: number; tx: number; ty: number; ttl: number }
-  /** …and fired it. */
-  | { kind: 'boltFire'; x: number; y: number; dirX: number; dirY: number }
-  /** A bolt buried itself in the crowd, or ran out of road. `spent` is true when
-   *  it stopped because it had taken everyone it was allowed to. */
-  | { kind: 'boltEnd'; x: number; y: number; spent: boolean }
-  /** The ball rolled over part of the squad. `dir` is the side it came down, so
-   *  the debris leaves along the roll rather than away from a point. */
-  | { kind: 'rollerHit'; x: number; y: number; dir: number }
-
-  /*
-   * ─── A NOTE ON THE TWO BOLTS ──────────────────────────────────────────────
-   *
-   * The elite pool and the boss pool were built in parallel and both arrived at
-   * a slow fat projectile, so both reached for `boltCast`. They are genuinely
-   * different attacks — the gunner's flies down a locked column and kills only
-   * what it passes through, the healer's bursts where it arrives — so the boss's
-   * is prefixed like its `bossRake` and `bossHeal` siblings rather than one of
-   * them being bent to fit the other.
-   */
-
-  /**
-   * ─── …and the three the boss pool added ───────────────────────────────────
-   *
-   * Same contract as the two above: pushed at the START of the wind-up, carrying
-   * the exact seconds until the damage lands, so the animation arrives on the
-   * beat rather than near it.
-   *
-   * The one deliberate exception is `bossBoltCast`, and it is called out in its own
-   * comment: a projectile's damage lands when the projectile arrives, which the
-   * player reads off the projectile. Its `ttl` is the muzzle glow.
-   */
-  | {
-      kind: 'rakeCast'; x: number; y: number
-      /** Centre of each gouge, in world x. The kill reads the same array. */
-      lanes: readonly number[]
-      /** Half-width of one gouge, and half the depth of the whole rake. */
-      halfW: number
-      depth: number
-      ttl: number
-    }
-  /** The rake landed. Same geometry, so the scar sits exactly on the warning. */
-  | {
-      kind: 'bossRake'; x: number; y: number
-      lanes: readonly number[]
-      halfW: number
-      depth: number
-    }
-  /** The healer is winding up its every-third. `ttl` to the moment the bar
-   *  jumps — the one moment in the game a health bar goes UP. */
-  | { kind: 'healCast'; x: number; y: number; ttl: number }
-  /** …and it landed. `amount` is health actually restored (0 at full bar) and
-   *  `hp01` is the bar afterwards, so the burst can be sized by what it was
-   *  worth rather than by what it tried to be worth. */
-  | { kind: 'bossHeal'; x: number; y: number; amount: number; hp01: number }
-  /**
-   * The healer's muzzle, winding up a bolt.
-   *
-   * `ttl` here is seconds until the bolt is LAUNCHED, not until it lands —
-   * deliberately different from every other cast. The bolt is a real object that
-   * crosses the road slowly, and it is its own warning for the second half of
-   * the journey; a mark on the ground counting down to an impact the player can
-   * already see coming would be a second clock disagreeing with the first.
-   */
-  | { kind: 'bossBoltCast'; x: number; y: number; ttl: number }
-  /** A bolt went off on somebody. `radius` is the burst the kill was measured
-   *  against, so the flash and the hit are the same size. */
-  | { kind: 'bossBoltHit'; x: number; y: number; radius: number }
-  /** A summoner spent one of its waves. `wave` is which — the last one should
-   *  land differently from the first, because it is the last. */
-  | { kind: 'summonWave'; x: number; y: number; count: number; wave: number }
-  | { kind: 'grenadeThrow'; x: number; y: number }
-  /** The player's grenade went off. */
-  | { kind: 'grenade'; x: number; y: number }
-  /** The shield came up over the crowd. */
-  | { kind: 'shieldUp'; x: number; y: number }
-  /** …and ate a hit that would have taken a survivor. */
-  | { kind: 'shieldSave'; x: number; y: number }
-  /** A TNT barrel took its last round and lit its fuse. */
-  /**
-   * ─── The weapon puzzle ────────────────────────────────────────────────────
-   *
-   * Four events, and between them they are the ONLY thing that tells the player
-   * the beat exists. A lever that goes over silently is scenery; armour that
-   * vanishes between frames is a bug. `pulled`/`total` ride along so the pop-up
-   * can read "1 / 2" without the renderer having to go and ask the simulation.
-   */
-  | { kind: 'leverPull'; x: number; y: number; pulled: number; total: number }
-  /** Both levers are down: the armour over the box comes off. */
-  | { kind: 'weaponOpen'; x: number; y: number; weapon: WeaponId }
-  /** The box broke and the stage's weapon is in the player's hands. */
-  | { kind: 'weaponTake'; x: number; y: number; weapon: WeaponId }
-  /** A rocket went off. `radius` is the real blast, so what the player SEES is
-   *  the size of what actually hit. */
-  | { kind: 'rocketBlast'; x: number; y: number; radius: number }
-  | { kind: 'barrelLit'; x: number; y: number }
-  /** …and went. The big one: the arena's answer to a shielded boss. */
-  | { kind: 'barrelBlast'; x: number; y: number }
-  /** A survivor was eaten / crushed. */
-  | { kind: 'unitLost'; x: number; y: number; outfit: number }
-  /** Survivors died on a gate divider — the "you tried to take both" tell. */
-  | { kind: 'divider'; x: number; y: number }
-  | { kind: 'coin'; x: number; y: number; value: number }
-  | { kind: 'bossHit'; x: number; y: number }
-  /** A round hit a boss that is mid-phase and untouchable. Sparks, no damage. */
-  | { kind: 'bossGuard'; x: number; y: number }
-  /**
-   * The boss crossed a guard gate: it plants, shields, and swings.
-   * `stage` is 1 or 2 — the second one is louder, because it is the last.
-   */
-  | { kind: 'bossRage'; x: number; y: number; stage: number }
-  /** `radius` grows with every slam the boss has already thrown. */
-  | { kind: 'bossSlam'; x: number; y: number; radius: number; charged: boolean }
-  | { kind: 'bossDie'; x: number; y: number }
-  | { kind: 'stageClear'; x: number; y: number }
-  | { kind: 'wipe'; x: number; y: number }
-
-// Events are produced during a tick and consumed the same frame; a generous cap
-// means a catastrophic wipe can't drop the events that matter while still
-// bounding memory.
-const FX_CAPACITY = 512
-const fxQueue: FxEvent[] = []
-
-export const pushFx = (event: FxEvent): void => {
-  if (fxQueue.length >= FX_CAPACITY) fxQueue.shift()
-  fxQueue.push(event)
-}
-
-const EMPTY_FX: FxEvent[] = []
-
-/** Drain every queued event. The renderer calls this once per frame. */
-export const drainFx = (): FxEvent[] => {
-  if (fxQueue.length === 0) return EMPTY_FX
-  const out = fxQueue.slice()
-  fxQueue.length = 0
-  return out
-}
 
 // ─── Quality tiers ──────────────────────────────────────────────────────────
 
@@ -294,8 +39,9 @@ export type QualityTier = 'high' | 'medium' | 'low' | 'min'
  *  skip expensive passes; the HUD surfaces it in debug mode. */
 export const quality = ref<QualityTier>('high')
 
-const TIER_CAPACITY: Record<QualityTier, number> = {
-  high: 900, medium: 520, low: 240, min: 110
+/** Hard caps on LIVE particles per tier. Over-cap spawns recycle the oldest slot. */
+export const TIER_CAPACITY: Record<QualityTier, number> = {
+  high: 900, medium: 450, low: 200, min: 60
 }
 
 /**
@@ -440,6 +186,9 @@ if (PINNED) {
 
 /** The tier the URL pinned, or `null` in a normal session. */
 export const pinnedTier = (): QualityTier | null => PINNED
+
+/** Test seam: force a tier (and its capacity) without a measurement. */
+export const __setQualityTier = (t: QualityTier): void => { setTier(t) }
 
 /** True once the calibration window has closed. Debug/telemetry only. */
 export const isQualityCalibrated = (): boolean => !calibrating
@@ -614,8 +363,19 @@ const prot = new Float32Array(MAX_PARTICLES)
 const pvrot = new Float32Array(MAX_PARTICLES)
 /** 0 = normal blend, 1 = additive. */
 const padd = new Uint8Array(MAX_PARTICLES)
-/** 0 = soft round, 1 = shard/quad, 2 = spark streak, 3 = smoke puff. */
+/**
+ * 0 = soft round, 1 = shard/quad, 2 = spark streak, 3 = smoke puff,
+ * 4 = a registered SPRITE (see `registerSprite`) rotated by `rot`,
+ * 5 = confetti (a sprite that flips on its rotation, so it tumbles),
+ * 6 = ember (a sprite whose alpha flickers).
+ */
 const pshape = new Uint8Array(MAX_PARTICLES)
+/** Registered sprite id for shapes 4–6, or -1. */
+const pspr = new Int16Array(MAX_PARTICLES)
+/** Alpha curve: 0 = ease in/out (the default), 1 = flicker, 2 = hold then fade at the end. */
+const pfade = new Uint8Array(MAX_PARTICLES)
+/** Size over life: 0 = shrink to 55 % (the default), 1 = grow ×1.8, 2 = constant. */
+const pgrow = new Uint8Array(MAX_PARTICLES)
 const pr = new Uint8Array(MAX_PARTICLES)
 const pg = new Uint8Array(MAX_PARTICLES)
 const pb = new Uint8Array(MAX_PARTICLES)
@@ -635,10 +395,43 @@ export interface EmitOptions {
   gravity?: number
   drag?: number
   additive?: boolean
-  shape?: 0 | 1 | 2 | 3
+  shape?: 0 | 1 | 2 | 3 | 4 | 5 | 6
   rot?: number
   vrot?: number
+  /** A sprite id from `registerSprite` (shapes 4–6). Falls back to a dot when missing. */
+  sprite?: number
+  /** Alpha curve (see `pfade`). */
+  fade?: 0 | 1 | 2
+  /** Size over life (see `pgrow`). */
+  grow?: 0 | 1 | 2
 }
+
+// ─── Sprite registry ────────────────────────────────────────────────────────
+//
+// Baked sprites the particles blit (a glow, a spark head, a glyph shard, a
+// confetti chip). Registered ONCE by whoever baked them and referenced by index
+// from the typed arrays, so drawing a sprite particle is one `drawImage` and no
+// lookup by string.
+
+const spriteRegistry: HTMLCanvasElement[] = []
+const MAX_SPRITES = 512
+
+/** Register a baked sprite; returns its id, or -1 when the registry is full. */
+export const registerSprite = (spr: HTMLCanvasElement): number => {
+  if (spriteRegistry.length >= MAX_SPRITES) return -1
+  spriteRegistry.push(spr)
+  return spriteRegistry.length - 1
+}
+
+/** The registered sprite for an id, or `null`. */
+export const spriteById = (id: number): HTMLCanvasElement | null =>
+  (id >= 0 && id < spriteRegistry.length ? spriteRegistry[id]! : null)
+
+/** How many sprites are registered (tests). */
+export const registeredSpriteCount = (): number => spriteRegistry.length
+
+/** Test seam: forget every registered sprite. */
+export const __clearSpriteRegistry = (): void => { spriteRegistry.length = 0 }
 
 /**
  * Spawn one particle. Over-capacity spawns recycle the OLDEST slot rather than
@@ -670,6 +463,9 @@ export const emit = (o: EmitOptions): void => {
   pg[i] = o.color[1]
   pb[i] = o.color[2]
   palpha[i] = o.alpha ?? 1
+  pspr[i] = o.sprite ?? -1
+  pfade[i] = o.fade ?? 0
+  pgrow[i] = o.grow ?? 0
 }
 
 const oldestIndex = (): number => {
@@ -699,6 +495,7 @@ export const stepParticles = (dtMs: number): void => {
         pshape[i] = pshape[last]!
         pr[i] = pr[last]!; pg[i] = pg[last]!; pb[i] = pb[last]!
         palpha[i] = palpha[last]!
+        pspr[i] = pspr[last]!; pfade[i] = pfade[last]!; pgrow[i] = pgrow[last]!
       }
       liveCount--
       continue
@@ -826,13 +623,20 @@ const drawBucket = (
   for (let i = 0; i < liveCount; i++) {
     if (padd[i] !== additive) continue
     const t = plife[i]! / pmax[i]!
-    // Ease-out fade so particles thin gracefully instead of blinking out.
-    const a = palpha[i]! * (t < 0.25 ? t / 0.25 : 1) * Math.min(1, t * 1.6)
+    // The alpha curve: ease in/out by default; a flicker for embers and pin
+    // points; a hold-then-fade for debris that should sit, then vanish.
+    let a: number
+    switch (pfade[i]) {
+      case 1: a = palpha[i]! * (t < 0.2 ? t / 0.2 : 1) * (0.55 + 0.45 * Math.sin((plife[i]! * 0.05) + i)) * Math.min(1, t * 1.4); break
+      case 2: a = palpha[i]! * (t < 0.22 ? t / 0.22 : 1); break
+      default: a = palpha[i]! * (t < 0.25 ? t / 0.25 : 1) * Math.min(1, t * 1.6)
+    }
     if (a <= 0.01) continue
 
     const sx = toX(px[i]!)
     const sy = toY(py[i]!)
-    const size = Math.max(0.6, psize[i]! * scale * (0.55 + t * 0.45))
+    const grow = pgrow[i]
+    const size = Math.max(0.6, psize[i]! * scale * (grow === 1 ? (1 + (1 - t) * 0.8) : grow === 2 ? 1 : (0.55 + t * 0.45)))
 
     ctx.globalAlpha = a
     // The colour is looked up per BRANCH rather than hoisted above the switch:
@@ -841,6 +645,26 @@ const drawBucket = (
     const rgbKey = SMOKE_RAMP | (pr[i]! << 16) | (pg[i]! << 8) | pb[i]!
 
     switch (pshape[i]) {
+      case 4: case 5: case 6: { // a registered sprite: glow, shard, chip, mote
+        const spr = spriteById(pspr[i]!)
+        if (!spr) {
+          ctx.fillStyle = rgbString(pr[i]!, pg[i]!, pb[i]!)
+          ctx.beginPath()
+          ctx.arc(sx, sy, size * 0.5, 0, Math.PI * 2)
+          ctx.fill()
+          break
+        }
+        const shape = pshape[i]
+        // Confetti tumbles: its width follows the cosine of its spin so it flips.
+        const w = shape === 5 ? size * Math.max(0.15, Math.abs(Math.cos(prot[i]! * 1.7))) : size
+        if (shape === 6) ctx.globalAlpha = a * (0.6 + 0.4 * Math.sin(plife[i]! * 0.09 + i * 1.3))
+        ctx.save()
+        ctx.translate(sx, sy)
+        ctx.rotate(shape === 4 ? prot[i]! : prot[i]! * 0.5)
+        ctx.drawImage(spr, -w, -size, w * 2, size * 2)
+        ctx.restore()
+        break
+      }
       case 1: { // shard — a rotated quad, for crate and barricade debris
         ctx.save()
         ctx.translate(sx, sy)
@@ -987,5 +811,4 @@ export const resetVfx = (): void => {
   clearParticles()
   clearTexts()
   clearDecals()
-  fxQueue.length = 0
 }

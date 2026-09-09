@@ -1,23 +1,28 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 
+// One route. The game boots straight into the arena — there is no menu and
+// nothing else a hash could point at. Anything unknown falls back to it rather
+// than rendering an empty page.
 const routes: RouteRecordRaw[] = [
-  { path: '/', name: 'main', component: () => import('@/views/GameScene.vue') },
-  // Design bench for the monster art direction. Lazy, so it costs a player who
-  // never visits it nothing.
-  { path: '/monsters', name: 'monsters', component: () => import('@/views/MonsterLab.vue') },
-  // The art pipeline's two screens. DEV ONLY — the bench exists to get the
-  // procedural cast out to be painted and writes into the repo through a
-  // serve-only endpoint; the playground exists to check what came back against
-  // the drawing it replaces. Neither belongs in a portal build, and the
-  // `import.meta.env.DEV` guard lets Rollup drop both chunks entirely.
-  ...(import.meta.env.DEV
-    ? [
-      { path: '/art-sheets', name: 'art-sheets', component: () => import('@/views/ArtSheets.vue') },
-      { path: '/playground', name: 'playground', component: () => import('@/views/Playground.vue') }
-    ]
-    : []),
-  { path: '/:pathMatch(.*)*', redirect: '/' }
+  { path: '/', name: 'main', component: () => import('@/views/GameScene.vue') }
 ]
+
+// The art pipeline's two benches, DEV ONLY. `import.meta.env.DEV` is a build
+// constant, so in a portal build this whole block — and the two views behind
+// the dynamic imports — is dead code Rollup drops: no route, no chunk, no way
+// for a hash to reach them.
+//
+//   /#/art-sheets  bakes every drawable onto the reference lattice and exports
+//                  the sheets, prompts and index into art-sheets/
+//   /#/playground  every drawable in motion, painted-vs-drawn on one button
+if (import.meta.env.DEV) {
+  routes.push(
+    { path: '/art-sheets', name: 'art-sheets', component: () => import('@/views/ArtSheets.vue') },
+    { path: '/playground', name: 'playground', component: () => import('@/views/Playground.vue') }
+  )
+}
+
+routes.push({ path: '/:pathMatch(.*)*', redirect: '/' })
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),

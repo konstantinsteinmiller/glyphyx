@@ -1,5 +1,27 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': '初手から隣を3回復し、攻撃を研ぎ澄ます。',
+      'defense': '初手から隣を守る壁になる。',
+      'mage': '初手から光線の先端が十字に炸裂する。',
+      'archer': '初手から二マス同時に射る。',
+      'melee': '相手を押し戻す。石三つ分の鋼を一手で。',
+      'cleave': '初手から正面の三マスを一度に薙ぎ倒す。',
+      'roller': '初手から二体を弾き飛ばしてから止まる。',
+      'bombard': '初手から遠い列と中間のマスを砲撃する。',
+      'nuker': 'Lv 3 で着弾し、更地にした盤をそのまま保てる。初手から。'
+    },
+    'watchAd': '広告を見る',
+    'armed': '装備中 ×{n}',
+    'landsAt': '次の対戦で最初に置いたときに Lv {n} で着地します。',
+    'runesTagline': '装備した各種類の最初のルーンは Lv {n} で置かれます。',
+    'tabs': {
+      'skins': 'スキン',
+      'runes': 'パワールーン',
+    },
+    'title': 'ショップ',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'キャンセル',
   'close': '閉じる',
   'ok': 'OK',
@@ -8,77 +30,254 @@ export default {
   'clickToContinue': 'クリックして続ける',
   'rewards': '報酬',
   'tip': 'ヒント',
-  'crazyGamesOnly': 'このゲームは以下でのみプレイできます：',
+  'crazyGamesOnly': 'このゲームは次のサイトでのみ遊べます：',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
     'next': '次へ',
     'replay': 'もう一度',
     'back': '戻る',
     'play': 'プレイ',
-    'pause': '一時停止',
+    'pause': 'ポーズ',
     'menu': 'メニュー',
     'home': 'ホーム',
-    'info': '情報'
+    'info': '情報',
+    'skip': 'スキップ'
   },
 
   'hud': {
-    'stage': 'ステージ {n}',
-    'best': '最高 {n}',
-    'boss': 'ボス',
-    'miniboss': '中ボス',
-    'fireRate': '連射',
-    'incoming': '攻撃が来る！',
-    'dodge': '回避',
-    'weaponActive': '{name} 準備完了',
-    'weaponLocked': '{name} ロック中 — レバー {total} 本中 {n} 本'
+    'stage': 'ステージ {c}-{n}',
+    'conquest': '制圧',
+    'tiles': '{n} / {total}',
+    'turn': 'ターン {n}',
+    'you': 'あなた',
+    'enemy': '敵',
+    'streak': '連勝',
+    'streakMult': '×{n} ゴールド',
+    'suddenDeath': 'サドンデス！',
+    'reroll': '引き直し',
+    'rerollsLeft': '残り {n} 回'
   },
 
-  'weapons': {
-    'rocket': 'ロケットランチャー',
-    'gatling': 'ガトリングガン'
+  'factions': {
+    'skeleton': '骨の的',
+    'goblin': 'ゴブリン弓兵',
+    'orc': 'オークの狂戦士',
+    'undead': 'アンデッドの魔道士'
   },
 
-  'tutorial': {
-    'touch': 'スワイプして部隊を動かそう',
-    'desktop': 'マウスを動かして部隊を操作しよう'
+  'runes': {
+    'level': 'Lv {n}',
+    'hp': 'HP',
+    'atk': '攻撃',
+    'names': {
+      'melee': '剣',
+      'archer': '弓',
+      'mage': '秘術の宝珠',
+      'defense': '盾',
+      'support': '光の十字',
+      'cleave': '斧',
+      'roller': '岩',
+      'bombard': '臼砲',
+      'nuker': '起爆石'
+    },
+    'descriptions': {
+      'melee': '正面のマスを攻撃。Lv 2 は対象を押し返す。',
+      'archer': '1 マス飛ばして次を攻撃。Lv 2 は 2 マスを射る。',
+      'mage': '斜めに 2 マス貫くビーム。Lv 2 は終点で爆発。',
+      'defense': '受けるダメージを毎回 1 軽減。Lv 2 は隣接味方も守る。',
+      'support': '毎ターン隣接味方を回復。Lv 2 は攻撃も強化。',
+      'cleave': '正面の 3 マスを薙ぎ払う。正面と両隣。',
+      'roller': 'ルーンが耐えるまで転がる。味方も巻き込む。Lv 2 はもう 1 体先へ。',
+      'bombard': '3 列先の 3 マスを壁越しに砲撃。Lv 2 は中間も撃つ。',
+      'nuker': '落ちた場所で起爆。盤上の Lv 1 ルーンはすべて消滅、味方も。Lv 2 以上は耐える。'
+    }
   },
+
   'hints': {
-    'move': { 'touch': 'タップで移動', 'desktop': 'クリックで移動' },
-    'gate': { 'touch': 'ゲートを撃ち続けろ：0.5秒ごとに+1', 'desktop': 'ゲートを撃ち続けろ：0.5秒ごとに+1' },
-    'trap': { 'touch': '赤いゲートは仲間が減る！反対側へ', 'desktop': '赤いゲートは仲間が減る！反対側へ' },
-    'divider': { 'touch': 'ゲートの間の柱に触れるな', 'desktop': 'ゲートの間の柱に触れるな' },
-    'crate': { 'touch': '緑の箱：全員の攻撃力アップ', 'desktop': '緑の箱：全員の攻撃力アップ' },
-    'rate': { 'touch': '青い箱：全員の連射が速くなる', 'desktop': '青い箱：全員の連射が速くなる' },
-    'boss': { 'touch': '赤い輪から離れろ！', 'desktop': '赤い輪から離れろ！' },
-    'lever': { 'touch': '道の両端のレバーを両方撃て — 武器箱が開く', 'desktop': '道の両端のレバーを両方撃て — 武器箱が開く' },
-    'guard': { 'touch': 'シールド展開中 — 攻撃は効かない。動け！', 'desktop': 'シールド展開中 — 攻撃は効かない。動け！' }
+    'drag': {
+      'touch': 'ルーンを盤面へドラッグ',
+      'desktop': 'ルーンを盤面へドラッグ'
+    },
+    'aim': {
+      'touch': 'スワイプで狙い、離して決定',
+      'desktop': 'ドラッグか矢印キー / WASD で狙いを定め、離して確定'
+    },
+    'archer': {
+      'touch': '弓は 1 マス飛ばして次を撃つ',
+      'desktop': '弓は 1 マス飛ばして次を撃つ'
+    },
+    'stack': {
+      'touch': '同じルーンを自分のルーンに重ねてレベルアップ',
+      'desktop': '同じルーンを自分のルーンに重ねてレベルアップ'
+    },
+    'conquest': {
+      'touch': '8 マス確保で勝利',
+      'desktop': '8 マス確保で勝利'
+    },
+    'siege': {
+      'touch': '包囲された！突破して 8 マスを確保',
+      'desktop': '包囲された！突破して 8 マスを確保'
+    },
+    'mage': {
+      'touch': 'オーブは斜めに2マス先までビームを放つ',
+      'desktop': 'オーブは斜めに2マス先までビームを放つ'
+    },
+    'defense': {
+      'touch': '盾は矢とビームを防ぐ',
+      'desktop': '盾は矢とビームを防ぐ'
+    },
+    'support': {
+      'touch': '十字は隣を癒やし、攻撃を高める',
+      'desktop': '十字は隣を癒やし、攻撃を高める'
+    },
+    'cleave': {
+      'touch': '斧は正面の 3 マスをまとめて薙ぐ',
+      'desktop': '斧は正面の 3 マスをまとめて薙ぐ'
+    },
+    'roller': {
+      'touch': '岩は砕いたものを越えて転がり続ける',
+      'desktop': '岩は砕いたものを越えて転がり続ける'
+    },
+    'bombard': {
+      'touch': '臼砲は 3 列先の 3 マスを撃つ',
+      'desktop': '臼砲は 3 列先の 3 マスを撃つ'
+    },
+    'correct': {
+      'touch': '矢印をタップかスワイプで狙い直し',
+      'desktop': 'どこでもクリック＆ドラッグ、または矢印キー / WASD で狙い直し'
+    },
+    'tap': {
+      'touch': 'マスをタップして置く',
+      'desktop': 'マスをクリックして置く'
+    },
+    'nuker': {
+      'touch': '起爆石は Lv 1 のルーンをすべて消す — 味方も',
+      'desktop': '起爆石は Lv 1 のルーンをすべて消す — 味方も'
+    }
   },
 
-  'flow': {
+  'canvas': {
+    'level': 'Lv.{n}',
+    'combo': '×{n} コンボ',
+    'clash': '激突！',
+    'victory': '勝利！',
+    'defeat': '敗北',
+    'reveal': '公開',
+    'suddenDeath': 'サドンデス',
+    'turn': 'ターン {n}',
+    'you': 'あなた',
+    'foe': '敵',
+    'reroll': '引き直し',
+    'lastTurn': '最終ターン'
+  },
 
+  'banner': {
+    'duel': '1v1 決闘',
+    'siege': '1v3 包囲戦',
+    'vs': 'vs {name}',
     'unlocked': '解放！'
-
   },
 
   'result': {
-    'stageClear': 'ステージクリア！',
-    'wipedOut': '部隊全滅',
-    'reachedStage': 'ステージ {n}',
+    'chestCoins': '宝箱 +{n}',
+    'victory': '勝利！',
+    'defeat': '敗北',
+    'turns': 'ターン数',
+    'playAgain': 'もう一度',
+    'nextStage': '次のステージ',
     'newRecord': '新記録！',
-    'rallied': '巻き返し',
-    'peakSquad': '最大部隊',
-    'kills': '撃破数',
+    'streakBonus': '連勝 ×{n}',
     'tripleCoins': '3×',
     'tripleBonus': '(+{n})',
-    'tripleClaimed': 'コイン3倍！',
-    'nextStage': '次のステージ',
-    'tryAgain': 'もう一度',
+    'tripleClaimed': 'コインが 3 倍に！',
+    'chestTap': '宝箱をタップ！',
+    'newRune': '新しいルーン',
+    'newSkin': '新しいスキン',
+    'skins': 'ルーンスキン',
+    'reasons': {
+      'conquest': '8 マスを制圧',
+      'conquestLost': '敵が8マスを制圧',
+      'eliminated': '敵のルーンをすべて粉砕',
+      'overrun': 'ルーンが押し潰された',
+      'turnLimit': '確保マス数で決着',
+      'suddenDeath': 'サドンデス',
+      'siegeHeld': '戦線を守り抜いた',
+      'siegeBroken': '包囲に押し切られた'
+    }
+  },
+
+  'campaign': {
+    'title': 'キャンペーン',
+    'chapter': '第 {n} 章',
+    'cleared': 'クリア',
+    'current': '現在',
+    'locked': 'ロック中',
+    'modes': {
+      '1v1': '1v1 決闘',
+      'siege': '1v3 包囲戦'
+    },
+    'objectives': {
+      'conquest': '8 マスを確保',
+      'eliminate': '敵のルーンをすべて破壊',
+      'siege': '包囲を突破'
+    },
+    'reward': '報酬',
+    'play': 'プレイ',
+    'replay': 'もう一度',
+    'nextUnlock': 'ステージ {c}-{n} クリアで獲得:',
+    'nextUnlockAria': 'ステージ {c}-{n} をクリアして {rune} を解放'
+  },
+
+  'skins': {
+    'title': 'ルーンスキン',
+    'owned': '所持',
+    'equipped': '装備中',
+    'equip': '装備',
+    'buy': '購入',
+    'names': {
+      'river': '川石',
+      'obsidian': '黒曜石',
+      'jade': '翡翠',
+      'amber': '琥珀',
+      'marble': '大理石',
+      'ember': '残り火'
+    },
+    'tagline': '置くルーンすべてがこの姿になる。',
+    'needMore': 'あと{n}コイン',
+    'blurbs': {
+      'river': '温かな川の砂岩。深く刻まれた紋様が内側から光る。',
+      'obsidian': '打ち欠いた火山ガラスに、冷たいネオンの線。',
+      'jade': '磨かれた緑の翡翠に、金で象嵌した紋様。',
+      'amber': 'カットされた琥珀の宝石。内側から輝く。',
+      'marble': '白い大理石。深く彫られ、影を落とす。',
+      'ember': '冷えた溶岩の板。ひび割れから紋様が燃える。'
+    }
+  },
+
+  'ranks': {
+    'tab': 'ランク',
+    'title': 'ルーンランク',
+    'tagline': '1 ランクごとに最大 HP +{n}。どのルーンも同じ。',
+    'rank': 'ランク {n}/{max}',
+    'maxed': '最大',
+    'hpGain': '+{n} HP',
+    'next': '次: +{n} HP',
     'upgrade': '強化',
-    'upgradeHint': '部隊を強化しよう！',
-    'rankOf': '{n} 人中',
-    'upNext': '次: ステージ {n}'
+    'locked': 'まだ未開放',
+    'free': '無料',
+    'freeGift': '無料強化！',
+    'freeIn': '次の贈り物まで {t}',
+    'freeTaken': '次の機会にまたどうぞ',
+    'nukerUnlock': '起爆石を開放',
+    'nukerLocked': 'またはステージ 4-1 をクリア'
+  },
+
+  'forge': {
+    'label': 'ルーンの炉',
+    'ready': '炉からコインを {n} 枚受け取る',
+    'filling': 'ルーンの炉 — 鍛造中',
+    'full': 'ルーンの炉 — 満杯',
+    'perHour': '+{n} / 時'
   },
 
   'leaderboard': {
@@ -86,85 +285,61 @@ export default {
     'rank': '#',
     'player': 'プレイヤー',
     'stage': 'ステージ',
-    'squad': '部隊',
-    'empty': 'まだ記録がありません。最初の1人に！',
+    'streak': '連勝',
+    'empty': 'まだ記録がありません。最初の一人になろう。',
     'failed': 'ランキングに接続できません。',
     'loading': '読み込み中…',
     'you': 'あなた',
-    'yourRank': 'あなたは {n} 位',
+    'yourRank': 'あなたは #{n}',
     'of': '{n} 人中'
   },
 
-  'chest': {
-    'label': '宝箱',
-    'ready': '宝箱を開けてコイン{n}枚を獲得',
-    'filling': '宝箱を補充中',
-    'spent': '宝箱は明日まで空です'
-  },
-
-  'skills': {
-
-    'grenade': '手榴弾',
-
-    'shield': 'シールド'
-
-  },
-
-  'upgrades': {
-    'title': '強化',
-    'spotlight': '使おう！',
-    'level': 'Lv {n}',
-    'maxed': '最大',
-    'names': {
-      'squad': '部隊',
-      'power': '火力',
-      'rate': '連射速度',
-      'range': '射程',
-      'scavenge': '回収',
-      'grenade': '手榴弾',
-      'shield': 'シールド',
-      'rocket': 'ロケット威力',
-      'gatling': 'ガトリング威力'
-    },
-    'descriptions': {
-      'squad': 'より多い仲間でステージを開始。',
-      'power': '仲間1人あたりのダメージが上昇。',
-      'rate': '仲間全員の射撃が速くなる。',
-      'range': '部隊がより前方から射撃を開始します。',
-      'scavenge': '1回のランで得られるコインが増加。',
-      'grenade': '手榴弾を投げて大ダメージを与える。',
-      'shield': '数秒間、部隊が受けるダメージを半減。',
-      'rocket': 'ステージで手に入るロケットランチャーの威力が上がる。',
-      'gatling': 'ステージで手に入るガトリングガンの威力が上がる。'
-    }
-  },
-
   'options': {
-    'title': '設定', 'general': '一般', 'audio': 'オーディオ', 'language': '言語',
-    'difficulty': '難易度', 'soundEffects': '効果音', 'music': '音楽', 'musicTrack': '楽曲',
-    'musicTracks': { 'cozy': 'コージーハーモニー', 'trance': 'トランストンネル' },
+    'title': 'オプション',
+    'general': '一般',
+    'audio': 'オーディオ',
+    'language': '言語',
+    'difficulty': '難易度',
+    'soundEffects': '効果音',
+    'music': '音楽',
+    'musicTrack': 'BGM',
+    'musicTracks': {
+      'cozy': '静かな石',
+      'trance': 'ルーンの鼓動'
+    },
     'close': '保存して閉じる',
-    'difficulties': { 'easy': 'イージー', 'medium': 'ノーマル', 'hard': 'ハード' },
+    'difficulties': {
+      'easy': 'かんたん',
+      'medium': 'ふつう',
+      'hard': 'むずかしい'
+    },
     'difficultyHints': {
-      'easy': '敵が弱く、バリケードも薄い。',
-      'medium': '標準のラン。',
-      'hard': '敵が固く、バリケードも厚い。'
+      'easy': '敵はよく迷い、よく外す。',
+      'medium': '標準のキャンペーン。',
+      'hard': '敵は鋭く読み、素早く強化する。'
     }
   },
 
   'adsBlocked': {
-    'title': '広告を表示できませんでした',
-    'body': '報酬獲得のために動画を表示しようとしましたが、ブラウザの何かが広告をブロックしています。',
+    'title': '広告を表示できません',
+    'body': '報酬のために動画を再生しようとしましたが、ブラウザの何かが広告をブロックしています。',
     'allowPrefix': '次のサイトで広告を許可してください：',
-    'allowSuffix': '（またはこのゲームのみ広告ブロッカーを一時停止）してから再試行してください。',
-    'gotIt': 'わかりました'
+    'allowSuffix': '（またはこのゲームで広告ブロッカーを一時停止して）もう一度お試しください。',
+    'gotIt': '了解'
   },
   'saveStatus': {
-    'restoredTitle': 'クラウドセーブを復元しました', 'restoredBody': '復元ボーナス +{n} コイン',
-    'tap': 'タップ', 'pausedTitle': 'クラウド同期を一時停止中',
-    'pausedBody': 'オフラインでプレイ中です。進行状況はここに保存されます。',
-    'retry': '再試行', 'dismiss': '閉じる'
+    'restoredTitle': 'クラウドセーブを復元',
+    'restoredBody': '復元ボーナス +{n} コイン',
+    'tap': 'タップ',
+    'pausedTitle': 'クラウド同期を一時停止',
+    'pausedBody': 'オフラインでプレイ中。進行状況はここに保存されます。',
+    'retry': '再試行',
+    'dismiss': '閉じる'
   },
-  'loading': { 'tooLong': '読み込みが長すぎますか？ 広告ブロッカーを無効にして再読み込みしてください。', 'boo': 'わっ！', 'laugh': 'あははは！' },
-  'license': { 'denied': 'アクセスが拒否されました：ライセンスをご購入ください。' }
+  'loading': {
+    'tooLong': '読み込みが長すぎる場合は、広告ブロッカーを無効にして再読み込みしてください。'
+  },
+  'license': {
+    'denied': 'アクセス拒否：ライセンスを購入してください。'
+  }
 }

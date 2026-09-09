@@ -7,37 +7,29 @@ import { mobileCheck } from '@/utils/function'
 /**
  * The on-screen control primer.
  *
- * A crowd runner has exactly one control and three ideas, and a player who
- * doesn't discover them in the first fifteen seconds bounces. So each hint is
- * explicit, phrased for the input device the player actually has, and it
- * retires itself the moment the action is performed — nagging a competent
- * player is its own kind of failure.
+ * Glyphyx teaches itself through the ghost hand and the reveal, so this pill
+ * is the SECOND voice, never the first: one line, phrased for the device the
+ * player is holding, retired the moment the thing it names has happened.
  *
- *   move    — the only control there is
- *   gate    — why you would ever stand still
- *   crate   — why you would ever go out of your way
- *   rate    — the second crate type, and the one nobody works out alone
- *   trap    — the red gates take survivors away
- *   divider — the pillar between two gates is lethal, and that is the whole
- *             reason a gate bank is a decision
- *   boss    — the one thing that can kill a big crowd instantly
- *   guard   — the boss's phase shield, which is the one moment in the game
- *             where the player's fire deliberately stops working. Without a
- *             word for it, "my bullets do nothing" reads as a bug.
- *   lever   — the weapon puzzle. The only hint here for a thing that is purely
- *             a BONUS: every other lesson in this list is something that will
- *             otherwise cost the player survivors, and this one costs them
- *             nothing at all. It is here because a beat with no consequence for
- *             missing it is a beat the road can never teach on its own.
+ *   drag      — the only verb there is
+ *   tap       — the other way in: a hand pebble is selected, a tile places it
+ *   aim       — the swipe (or an arrow key), shown while a pebble is on a tile
+ *   archer    — bows skip a tile (node 1-2)
+ *   stack     — a matching rune levels up (node 1-3)
+ *   mage      — the orb beams two tiles diagonally (node 1-4)
+ *   defense   — the shield blocks arrows and beams (node 1-5)
+ *   support   — the cross heals and sharpens its neighbours (node 1-6)
+ *   correct   — the re-aim window after a placement, the first few times
+ *   conquest  — the win rule, on the first real match
+ *   siege     — the first time the player is surrounded
  */
-
 export type HintId =
-  | 'move' | 'gate' | 'crate' | 'rate' | 'trap' | 'divider' | 'boss' | 'guard' | 'lever'
+  | 'drag' | 'tap' | 'aim' | 'archer' | 'stack' | 'mage' | 'defense' | 'support' | 'correct' | 'conquest' | 'siege'
+  | 'cleave' | 'roller' | 'bombard'
 
 interface Props {
   hint: HintId | null
 }
-
 const props = defineProps<Props>()
 const { t } = useI18n()
 
@@ -46,37 +38,41 @@ const isTouch = computed(() => mobileCheck() || isMobilePortrait.value
 
 const text = computed(() => {
   if (!props.hint) return ''
-  // Each hint has a touch and a pointer phrasing — "Tap" vs "Click", "Pinch"
-  // vs "Scroll" — because a wrong verb reads as a bug.
   return t(`hints.${props.hint}.${isTouch.value ? 'touch' : 'desktop'}`)
 })
 </script>
 
 <template lang="pug">
-  Transition(name="hint")
-    div.control-hint(v-if="hint")
-      svg.control-hint__icon(viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true")
-        //- A pointing hand — universally readable as "do this".
-        path(d="M9 11V6a2 2 0 1 1 4 0v5")
-        path(d="M13 8a2 2 0 1 1 4 0v6a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.3-2.4L4 15a1.6 1.6 0 0 1 2.6-1.9L8 15")
-      span.control-hint__text {{ text }}
+  //- The transition rides on the outer element and the breathing on the inner
+  //- one, deliberately apart: Vue times an enter by the LONGER of an element's
+  //- transition and its animation, and an infinite breathe on the same element
+  //- left the enter's `translate` on the pill long after it had landed.
+  Transition(name="hint" mode="out-in")
+    div.control-hint(v-if="hint" :key="hint")
+      div.control-hint__pill
+        svg.control-hint__icon(viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true")
+          path(d="M9 11V6a2 2 0 1 1 4 0v5")
+          path(d="M13 8a2 2 0 1 1 4 0v6a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.3-2.4L4 15a1.6 1.6 0 0 1 2.6-1.9L8 15")
+        span.control-hint__text {{ text }}
 </template>
 
 <style scoped lang="sass">
 .control-hint
   display: inline-flex
+  max-width: min(90vw, 26rem)
+  pointer-events: none
+
+.control-hint__pill
+  display: inline-flex
   align-items: center
   gap: clamp(0.25rem, 1.4vw, 0.5rem)
-  // Floors so the hint is always readable, and a max so it never spans a
-  // desktop screen edge-to-edge.
   min-height: 1.75rem
-  max-width: min(90vw, 26rem)
+  max-width: 100%
   padding: clamp(0.22rem, 1.2vw, 0.45rem) clamp(0.55rem, 3vw, 1rem)
   border: 2px solid rgba(255, 255, 255, 0.18)
   border-radius: 999px
   background-color: rgba(8, 14, 28, 0.72)
   backdrop-filter: blur(3px)
-  pointer-events: none
   animation: hint-breathe 2.4s ease-in-out infinite
 
 .control-hint__icon

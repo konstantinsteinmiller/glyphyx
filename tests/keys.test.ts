@@ -6,37 +6,37 @@
 
 import { describe, expect, it } from 'vitest'
 import { SAVE_KEYS, isPayloadKey, META_KEY } from '@/utils/save/SaveMergePolicy'
-import { STATE_KEY } from '@/use/useTowerState'
+import { STATE_KEY } from '@/use/useGlyphyxState'
 
 describe('SAVE_KEYS values are stable', () => {
-  it('BEST_STAGE key is the literal "ts_best_stage"', () => {
-    expect(SAVE_KEYS.BEST_STAGE).toBe('ts_best_stage')
+  it('BEST_NODE key is the literal "gx_best_node"', () => {
+    expect(SAVE_KEYS.BEST_NODE).toBe('gx_best_node')
   })
-  it('COINS key is the literal "ts_coins"', () => {
-    expect(SAVE_KEYS.COINS).toBe('ts_coins')
+  it('COINS key is the literal "gx_coins"', () => {
+    expect(SAVE_KEYS.COINS).toBe('gx_coins')
   })
-  it('UPGRADES key is the literal "ts_upgrades"', () => {
-    expect(SAVE_KEYS.UPGRADES).toBe('ts_upgrades')
+  it('UNLOCKED_RUNES key is the literal "gx_unlocked_runes"', () => {
+    expect(SAVE_KEYS.UNLOCKED_RUNES).toBe('gx_unlocked_runes')
   })
-  it('RUNS key is the literal "ts_runs"', () => {
-    expect(SAVE_KEYS.RUNS).toBe('ts_runs')
+  it('MATCHES key is the literal "gx_matches"', () => {
+    expect(SAVE_KEYS.MATCHES).toBe('gx_matches')
   })
 })
 
 describe('the persisted surface is exactly one state blob plus the meta blob', () => {
   it('accepts the state blob and the meta blob', () => {
-    expect(STATE_KEY).toBe('tower_state')
+    expect(STATE_KEY).toBe('glyphyx_state')
     expect(isPayloadKey(STATE_KEY)).toBe(true)
     expect(isPayloadKey(META_KEY)).toBe(true)
   })
 
-  it('accepts stray per-field ts_* writes so nothing is silently dropped', () => {
+  it('accepts stray per-field gx_* writes so nothing is silently dropped', () => {
     expect(isPayloadKey(SAVE_KEYS.COINS)).toBe(true)
-    expect(isPayloadKey('ts_anything_new')).toBe(true)
+    expect(isPayloadKey('gx_anything_new')).toBe(true)
   })
 
   it('rejects foreign keys so ad-tech / dev scribbles never reach the cloud', () => {
-    for (const key of ['debug', 'cheat', 'prebid11_exp', 'li-module-enabled', 'epic_stage', 'spinner_user_language']) {
+    for (const key of ['debug', 'cheat', 'prebid11_exp', 'li-module-enabled', 'epic_stage', 'ts_coins', 'tower_state']) {
       expect(isPayloadKey(key)).toBe(false)
     }
   })

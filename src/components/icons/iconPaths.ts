@@ -395,5 +395,102 @@ export const ICON_PATHS: Record<GameIconName, string[]> = {
     'M4.6 4.2h14.8v9.2H4.6V4.2Zm4.1 1.6H6.9v6h1.8v-6Zm6.6 0h-1.8v6h1.8v-6Z',
     'M3 14.6h18a1.4 1.4 0 0 1 1.4 1.4v1.6A1.4 1.4 0 0 1 21 19H3a1.4 1.4 0 0 1-1.4-1.4V16A1.4 1.4 0 0 1 3 14.6Z',
     'M9.4 19.8h5.2v2.6H9.4v-2.6Z'
+  ],
+
+  // ── Glyphyx ──────────────────────────────────────────────────────────
+  // A sword point-up: blade, cross-guard, grip and pommel as four sub-paths
+  // wound the same way so they merge into one silhouette.
+  'sword': [
+    'M12 1.4 14.5 5.4 13.5 13.6H10.5L9.5 5.4 12 1.4Z',
+    'M6.6 13.8H17.4A1.5 1.5 0 0 1 17.4 16.8H6.6A1.5 1.5 0 0 1 6.6 13.8Z',
+    'M10.7 16.9H13.3V20.2H10.7Z',
+    'M12 19.6A1.7 1.7 0 1 1 12 23 1.7 1.7 0 0 1 12 19.6Z'
+  ],
+  // A bow (crescent + string) with an arrow across it, all pointing right.
+  'bow': [
+    'M6.2 2.4C13.2 4.6 16.8 8.1 16.8 12S13.2 19.4 6.2 21.6L5.3 19.4C11 17.5 13.9 15.1 13.9 12S11 6.5 5.3 4.6L6.2 2.4Z',
+    'M5.2 2.8H7.1V21.2H5.2Z',
+    'M8 10.9H17.4V13.1H8Z',
+    'M16.6 8.3 21.4 12 16.6 15.7Z',
+    'M8.4 9.1 10.6 12 8.4 14.9H6.7L8.9 12 6.7 9.1Z'
+  ],
+  // The arcane orb: a sphere with a ring cut through it (counter-wound) and a
+  // bright core, plus four sparks so it reads as magic rather than a ball.
+  'orb': [
+    'M12 3.4A8.6 8.6 0 1 1 12 20.6 8.6 8.6 0 0 1 12 3.4Z',
+    'M12 6.4A5.6 5.6 0 1 0 12 17.6 5.6 5.6 0 0 0 12 6.4Z',
+    'M12 8.9A3.1 3.1 0 1 1 12 15.1 3.1 3.1 0 0 1 12 8.9Z',
+    'M12 0.4 12.9 2.3 12 4.2 11.1 2.3Z',
+    'M12 19.8 12.9 21.7 12 23.6 11.1 21.7Z',
+    'M0.4 12 2.3 11.1 4.2 12 2.3 12.9Z',
+    'M19.8 12 21.7 11.1 23.6 12 21.7 12.9Z'
+  ],
+  // The radiant cross: a plus with four diagonal rays between the arms.
+  'cross': [
+    'M10.3 2.4H13.7V9.3H20.6V12.7H13.7V19.6H10.3V12.7H3.4V9.3H10.3Z',
+    'M5.3 5.3 8.4 6.2 9.3 9.3 6.2 8.4Z',
+    'M18.7 5.3 17.8 8.4 14.7 9.3 15.6 6.2Z',
+    'M5.3 18.7 6.2 15.6 9.3 14.7 8.4 17.8Z',
+    'M18.7 18.7 15.6 17.8 14.7 14.7 17.8 15.6Z'
+  ],
+  // The broad axe: a crescent bit whose top edge IS the arc the attack sweeps,
+  // on a haft with a pommel. Kept wider than the sword on purpose — the two sit
+  // in the same reward column and must not read as one glyph at 16px.
+  'cleave': [
+    'M2.6 10.6C3.8 6.2 7.4 2.4 12 2.4C16.6 2.4 20.2 6.2 21.4 10.6C18.4 8.2 15.4 6.9 12 6.9C8.6 6.9 5.6 8.2 2.6 10.6Z',
+    'M10.6 5.6H13.4V18.6H10.6Z',
+    'M12 18.2A2.1 2.1 0 1 1 12 22.4 2.1 2.1 0 0 1 12 18.2Z'
+  ],
+  // The boulder: a chipped mass with a crack knocked out of it, sitting right
+  // of centre with two speed bars behind — a rock that has left them behind is
+  // rolling, a rock alone is the orb.
+  'roller': [
+    'M13.6 5L18.2 6.6L21 10.4L20.6 15.6L17 19L12.4 19.8L8.6 17.6L7 13.6L8 8.6Z',
+    'M12.4 9.2L10.6 12.4L13.4 13.2L14.8 10.2Z',
+    'M0.6 8.4H4.6V11.2H0.6Z',
+    'M0.6 14H4.6V16.8H0.6Z'
+  ],
+  // The hazard trefoil: core plus three blades at 120°, with the ring of empty
+  // space between them left open. The only rune glyph that is a SIGN rather
+  // than an object, because the nuker is the only rune that is not aimed — it
+  // goes off where it lands and takes every unstacked rune with it, the
+  // player's own included. Blades are 4.8 units thick and stop 2 units short of
+  // the box, so the three-lobed silhouette holds down to 16 px, where a
+  // finer-spoked burst would close up into the orb.
+  'nuker': [
+    'M9.4 7.5 7 3.3A10 10 0 0 1 17 3.3L14.6 7.5A5.2 5.2 0 0 0 9.4 7.5Z',
+    'M17.2 12 22 12A10 10 0 0 1 17 20.7L14.6 16.5A5.2 5.2 0 0 0 17.2 12Z',
+    'M9.4 16.5 7 20.7A10 10 0 0 1 2 12L6.8 12A5.2 5.2 0 0 0 9.4 16.5Z',
+    'M12 8.8A3.2 3.2 0 1 1 12 15.2 3.2 3.2 0 0 1 12 8.8Z'
+  ],
+  // The mortar: base plate, canted tube with its bore punched through the
+  // muzzle, and the shell already clear of it. The gap is the glyph's subject.
+  'bombard': [
+    'M3.4 18.4H20.6L19.2 21.8H4.8Z',
+    'M5.6 15.7L14.4 6.5L18.4 10.3L9.6 19.5Z',
+    'M14.4 9.3L13.1 10.6L14.4 11.9L15.7 10.6Z',
+    'M21.8 1.6L22.6 4.4L20.6 6.8L17.8 6L18.2 2.8Z'
+  ],
+  // The rune forge: an anvil on its block with a spark rising off the horn.
+  'forge': [
+    'M2.8 7.6H21.2V10.9H15L16.7 15.4H7.3L9 10.9H2.8Z',
+    'M6 16.6H18V19.4A1.2 1.2 0 0 1 16.8 20.6H7.2A1.2 1.2 0 0 1 6 19.4Z',
+    'M18.4 1.6 19.2 3.6 21.2 4.4 19.2 5.2 18.4 7.2 17.6 5.2 15.6 4.4 17.6 3.6Z'
+  ],
+  // A folded map: three panels, the middle one dropped.
+  'map': [
+    'M3 5.4 8.9 3.2V18.6L3 20.8Z',
+    'M10.5 3.4 13.5 4.5V19.9L10.5 18.8Z',
+    'M15.1 4.5 21 2.3V17.7L15.1 19.9Z'
+  ],
+  // A pebble with a gloss cut into it — the skin shop's mark.
+  'skin': [
+    'M12 3.8C17.2 3.8 21.2 7.5 21.2 12S17.2 20.2 12 20.2 2.8 16.5 2.8 12 6.8 3.8 12 3.8Z',
+    'M8.2 7.6A2.4 1.5 -30 1 0 8.2 10.6 2.4 1.5 -30 1 0 8.2 7.6Z'
+  ],
+  // A board tile: a rounded square frame.
+  'tile': [
+    'M4.2 6.6A2.4 2.4 0 0 1 6.6 4.2H17.4A2.4 2.4 0 0 1 19.8 6.6V17.4A2.4 2.4 0 0 1 17.4 19.8H6.6A2.4 2.4 0 0 1 4.2 17.4Z',
+    'M7.2 7.2V16.8H16.8V7.2Z'
   ]
 }

@@ -1,8 +1,30 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': 'Hồi 3 và tăng đòn đánh cho hàng xóm ngay từ lượt đầu.',
+      'defense': 'Bức tường che chở hàng xóm ngay từ lượt đầu.',
+      'mage': 'Tia sáng nổ thành chữ thập ở cuối ngay từ lượt đầu.',
+      'archer': 'Bắn hai ô cùng lúc ngay từ lượt đầu.',
+      'melee': 'Đẩy lùi mục tiêu — ba viên đá thép trong một nước đi.',
+      'cleave': 'Hạ cả ba ô phía trước cùng lúc ngay từ lượt đầu.',
+      'roller': 'Cán qua hai kẻ trụ được rồi mới dừng ngay từ lượt đầu.',
+      'bombard': 'Nã hàng xa và ô ở giữa ngay từ lượt đầu.',
+      'nuker': 'Rơi ở Cấp 3, đủ cứng để giữ bàn cờ vừa dọn sạch, ngay từ lượt đầu.'
+    },
+    'watchAd': 'Xem quảng cáo',
+    'armed': 'Đã trang bị ×{n}',
+    'landsAt': 'Đạt Lv {n} ngay ở lần đặt đầu tiên trong trận tới.',
+    'runesTagline': 'Rune đầu tiên bạn đặt của mỗi loại đã trang bị sẽ ở Lv {n} ngay.',
+    'tabs': {
+      'skins': 'Trang phục',
+      'runes': 'Rune sức mạnh',
+    },
+    'title': 'Cửa hàng',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'Hủy',
   'close': 'Đóng',
-  'ok': 'OK',
+  'ok': 'Ok',
   'continue': 'Tiếp tục',
   'tapToContinue': 'Chạm để tiếp tục',
   'clickToContinue': 'Nhấp để tiếp tục',
@@ -10,8 +32,6 @@ export default {
   'tip': 'Mẹo',
   'crazyGamesOnly': 'Trò chơi này chỉ có trên',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
     'next': 'Tiếp',
     'replay': 'Chơi lại',
@@ -19,66 +39,245 @@ export default {
     'play': 'Chơi',
     'pause': 'Tạm dừng',
     'menu': 'Menu',
-    'home': 'Trang chính',
-    'info': 'Thông tin'
+    'home': 'Trang chủ',
+    'info': 'Thông tin',
+    'skip': 'Bỏ qua'
   },
 
   'hud': {
-    'stage': 'Màn {n}',
-    'best': 'Kỷ lục {n}',
-    'boss': 'Trùm',
-    'miniboss': 'Trùm nhỏ',
-    'fireRate': 'Tốc độ',
-    'incoming': 'Sắp bị tấn công!',
-    'dodge': 'Né',
-    'weaponActive': '{name} sẵn sàng',
-    'weaponLocked': '{name} đã khoá — đã bắn {n}/{total} cần gạt'
+    'stage': 'Màn {c}-{n}',
+    'conquest': 'Chinh phục',
+    'tiles': '{n} / {total}',
+    'turn': 'Lượt {n}',
+    'you': 'Bạn',
+    'enemy': 'Địch',
+    'streak': 'Chuỗi thắng',
+    'streakMult': '×{n} vàng',
+    'suddenDeath': 'Bàn thắng vàng!',
+    'reroll': 'Rút lại',
+    'rerollsLeft': 'Còn {n}'
   },
 
-  'weapons': {
-    'rocket': 'Súng phóng rocket',
-    'gatling': 'Súng Gatling'
+  'factions': {
+    'skeleton': 'Bù nhìn xương',
+    'goblin': 'Cung thủ Goblin',
+    'orc': 'Cuồng chiến Orc',
+    'undead': 'Pháp sư Xác sống'
   },
 
-  'tutorial': {
-    'touch': 'Vuốt để di chuyển đội của bạn',
-    'desktop': 'Di chuyển chuột để điều khiển đội'
+  'runes': {
+    'level': 'Cấp {n}',
+    'hp': 'HP',
+    'atk': 'CÔNG',
+    'names': {
+      'melee': 'Kiếm',
+      'archer': 'Cung',
+      'mage': 'Cầu Bí Thuật',
+      'defense': 'Khiên',
+      'support': 'Thập Tự Rạng Rỡ',
+      'cleave': 'Rìu',
+      'roller': 'Tảng Đá',
+      'bombard': 'Súng Cối',
+      'nuker': 'Bom Hủy Diệt'
+    },
+    'descriptions': {
+      'melee': 'Đánh ô phía trước. Cấp 2 đẩy lùi mục tiêu.',
+      'archer': 'Bỏ qua một ô và đánh ô kế tiếp. Cấp 2 bắn hai ô.',
+      'mage': 'Bắn tia chéo xuyên hai ô. Cấp 2 phát nổ ở cuối.',
+      'defense': 'Hấp thụ 1 sát thương mỗi đòn. Cấp 2 che chắn ô lân cận.',
+      'support': 'Hồi máu đồng minh lân cận mỗi lượt. Cấp 2 còn tăng sức công.',
+      'cleave': 'Chém ba ô phía trước: ô đối diện và hai ô bên cạnh.',
+      'roller': 'Lăn đến khi một rune trụ được, kể cả đồng minh. Cấp 2 lăn xa thêm một.',
+      'bombard': 'Nã ba ô cách ba hàng, vượt qua mọi tường. Cấp 2 bắn thêm ở giữa.',
+      'nuker': 'Nổ ngay chỗ nó rơi: mọi rune Cấp 1 trên bàn đều chết, kể cả của bạn. Cấp 2 trụ được.'
+    }
   },
+
   'hints': {
-    'move': { 'touch': 'Chạm để di chuyển', 'desktop': 'Nhấp để di chuyển' },
-    'gate': { 'touch': 'Bắn liên tục vào cổng: +1 mỗi nửa giây', 'desktop': 'Bắn liên tục vào cổng: +1 mỗi nửa giây' },
-    'trap': { 'touch': 'Cổng đỏ LÀM GIẢM quân — chọn bên kia!', 'desktop': 'Cổng đỏ LÀM GIẢM quân — chọn bên kia!' },
-    'divider': { 'touch': 'Đừng bao giờ chạm cột giữa hai cổng', 'desktop': 'Đừng bao giờ chạm cột giữa hai cổng' },
-    'crate': { 'touch': 'Thùng xanh lá: cả đội đánh mạnh hơn', 'desktop': 'Thùng xanh lá: cả đội đánh mạnh hơn' },
-    'rate': { 'touch': 'Thùng xanh dương: cả đội bắn nhanh hơn', 'desktop': 'Thùng xanh dương: cả đội bắn nhanh hơn' },
-    'boss': { 'touch': 'Tránh xa vòng tròn đỏ!', 'desktop': 'Tránh xa vòng tròn đỏ!' },
-    'lever': { 'touch': 'Bắn CẢ HAI cần gạt ở hai bên đường — chúng mở hòm vũ khí', 'desktop': 'Bắn CẢ HAI cần gạt ở hai bên đường — chúng mở hòm vũ khí' },
-    'guard': { 'touch': 'Khiên bật — bắn vô ích. TRÁNH RA!', 'desktop': 'Khiên bật — bắn vô ích. TRÁNH RA!' }
+    'drag': {
+      'touch': 'Kéo một rune lên bàn cờ',
+      'desktop': 'Kéo một rune lên bàn cờ'
+    },
+    'aim': {
+      'touch': 'Vuốt để ngắm, thả để khóa',
+      'desktop': 'Kéo hoặc bấm phím mũi tên / WASD để ngắm, thả ra để chốt'
+    },
+    'archer': {
+      'touch': 'Cung bỏ qua một ô và đánh ô kế tiếp',
+      'desktop': 'Cung bỏ qua một ô và đánh ô kế tiếp'
+    },
+    'stack': {
+      'touch': 'Thả rune giống hệt lên rune của bạn để lên cấp',
+      'desktop': 'Thả rune giống hệt lên rune của bạn để lên cấp'
+    },
+    'conquest': {
+      'touch': 'Giữ 8 ô để thắng',
+      'desktop': 'Giữ 8 ô để thắng'
+    },
+    'siege': {
+      'touch': 'Bị bao vây! Phá vòng vây và giữ 8 ô',
+      'desktop': 'Bị bao vây! Phá vòng vây và giữ 8 ô'
+    },
+    'mage': {
+      'touch': 'Quả cầu bắn tia chéo xuyên hai ô',
+      'desktop': 'Quả cầu bắn tia chéo xuyên hai ô'
+    },
+    'defense': {
+      'touch': 'Khiên chặn mũi tên và tia',
+      'desktop': 'Khiên chặn mũi tên và tia'
+    },
+    'support': {
+      'touch': 'Thập tự chữa lành và tăng sức cho ô kề bên',
+      'desktop': 'Thập tự chữa lành và tăng sức cho ô kề bên'
+    },
+    'cleave': {
+      'touch': 'Rìu chém cả ba ô phía trước',
+      'desktop': 'Rìu chém cả ba ô phía trước'
+    },
+    'roller': {
+      'touch': 'Tảng đá lăn xuyên qua mọi thứ nó phá vỡ',
+      'desktop': 'Tảng đá lăn xuyên qua mọi thứ nó phá vỡ'
+    },
+    'bombard': {
+      'touch': 'Súng cối nã ba ô cách ba hàng',
+      'desktop': 'Súng cối nã ba ô cách ba hàng'
+    },
+    'correct': {
+      'touch': 'Chạm vào mũi tên hoặc vuốt để ngắm lại',
+      'desktop': 'Nhấp và kéo ở bất kỳ đâu, hoặc bấm phím mũi tên / WASD, để ngắm lại'
+    },
+    'tap': {
+      'touch': 'Chạm vào một ô để đặt',
+      'desktop': 'Nhấp vào một ô để đặt'
+    },
+    'nuker': {
+      'touch': 'Bom hủy diệt xóa mọi rune Cấp 1 — kể cả của bạn',
+      'desktop': 'Bom hủy diệt xóa mọi rune Cấp 1 — kể cả của bạn'
+    }
   },
 
-  'flow': {
+  'canvas': {
+    'level': 'Cấp {n}',
+    'combo': '×{n} COMBO',
+    'clash': 'VA CHẠM!',
+    'victory': 'CHIẾN THẮNG!',
+    'defeat': 'THẤT BẠI',
+    'reveal': 'LỘ BÀI',
+    'suddenDeath': 'BÀN THẮNG VÀNG',
+    'turn': 'LƯỢT {n}',
+    'you': 'BẠN',
+    'foe': 'ĐỊCH',
+    'reroll': 'RÚT LẠI',
+    'lastTurn': 'LƯỢT CUỐI'
+  },
 
+  'banner': {
+    'duel': 'Đấu 1v1',
+    'siege': 'Vây hãm 1v3',
+    'vs': 'vs {name}',
     'unlocked': 'Đã mở khóa!'
-
   },
 
   'result': {
-    'stageClear': 'Qua màn!',
-    'wipedOut': 'Đội bị xóa sổ',
-    'reachedStage': 'Màn {n}',
+    'chestCoins': 'Rương +{n}',
+    'victory': 'Chiến thắng!',
+    'defeat': 'Thất bại',
+    'turns': 'Số lượt',
+    'playAgain': 'Chơi lại',
+    'nextStage': 'Màn tiếp theo',
     'newRecord': 'Kỷ lục mới!',
-    'rallied': 'Hồi sức',
-    'peakSquad': 'Đội đông nhất',
-    'kills': 'Tiêu diệt',
+    'streakBonus': 'Chuỗi ×{n}',
     'tripleCoins': '3×',
     'tripleBonus': '(+{n})',
     'tripleClaimed': 'Xu đã nhân ba!',
-    'nextStage': 'Màn tiếp theo',
-    'tryAgain': 'Thử lại',
+    'chestTap': 'Chạm vào rương!',
+    'newRune': 'Rune mới',
+    'newSkin': 'Skin mới',
+    'skins': 'Skin rune',
+    'reasons': {
+      'conquest': 'Chinh phục tám ô',
+      'conquestLost': 'Kẻ địch đã chiếm tám ô',
+      'eliminated': 'Đập tan mọi rune địch',
+      'overrun': 'Rune của bạn bị tràn ngập',
+      'turnLimit': 'Phân định theo số ô giữ được',
+      'suddenDeath': 'Bàn thắng vàng',
+      'siegeHeld': 'Bạn đã giữ vững phòng tuyến',
+      'siegeBroken': 'Vòng vây đã đánh bại bạn'
+    }
+  },
+
+  'campaign': {
+    'title': 'Chiến dịch',
+    'chapter': 'Chương {n}',
+    'cleared': 'Đã qua',
+    'current': 'Hiện tại',
+    'locked': 'Đã khóa',
+    'modes': {
+      '1v1': 'Đấu 1v1',
+      'siege': 'Vây hãm 1v3'
+    },
+    'objectives': {
+      'conquest': 'Giữ 8 ô',
+      'eliminate': 'Tiêu diệt mọi rune địch',
+      'siege': 'Phá vòng vây'
+    },
+    'reward': 'Phần thưởng',
+    'play': 'Chơi',
+    'replay': 'Chơi lại',
+    'nextUnlock': 'Thắng Màn {c}-{n} để nhận:',
+    'nextUnlockAria': 'Thắng Màn {c}-{n} để mở khóa {rune}'
+  },
+
+  'skins': {
+    'title': 'Skin rune',
+    'owned': 'Đã có',
+    'equipped': 'Đang dùng',
+    'equip': 'Trang bị',
+    'buy': 'Mua',
+    'names': {
+      'river': 'Đá sông',
+      'obsidian': 'Đá vỏ chai',
+      'jade': 'Ngọc bích',
+      'amber': 'Hổ phách',
+      'marble': 'Cẩm thạch',
+      'ember': 'Than hồng'
+    },
+    'tagline': 'Mọi rune bạn đặt đều mang nó.',
+    'needMore': 'Còn thiếu {n} xu',
+    'blurbs': {
+      'river': 'Sa thạch sông ấm áp, ký tự khắc sâu và sáng từ bên trong.',
+      'obsidian': 'Thủy tinh núi lửa đẽo gọt với đường neon lạnh.',
+      'jade': 'Ngọc bích xanh đánh bóng, ký tự khảm vàng.',
+      'amber': 'Viên hổ phách mài giác, phát sáng từ bên trong.',
+      'marble': 'Đá cẩm thạch trắng, khắc sâu và đổ bóng.',
+      'ember': 'Phiến dung nham nguội, ký tự cháy qua các vết nứt.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Bậc',
+    'title': 'Bậc rune',
+    'tagline': 'Mỗi bậc +{n} HP tối đa — mọi rune như nhau.',
+    'rank': 'Bậc {n}/{max}',
+    'maxed': 'Tối đa',
+    'hpGain': '+{n} HP',
+    'next': 'Tiếp: +{n} HP',
     'upgrade': 'Nâng cấp',
-    'upgradeHint': 'Nâng cấp đội của bạn!',
-    'rankOf': 'trên {n}',
-    'upNext': 'Tiếp theo: Màn {n}'
+    'locked': 'Chưa mở khóa',
+    'free': 'Miễn phí',
+    'freeGift': 'Nâng cấp miễn phí!',
+    'freeIn': 'Quà mới sau {t}',
+    'freeTaken': 'Quay lại nhận phần sau',
+    'nukerUnlock': 'Mở khóa Bom Hủy Diệt',
+    'nukerLocked': 'Hoặc thắng Màn 4-1'
+  },
+
+  'forge': {
+    'label': 'Lò rèn rune',
+    'ready': 'Nhận {n} xu từ lò rèn',
+    'filling': 'Lò rèn rune — đang rèn',
+    'full': 'Lò rèn rune — đã đầy',
+    'perHour': '+{n} / giờ'
   },
 
   'leaderboard': {
@@ -86,85 +285,61 @@ export default {
     'rank': '#',
     'player': 'Người chơi',
     'stage': 'Màn',
-    'squad': 'Đội',
-    'empty': 'Chưa có ai. Hãy là người đầu tiên!',
+    'streak': 'Chuỗi',
+    'empty': 'Chưa có trận nào. Hãy là người đầu tiên.',
     'failed': 'Không kết nối được bảng xếp hạng.',
     'loading': 'Đang tải…',
     'you': 'Bạn',
-    'yourRank': 'Bạn hạng #{n}',
-    'of': 'trên {n} người chơi'
-  },
-
-  'chest': {
-    'label': 'Rương báu',
-    'ready': 'Mở rương báu nhận {n} xu',
-    'filling': 'Rương báu đang đầy dần',
-    'spent': 'Rương báu trống đến ngày mai'
-  },
-
-  'skills': {
-
-    'grenade': 'Lựu đạn',
-
-    'shield': 'Khiên'
-
-  },
-
-  'upgrades': {
-    'title': 'Nâng cấp',
-    'spotlight': 'Tiêu đi!',
-    'level': 'Cấp {n}',
-    'maxed': 'Tối đa',
-    'names': {
-      'squad': 'Đội',
-      'power': 'Sát thương',
-      'rate': 'Tốc độ bắn',
-      'range': 'Tầm bắn',
-      'scavenge': 'Nhặt nhạnh',
-      'grenade': 'Lựu đạn',
-      'shield': 'Khiên',
-      'rocket': 'Sức mạnh rocket',
-      'gatling': 'Sức mạnh Gatling'
-    },
-    'descriptions': {
-      'squad': 'Bắt đầu mỗi màn với nhiều người sống sót hơn.',
-      'power': 'Mỗi người gây nhiều sát thương hơn mỗi phát.',
-      'rate': 'Mỗi người bắn nhanh hơn.',
-      'range': 'Đội của bạn khai hỏa xa hơn trên đường.',
-      'scavenge': 'Kiếm nhiều xu hơn sau mỗi lượt.',
-      'grenade': 'Ném lựu đạn để gây sát thương lớn.',
-      'shield': 'Giảm một nửa sát thương lên đội trong vài giây.',
-      'rocket': 'Súng phóng rocket mở khoá trong màn gây nhiều sát thương hơn.',
-      'gatling': 'Súng Gatling mở khoá trong màn gây nhiều sát thương hơn.'
-    }
+    'yourRank': 'Bạn đứng #{n}',
+    'of': 'trong {n} người chơi'
   },
 
   'options': {
-    'title': 'Tùy chọn', 'general': 'Chung', 'audio': 'Âm thanh', 'language': 'Ngôn ngữ',
-    'difficulty': 'Độ khó', 'soundEffects': 'Hiệu ứng âm thanh', 'music': 'Nhạc', 'musicTrack': 'Bản nhạc',
-    'musicTracks': { 'cozy': 'Giai điệu ấm cúng', 'trance': 'Đường hầm Trance' },
+    'title': 'Tùy chọn',
+    'general': 'Chung',
+    'audio': 'Âm thanh',
+    'language': 'Ngôn ngữ',
+    'difficulty': 'Độ khó',
+    'soundEffects': 'Hiệu ứng âm thanh',
+    'music': 'Nhạc',
+    'musicTrack': 'Bản nhạc',
+    'musicTracks': {
+      'cozy': 'Đá lặng',
+      'trance': 'Nhịp rune'
+    },
     'close': 'Lưu & Đóng',
-    'difficulties': { 'easy': 'Dễ', 'medium': 'Trung bình', 'hard': 'Khó' },
+    'difficulties': {
+      'easy': 'Dễ',
+      'medium': 'Thường',
+      'hard': 'Khó'
+    },
     'difficultyHints': {
-      'easy': 'Kẻ địch yếu hơn và rào chắn mỏng hơn.',
-      'medium': 'Lượt chơi tiêu chuẩn.',
-      'hard': 'Kẻ địch cứng hơn và rào chắn dày hơn.'
+      'easy': 'Địch do dự và đánh trượt nhiều hơn.',
+      'medium': 'Chiến dịch tiêu chuẩn.',
+      'hard': 'Địch tính toán sắc hơn và lên cấp nhanh hơn.'
     }
   },
 
   'adsBlocked': {
     'title': 'Không thể hiển thị quảng cáo',
-    'body': 'Chúng tôi đã thử phát video để bạn nhận thưởng, nhưng có gì đó trên trình duyệt đang chặn quảng cáo.',
+    'body': 'Chúng tôi đã cố phát video để bạn nhận thưởng, nhưng có gì đó trong trình duyệt đang chặn quảng cáo.',
     'allowPrefix': 'Vui lòng cho phép quảng cáo trên',
     'allowSuffix': '(hoặc tạm dừng trình chặn quảng cáo cho trò chơi này) rồi thử lại.',
     'gotIt': 'Đã hiểu'
   },
   'saveStatus': {
-    'restoredTitle': 'Đã khôi phục lưu trên đám mây', 'restoredBody': '+{n} xu thưởng cho việc khôi phục',
-    'tap': 'chạm', 'pausedTitle': 'Đã tạm dừng đồng bộ đám mây',
+    'restoredTitle': 'Đã khôi phục lưu đám mây',
+    'restoredBody': '+{n} xu thưởng cho việc khôi phục',
+    'tap': 'chạm',
+    'pausedTitle': 'Đồng bộ đám mây tạm dừng',
     'pausedBody': 'Đang chơi ngoại tuyến. Tiến trình được lưu tại đây.',
-    'retry': 'Thử lại', 'dismiss': 'bỏ qua'
+    'retry': 'Thử lại',
+    'dismiss': 'đóng'
   },
-  'loading': { 'tooLong': 'Tải quá lâu? Hãy tắt trình chặn quảng cáo rồi làm mới trang.', 'boo': 'Hù!', 'laugh': 'Ha ha ha!' },
-  'license': { 'denied': 'Từ chối truy cập: vui lòng mua giấy phép.' }
+  'loading': {
+    'tooLong': 'Tải quá lâu? Hãy tắt trình chặn quảng cáo và tải lại.'
+  },
+  'license': {
+    'denied': 'Từ chối truy cập: vui lòng mua giấy phép.'
+  }
 }

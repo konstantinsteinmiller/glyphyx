@@ -11,15 +11,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="glyphyx">
-  <meta name="description" content="Shoot the gates to grow them, run your crowd through, and turn three survivors into an army before the boss turns them into dust.">
+  <meta name="apple-mobile-web-app-title" content="Glyphyx">
+  <meta name="description" content="Drag glowing rune pebbles onto a 4x4 board, swipe to aim, and watch both sides fire at once. Hold eight tiles to win — 90-second tactical battles.">
   <link rel="manifest" href="/manifest.json">
-  <title>glyphyx</title>
+  <title>Glyphyx</title>
   <style>
       /* The splash paints before any JS runs, so its colours are inlined here
-         rather than pulled from the app's stylesheet. They match the scene's
-         night-sky background so the handover to the canvas is seamless — no
-         flash of a differently-coloured page. */
+         rather than pulled from the app's stylesheet. They match the arena's
+         night-sky background so the handover to the canvas is seamless. */
       body {
           margin: 0;
           background-color: #0a1224;
@@ -42,22 +41,14 @@
           pointer-events: none;
       }
 
-      /* The greeting card, minus its punchline.
+      /* The greeting card.
          ------------------------------------------------------------------
-         What stood here was Tower Siege's: three stacked blocks pulsing in
-         sequence, carried over with the splash flow. It is now the same
-         picture `FLogoProgress.vue` draws — the wispling floating over the
-         title — at the SAME size in the SAME place, so when Vue mounts and
-         this element fades out, nothing moves. The speech bubble is the only
-         thing that is not here, and it pops in on top of this once the fade
-         has finished (see `LURK_MS` in that component).
+         The same picture `FLogoProgress.vue` draws — a rune pebble breathing
+         over the title — at the SAME size in the SAME place, so when Vue
+         mounts and this element fades out, nothing moves.
 
          Duplicated rather than shared because this has to paint before any
-         stylesheet or module has been fetched. Change one, change both.
-
-         The two `<img>` sources are absolute public paths — Vite rewrites
-         them against the build's base, the same as the favicon and manifest
-         links above, so the relative-base portal builds resolve them too. */
+         stylesheet or module has been fetched. Change one, change both. */
       .splash-greet {
           position: relative;
           display: flex;
@@ -65,98 +56,99 @@
           align-items: center;
           gap: 0.55rem;
           width: clamp(200px, 58vmin, 340px);
+          font-family: 'Angry', Impact, 'Arial Black', sans-serif;
       }
 
-      .splash-stage {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 340 / 200;
+      .splash-pebble {
+          width: 46%;
+          aspect-ratio: 1;
+          animation: splash-breathe 2.6s ease-in-out infinite;
       }
 
-      /* One panel of the painted 8-panel walk strip. The strip inside is 8x as
-         wide, so a steps(8) slide of -100% of its own width lands on each panel
-         in turn. */
-      /* Solved for the ghost's INK, not the panel box it is padded inside —
-         see the long note on `.wisp` in FLogoProgress.vue. */
-      .splash-wisp {
-          position: absolute;
-          left: -5.3%;
-          bottom: -5.8%;
-          height: 131.5%;
-          aspect-ratio: 228 / 256;
-          overflow: hidden;
-          animation: splash-float 2.6s ease-in-out infinite;
-      }
-
-      /* max-width beats the app stylesheet's image reset once it lands, and the
-         height beats the tag's own width/height attributes — those are
-         presentational hints, and they are on the tag so this does not reflow
-         when the file decodes. */
-      .splash-wisp img {
+      .splash-pebble svg {
           display: block;
-          max-width: none;
-          width: 800%;
+          width: 100%;
           height: 100%;
-          animation: splash-walk 2.6s steps(8, end) infinite;
+          overflow: visible;
+          filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
       }
 
-      /* The wordmark's ink runs from y=216 to y=295 of the 512 icon; the rest
-         of the file is transparent padding. Crop to a band around it. */
+      .splash-glow {
+          animation: splash-glow 2.6s ease-in-out infinite;
+      }
+
+      .splash-glyph {
+          filter: drop-shadow(0 0 6px #ff3b4a) drop-shadow(0 0 1px #fff);
+      }
+
       .splash-logo {
+          display: flex;
+          justify-content: center;
           width: 100%;
-          aspect-ratio: 512 / 103;
-          overflow: hidden;
       }
 
-      .splash-logo img {
-          display: block;
-          width: 100%;
-          height: auto;
-          margin-top: -39.84%;
+      .splash-wordmark {
+          color: #fff;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-size: clamp(2rem, 12vmin, 3.8rem);
+          line-height: 1;
+          text-shadow: 0 0 0.35em rgba(120, 200, 255, 0.9), 0 0 0.9em rgba(80, 170, 255, 0.55), 3px 3px 0 #000;
       }
 
       /* The loading read-out's placeholder. It is here for the SPACE as much as
          the number: without it the card is one line shorter than the one
-         FLogoProgress draws, so the whole composition would jump upward at the
-         handover. The colour, size and shadow match `.percentage-text` +
-         `.text-shadow` + `.text-amber-500` in the app's stylesheet, which has
-         not loaded yet at this point. */
+         FLogoProgress draws, so the whole composition would jump at the
+         handover. */
       .splash-progress {
           font-size: clamp(0.9rem, 4vw, 1.35rem);
           font-weight: 900;
-          /* The app stylesheet's default, restated: the UA's own 'normal' is
-             tighter, and a line 7 px shorter here would centre the whole card
-             3 px lower than the one Vue draws. */
           line-height: 1.5;
           color: #fe9a00;
           text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
       }
 
-      @keyframes splash-walk {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-100%); }
+      @keyframes splash-breathe {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50%      { transform: translateY(-4%) scale(1.04); }
       }
 
-      @keyframes splash-float {
-          0%, 100% { transform: translateY(0) rotate(-1.5deg); }
-          50%      { transform: translateY(-6%) rotate(1.5deg); }
+      @keyframes splash-glow {
+          0%, 100% { opacity: 0.55; }
+          50%      { opacity: 1; }
       }
 
       @media (prefers-reduced-motion: reduce) {
-          .splash-wisp { animation: none; }
+          .splash-pebble, .splash-glow { animation: none; }
       }
   </style>
 </head>
 <body>
 <div id="static-splash">
   <div class="splash-greet">
-    <div class="splash-stage">
-      <div class="splash-wisp">
-        <img src="/images/monsters/wispling.webp" alt="" width="1824" height="256" fetchpriority="high">
-      </div>
+    <div class="splash-pebble" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="staticStone" cx="0.38" cy="0.32" r="0.75">
+            <stop offset="0" stop-color="#6b7590"/>
+            <stop offset="0.45" stop-color="#3a4150"/>
+            <stop offset="1" stop-color="#151922"/>
+          </radialGradient>
+          <radialGradient id="staticGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#ff5c66" stop-opacity="0.85"/>
+            <stop offset="1" stop-color="#ff3b4a" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="100" cy="176" rx="66" ry="12" fill="rgba(0,0,0,0.5)"/>
+        <ellipse cx="100" cy="102" rx="80" ry="68" fill="url(#staticStone)" stroke="#0b0d12" stroke-width="4"/>
+        <ellipse cx="82" cy="70" rx="34" ry="16" fill="rgba(255,255,255,0.09)"/>
+        <circle class="splash-glow" cx="100" cy="104" r="46" fill="url(#staticGlow)"/>
+        <path class="splash-glyph" transform="translate(58 58) scale(3.5)" d="M12 1.4 14.5 5.4 13.5 13.6H10.5L9.5 5.4 12 1.4ZM6.6 13.8H17.4A1.5 1.5 0 0 1 17.4 16.8H6.6A1.5 1.5 0 0 1 6.6 13.8ZM10.7 16.9H13.3V20.2H10.7ZM12 19.6A1.7 1.7 0 1 1 12 23 1.7 1.7 0 0 1 12 19.6Z" fill="#ff5c66"/>
+      </svg>
     </div>
     <div class="splash-logo">
-      <img src="/images/logo/logo_512x512.png" alt="glyphyx" width="512" height="512" fetchpriority="high">
+      <span class="splash-wordmark">Glyphyx</span>
     </div>
     <span class="splash-progress">0%</span>
   </div>

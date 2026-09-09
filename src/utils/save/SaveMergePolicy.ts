@@ -10,13 +10,13 @@
 // remote and pick a winner deterministically without prompting.
 //
 // Score formula (glyphyx):
-//   bestStage           × 500
-// + totalUpgradeLevels  × 150
-// + runsPlayed          ×  10
+//   bestNode            × 500
+// + unlockedRunes       × 150
+// + matchesPlayed       ×  10
 //
-// `bestStage` is the headline progress number (deepest stage ever cleared),
-// upgrade levels are the permanent spend, and the run counter breaks ties
-// between two saves that reached the same stage with the same upgrades.
+// `bestNode` is the headline progress number (deepest campaign node ever
+// cleared), unlocked runes are the permanent progression, and the match counter
+// breaks ties between two saves at the same node with the same roster.
 //
 // Conflict policy:
 //   - higher score wins
@@ -25,8 +25,8 @@
 //   - if remote wins and local had ANY progress (score > 0), the player
 //     gets bonus coins = winner.maxStage × 50 to soften the loss
 
-import { BEST_STAGE_KEY, COINS_KEY, UPGRADES_KEY, RUNS_KEY } from '@/keys'
-import { STATE_KEY } from '@/use/useTowerState'
+import { BEST_NODE_KEY, COINS_KEY, UNLOCKED_RUNES_KEY, MATCHES_KEY } from '@/keys'
+import { STATE_KEY } from '@/use/useGlyphyxState'
 
 /** Where the meta blob is stored in localStorage / on the remote backend.
  *  NOT prefixed with `__save_internal__` — this key needs to round-trip
@@ -51,7 +51,7 @@ export interface SaveMeta {
   /** Output of the score formula above. */
   progressScore: number
   schemaVersion: number
-  /** Deepest stage the save represents — used to compute the conflict bonus. */
+  /** Deepest campaign node the save represents — used to compute the conflict bonus. */
   maxStage: number
   /**
    * Cloud `savedAt` for which this client already received the conflict
@@ -115,7 +115,7 @@ const safeJson = <T>(v: string | null, fallback: T): T => {
  * Compute a fresh meta blob from the current localStorage snapshot.
  * Pure — no side effects.
  */
-/** Pull a sub-field out of the consolidated `tower_state` blob if present.
+/** Pull a sub-field out of the consolidated `glyphyx_state` blob if present.
  *  Falls through to a top-level read for back-compat with any pre-migration
  *  snapshot that still has individual keys (e.g. the score formula was just
  *  invoked between BlobStorage construction and the first migration write). */
@@ -140,24 +140,21 @@ export const computeMeta = (
 ): SaveMeta => {
   // `bestStage` is 0 for a player who has never cleared a stage, so a brand-new
   // local snapshot scores 0 and can never beat a real cloud save on a tie.
-  const bestStage = Math.max(0, safeInt(readField(read, BEST_STAGE_KEY), 0))
-  const runs = Math.max(0, safeInt(readField(read, RUNS_KEY), 0))
+  const bestNode = Math.max(0, safeInt(readField(read, BEST_NODE_KEY), 0))
+  const matches = Math.max(0, safeInt(readField(read, MATCHES_KEY), 0))
 
-  // Upgrades are stored as a flat `{ id: level }` record. Summing the levels
-  // (rather than counting the tracks) makes a deeply-invested save beat a
-  // broadly-dabbled one, which is the right tie-break for a meta this small.
-  const upgrades = safeJson<Record<string, number>>(readField(read, UPGRADES_KEY), {})
-  let upgradeLevels = 0
-  for (const v of Object.values(upgrades)) {
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) upgradeLevels += v
-  }
+  // Unlocked runes are stored as an array of rune type ids. Counting them
+  // (rather than reading a level) is the right tie-break for a roster this
+  // small: a save that has earned the mage beats one that has not.
+  const unlocked = safeJson<unknown[]>(readField(read, UNLOCKED_RUNES_KEY), [])
+  const unlockedCount = Array.isArray(unlocked) ? unlocked.length : 0
 
   const progressScore =
-    bestStage * 500
-    + upgradeLevels * 150
-    + runs * 10
+    bestNode * 500
+    + unlockedCount * 150
+    + matches * 10
 
-  return { savedAt, progressScore, schemaVersion: SCHEMA_VERSION, maxStage: bestStage }
+  return { savedAt, progressScore, schemaVersion: SCHEMA_VERSION, maxStage: bestNode }
 }
 
 /**
@@ -240,7 +237,7 @@ export const applyBonusCoins = (read: SnapshotReader, bonus: number): string => 
   return String(current + Math.max(0, bonus))
 }
 
-/** Bonus-coin path: read the sub-field from tower_state if it exists. */
+/** Bonus-coin path: read the sub-field from glyphyx_state if it exists. */
 export const readCoinTotal = (read: SnapshotReader): number => {
   return safeInt(readField(read, COINS_KEY), 0)
 }
@@ -257,14 +254,14 @@ export const readCoinTotal = (read: SnapshotReader): number => {
  * misleading picture of what the game stores.
  *
  * Single-blob model: every persisted gameplay value lives inside the
- * `tower_state` localStorage entry (see `useTowerState.ts`). The cloud
+ * `glyphyx_state` localStorage entry (see `useGlyphyxState.ts`). The cloud
  * therefore mirrors exactly TWO keys — the state blob and the meta blob.
  *
- * Individual `ts_*` field keys are also accepted as payload so any stray
+ * Individual `gx_*` field keys are also accepted as payload so any stray
  * per-key write (defensive, or a mid-migration snapshot from an older client)
  * round-trips safely instead of being silently dropped.
  */
-const PAYLOAD_PREFIXES = ['ts_'] as const
+const PAYLOAD_PREFIXES = ['gx_'] as const
 
 export const isPayloadKey = (key: string): boolean => {
   if (key === META_KEY) return true
@@ -277,8 +274,8 @@ export const isPayloadKey = (key: string): boolean => {
 
 // Re-exported so tests / other modules don't have to re-declare them.
 export const SAVE_KEYS = {
-  BEST_STAGE: BEST_STAGE_KEY,
+  BEST_NODE: BEST_NODE_KEY,
   COINS: COINS_KEY,
-  UPGRADES: UPGRADES_KEY,
-  RUNS: RUNS_KEY
+  UNLOCKED_RUNES: UNLOCKED_RUNES_KEY,
+  MATCHES: MATCHES_KEY
 } as const

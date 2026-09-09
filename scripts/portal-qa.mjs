@@ -428,28 +428,26 @@ const ev = async expr => {
   return r.result.value
 }
 
-/** Drag across the canvas the way a player steers, with real input events —
- *  the first-run tutorial is deliberately satisfied only by a real gesture,
- *  and until it is, the road does not move. See trap 3. */
+/** One real click on the canvas, with trusted input events. Glyphyx's loop
+ *  runs from boot (the planning clock ticks whether or not the player has
+ *  placed a rune), so unlike the crowd runner no gesture is needed to prove
+ *  the control case — but portals that gate `gameplayStart` on a trusted
+ *  interaction (Poki) still need one. The click lands on an EMPTY tile, never
+ *  on the hand, so it cannot commit a placement and end the tutorial match
+ *  before the checks below have run. See trap 3. */
 const steer = async () => {
   const box = JSON.parse(await ev(`(() => {
     const c = document.querySelector('canvas'); if (!c) return 'null';
     const r = c.getBoundingClientRect();
-    return JSON.stringify({ x: r.x + r.width / 2, y: r.y + r.height * 0.75, w: r.width });
+    return JSON.stringify({ x: r.x + r.width * 0.5, y: r.y + r.height * 0.42 });
   })()`))
   const at = (type, x, y) => send('Input.dispatchMouseEvent', {
     type, x, y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1
   })
-  for (let pass = 0; pass < 3; pass++) {
-    const dir = pass % 2 === 0 ? 1 : -1
-    await at('mousePressed', box.x, box.y)
-    for (let i = 1; i <= 10; i++) {
-      await at('mouseMoved', box.x + dir * box.w * 0.03 * i, box.y)
-      await sleep(30)
-    }
-    await at('mouseReleased', box.x + dir * box.w * 0.3, box.y)
-    await sleep(150)
-  }
+  await at('mousePressed', box.x, box.y)
+  await sleep(40)
+  await at('mouseReleased', box.x, box.y)
+  await sleep(150)
 }
 
 try {

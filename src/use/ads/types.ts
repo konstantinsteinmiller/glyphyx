@@ -97,6 +97,12 @@ export interface AdProvider {
    * rejects. `onImpression` is invoked the moment the ad actually opens —
    * providers that set `managesMidgameAudio` call it to mute audio at that
    * point; others ignore it (audio is already killed up front).
+   *
+   * A provider that KNOWS nothing was shown (the SDK reported a no-fill, a
+   * close with `wasShown === false`, a cooldown refusal) may resolve `false`;
+   * `useAds` then reports the request as a no-fill so the interstitial pacing
+   * clock is not spent on an ad the player never saw. `void` / `true` mean
+   * "shown, as far as the SDK told us".
    */
-  showMidgameAd: (onImpression?: () => void) => Promise<void>
+  showMidgameAd: (onImpression?: () => void) => Promise<void | boolean>
 }

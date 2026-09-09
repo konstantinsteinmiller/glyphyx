@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>arena renderer smoke</title>
+  <style>
+    html, body { margin: 0; background: #000; overflow: hidden; }
+    canvas { display: block; touch-action: none; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+  // A standalone bench for `useArenaArt`: builds a real board through the
+  // domain modules, runs a real resolution for a timeline, and hands the
+  // renderer a synthetic view for each phase. Driven by `smoke.mjs` over CDP.
+  import { createArenaRenderer } from '/src/use/useArenaArt.ts'
+  import { setArtOverrides } from '/src/game/art.ts'
+  import { getAudioContext } from '/src/use/useAssets.ts'
+  import { warmAudio } from '/src/use/useGameAudio.ts'
+  import { attachArenaInput } from '/src/use/useArenaInput.ts'
+  import { createBoard, addRune } from '/src/game/board.ts'
+  import { resolveTurn } from '/src/game/resolve.ts'
+  import { nodeConfig } from '/src/game/campaign.ts'
+  import { PLANNING_MS, RESOLVE_MS, REVEAL_MS, TURN_LIMIT } from '/src/game/rules.ts'
+
+  setArtOverrides(true, false)
+  // The real scene creates the audio context behind the splash; do the same here so the first cue is not measured as a frame stall.
+  getAudioContext(); warmAudio()
+  const canvas = document.getElementById('c')
+  const renderer = createArenaRenderer(canvas)
+  const config = nodeConfig(4, 'medium')
+  const board = createBoard(config)
+  addRune(board, { side: 'player', faction: null, type: 'melee', col: 1, row: 2, dir: 'up' })
+  addRune(board, { side: 'player', faction: null, type: 'defense', col: 2, row: 3, dir: 'omni', level: 2 })
+  addRune(board, { side: 'player', faction: null, type: 'support', col: 1, row: 3, dir: 'omni' })
+  addRune(board, { side: 'enemy', faction: 'goblin', type: 'archer', col: 1, row: 0, dir: 'down' })
+  addRune(board, { side: 'enemy', faction: 'goblin', type: 'melee', col: 1, row: 1, dir: 'down', hp: 2 })
+  addRune(board, { side: 'enemy', faction: 'goblin', type: 'mage', col: 3, row: 0, dir: 'dl' })
+
+  const labels = {
+    level: (n) => `Lv.${n}`, combo: (n) => `×${n} COMBO`, clash: 'CLASH!', victory: 'VICTORY!', defeat: 'DEFEAT',
+    reveal: 'REVEAL', suddenDeath: 'SUDDEN DEATH', turn: (n) => `TURN ${n}`, you: 'YOU', foe: 'FOE', reroll: 'REROLL', lastTurn: 'LAST TURN'
+  }
+  const view = {
+    config, board, phase: 'planning', turn: 3, turnLimit: TURN_LIMIT, suddenDeath: false,
+    hand: ['melee', 'archer', 'mage'], rerollsLeft: 2, playerMove: null,
+    timer: { totalMs: PLANNING_MS, leftMs: 2400, paused: false },
+    drag: null, reveal: null, timeline: null, ghost: { handIndex: 0, to: { col: 1, row: 2 }, dir: 'up' },
+    skin: 'river', result: null, playerTiles: 6, enemyTiles: 5, streak: 4, ageMs: 0, resetting: false, labels
+  }
+  const battle = {
+    view,
+    beginDrag: (i, x, y) => { view.drag = { handIndex: i, type: view.hand[i], x, y, over: null, kind: null, aiming: false, dir: 'up', anchor: null }; return true },
+    updateDrag: (x, y, over) => { if (!view.drag) return; view.drag.x = x; view.drag.y = y; view.drag.over = over ? { ...over } : null; view.drag.kind = over ? (over.row === 2 && over.col === 1 ? 'stack' : over.row <= 1 && over.col === 1 ? 'invalid' : 'empty') : null; if (over && view.drag.kind !== 'invalid' && !view.drag.aiming) { view.drag.aiming = true; view.drag.anchor = { x, y } } },
+    setAim: (dir) => { if (view.drag) view.drag.dir = dir },
+    endDrag: () => { view.drag = null },
+    reroll: () => { view.rerollsLeft = Math.max(0, view.rerollsLeft - 1) },
+    tick: () => {}
+  }
+
+  const resize = () => renderer.resize(window.innerWidth, window.innerHeight, window.devicePixelRatio, { top: 58, bottom: 52, left: 0, right: 0 })
+  resize()
+  window.addEventListener('resize', resize)
+  attachArenaInput(canvas, renderer, battle)
+
+  let last = performance.now()
+  let clock = 0
+  const loop = (t) => {
+    const dt = Math.min(64, t - last)
+    last = t
+    clock += dt
+    if (view.reveal) view.reveal.elapsedMs += dt
+    if (view.timeline) view.timeline.elapsedMs += dt
+    view.ageMs += dt
+    const d0 = performance.now()
+    try { renderer.draw(view, dt, t) } catch (e) { window.__smokeError = String(e && e.stack || e); console.error(e) }
+    ;(window.__work = window.__work || []).push(performance.now() - d0)
+    window.__frames = (window.__frames || 0) + 1
+    requestAnimationFrame(loop)
+  }
+  requestAnimationFrame(loop)
+
+  // The driver's remote control.
+  window.__smoke = {
+    layout: () => renderer.layout(),
+    planning: () => { view.phase = 'planning'; view.reveal = null; view.timeline = null; view.drag = null; view.result = null },
+    drag: (x, y) => { battle.beginDrag(0, x, y); battle.updateDrag(x, y, null) },
+    aimAt: (col, row, dir) => { battle.updateDrag(0, 0, { col, row }); view.drag.aiming = true; view.drag.anchor = { x: 0, y: 0 }; battle.setAim(dir) },
+    reveal: () => {
+      view.ghost = null
+      view.phase = 'reveal'
+      view.reveal = { player: { side: 'player', faction: null, type: 'archer', col: 2, row: 2, dir: 'up' }, enemies: [{ side: 'enemy', faction: 'goblin', type: 'melee', col: 0, row: 1, dir: 'down' }], elapsedMs: 0 }
+    },
+    resolve: () => {
+      const moves = [
+        { side: 'player', faction: null, type: 'archer', col: 2, row: 2, dir: 'up' },
+        { side: 'enemy', faction: 'goblin', type: 'melee', col: 0, row: 1, dir: 'down' }
+      ]
+      const out = resolveTurn(board, moves, { enemyAtkMul: () => 1 })
+      view.reveal = null
+      view.phase = 'resolve'
+      view.timeline = { before: board, after: out.board, events: out.events, elapsedMs: 0 }
+      return out.events.map((e) => `${e.kind}@${e.at}`)
+    },
+    settle: () => { if (view.timeline) { view.board = view.timeline.after; view.timeline.elapsedMs = RESOLVE_MS + 10 } },
+    victory: () => { view.phase = 'ended'; view.timeline = null; view.result = { won: true, reason: 'conquest', turns: 5, playerTiles: 8, enemyTiles: 3, maxCombo: 2, kills: 4, durationMs: 60000 } },
+    sudden: () => { view.suddenDeath = true },
+    reset: () => { view.resetting = true; setTimeout(() => { view.resetting = false }, 250) },
+    frames: () => window.__frames,
+    work: () => { const w = (window.__work || []).slice(-200).sort((a, b) => a - b); const q = (p) => (w[Math.floor((w.length - 1) * p)] || 0).toFixed(2); return { n: w.length, p50: q(0.5), p95: q(0.95), max: q(1) } },
+    resetWork: () => { window.__work = [] },
+    error: () => window.__smokeError || null,
+    REVEAL_MS, RESOLVE_MS
+  }
+</script>
+</body>
+</html>

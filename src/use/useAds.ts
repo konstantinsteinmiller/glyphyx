@@ -153,17 +153,21 @@ const AUDIO_DRAIN_MS = 200
 const AD_OPEN_MS = 6000
 const AD_MAX_MS = 60000
 
+/** How a bounded ad wait ended. Only `settled` means the provider answered. */
+type AdWaitEnd = 'settled' | 'never opened' | 'never finished'
+
 /**
  * Resolve when `call` settles, or when the caps above expire — whichever comes
- * first.
+ * first — and say which it was, so the caller can tell an ad that ran from a
+ * request that went nowhere.
  *
  * A provider REJECTION is re-thrown rather than swallowed, so the caller's
  * existing catch still logs the cut-off path: an SDK that reports an error is
  * behaving correctly and that stays visible in the console. Only the CAPS
  * resolve quietly — they exist for the SDK that reports nothing at all.
  */
-const awaitAdBounded = (call: Promise<unknown>, hasOpened: () => boolean): Promise<void> =>
-  new Promise<void>((resolve, reject) => {
+const awaitAdBounded = (call: Promise<unknown>, hasOpened: () => boolean): Promise<AdWaitEnd> =>
+  new Promise<AdWaitEnd>((resolve, reject) => {
     let settled = false
     let openTimer: ReturnType<typeof setTimeout> | undefined
     let maxTimer: ReturnType<typeof setTimeout> | undefined
@@ -173,14 +177,14 @@ const awaitAdBounded = (call: Promise<unknown>, hasOpened: () => boolean): Promi
       clearTimeout(maxTimer)
     }
 
-    const finish = (reason: string): void => {
+    const finish = (reason: AdWaitEnd): void => {
       if (settled) return
       settled = true
       clear()
       if (reason !== 'settled') {
         console.warn(`${TAG} ad wait released by cap (${reason}) — the SDK never answered`)
       }
-      resolve()
+      resolve(reason)
     }
 
     const fail = (e: unknown): void => {
@@ -255,7 +259,22 @@ export const showRewardedAd = async (): Promise<boolean> => {
   }
 }
 
-export const showMidgameAd = async (): Promise<void> => {
+/**
+ * What an interstitial request came to.
+ *
+ *   • `shown`   — the SDK ran an ad (or settled without saying otherwise; a
+ *                 provider that cannot tell a no-fill apart reports this, which
+ *                 is the safe side for pacing).
+ *   • `no-fill` — nothing was shown: the provider said so (`false`), or the
+ *                 request never reported opening inside `AD_OPEN_MS`.
+ *   • `error`   — the provider threw / rejected.
+ *
+ * `useAdGate.showPacedInterstitial` only charges the 121 s pacing clock for
+ * `shown`; the other two are retried after a shorter gap.
+ */
+export type MidgameOutcome = 'shown' | 'no-fill' | 'error'
+
+export const showMidgameAd = async (): Promise<MidgameOutcome> => {
   // The audio kill: hard-stop the music, cut every in-flight one-shot SFX so
   // nothing tails into the ad, and flip the pause gate (`isAdShowing` →
   // `isGamePaused`, which `useGamePauseAudio` watches with `flush: 'sync'` to
@@ -271,6 +290,11 @@ export const showMidgameAd = async (): Promise<void> => {
   // Set from the provider's impression callback: the ad genuinely opened, so the
   // short "never opened" cap must not fire on a real video.
   let opened = false
+  // Set when the provider resolved `false`: it KNOWS nothing was shown.
+  let providerSaidNo = false
+  const noteAnswer = (v: unknown): void => { if (v === false) providerSaidNo = true }
+  const outcomeOf = (end: AdWaitEnd): MidgameOutcome =>
+    providerSaidNo || end === 'never opened' ? 'no-fill' : 'shown'
   try {
     if (provider.managesMidgameAudio) {
       // Provider mutes audio only when the ad ACTUALLY opens — it invokes
@@ -283,10 +307,12 @@ export const showMidgameAd = async (): Promise<void> => {
       killAudioForAd()
       await new Promise<void>((resolve) => setTimeout(resolve, AUDIO_DRAIN_MS))
       dlog(`${TAG} ▶ interstitial START (provider=${provider.name}, mute-on-open)`)
-      await awaitAdBounded(
-        provider.showMidgameAd(() => { opened = true; killAudioForAd() }),
+      const end = await awaitAdBounded(
+        provider.showMidgameAd(() => { opened = true; killAudioForAd() }).then(noteAnswer),
         () => opened
       )
+      dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
+      return outcomeOf(end)
     } else {
       // Default: kill audio BEFORE the SDK shows. GamePix-style SDKs resolve
       // `interstitialAd()` before the ad visually closes, so up front is the
@@ -296,16 +322,18 @@ export const showMidgameAd = async (): Promise<void> => {
       killAudioForAd()
       await new Promise<void>((resolve) => setTimeout(resolve, AUDIO_DRAIN_MS))
       dlog(`${TAG} ▶ interstitial START (provider=${provider.name})`)
-      await awaitAdBounded(
-        provider.showMidgameAd(() => { opened = true }),
+      const end = await awaitAdBounded(
+        provider.showMidgameAd(() => { opened = true }).then(noteAnswer),
         () => opened
       )
+      dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
+      return outcomeOf(end)
     }
-    dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
   } catch (e) {
     // Same "cut off due to error" safety net as the rewarded path: never
     // leave the game muted/paused if the interstitial backend throws.
     console.warn(`${TAG} ✖ interstitial ERROR (provider=${provider.name}) — resuming`, e)
+    return 'error'
   } finally {
     isAdShowing.value = false
   }

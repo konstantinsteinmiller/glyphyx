@@ -1,4 +1,4 @@
-import { getState, setState } from '@/use/useTowerState'
+import { getState, setState } from '@/use/useGlyphyxState'
 import { flushSaveNow } from '@/use/useSaveStatus'
 import {
   ANON_NAME_KEY, PLAYER_ID_KEY, PLAYER_NAME_KEY, SDK_NAME_KEY
@@ -26,7 +26,7 @@ export interface PlayerIdentity {
 }
 
 /**
- * The id's own localStorage key, deliberately OUTSIDE the `ts_`-prefixed save
+ * The id's own localStorage key, deliberately OUTSIDE the `gx_`-prefixed save
  * blob.
  *
  * That prefix is exactly what the cloud save layer allowlists and mirrors, so a
@@ -93,8 +93,8 @@ const mintId = (): string => {
  * by `NAME_MAX` — a name that got cut would collide with every other cut name.
  */
 const ANON_WORDS = [
-  'Survivor', 'Runner', 'Scout', 'Nomad', 'Drifter',
-  'Ranger', 'Wanderer', 'Strider', 'Trekker', 'Roamer'
+  'Runeseer', 'Glyphborn', 'Stonecall', 'Warden', 'Seeker',
+  'Oracle', 'Sentinel', 'Pilgrim', 'Duelist', 'Conjurer'
 ] as const
 
 const mintName = (): string => {

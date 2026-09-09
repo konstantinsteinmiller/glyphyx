@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { isCrazyWeb } from '@/use/useUser'
 import { isCrazyGamesFullRelease } from '@/use/useMatch'
-import { adProviderName, isRewardedReady, showRewardedAd } from '@/use/useAds'
+import { adProviderName, isInterstitialReady, isRewardedReady, showMidgameAd, showRewardedAd } from '@/use/useAds'
 
 /**
  * ─── Reward gating ──────────────────────────────────────────────────────────
@@ -24,6 +24,27 @@ import { adProviderName, isRewardedReady, showRewardedAd } from '@/use/useAds'
  *                          `isCrazyPreRelease` below.
  *   • noop (local dev,
  *     plain web, itch…)  → not gated, perks are free.
+ *
+ * ─── Every rewarded surface goes through ONE core ───────────────────────────
+ *
+ * The ×3 on the result screen (`claimReward`), a skin bought with a video and a
+ * power rune from the shop (`watchRewarded`) are the same transaction with a
+ * different label, so they share `runRewarded` and therefore the same gates,
+ * in this order:
+ *
+ *   1. the CG pre-release build offers nothing (no inventory, no free grant);
+ *   2. an ungated build (no provider) grants for free — a perk must not become
+ *      unreachable where there is no video to play;
+ *   3. nothing while another ad is in flight (`adInFlight`);
+ *   4. the rewarded RATE LIMIT below (requests, not grants);
+ *   5. readiness: the provider has a rewarded loaded AND the watch throttle in
+ *      `useAds.isRewardedReady` is open — a button that then fails reads as the
+ *      game being broken, so `canOfferReward` hides the surface first and the
+ *      core refuses second.
+ *
+ * A granted video also restarts the interstitial clock: a player who has just
+ * sat through a rewarded owes no midgame for another two minutes, whatever the
+ * portals' per-format limits say.
  */
 export const isRewardGated =
   adProviderName !== 'noop' && (!isCrazyWeb || isCrazyGamesFullRelease)
@@ -105,50 +126,123 @@ export const __resetRewardWindow = (): void => {
 }
 
 /**
+ * True while a full-screen ad started by this module is on its way — a gated
+ * reward waiting on its video, or a paced interstitial. Every button that could
+ * start another ad, or leave the screen the ad is about to cover, disables on
+ * it, which is why it is exposed rather than each call site inventing its own
+ * busy flag.
+ */
+export const adInFlight = ref(false)
+
+// ─── The rewarded core ──────────────────────────────────────────────────────
+
+/** What a rewarded video is paying for — for telemetry and the outcome hook. */
+/**
+ * What the player is buying with a video. Purely a label — every reason runs
+ * the identical transaction — but it is what the outcome listeners and the
+ * portals' own placement reporting see, so each surface names itself.
+ */
+export type RewardedReason =
+  | 'multiplier' | 'skin' | 'powerRune'
+  /** One permanent rune rank, from the shop's Ranks tab. */
+  | 'runeRank'
+  /** The nuker, unlocked early instead of waiting for Stage 4-1. */
+  | 'nukerUnlock'
+
+type RewardedOutcomeListener = (reason: RewardedReason, granted: boolean) => void
+const rewardedListeners = new Set<RewardedOutcomeListener>()
+
+/**
+ * Hear about every rewarded request that reached the provider, granted or not.
+ * Returns the unsubscribe. Optional telemetry — nothing in the game depends on
+ * it, and a listener that throws is contained.
+ */
+export const onRewardedOutcome = (cb: RewardedOutcomeListener): (() => void) => {
+  rewardedListeners.add(cb)
+  return () => { rewardedListeners.delete(cb) }
+}
+
+const notifyRewarded = (reason: RewardedReason, granted: boolean): void => {
+  for (const cb of rewardedListeners) {
+    try { cb(reason, granted) } catch (e) { console.warn('[ads] rewarded listener threw', e) }
+  }
+}
+
+/**
+ * The one transaction behind every rewarded surface (see the header).
+ *
+ * `grant` runs only on a real grant (or for free on an ungated build). With
+ * `rethrow`, a provider rejection propagates so the caller's catch keeps
+ * logging it (`claimReward`'s long-standing contract); without it the rejection
+ * is contained and reads as "not granted" (`watchRewarded` never throws).
+ */
+const runRewarded = async (
+  reason: RewardedReason, grant: (() => void) | null, rethrow: boolean
+): Promise<boolean> => {
+  // Belt and braces: the button is not rendered on a CG pre-release build, but a
+  // free perk must not be reachable by any other route either.
+  if (isCrazyPreRelease) return false
+  if (!isRewardGated) {
+    grant?.()
+    return true
+  }
+  if (adInFlight.value) return false
+  if (isRewardRateLimited()) return false
+  if (!isRewardedReady.value) return false
+  adInFlight.value = true
+  recordRewardRequest()
+  try {
+    const ok = await showRewardedAd()
+    if (ok) {
+      // A video was just watched: no interstitial for another full gap.
+      markInterstitialShown()
+      grant?.()
+    }
+    notifyRewarded(reason, ok)
+    return ok
+  } catch (e) {
+    notifyRewarded(reason, false)
+    if (rethrow) throw e
+    console.warn('[ads] rewarded request failed', e)
+    return false
+  } finally {
+    adInFlight.value = false
+  }
+}
+
+/**
  * Run `grant` behind a rewarded video where the build calls for it.
  *
  * Returns whether the perk was granted. On a gated build a no-fill, a dismissed
  * ad or a blocked ad all resolve to `false` and grant nothing — the caller is
- * responsible for leaving its UI in a sane state, which is why `inFlight` is
+ * responsible for leaving its UI in a sane state, which is why `adInFlight` is
  * exposed rather than each call site inventing its own busy flag.
  *
  * The rate limit is enforced here as well as in `canOfferReward`, because a
  * button is not the only way into this function and a limit that only hides UI
  * is not a limit.
  */
-export const claimReward = async (grant: () => void): Promise<boolean> => {
-  // Belt and braces: the button is not rendered on a CG pre-release build, but a
-  // free ×3 must not be reachable by any other route either.
-  if (isCrazyPreRelease) return false
-  if (!isRewardGated) {
-    grant()
-    return true
-  }
-  if (adInFlight.value) return false
-  if (isRewardRateLimited()) return false
-  adInFlight.value = true
-  recordRewardRequest()
-  try {
-    const ok = await showRewardedAd()
-    if (ok) grant()
-    return ok
-  } finally {
-    adInFlight.value = false
-  }
-}
-
-/** True while a gated reward is waiting on its video. */
-export const adInFlight = ref(false)
+export const claimReward = (grant: () => void): Promise<boolean> =>
+  runRewarded('multiplier', grant, true)
 
 /**
- * Can this perk be offered right now?
+ * Watch a rewarded video for something that is not the ×3 — a skin, a power
+ * rune. Resolves `true` only when the provider granted (or the build is
+ * ungated, where the thing is free). Never throws: every refusal and every
+ * failure is `false`, so a shop can `await` it and simply not deliver.
+ */
+export const watchRewarded = (reason: Exclude<RewardedReason, 'multiplier'> | 'multiplier'): Promise<boolean> =>
+  runRewarded(reason, null, false)
+
+/**
+ * Can a rewarded perk be offered right now?
  *
  * On a CG pre-release build: never — there is no inventory to offer against.
  * On an ungated build: always. On a gated build: only when the provider
  * actually has a rewarded ad ready AND the player has rewarded allowance left
  * in the current window. Offering a button that then fails reads as the game
  * being broken, which is exactly as true for a rate-limited refusal as for a
- * no-fill.
+ * no-fill. The same flag serves the ×3, the skin shop and the power runes.
  */
 export const canOfferReward = computed(
   () => !isCrazyPreRelease && (!isRewardGated || (isRewardedReady.value && !isRewardRateLimited()))
@@ -187,34 +281,121 @@ export const canOfferReward = computed(
  * If a portal ever publishes a LONGER minimum, raise it here for that build
  * rather than reintroducing a stage counter — a stage-keyed cadence drifts with
  * how fast the player is, which is exactly what the portals' rules are not.
+ *
+ * ─── Only a SHOWN ad spends the gap ─────────────────────────────────────────
+ *
+ * A request that came back empty — no-fill, an SDK that never answered, a
+ * thrown provider — must not cost the player-facing pacing: otherwise one
+ * unlucky waterfall at a natural break silences monetisation for two more
+ * minutes. But it must not be hammered either: every request is a network call
+ * and Yandex spaces CALLS at 60 s. So a failed request may be retried after
+ * `INTERSTITIAL_RETRY_MS`, while the last ad that actually ran still owes its
+ * full `INTERSTITIAL_PACE_MS`. `showPacedInterstitial` applies both rules;
+ * the scene's own call sites do it with `markInterstitialShown` /
+ * `markInterstitialFailed`.
  */
-const INTERSTITIAL_MIN_GAP_MS = 121_000
+export const INTERSTITIAL_PACE_MS = 121_000
+/** A request that showed nothing may be tried again after this. */
+export const INTERSTITIAL_RETRY_MS = 61_000
 
-let lastInterstitialAt = 0
+/** When an interstitial last ran (or the session's clock was seeded). 0 = never asked. */
+let lastShownAt = 0
+/** When an interstitial was last REQUESTED, shown or not. */
+let lastAttemptAt = 0
+/** `lastShownAt` before the attempt in flight — restored when it fails. */
+let shownBeforeAttempt = 0
 
 /**
  * True when enough time has passed to show another interstitial.
  *
- * The first call of a session returns false: an interstitial in the opening
- * seconds — before the player has seen the game work — is the single most
- * reliable way to lose them.
+ * The first call of a session returns false and starts the clock: an
+ * interstitial in the opening seconds — before the player has seen the game
+ * work — is the single most reliable way to lose them.
  */
-export const canShowInterstitial = (): boolean => {
-  if (lastInterstitialAt === 0) {
-    lastInterstitialAt = Date.now()
+export const canShowInterstitial = (now: number = Date.now()): boolean => {
+  if (lastShownAt === 0) {
+    lastShownAt = now
     return false
   }
-  return Date.now() - lastInterstitialAt >= INTERSTITIAL_MIN_GAP_MS
+  return now - lastShownAt >= INTERSTITIAL_PACE_MS && now - lastAttemptAt >= INTERSTITIAL_RETRY_MS
 }
 
-/** Record that an interstitial was just shown, restarting the 120 s clock. */
-export const markInterstitialShown = (): void => {
-  lastInterstitialAt = Date.now()
+/**
+ * Record that an interstitial was just requested and is expected to run,
+ * restarting the full gap. Call BEFORE the show (so nothing else can slip a
+ * second request in while it is on its way) and follow a request that showed
+ * nothing with `markInterstitialFailed`.
+ */
+export const markInterstitialShown = (now: number = Date.now()): void => {
+  shownBeforeAttempt = lastShownAt
+  lastShownAt = now
+  lastAttemptAt = now
+}
+
+/**
+ * The request marked with `markInterstitialShown` showed nothing (no-fill,
+ * never opened, threw): give the full gap back to the ad that really ran last,
+ * and allow a retry after `INTERSTITIAL_RETRY_MS`.
+ */
+export const markInterstitialFailed = (now: number = Date.now()): void => {
+  lastShownAt = shownBeforeAttempt
+  lastAttemptAt = now
+}
+
+/** Milliseconds until the next interstitial is allowed; 0 when one is due. */
+export const msUntilNextInterstitial = (now: number = Date.now()): number => {
+  if (lastShownAt === 0) return INTERSTITIAL_PACE_MS
+  return Math.max(
+    0,
+    lastShownAt + INTERSTITIAL_PACE_MS - now,
+    lastAttemptAt + INTERSTITIAL_RETRY_MS - now
+  )
 }
 
 /** Seconds until the next interstitial is allowed — debug/telemetry only. */
-export const interstitialCooldownLeft = (): number =>
-  Math.max(0, INTERSTITIAL_MIN_GAP_MS - (Date.now() - lastInterstitialAt)) / 1000
+export const interstitialCooldownLeft = (): number => msUntilNextInterstitial() / 1000
 
 /** Test seam: reset the pacing clock. */
-export const __resetInterstitialClock = (): void => { lastInterstitialAt = 0 }
+export const __resetInterstitialClock = (): void => {
+  lastShownAt = 0
+  lastAttemptAt = 0
+  shownBeforeAttempt = 0
+}
+
+/**
+ * Show an interstitial at a natural break — match end before the first
+ * overlay, a new node started from the result screen or the campaign map — if
+ * one is due. The whole pacing rule in one call:
+ *
+ *   • nothing while another ad is in flight;
+ *   • nothing without inventory (`isInterstitialReady`);
+ *   • nothing inside the gap (`canShowInterstitial`);
+ *   • the clock is charged ONCE, up front, and refunded to the retry rule when
+ *     the request showed nothing.
+ *
+ * `delayMs` leaves a stinger its window before the audio is killed (the result
+ * screen passes ~500 ms). Resolves `true` only when an ad actually ran. Never
+ * inside a match — that is the caller's promise, this module cannot see the
+ * board.
+ */
+export const showPacedInterstitial = async (o: { delayMs?: number } = {}): Promise<boolean> => {
+  if (adInFlight.value) return false
+  if (!isInterstitialReady.value) return false
+  if (!canShowInterstitial()) return false
+  markInterstitialShown()
+  adInFlight.value = true
+  try {
+    if (o.delayMs && o.delayMs > 0) await new Promise<void>((r) => setTimeout(r, o.delayMs))
+    const outcome = await showMidgameAd()
+    if (outcome !== 'shown') markInterstitialFailed()
+    return outcome === 'shown'
+  } catch (e) {
+    // `showMidgameAd` contains its own errors; this is for a provider surface
+    // that forgot to. The clock must not stay charged for an ad that threw.
+    console.warn('[ads] paced interstitial failed', e)
+    markInterstitialFailed()
+    return false
+  } finally {
+    adInFlight.value = false
+  }
+}

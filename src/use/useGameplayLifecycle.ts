@@ -5,7 +5,7 @@
 // decides which SDK events that becomes, because WHICH events to send is a
 // platform contract and not a view concern.
 //
-// Previously `GameScene.vue` imported `syncGameplayLifecycle` straight from
+// Previously the scene imported `syncGameplayLifecycle` straight from
 // `useCrazyGames`, which made CrazyGames the implicit owner of a signal two
 // portals now need. The indirection is one hop and keeps the scene unaware of
 // how many platforms are listening.
@@ -29,7 +29,6 @@
 
 import { syncGameplayLifecycle as syncCrazyGameplay } from '@/use/useCrazyGames'
 import { pokiGameplayStart, pokiGameplayStop } from '@/utils/pokiPlugin'
-import { setMonsterBakeAllowed } from '@/game/monsterSprites'
 
 // ─── What counts as live gameplay ───────────────────────────────────────────
 //
@@ -37,12 +36,12 @@ import { setMonsterBakeAllowed } from '@/game/monsterSprites'
 // owns only the reactive wiring that feeds it. Pure and total, so the contract
 // can be asserted without mounting a canvas.
 //
-// The phase union is restated rather than imported from `useSurvivalGame` on
-// purpose: that module is the whole simulation, and a platform-contract module
-// must not drag it into anything that imports it.
+// A plain boolean rather than the battle's phase union on purpose: the battle
+// composable is the whole game, and a platform-contract module must not drag
+// it into anything that imports it.
 export interface GameplayLiveInputs {
-  /** The run's own state machine. Only `run` / `boss` are being PLAYED. */
-  phase: 'run' | 'boss' | 'clear' | 'wipe'
+  /** A match exists and is not over — planning, reveal and resolve all count. */
+  matchActive: boolean
   /** The result screen is up — the run is over and a decision is pending. */
   showResult: boolean
   /** Any blocking modal (shop, options, leaderboard). */
@@ -53,7 +52,7 @@ export interface GameplayLiveInputs {
   visibilityHidden: boolean
   /** The portal's SDK asked us to pause (its own overlay, chrome, ad frame). */
   platformPaused: boolean
-  /** The onboarding lightbox holds the road frozen before the first input. */
+  /** The ghost hand is teaching and the clock is held — nothing is being played yet. */
   tutorialActive: boolean
 }
 
@@ -73,7 +72,7 @@ export interface GameplayLiveInputs {
  *     is the kind of thing portal moderation rejects.
  */
 export const isGameplayLive = (i: GameplayLiveInputs): boolean =>
-  (i.phase === 'run' || i.phase === 'boss')
+  i.matchActive
   && !i.showResult
   && !i.anyModalOpen
   && !i.adShowing
@@ -87,12 +86,6 @@ export const isGameplayLive = (i: GameplayLiveInputs): boolean =>
  * as often as their reactive source changes.
  */
 export const syncGameplayLifecycle = (live: boolean): void => {
-  // Sprite baking rides the same edge. A monster frame costs up to ~12 ms and
-  // cannot be sliced smaller, so it must never run while the player is playing;
-  // every break this signal reports — the result screen, a modal, an ad, the
-  // loading screen — is a moment nothing is animating and the baker is free.
-  setMonsterBakeAllowed(!live)
-
   syncCrazyGameplay(live)
 
   if (import.meta.env.VITE_APP_POKI === 'true') {

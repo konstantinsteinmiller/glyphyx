@@ -2,23 +2,27 @@
 /**
  * Drive the art bench's "Export all sheets" in a private headless Chrome.
  *
- *   pnpm dev                       # in one terminal, on port 2050
- *   pnpm art:export                # in another; writes art-sheets/
+ *   pnpm art:export                       # against http://localhost:2062/#/art-sheets
  *   pnpm art:export http://localhost:2050/#/art-sheets
+ *   pnpm art:export -- --singles          # tick "singles" first (one file per object)
  *
- * Own profile, own port — never the shared debugging profile, which belongs to
- * whatever the user has open, and two clients on one profile deadlock with no
- * recovery. Background-throttling flags are off because the bench renders on
- * `requestAnimationFrame` and a throttled headless tab stalls the export.
+ * Start a dev server first (`npx vite --port 2062 --strictPort`). The bench
+ * writes into `art-sheets/` through the dev server's own POST endpoint, so
+ * this only has to press the button and wait.
+ *
+ * Own profile, own port — never the shared debugging profile, which belongs
+ * to whatever the user has open; two clients on one profile deadlock.
  */
 import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const APP = process.argv[2] ?? 'http://localhost:2050/#/art-sheets'
+const args = process.argv.slice(2)
+const SINGLES = args.includes('--singles')
+const APP = args.find((a) => a.startsWith('http')) ?? 'http://localhost:2062/#/art-sheets'
 const PORT = 9700 + Math.floor(Math.random() * 200)
-const PROFILE = mkdtempSync(join(tmpdir(), 'sv-art-'))
+const PROFILE = mkdtempSync(join(tmpdir(), 'gx-art-'))
 
 const CHROME = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -52,7 +56,6 @@ const cleanup = () => {
 
 let ws
 try {
-  // ── Find the page target ──
   let target = null
   for (let i = 0; i < 60 && !target; i++) {
     await sleep(500)
@@ -61,7 +64,7 @@ try {
       target = list.find((t) => t.type === 'page' && t.url.includes('/art-sheets'))
     } catch { /* not up yet */ }
   }
-  if (!target) throw new Error('no art-sheets page target')
+  if (!target) throw new Error('no art-sheets page target — is the dev server up at that URL?')
 
   ws = new WebSocket(target.webSocketDebuggerUrl)
   await new Promise((ok, no) => { ws.onopen = ok; ws.onerror = no })
@@ -78,9 +81,7 @@ try {
     ws.send(JSON.stringify({ id: n, method, params }))
   })
   const evaluate = async (expression) => {
-    const r = await send('Runtime.evaluate', {
-      expression, returnByValue: true, awaitPromise: true
-    })
+    const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
     if (r.result?.exceptionDetails) {
       throw new Error(r.result.exceptionDetails.exception?.description ?? 'eval failed')
     }
@@ -90,26 +91,28 @@ try {
   await send('Runtime.enable')
   await send('Page.enable')
 
-  // ── Wait for the bench to mount ──
-  for (let i = 0; i < 60; i++) {
-    const ready = await evaluate(
-      "!!document.querySelector('.art-sheets .bar button')"
-    )
+  // The splash sits in front of every route for a couple of seconds; the bench
+  // mounts behind it and its bar is what we wait for.
+  for (let i = 0; i < 90; i++) {
+    const ready = await evaluate("!!document.querySelector('.art-sheets .bar button')")
     if (ready) break
     await sleep(1000)
   }
-  // Verify the port is actually ours: a stale server from another game answers
-  // happily and the export lands in the wrong repo.
-  const title = await evaluate('document.title')
   const heading = await evaluate("document.querySelector('.art-sheets h1')?.textContent ?? ''")
-  console.log(`page: ${title} / ${heading}`)
-  if (!/glyphyx/i.test(title)) throw new Error(`not glyphyx: title is "${title}"`)
+  console.log(`page: ${await evaluate('document.title')} / ${heading}`)
   if (!heading.includes('Art sheets')) throw new Error('not the art bench')
 
-  // ── Press export ──
+  if (SINGLES) {
+    await evaluate(`(() => {
+      const box = document.querySelector('.art-sheets .bar input[type=checkbox]');
+      if (box && !box.checked) box.click();
+      return !!box;
+    })()`)
+    console.log('singles: on')
+  }
+
   const label = await evaluate(`(() => {
-    const b = [...document.querySelectorAll('.art-sheets .bar button')]
-      .find((x) => /Export all/i.test(x.textContent));
+    const b = [...document.querySelectorAll('.art-sheets .bar button')].find((x) => /Export all/i.test(x.textContent));
     if (!b) return null;
     b.click();
     return b.textContent.trim();
@@ -117,37 +120,23 @@ try {
   if (label === null) throw new Error('no export button')
   console.log('clicked:', label)
 
-  // ── Wait it out, reporting the status line as it moves ──
-  //
-  // Poll for the status STRING, not just for the button re-enabling: a page
-  // that reloads mid-export resets `busy` to false and would report "done"
-  // having written nothing.
+  // Poll for the STATUS string, not just the button re-enabling: a page that
+  // reloads mid-export resets `busy` and looks like success having written nothing.
   let last = ''
   const started = Date.now()
   for (;;) {
     await sleep(1500)
     const st = await evaluate(`(() => {
       const s = document.querySelector('.art-sheets .bar .status');
-      const b = [...document.querySelectorAll('.art-sheets .bar button')][0];
-      return JSON.stringify({
-        status: s ? s.textContent.trim() : '',
-        busy: b ? b.disabled : false
-      });
+      const b = document.querySelector('.art-sheets .bar button');
+      return JSON.stringify({ status: s ? s.textContent.trim() : '', busy: b ? b.disabled : false });
     })()`)
     const { status, busy } = JSON.parse(st)
     if (status && status !== last) { console.log('  ·', status); last = status }
     if (!busy && /wrote|FAILED/.test(status)) { console.log('DONE:', status); break }
-    if (!busy && status === 'idle' && Date.now() - started > 8000) {
-      throw new Error('export never started (page reloaded?)')
-    }
     if (Date.now() - started > 20 * 60 * 1000) throw new Error('timed out')
   }
-
-  const errors = await evaluate(`(() => {
-    const s = document.querySelector('.art-sheets .bar .status');
-    return s && /FAILED/i.test(s.textContent) ? s.textContent : ''
-  })()`)
-  if (errors) { console.error('EXPORT FAILED:', errors); process.exitCode = 1 }
+  if (/FAILED/i.test(last)) { console.error('EXPORT FAILED:', last); process.exitCode = 1 }
 } catch (err) {
   console.error('ERROR:', err.message)
   process.exitCode = 1

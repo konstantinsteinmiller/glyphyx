@@ -28,18 +28,3 @@ export const toggleDebug = (): boolean => {
 
 export const isSplashScreenVisible = ref<boolean>(false)
 export const isDbInitialized = ref<boolean>(false)
-
-export const useMatch = () => {
-  const turn = ref<'player' | 'npc'>('player')
-  const isThinking = ref(false)
-
-  const resetGame = () => {}
-
-  return {
-    turn,
-    resetGame,
-    isThinking
-  }
-}
-
-export default useMatch

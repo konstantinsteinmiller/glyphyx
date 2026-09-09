@@ -3,9 +3,10 @@
 CREATE TABLE IF NOT EXISTS scores (
   id         TEXT PRIMARY KEY,
   name       TEXT NOT NULL,
-  -- THE score: the highest stage this player has ever reached.
+  -- THE score: the highest campaign node this player has ever cleared.
   score      INTEGER NOT NULL,
-  -- Flavour shown beside the rank: the biggest squad they ever assembled.
+  -- Shown beside the rank: the best win streak. The column keeps its old name
+  -- so the deployed Worker and the client agree on the wire field.
   squad      INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );

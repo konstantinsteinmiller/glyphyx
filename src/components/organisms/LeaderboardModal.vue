@@ -2,7 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FModal from '@/components/molecules/FModal.vue'
-import { bestStage } from '@/use/useSurvivalGame'
+import { bestNode } from '@/use/useCampaign'
+import { chapterOf, indexInChapter } from '@/game/campaign'
 import { playerDisplayName } from '@/use/usePlayerIdentity'
 import {
   OUTSIDE_BOARD, boardSize, ensureBoard, leaderboard, leaderboardFailed,
@@ -12,53 +13,43 @@ import {
 /**
  * ─── The global board ───────────────────────────────────────────────────────
  *
- * The top 100 by DEEPEST STAGE EVER REACHED, with the biggest squad as the
- * second column — two players on stage 40 are not the same player, and the
- * squad is the thing they compare.
+ * The top 100 by DEEPEST CAMPAIGN NODE CLEARED, with the best win streak as
+ * the second column — two players on stage 3-4 are not the same player, and
+ * the streak is the thing they compare.
  *
- * Four states, and three of them are not the happy one: still loading, nothing
- * to show, and the endpoint is unreachable. All three have to say something
- * plain, because a leaderboard that opens onto a blank rectangle reads as a
- * broken game rather than a quiet network.
+ * Four states, three of them not the happy one: still loading, nothing to
+ * show, the endpoint unreachable. All three say something plain, because a
+ * leaderboard that opens onto a blank rectangle reads as a broken game.
  *
  * The player is told where they stand even when they are not on the board —
- * that footer is the whole reason a player who is #4 000 opens this screen at
- * all.
+ * that footer is the whole reason a player who is #4 000 opens this screen.
  */
-
 const model = defineModel<boolean>({ required: true })
 const { t } = useI18n()
 
 const entries = computed(() => leaderboard.value?.entries ?? [])
 
-/**
- * The name the player's row would carry.
- *
- * Resolved lazily rather than at import time: `resolveIdentity` mints and
- * persists an id on its first call, and doing that before the player has ever
- * opened the board would put an identity in the save of someone who never used
- * the feature.
- */
+/** A node as the player reads it: `c-n`. The worker only knows the integer. */
+const stageLabel = (score: number): string => {
+  const n = Math.max(1, Math.trunc(Number(score) || 0))
+  return `${chapterOf(n)}-${indexInChapter(n)}`
+}
+
+/** Resolved lazily rather than at import time — `resolveIdentity` mints and
+ *  persists an id on its first call, and doing that before the player has ever
+ *  opened the board would put an identity in the save of someone who never
+ *  used the feature. */
 const ownName = ref('')
 
-/**
- * Highlight the player's own row.
- *
- * A NAME MATCH, not an id match, and it can false-positive: the board endpoint
- * publishes no ids (deliberately — a public id is a public write key), so two
- * players who both called themselves "Ace" both get the highlight. That is the
- * right trade here. The alternative is highlighting nothing, and the row a
- * player came to find is the only row on the screen they care about.
- */
+/** A NAME match, not an id match — the endpoint publishes no ids, and the row
+ *  a player came to find is the only row they care about. */
 const isYou = (name: string): boolean => ownName.value.length > 0 && name === ownName.value
 
 const onBoard = computed(() => entries.value.some((e) => isYou(e.name)))
 
 /** The player's own rank, for the footer. `0` means "nothing to say yet". */
-const ownRank = computed(() => rankFor(bestStage.value))
+const ownRank = computed(() => rankFor(bestNode.value))
 
-/** Below the cut the exact rank is unknowable — the server only publishes its
- *  top slice — so the honest label is "past the last row we can see". */
 const ownRankLabel = computed(() =>
   ownRank.value === OUTSIDE_BOARD ? `${boardSize.value}+` : String(ownRank.value)
 )
@@ -73,9 +64,7 @@ const showEmpty = computed(() =>
   && entries.value.length === 0)
 
 // Fetched on OPEN, not on mount: the modal is mounted for the whole session and
-// most sessions never open it. `ensureBoard` is idempotent and cached, so a
-// player who opens the board six times still costs one request — and a previous
-// failure is retried, which makes reopening the screen the retry button.
+// most sessions never open it. `ensureBoard` is idempotent and cached.
 watch(model, (open) => {
   if (!open) return
   void ensureBoard()
@@ -90,7 +79,7 @@ watch(model, (open) => {
         span.board__col.is-rank {{ t('leaderboard.rank') }}
         span.board__col.is-name {{ t('leaderboard.player') }}
         span.board__col.is-stage {{ t('leaderboard.stage') }}
-        span.board__col.is-squad {{ t('leaderboard.squad') }}
+        span.board__col.is-streak {{ t('leaderboard.streak') }}
 
       div.board__state(v-if="showLoading") {{ t('leaderboard.loading') }}
       div.board__state.is-failed(v-else-if="showFailed") {{ t('leaderboard.failed') }}
@@ -106,11 +95,9 @@ watch(model, (open) => {
           span.board-row__name
             span.board-row__name-text {{ entry.name }}
             span.board-row__you(v-if="isYou(entry.name)") {{ t('leaderboard.you') }}
-          span.board-row__stage {{ entry.score }}
-          span.board-row__squad {{ entry.squad }}
+          span.board-row__stage {{ stageLabel(entry.score) }}
+          span.board-row__streak {{ entry.squad }}
 
-      //- Where the player stands when they are not up there. The reason a
-      //- player outside the top 100 opens this screen at all.
       div.board__footer(v-if="showOwnRank")
         span.board__footer-rank {{ t('leaderboard.yourRank', { n: ownRankLabel }) }}
         span.board__footer-total(v-if="playerTotal > 0") {{ t('leaderboard.of', { n: playerTotal }) }}
@@ -118,10 +105,8 @@ watch(model, (open) => {
 
 <style scoped lang="sass">
 // One grid template, shared by the header and every row, so the columns line up
-// without a table and without a fixed width anywhere. The name column is the
-// only flexible one — the three numbers are as wide as their content and no
-// wider, which is what keeps four columns on a 320 px screen.
-$cols: clamp(1.6rem, 8vw, 2.4rem) minmax(0, 1fr) clamp(2rem, 9vw, 3rem) clamp(2.2rem, 10vw, 3.4rem)
+// without a table and without a fixed width anywhere.
+$cols: clamp(1.6rem, 8vw, 2.4rem) minmax(0, 1fr) clamp(2.2rem, 10vw, 3.2rem) clamp(2.2rem, 10vw, 3.4rem)
 
 .board
   display: flex
@@ -162,11 +147,9 @@ $cols: clamp(1.6rem, 8vw, 2.4rem) minmax(0, 1fr) clamp(2rem, 9vw, 3rem) clamp(2.
   border-radius: clamp(0.35rem, 1.8vw, 0.6rem)
   background-color: rgba(0, 0, 0, 0.22)
 
-  // Zebra striping rather than a border per row: 100 rows of border is a wall.
   &:nth-child(even)
     background-color: rgba(0, 0, 0, 0.08)
 
-  // The row the player came here to find.
   &.is-you
     border-color: #ffcd00
     background-image: linear-gradient(to bottom, #3a4a24, #2a3a18)
@@ -209,8 +192,8 @@ $cols: clamp(1.6rem, 8vw, 2.4rem) minmax(0, 1fr) clamp(2rem, 9vw, 3rem) clamp(2.
   text-align: right
   text-shadow: 1px 1px 0 #000
 
-.board-row__squad
-  color: #b9cbe8
+.board-row__streak
+  color: #ffb347
   font-weight: 700
   font-size: clamp(0.6rem, 2.6vw, 0.8rem)
   text-align: right

@@ -1,44 +1,88 @@
-import type { ArtKind } from '@/game/art'
+import { FACTION_DEFS, RUNE_TYPES, SKIN_IDS } from './rules'
 
 /**
  * ─── Every still the renderer can ask for, by kind ──────────────────────────
  *
- * The runtime side of the art manifest. `artSheet.ts` — the bench-side
- * manifest that exports the reference sheets and writes the prompts — is the
- * authority on what each of these IS; this is the list a boot-path module can
- * read without dragging the bench, the painters and the whole renderer in
- * behind it. A test holds the two in agreement.
- *
- * Monsters and survivors are not here: their ids are the designs in
- * `monsters.ts` and the outfits in `heroSprites.ts`, and both modules are
- * already on the boot path.
- *
- * The logo is not here either. It is painted through the same pipeline but
- * never probed at run time — the manifest lists it with an explicit target
- * under `images/logo/`, where the PWA manifest and the portals read it.
+ * The runtime side of the drop-in manifest (`art-todo.md`, and the sheet
+ * manifest in `artSheet.ts`, which is tested against this list both ways). A
+ * boot-path module can read this without dragging the renderer in behind it,
+ * and a Node script can read it without a browser — nothing here touches
+ * `window`, `import.meta.env` or a canvas.
  */
-export const ART_CATALOGUE: Record<Exclude<ArtKind, 'monster' | 'hero'>, readonly string[]> = {
-  prop: [
-    'crate-damage', 'crate-rate', 'barricade',
-    'boulder-1', 'boulder-2', 'boulder-3',
-    'barrel', 'pillar', 'coin',
-    // The weapon puzzle: the prize shut and open, the armour over it, and the
-    // lever that opens it — a housing and a swinging arm.
-    'weapon-box', 'weapon-box-open', 'guard-plate', 'lever-post', 'lever-arm'
+
+/** Folder layout the drop-in art targets, one per drawable kind. */
+export const ART_FOLDERS = {
+  /**
+   * Painted rune stones.
+   *
+   *   `<type>-<skin>-lv<1|2>`      the player's stone in that skin at that level
+   *                                 (`melee-river-lv1`, `mage-ember-lv2`, …)
+   *   `<type>-e-<faction>-lv<1|2>`  the enemy's stone, in the faction's own
+   *                                 red-tinted rock (`archer-e-goblin-lv1`, …)
+   *   `<type>`                      the glyph alone on transparency, for the
+   *                                 unlock card, the campaign map, an icon
+   *
+   * Each a single square still. The renderer blits a stone file into exactly
+   * the box `paintPebble` draws in, so a painting replaces the drawing 1:1.
+   */
+  rune: 'images/runes',
+  /** The board's stone: `player`, `enemy`, `neutral` tiles and the nine-sliced `frame`. */
+  tile: 'images/tiles',
+  /**
+   * Effects: rings, the shield dome, smoke, scorch, the muzzle flash, crests,
+   * and `laurel` — the gold wreath the arena lays around a level-2 stone. The
+   * wreath is a LAYER of its own so all 120 stones wear the SAME one; see
+   * `arenaPainters.paintLaurel`. It is drawn into the stone's own box, so it
+   * is blitted over the pebble sprite with no arithmetic.
+   */
+  fx: 'images/fx',
+  /** HUD art: the reward chest, the result ribbon, the elite crown, the forge, the coin, the reroll chip. */
+  ui: 'images/ui',
+  /** Enemy commander walk cycles, one 8-panel strip per design (228×256 per panel). */
+  monster: 'images/monsters',
+  /** The player's commander run cycle, one strip per outfit (192×192 per panel). */
+  hero: 'images/heroes',
+  /**
+   * The backdrop, back to front: `sky` (one full-bleed night sky, the only
+   * drawable with no transparency and no key colour — it IS the background),
+   * then the two ridge bands whose sky is keyed out over it.
+   */
+  bg: 'images/bg',
+  /** Projectiles: the archer's bolt (an 8-panel flight strip), the mage's spark. */
+  round: 'images/rounds'
+} as const
+
+export type ArtKind = keyof typeof ART_FOLDERS
+
+/** The ids of the player's stones: every type in every skin at both levels. */
+export const playerStoneIds = (): string[] =>
+  RUNE_TYPES.flatMap((t) => SKIN_IDS.flatMap((s) => [`${t}-${s}-lv1`, `${t}-${s}-lv2`]))
+
+/** The ids of the enemy's stones: every type in every faction's rock at both levels. */
+export const enemyStoneIds = (): string[] =>
+  RUNE_TYPES.flatMap((t) => (Object.keys(FACTION_DEFS) as (keyof typeof FACTION_DEFS)[])
+    .flatMap((f) => [`${t}-e-${f}-lv1`, `${t}-e-${f}-lv2`]))
+
+export const ART_CATALOGUE: Record<ArtKind, readonly string[]> = {
+  rune: [
+    ...RUNE_TYPES,
+    ...playerStoneIds(),
+    ...enemyStoneIds()
   ],
-  gate: ['frame-add', 'frame-sub', 'frame-mul', 'frame-div'],
-  round: ['tracer', 'bolt-gunner', 'bolt-boss', 'roller', 'meteor', 'bomb', 'grenade', 'rocket'],
-  fx: [
-    'muzzle', 'smoke', 'scorch',
-    'ring-shock', 'ring-heat', 'ring-heal',
-    'shield', 'guard', 'crest-shield', 'crest-guard'
-  ],
-  // No road tile: painted cobbles read as objects under the crowd, and the
-  // procedural gravel stays. See `artSheet.ts`.
-  bg: ['ridge-far', 'ridge-near'],
-  // The crown is on the field; the rest are the DOM's — the result banner
-  // (nine-sliced by CSS), the idle chest on the wallet column, the shop's
-  // forge and the two skill buttons' icons, shown through `ArtIcon` and
-  // `FReward`. See `uiArt.ts`.
-  ui: ['crown', 'ribbon', 'chest', 'forge', 'skill-grenade', 'skill-shield']
+  tile: ['player', 'enemy', 'neutral', 'frame'],
+  fx: ['ring-heal', 'ring-shock', 'ring-heat', 'shield', 'guard', 'smoke', 'scorch', 'muzzle', 'crest-shield', 'crest-guard',
+    'laurel-pebble', 'laurel-shard', 'laurel-oval', 'laurel-hex', 'laurel-disc', 'laurel-slab'],
+  ui: ['chest', 'ribbon', 'crown', 'forge', 'coin', 'reroll'],
+  monster: [...new Set(Object.values(FACTION_DEFS).map((f) => f.avatar))],
+  hero: ['teal'],
+  bg: ['sky', 'ridge-far', 'ridge-near'],
+  round: ['bolt', 'spark']
 }
+
+/** The path under `public/` a `(kind, id)` painting is probed at. */
+export const artTarget = (kind: ArtKind, id: string): string => `${ART_FOLDERS[kind]}/${id}.webp`
+
+/** Every `(kind, id)` the catalogue names, flattened, in catalogue order. */
+export const allArtIds = (): (readonly [ArtKind, string])[] =>
+  (Object.entries(ART_CATALOGUE) as [ArtKind, readonly string[]][])
+    .flatMap(([kind, ids]) => ids.map((id) => [kind, id] as const))

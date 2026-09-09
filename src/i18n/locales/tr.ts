@@ -1,5 +1,27 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': '3 iyileştirir ve komşularının saldırısını keskinleştirir, ilk turdan itibaren.',
+      'defense': 'Komşularını koruyan bir duvar, ilk turdan itibaren.',
+      'mage': 'Işını sonunda haç şeklinde patlar, ilk turdan itibaren.',
+      'archer': 'İlk turdan itibaren aynı anda iki kareye ateş eder.',
+      'melee': 'Hedefi geri iter – tek hamlede üç taşlık çelik.',
+      'cleave': 'İlk turdan itibaren öndeki üç kareyi bir vuruşta devirir.',
+      'roller': 'İlk turdan itibaren durmadan önce iki direneni ezer.',
+      'bombard': 'İlk turdan itibaren uzak sırayı ve aradaki kareyi bombalar.',
+      'nuker': 'Sv 3 iner ve az önce süpürdüğü tahtayı tutar, ilk turdan itibaren.'
+    },
+    'watchAd': 'Reklam izle',
+    'armed': 'Kuşanıldı ×{n}',
+    'landsAt': 'Sonraki maçta ilk yerleştirmende Sv {n} olarak iner.',
+    'runesTagline': 'Kuşanılmış her türün ilk yerleştirilen rünü Sv {n} ile başlar.',
+    'tabs': {
+      'skins': 'Görünümler',
+      'runes': 'Güç Rünleri',
+    },
+    'title': 'Mağaza',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'İptal',
   'close': 'Kapat',
   'ok': 'Tamam',
@@ -8,10 +30,8 @@ export default {
   'clickToContinue': 'Devam etmek için tıkla',
   'rewards': 'ÖDÜLLER',
   'tip': 'İpucu',
-  'crazyGamesOnly': 'Bu oyun yalnızca şurada mevcut:',
+  'crazyGamesOnly': 'Bu oyun yalnızca şurada oynanabilir:',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
     'next': 'İleri',
     'replay': 'Tekrar',
@@ -19,152 +39,307 @@ export default {
     'play': 'Oyna',
     'pause': 'Duraklat',
     'menu': 'Menü',
-    'home': 'Ana ekran',
-    'info': 'Bilgi'
+    'home': 'Ana sayfa',
+    'info': 'Bilgi',
+    'skip': 'Atla'
   },
 
   'hud': {
-    'stage': 'Bölüm {n}',
-    'best': 'Rekor {n}',
-    'boss': 'Patron',
-    'miniboss': 'Mini Patron',
-    'fireRate': 'Hız',
-    'incoming': 'Saldırı geliyor!',
-    'dodge': 'Kaç',
-    'weaponActive': '{name} hazır',
-    'weaponLocked': '{name} kilitli — {total} kolun {n} tanesi vuruldu'
-  },
-
-  'weapons': {
-    'rocket': 'Roketatar',
-    'gatling': 'Gatling'
-  },
-
-  'tutorial': {
-    'touch': 'Takımını hareket ettirmek için kaydır',
-    'desktop': 'Takımını yönlendirmek için fareyi oynat'
-  },
-  'hints': {
-    'move': { 'touch': 'Hareket için dokun', 'desktop': 'Hareket için tıkla' },
-    'gate': { 'touch': 'Kapıya ateş etmeye devam et: her yarım saniyede +1', 'desktop': 'Kapıya ateş etmeye devam et: her yarım saniyede +1' },
-    'trap': { 'touch': 'Kırmızı kapı ekibi AZALTIR — diğerine geç!', 'desktop': 'Kırmızı kapı ekibi AZALTIR — diğerine geç!' },
-    'divider': { 'touch': 'Kapılar arasındaki direğe asla dokunma', 'desktop': 'Kapılar arasındaki direğe asla dokunma' },
-    'crate': { 'touch': 'Yeşil sandık: herkes daha sert vurur', 'desktop': 'Yeşil sandık: herkes daha sert vurur' },
-    'rate': { 'touch': 'Mavi sandık: herkes daha hızlı ateş eder', 'desktop': 'Mavi sandık: herkes daha hızlı ateş eder' },
-    'boss': { 'touch': 'Kırmızı halkanın dışında kal!', 'desktop': 'Kırmızı halkanın dışında kal!' },
-    'lever': { 'touch': 'Yol kenarındaki HER İKİ kolu da vur — silah sandığını açarlar', 'desktop': 'Yol kenarındaki HER İKİ kolu da vur — silah sandığını açarlar' },
-    'guard': { 'touch': 'Kalkan açık — ateşin işe yaramıyor. KAÇ!', 'desktop': 'Kalkan açık — ateşin işe yaramıyor. KAÇ!' }
-  },
-
-  'flow': {
-
-    'unlocked': 'Açıldı!'
-
-  },
-
-  'result': {
-    'stageClear': 'Bölüm tamamlandı!',
-    'wipedOut': 'Ekip yok edildi',
-    'reachedStage': 'Bölüm {n}',
-    'newRecord': 'Yeni rekor!',
-    'rallied': 'İkinci nefes',
-    'peakSquad': 'En büyük ekip',
-    'kills': 'Öldürme',
-    'tripleCoins': '3×',
-    'tripleBonus': '(+{n})',
-    'tripleClaimed': 'Altınlar üçe katlandı!',
-    'nextStage': 'Sonraki bölüm',
-    'tryAgain': 'Tekrar dene',
-    'upgrade': 'Geliştir',
-    'upgradeHint': 'Takımını geliştir!',
-    'rankOf': '{n} içinde',
-    'upNext': 'Sırada: Bölüm {n}'
-  },
-
-  'leaderboard': {
-    'title': 'Liderlik Tablosu',
-    'rank': '#',
-    'player': 'Oyuncu',
-    'stage': 'Bölüm',
-    'squad': 'Ekip',
-    'empty': 'Henüz skor yok. İlk sen ol!',
-    'failed': 'Liderlik tablosuna ulaşılamadı.',
-    'loading': 'Yükleniyor…',
+    'stage': 'Bölüm {c}-{n}',
+    'conquest': 'Fetih',
+    'tiles': '{n} / {total}',
+    'turn': 'Tur {n}',
     'you': 'Sen',
-    'yourRank': 'Sıran #{n}',
-    'of': '{n} oyuncu içinde'
+    'enemy': 'Düşman',
+    'streak': 'Galibiyet serisi',
+    'streakMult': '×{n} altın',
+    'suddenDeath': 'Ani ölüm!',
+    'reroll': 'Yenile',
+    'rerollsLeft': '{n} kaldı'
   },
 
-  'chest': {
-    'label': 'Hazine sandığı',
-    'ready': 'Sandığı {n} altın karşılığında aç',
-    'filling': 'Hazine sandığı doluyor',
-    'spent': 'Hazine sandığı yarına kadar boş'
+  'factions': {
+    'skeleton': 'Kemik Kuklalar',
+    'goblin': 'Goblin Okçular',
+    'orc': 'Ork Berserkerler',
+    'undead': 'Ölümsüz Büyücüler'
   },
 
-  'skills': {
-
-    'grenade': 'El Bombası',
-
-    'shield': 'Kalkan'
-
-  },
-
-  'upgrades': {
-    'title': 'Geliştirmeler',
-    'spotlight': 'Harca!',
+  'runes': {
     'level': 'Sv {n}',
-    'maxed': 'Maks',
+    'hp': 'CAN',
+    'atk': 'SLD',
     'names': {
-      'squad': 'Ekip',
-      'power': 'Ateş gücü',
-      'rate': 'Atış hızı',
-      'range': 'Menzil',
-      'scavenge': 'Toplayıcılık',
-      'grenade': 'El Bombası',
-      'shield': 'Kalkan',
-      'rocket': 'Roket Gücü',
-      'gatling': 'Gatling Gücü'
+      'melee': 'Kılıç',
+      'archer': 'Yay',
+      'mage': 'Arkan Küresi',
+      'defense': 'Kalkan',
+      'support': 'Işıltılı Haç',
+      'cleave': 'Balta',
+      'roller': 'Kaya',
+      'bombard': 'Havan',
+      'nuker': 'Yıkıcı'
     },
     'descriptions': {
-      'squad': 'Her bölüme daha çok hayatta kalanla başla.',
-      'power': 'Her hayatta kalan atış başına daha çok hasar verir.',
-      'rate': 'Her hayatta kalan daha hızlı ateş eder.',
-      'range': 'Takımın yolda daha ileriden ateş açar.',
-      'scavenge': 'Her turdan daha çok altın kazan.',
-      'grenade': 'Ağır hasar için el bombası at.',
-      'shield': 'Birkaç saniye boyunca alınan hasarı yarıya indirir.',
-      'rocket': 'Bölümde açtığın roketatarlar daha çok hasar verir.',
-      'gatling': 'Bölümde açtığın Gatlingler daha çok hasar verir.'
+      'melee': 'Baktığı kareye vurur. Sv 2 hedefi geri iter.',
+      'archer': 'Bir kare atlar, sonrakine vurur. Sv 2 iki kareye ateş eder.',
+      'mage': 'İki kare boyunca çapraz ışın atar. Sv 2 sonunda patlar.',
+      'defense': 'Her vuruştan 1 hasar emer. Sv 2 komşularını korur.',
+      'support': 'Her tur dost komşuları iyileştirir. Sv 2 saldırılarını da keskinleştirir.',
+      'cleave': 'Öndeki üç kareyi biçer: karşısı ve iki yanı.',
+      'roller': 'Bir rün dayanana dek yuvarlanır, dostlar dahil. Sv 2 bir kare daha gider.',
+      'bombard': 'Üç sıra ötedeki üç kareyi duvar aşırı bombalar. Sv 2 ortayı da vurur.',
+      'nuker': 'Düştüğü yerde patlar: tahtadaki her Sv 1 rün ölür, seninkiler de. Sv 2 dayanır.'
     }
   },
 
+  'hints': {
+    'drag': {
+      'touch': 'Bir rünü tahtaya sürükle',
+      'desktop': 'Bir rünü tahtaya sürükle'
+    },
+    'aim': {
+      'touch': 'Nişan almak için kaydır, sabitlemek için bırak',
+      'desktop': 'Nişan almak için sürükle ya da ok tuşları / WASD kullan, bırakınca sabitlenir'
+    },
+    'archer': {
+      'touch': 'Yaylar bir kare atlar ve sonrakine vurur',
+      'desktop': 'Yaylar bir kare atlar ve sonrakine vurur'
+    },
+    'stack': {
+      'touch': 'Aynı rünü kendininkinin üstüne bırak, seviye atlasın',
+      'desktop': 'Aynı rünü kendininkinin üstüne bırak, seviye atlasın'
+    },
+    'conquest': {
+      'touch': 'Kazanmak için 8 kare tut',
+      'desktop': 'Kazanmak için 8 kare tut'
+    },
+    'siege': {
+      'touch': 'Kuşatıldın! Yarıp çık ve 8 kare tut',
+      'desktop': 'Kuşatıldın! Yarıp çık ve 8 kare tut'
+    },
+    'mage': {
+      'touch': 'Küre çapraz iki kare boyunca ışın atar',
+      'desktop': 'Küre çapraz iki kare boyunca ışın atar'
+    },
+    'defense': {
+      'touch': 'Kalkan okları ve ışınları engeller',
+      'desktop': 'Kalkan okları ve ışınları engeller'
+    },
+    'support': {
+      'touch': 'Haç komşularını iyileştirir ve güçlendirir',
+      'desktop': 'Haç komşularını iyileştirir ve güçlendirir'
+    },
+    'cleave': {
+      'touch': 'Balta öndeki üç kareyi birden biçer',
+      'desktop': 'Balta öndeki üç kareyi birden biçer'
+    },
+    'roller': {
+      'touch': 'Kaya kırdığı her şeyin üstünden yuvarlanmaya devam eder',
+      'desktop': 'Kaya kırdığı her şeyin üstünden yuvarlanmaya devam eder'
+    },
+    'bombard': {
+      'touch': 'Havan üç sıra ötedeki üç kareyi bombalar',
+      'desktop': 'Havan üç sıra ötedeki üç kareyi bombalar'
+    },
+    'correct': {
+      'touch': 'Yeniden nişan almak için bir oka dokun ya da kaydır',
+      'desktop': 'Yeniden nişan almak için herhangi bir yere tıklayıp sürükle ya da ok tuşları / WASD kullan'
+    },
+    'tap': {
+      'touch': 'Yerleştirmek için bir kareye dokun',
+      'desktop': 'Yerleştirmek için bir kareye tıkla'
+    },
+    'nuker': {
+      'touch': 'Yıkıcı her Sv 1 rünü yok eder — seninkiler dahil',
+      'desktop': 'Yıkıcı her Sv 1 rünü yok eder — seninkiler dahil'
+    }
+  },
+
+  'canvas': {
+    'level': 'Sv.{n}',
+    'combo': '×{n} KOMBO',
+    'clash': 'ÇARPIŞMA!',
+    'victory': 'ZAFER!',
+    'defeat': 'YENİLGİ',
+    'reveal': 'AÇILIŞ',
+    'suddenDeath': 'ANİ ÖLÜM',
+    'turn': 'TUR {n}',
+    'you': 'SEN',
+    'foe': 'DÜŞMAN',
+    'reroll': 'YENİLE',
+    'lastTurn': 'SON TUR'
+  },
+
+  'banner': {
+    'duel': '1v1 Düello',
+    'siege': '1v3 Kuşatma',
+    'vs': '{name} ile',
+    'unlocked': 'Açıldı!'
+  },
+
+  'result': {
+    'chestCoins': 'Sandık +{n}',
+    'victory': 'Zafer!',
+    'defeat': 'Yenilgi',
+    'turns': 'Turlar',
+    'playAgain': 'Tekrar oyna',
+    'nextStage': 'Sonraki bölüm',
+    'newRecord': 'Yeni rekor!',
+    'streakBonus': 'Seri ×{n}',
+    'tripleCoins': '3×',
+    'tripleBonus': '(+{n})',
+    'tripleClaimed': 'Altınlar üçe katlandı!',
+    'chestTap': 'Sandığa dokun!',
+    'newRune': 'Yeni rün',
+    'newSkin': 'Yeni görünüm',
+    'skins': 'Rün görünümleri',
+    'reasons': {
+      'conquest': 'Sekiz kare fethedildi',
+      'conquestLost': 'Düşman sekiz kare ele geçirdi',
+      'eliminated': 'Tüm düşman rünleri parçalandı',
+      'overrun': 'Rünlerin ezildi',
+      'turnLimit': 'Tutulan karelere göre belirlendi',
+      'suddenDeath': 'Ani ölüm',
+      'siegeHeld': 'Hattı tuttun',
+      'siegeBroken': 'Kuşatma seni kırdı'
+    }
+  },
+
+  'campaign': {
+    'title': 'Sefer',
+    'chapter': 'Bölüm {n}',
+    'cleared': 'Tamamlandı',
+    'current': 'Şu anki',
+    'locked': 'Kilitli',
+    'modes': {
+      '1v1': '1v1 Düello',
+      'siege': '1v3 Kuşatma'
+    },
+    'objectives': {
+      'conquest': '8 kare tut',
+      'eliminate': 'Her düşman rününü yok et',
+      'siege': 'Kuşatmayı kır'
+    },
+    'reward': 'Ödül',
+    'play': 'Oyna',
+    'replay': 'Tekrar',
+    'nextUnlock': 'Bölüm {c}-{n} kazanınca:',
+    'nextUnlockAria': '{rune} kilidini açmak için Bölüm {c}-{n} kazan'
+  },
+
+  'skins': {
+    'title': 'Rün Görünümleri',
+    'owned': 'Sahipsin',
+    'equipped': 'Takılı',
+    'equip': 'Tak',
+    'buy': 'Satın al',
+    'names': {
+      'river': 'Nehir Taşı',
+      'obsidian': 'Obsidyen',
+      'jade': 'Yeşim',
+      'amber': 'Kehribar',
+      'marble': 'Mermer',
+      'ember': 'Kor'
+    },
+    'tagline': 'Koyduğun her rün bunu taşır.',
+    'needMore': '{n} altın daha gerek',
+    'blurbs': {
+      'river': 'Sıcak nehir kumtaşı, glif derin oyulmuş ve içten aydınlanmış.',
+      'obsidian': 'Yontulmuş volkanik cam, soğuk bir neon çizgiyle.',
+      'jade': 'Cilalı yeşil yeşim, glif altınla kakılmış.',
+      'amber': 'İçten parlayan faset kesim bir kehribar.',
+      'marble': 'Beyaz mermer, derin oyulmuş ve gölgeli.',
+      'ember': 'Soğumuş bir lav levhası, glif çatlaklardan yanıyor.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Rütbe',
+    'title': 'Rün rütbeleri',
+    'tagline': 'Her rütbe +{n} maks. CAN verir — her rün için aynı.',
+    'rank': 'Rütbe {n}/{max}',
+    'maxed': 'Maksimum',
+    'hpGain': '+{n} CAN',
+    'next': 'Sonraki: +{n} CAN',
+    'upgrade': 'Yükselt',
+    'locked': 'Henüz açılmadı',
+    'free': 'Ücretsiz',
+    'freeGift': 'Ücretsiz yükseltme!',
+    'freeIn': 'Yeni hediye {t} sonra',
+    'freeTaken': 'Bir sonraki için geri gel',
+    'nukerUnlock': 'Yıkıcıyı aç',
+    'nukerLocked': 'Ya da Bölüm 4-1’i kazan'
+  },
+
+  'forge': {
+    'label': 'Rün Ocağı',
+    'ready': 'Ocaktan {n} altın topla',
+    'filling': 'Rün Ocağı — işliyor',
+    'full': 'Rün Ocağı — dolu',
+    'perHour': '+{n} / sa'
+  },
+
+  'leaderboard': {
+    'title': 'Liderlik tablosu',
+    'rank': '#',
+    'player': 'Oyuncu',
+    'stage': 'Bölüm',
+    'streak': 'Seri',
+    'empty': 'Henüz maç yok. İlk sen ol.',
+    'failed': 'Liderlik tablosuna ulaşılamadı.',
+    'loading': 'Yükleniyor…',
+    'you': 'Sen',
+    'yourRank': '#{n} sıradasın',
+    'of': '{n} oyuncu arasında'
+  },
+
   'options': {
-    'title': 'Seçenekler', 'general': 'Genel', 'audio': 'Ses', 'language': 'Dil',
-    'difficulty': 'Zorluk', 'soundEffects': 'Ses Efektleri', 'music': 'Müzik', 'musicTrack': 'Müzik Parçası',
-    'musicTracks': { 'cozy': 'Huzurlu Uyum', 'trance': 'Trance Tüneli' },
-    'close': 'Kaydet ve Kapat',
-    'difficulties': { 'easy': 'Kolay', 'medium': 'Orta', 'hard': 'Zor' },
+    'title': 'Ayarlar',
+    'general': 'Genel',
+    'audio': 'Ses',
+    'language': 'Dil',
+    'difficulty': 'Zorluk',
+    'soundEffects': 'Ses efektleri',
+    'music': 'Müzik',
+    'musicTrack': 'Müzik parçası',
+    'musicTracks': {
+      'cozy': 'Sessiz Taş',
+      'trance': 'Rün Nabzı'
+    },
+    'close': 'Kaydet ve kapat',
+    'difficulties': {
+      'easy': 'Kolay',
+      'medium': 'Normal',
+      'hard': 'Zor'
+    },
     'difficultyHints': {
-      'easy': 'Daha zayıf düşmanlar ve ince barikatlar.',
-      'medium': 'Standart tur.',
-      'hard': 'Daha güçlü düşmanlar ve ağır barikatlar.'
+      'easy': 'Düşmanlar daha çok tereddüt eder ve ıskalar.',
+      'medium': 'Standart sefer.',
+      'hard': 'Düşmanlar daha keskin plan yapar ve daha hızlı yükseltir.'
     }
   },
 
   'adsBlocked': {
     'title': 'Reklam gösterilemedi',
-    'body': 'Ödülünü kazanabilmen için bir video göstermek istedik ama tarayıcındaki bir şey reklamları engelliyor.',
-    'allowPrefix': 'Lütfen şu adreste reklamlara izin ver:',
-    'allowSuffix': '(veya bu oyun için reklam engelleyiciyi duraklat) ve tekrar dene.',
+    'body': 'Ödülünü kazanman için bir video göstermeye çalıştık ama tarayıcındaki bir şey reklamları engelliyor.',
+    'allowPrefix': 'Lütfen şu sitede reklamlara izin ver:',
+    'allowSuffix': '(veya bu oyun için reklam engelleyicini duraklat) ve tekrar dene.',
     'gotIt': 'Anladım'
   },
   'saveStatus': {
-    'restoredTitle': 'Bulut kaydı geri yüklendi', 'restoredBody': 'Kurtarma için +{n} bonus altın',
-    'tap': 'dokun', 'pausedTitle': 'Bulut eşitlemesi duraklatıldı',
+    'restoredTitle': 'Bulut kaydı geri yüklendi',
+    'restoredBody': 'Kurtarma için +{n} bonus altın',
+    'tap': 'dokun',
+    'pausedTitle': 'Bulut eşitleme duraklatıldı',
     'pausedBody': 'Çevrimdışı oynuyorsun. İlerlemen burada kaydediliyor.',
-    'retry': 'Yeniden dene', 'dismiss': 'kapat'
+    'retry': 'Yeniden dene',
+    'dismiss': 'kapat'
   },
-  'loading': { 'tooLong': 'Yükleme çok mu uzun sürüyor? Reklam engelleyiciyi kapatıp sayfayı yenile.', 'boo': 'Bö!', 'laugh': 'Hahaha!' },
-  'license': { 'denied': 'Erişim reddedildi: lütfen bir lisans satın al.' }
+  'loading': {
+    'tooLong': 'Yükleme çok mu uzun sürüyor? Reklam engelleyiciyi kapatıp sayfayı yenile.'
+  },
+  'license': {
+    'denied': 'Erişim reddedildi: lütfen bir lisans satın al.'
+  }
 }

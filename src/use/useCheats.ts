@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted, ref } from 'vue'
-import useTowerEconomy from '@/use/useTowerEconomy'
+import useEconomy from '@/use/useEconomy'
 import { toggleDebug } from '@/use/useMatch'
 
 // `cheat` stays a top-level localStorage flag — it's an explicit dev toggle
@@ -13,16 +13,12 @@ const isCheat = ref<boolean>(JSON.parse(storedCheat))
 //
 // Sits OUTSIDE the `useCheats` factory so it works even when the regular
 // cheat module is gated off — flipping `isDebug` is itself the entry point
-// to dev tooling (editor button, perf meter, etc.).
+// to dev tooling (perf meter, etc.).
 //
 // Exported + idempotent so a boot-time caller (App.vue setup) can guarantee
-// it installs at app start. The old module-level `installDebugUnlock()` call
-// only ran when this file's side-effects were retained — but App.vue's bare
-// `import useCheats` is tree-shaken in production (the default export is never
-// called there), and the only other importer is the LAZY game scene, so on a
-// built bundle the sequence listener wasn't attached until the player was
-// already in-game (and never at all if they typed it on the menu). Calling
-// the exported initialiser from executed setup code can't be tree-shaken.
+// it installs at app start. A bare `import useCheats` is tree-shaken in
+// production when the default export is never called, so the sequence
+// listener has to be attached from executed setup code.
 let debugUnlockInstalled = false
 export const installDebugUnlock = (): void => {
   if (typeof window === 'undefined' || debugUnlockInstalled) return
@@ -51,83 +47,94 @@ export const installDebugUnlock = (): void => {
 }
 // Best-effort module-level install for dev (vite serve keeps side-effects);
 // App.vue also calls installDebugUnlock() in setup so production builds — where
-// this bare side-effect can be tree-shaken — still attach the listener at boot.
+// this bare side-effect may be dropped — still attach the listener.
 installDebugUnlock()
 
 const useCheats = () => {
-  if (!isCheat.value) return {}
+  if (!isCheat.value) {
+    return { isCheat }
+  }
 
-  const { addCoins } = useTowerEconomy()
+  const { addCoins } = useEconomy()
 
-  // Dev shortcuts, retargeted to glyphyx's runner: coins for the shop, and
-  // the three things a reviewer needs to reach a late stage in ten seconds —
-  // survivors, damage, and a stage skip.
+  // Dev shortcuts for glyphyx: coins for the skins, and the things a reviewer
+  // needs to reach a late node in ten seconds — the whole roster, every skin,
+  // an instant win, a node skip.
   //
-  //   Ctrl+Alt+Shift+K   +3000 coins
-  //   Ctrl+Alt+Shift+G   +40 survivors
-  //   Ctrl+Alt+Shift+D   +5 damage
-  //   Ctrl+Alt+Shift+F   +2 shots/s
-  //   Ctrl+Alt+Shift+N   next stage
-  //   Ctrl+Alt+Shift+R   restart this stage
-  //   Ctrl+Alt+Shift+<n> jump to stage n — type the digits, e.g. 1 then 5 for
-  //                      stage 15 (see the buffer below).
+  //   Ctrl+Alt+Shift+K   +500 coins
+  //   Ctrl+Alt+Shift+N   next node
+  //   Ctrl+Alt+Shift+R   retry this node
+  //   Ctrl+Alt+Shift+U   unlock every rune
+  //   Ctrl+Alt+Shift+S   own every skin
+  //   Ctrl+Alt+Shift+W   win the current match instantly
+  //   Ctrl+Alt+Shift+<n> jump to node n — type the digits, e.g. 1 then 5 for
+  //                      node 15 (see the buffer below).
   //
-  // The simulation is reached through a DYNAMIC import, never a static one.
+  // The battle is reached through DYNAMIC imports, never static ones.
   // `useCheats` is called from `App.vue`, which is on the eager boot path — a
-  // static import would drag the whole game model (track generator, foes,
-  // sprite bakers) into the entry chunk and delay first paint for every player,
-  // to serve a dev-only feature that 99.99% of them never trigger. Fetching it
-  // on the keypress costs a few ms exactly once, for the developer.
-  const withGame = (fn: (game: typeof import('@/use/useSurvivalGame')) => void): void => {
-    void import('@/use/useSurvivalGame').then(fn).catch((e) => {
-      console.warn('[CHEAT] could not load the game module', e)
+  // static import would drag the whole game model into the entry chunk and
+  // delay first paint for every player, to serve a dev-only feature that
+  // 99.99% of them never trigger. Fetching it on the keypress costs a few ms
+  // exactly once, for the developer.
+  const withBattle = (fn: (battle: typeof import('@/use/useBattle')) => void): void => {
+    void import('@/use/useBattle').then(fn).catch((e) => {
+      console.warn('[CHEAT] could not load the battle module', e)
+    })
+  }
+  const withCampaign = (fn: (campaign: typeof import('@/use/useCampaign')) => void): void => {
+    void import('@/use/useCampaign').then(fn).catch((e) => {
+      console.warn('[CHEAT] could not load the campaign module', e)
     })
   }
 
   /**
-   * Hand the live simulation to the console as `window.__run`.
+   * Hand the live battle to the console as `window.__battle`.
    *
-   * Reaching the sim from devtools with a bare `import('@/use/useSurvivalGame')`
+   * Reaching the singleton from devtools with a bare `import('@/use/useBattle')`
    * does NOT work during development: Vite serves an HMR-updated module under a
-   * versioned URL, so the import resolves to a second, inert copy of the
-   * singleton and every mutation lands on an object nothing is rendering. The
-   * only reliable handle is one the running app publishes itself.
+   * versioned URL, so the import resolves to a second, inert copy and every
+   * mutation lands on an object nothing is rendering. The only reliable handle
+   * is one the running app publishes itself.
    *
    * Dev-only, and only after the cheat sequence has been typed.
    */
   const publishDebugHandle = (): void => {
     if (typeof window === 'undefined') return
-    void import('@/use/useSurvivalGame').then((game) => {
-      ;(window as unknown as Record<string, unknown>).__run = game
-      console.warn('[CHEAT] window.__run is live (inspect / drive the running sim).')
+    withBattle((mod) => {
+      ;(window as unknown as Record<string, unknown>).__battle = mod.battle
+      console.warn('[CHEAT] window.__battle is live (inspect / drive the running match).')
     })
   }
   publishDebugHandle()
 
   const cheatsMap: Record<string, () => void> = {
     'ctrl+shift+alt+k': () => {
-      addCoins(3000)
-      console.warn('[CHEAT] +3000 coins.')
+      addCoins(500)
+      console.warn('[CHEAT] +500 coins.')
     },
-    'ctrl+shift+alt+g': () => withGame((game) => {
-      game.debugAddUnits(40)
-      console.warn('[CHEAT] +40 survivors.')
+    'ctrl+shift+alt+n': () => withBattle((mod) => {
+      mod.battle.nextNode()
+      console.warn('[CHEAT] Skipped to the next node.')
     }),
-    'ctrl+shift+alt+d': () => withGame((game) => {
-      game.debugAddDamage(5)
-      console.warn('[CHEAT] +5 damage per survivor.')
+    'ctrl+shift+alt+r': () => withBattle((mod) => {
+      mod.battle.retryNode()
+      console.warn('[CHEAT] Node restarted.')
     }),
-    'ctrl+shift+alt+f': () => withGame((game) => {
-      game.debugAddFireRate(2)
-      console.warn('[CHEAT] +2 shots/s per survivor.')
+    'ctrl+shift+alt+u': () => withCampaign((campaign) => {
+      void import('@/game/rules').then(({ RUNE_TYPES }) => {
+        for (const t of RUNE_TYPES) campaign.unlockRune(t)
+        console.warn('[CHEAT] Every rune unlocked.')
+      })
     }),
-    'ctrl+shift+alt+n': () => withGame((game) => {
-      game.advanceStage()
-      console.warn('[CHEAT] Skipped to the next stage.')
-    }),
-    'ctrl+shift+alt+r': () => withGame((game) => {
-      game.retryStage()
-      console.warn('[CHEAT] Stage restarted.')
+    'ctrl+shift+alt+s': () => {
+      void Promise.all([import('@/use/useSkins'), import('@/game/rules')]).then(([skins, rules]) => {
+        for (const id of rules.SKIN_IDS) skins.grantSkin(id)
+        console.warn('[CHEAT] Every skin owned.')
+      })
+    },
+    'ctrl+shift+alt+w': () => withBattle((mod) => {
+      mod.__winMatchNow()
+      console.warn('[CHEAT] Match won.')
     })
   }
 
@@ -138,7 +145,8 @@ const useCheats = () => {
     const codeMatch = e.code.match(/^Digit(\d)$/)
     if (codeMatch) return codeMatch[1]!
     const k = e.key.toLowerCase()
-    return MODIFIER_KEYS.has(k) ? null : k
+    if (MODIFIER_KEYS.has(k)) return null
+    return k
   }
 
   const buildShortcut = (e: KeyboardEvent): string => {
@@ -146,64 +154,60 @@ const useCheats = () => {
     if (e.ctrlKey || e.metaKey) parts.push('ctrl')
     if (e.shiftKey) parts.push('shift')
     if (e.altKey) parts.push('alt')
-    const sorted = [...heldKeys].sort()
-    parts.push(...sorted)
-    return parts.join('+')
+    const held = [...heldKeys].sort()
+    return [...parts, ...held].join('+')
   }
 
-  // ─── Stage jump: Ctrl+Alt+Shift and then the number ──────────────────────
-  //
-  // Type the digits while the three modifiers are held: `Ctrl+Alt+Shift` then
-  // `1`, `5` lands on stage 15. Released or left alone for a moment, it jumps.
-  //
-  // Deliberately a TYPED BUFFER rather than another entry in `cheatsMap`. The
-  // shortcut builder sorts the keys it is holding, so a simultaneous
-  // `Ctrl+Alt+Shift+1+5` and `…+5+1` are the same string — stage 51 would be
-  // unreachable, and holding two digits down at once to ask for a two-digit
-  // number is a strange thing to make anyone do. A buffer reads digits in the
-  // order they were pressed, so any stage is reachable, including three-digit
-  // ones out in the endless run.
-  const STAGE_COMMIT_MS = 700
-  let stageBuffer = ''
-  let stageTimer: ReturnType<typeof setTimeout> | null = null
+  // Node jumps read a DIGIT BUFFER rather than a single key so any node is
+  // reachable, including three-digit ones out in the later chapters.
+  const NODE_COMMIT_MS = 700
+  let nodeBuffer = ''
+  let nodeTimer: ReturnType<typeof setTimeout> | null = null
 
-  const cancelStageTimer = (): void => {
-    if (stageTimer === null) return
-    clearTimeout(stageTimer)
-    stageTimer = null
+  const cancelNodeTimer = (): void => {
+    if (nodeTimer === null) return
+    clearTimeout(nodeTimer)
+    nodeTimer = null
   }
 
-  const commitStageJump = (): void => {
-    cancelStageTimer()
-    const typed = stageBuffer
-    stageBuffer = ''
+  const commitNodeJump = (): void => {
+    cancelNodeTimer()
+    const typed = nodeBuffer
+    nodeBuffer = ''
     if (typed === '') return
 
     const target = Number.parseInt(typed, 10)
     if (!Number.isFinite(target) || target < 1) return
 
-    withGame((game) => {
-      game.startStage(target)
-      console.warn(`[CHEAT] Jumped to stage ${target}.`)
+    // A jump past the unlocked frontier is what a reviewer wants; unlock the
+    // way first so `startNode`'s clamp does not bounce it.
+    withCampaign((campaign) => {
+      if (target > campaign.bestNode.value + 1) {
+        campaign.bestNode.value = target - 1
+      }
+      withBattle((mod) => {
+        mod.battle.startNode(target)
+        console.warn(`[CHEAT] Jumped to node ${target}.`)
+      })
     })
   }
 
   /** All three modifiers down — the gesture that arms the digit buffer. */
-  const stageJumpArmed = (e: KeyboardEvent): boolean =>
+  const nodeJumpArmed = (e: KeyboardEvent): boolean =>
     (e.ctrlKey || e.metaKey) && e.altKey && e.shiftKey
 
   const handleKeyDown = (e: KeyboardEvent) => {
     const key = normalizeKey(e)
 
-    // Digits under the full modifier set feed the stage buffer and go no
+    // Digits under the full modifier set feed the node buffer and go no
     // further — they must not also be matched as a `cheatsMap` shortcut.
-    if (key !== null && stageJumpArmed(e) && /^[0-9]$/.test(key)) {
+    if (key !== null && nodeJumpArmed(e) && /^[0-9]$/.test(key)) {
       e.preventDefault()
       // Cap the length so a leaned-on key cannot build a number that overflows
-      // into nonsense; four digits is well past the end of any real run.
-      if (stageBuffer.length < 4) stageBuffer += key
-      cancelStageTimer()
-      stageTimer = setTimeout(commitStageJump, STAGE_COMMIT_MS)
+      // into nonsense; four digits is well past the end of any real campaign.
+      if (nodeBuffer.length < 4) nodeBuffer += key
+      cancelNodeTimer()
+      nodeTimer = setTimeout(commitNodeJump, NODE_COMMIT_MS)
       return
     }
 
@@ -223,16 +227,16 @@ const useCheats = () => {
     // release of a chord rather than a wait. The timer above is the fallback for
     // someone who types the number and keeps holding the keys.
     const k = e.key.toLowerCase()
-    if (stageBuffer !== '' && (k === 'control' || k === 'meta' || k === 'alt' || k === 'shift')) {
-      commitStageJump()
+    if (nodeBuffer !== '' && (k === 'control' || k === 'meta' || k === 'alt' || k === 'shift')) {
+      commitNodeJump()
     }
   }
 
   const handleBlur = () => {
     heldKeys.clear()
     // A half-typed number must not fire when the window comes back.
-    cancelStageTimer()
-    stageBuffer = ''
+    cancelNodeTimer()
+    nodeBuffer = ''
   }
 
   onMounted(() => {
@@ -242,7 +246,7 @@ const useCheats = () => {
   })
 
   onUnmounted(() => {
-    cancelStageTimer()
+    cancelNodeTimer()
     window.removeEventListener('keydown', handleKeyDown)
     window.removeEventListener('keyup', handleKeyUp)
     window.removeEventListener('blur', handleBlur)

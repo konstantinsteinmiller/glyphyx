@@ -1,3 +1,9 @@
+> **Glyphyx note.** This Worker was written for the previous game and is reused
+> unchanged: `score` is now the highest **campaign node** reached (1-1 = 1,
+> 2-1 = 9, …) and the `squad` column carries the player's **best win streak**.
+> Give the game a fresh D1 before launch (`wrangler d1 create`) so no rows from
+> the previous title remain, and re-run `pnpm leaderboard:seed` afterwards.
+
 # Leaderboard setup, start to finish
 
 Every command below is run on Windows in PowerShell, from the repo root unless
@@ -42,7 +48,7 @@ npx wrangler whoami
 ## 3. Create the database
 
 ```powershell
-npx wrangler d1 create tower-siege-leaderboard
+npx wrangler d1 create glyphyx-leaderboard
 ```
 
 It prints a block like this:
@@ -50,7 +56,7 @@ It prints a block like this:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "tower-siege-leaderboard"
+database_name = "glyphyx-leaderboard"
 database_id = "0f2c9a51-....-............"
 ```
 
@@ -73,7 +79,7 @@ answer `y`. You should see two `CREATE TABLE` statements and one `CREATE INDEX`
 execute.
 
 Verify from the dashboard if you like: **Storage & Databases → D1 →
-tower-siege-leaderboard → Tables** should now list `scores` and `board_cache`.
+glyphyx-leaderboard → Tables** should now list `scores` and `board_cache`.
 
 ## 5. Deploy
 
@@ -85,8 +91,8 @@ On a brand-new account this asks you to register a `workers.dev` subdomain
 first — pick anything, it becomes part of the URL. When it finishes it prints:
 
 ```
-Published tower-siege-leaderboard
-  https://tower-siege-leaderboard.<your-subdomain>.workers.dev
+Published glyphyx-leaderboard
+  https://glyphyx-leaderboard.<your-subdomain>.workers.dev
 ```
 
 **That URL is what the game needs.** Keep it.
@@ -95,12 +101,12 @@ Published tower-siege-leaderboard
 
 ```powershell
 # The board — empty at this point, which is the correct answer.
-Invoke-RestMethod https://tower-siege-leaderboard.<your-subdomain>.workers.dev/top
+Invoke-RestMethod https://glyphyx-leaderboard.<your-subdomain>.workers.dev/top
 
 # Post a fake score and get a rank back.
 $body = @{ id = 'testplayer01'; name = 'Tester'; score = 137; wave = 21 } | ConvertTo-Json
 Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body `
-  https://tower-siege-leaderboard.<your-subdomain>.workers.dev/score
+  https://glyphyx-leaderboard.<your-subdomain>.workers.dev/score
 ```
 
 The first returns `entries: {}` / `total: 0`. The second returns
@@ -112,7 +118,7 @@ Sanity-check the guards while you are here — both should be **rejected**:
 # 422: a score no run could produce at that wave.
 $bad = @{ id = 'testplayer01'; name = 'Cheat'; score = 999999999; wave = 3 } | ConvertTo-Json
 Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $bad `
-  https://tower-siege-leaderboard.<your-subdomain>.workers.dev/score
+  https://glyphyx-leaderboard.<your-subdomain>.workers.dev/score
 
 # 429: two writes for the same id inside the 3 s cooldown.
 ```
@@ -120,10 +126,10 @@ Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $bad `
 Delete the test row when you are done:
 
 ```powershell
-npx wrangler d1 execute tower-siege-leaderboard --remote `
+npx wrangler d1 execute glyphyx-leaderboard --remote `
   --command "DELETE FROM scores WHERE id = 'testplayer01'"
 # The cached blob still holds the old table until the next write rebuilds it:
-npx wrangler d1 execute tower-siege-leaderboard --remote `
+npx wrangler d1 execute glyphyx-leaderboard --remote `
   --command "DELETE FROM board_cache"
 ```
 
@@ -132,7 +138,7 @@ npx wrangler d1 execute tower-siege-leaderboard --remote `
 In the repo root, edit `.env`:
 
 ```
-VITE_LEADERBOARD_URL=https://tower-siege-leaderboard.<your-subdomain>.workers.dev
+VITE_LEADERBOARD_URL=https://glyphyx-leaderboard.<your-subdomain>.workers.dev
 ```
 
 Leave `VITE_LEADERBOARD_SECRET` empty for now (see "Signed submissions" below).
@@ -230,11 +236,11 @@ Then `npm run deploy` again.
 ## Watching it in production
 
 * **Live logs:** `npx wrangler tail` (from `worker/`), or the dashboard under
-  **Workers & Pages → tower-siege-leaderboard → Logs**.
+  **Workers & Pages → glyphyx-leaderboard → Logs**.
 * **Quota use:** same page, **Metrics**. The numbers to watch are requests/day
   (100k) and D1 rows written/day (100k). Reads are effectively free under this
   design — see the table in `README.md`.
-* **The data:** **Storage & Databases → D1 → tower-siege-leaderboard → Console**
+* **The data:** **Storage & Databases → D1 → glyphyx-leaderboard → Console**
   lets you run SQL straight from the browser, e.g.
   `SELECT * FROM scores ORDER BY score DESC LIMIT 20;`
 
@@ -248,9 +254,9 @@ duplicates from another player's rows.
 
 ```powershell
 cd worker
-npx wrangler d1 execute tower-siege-leaderboard --remote --command "DELETE FROM scores"
+npx wrangler d1 execute glyphyx-leaderboard --remote --command "DELETE FROM scores"
 # The materialised top-N is a separate row and does not clear itself.
-npx wrangler d1 execute tower-siege-leaderboard --remote --command "DELETE FROM board_cache"
+npx wrangler d1 execute glyphyx-leaderboard --remote --command "DELETE FROM board_cache"
 ```
 
 If you would rather keep the highest score per name, and you accept that every
@@ -354,10 +360,10 @@ through. If you do create a named board in a portal console, set
    `bridge.player.id`. Stable across reinstalls and devices, and it is the same
    id the portal's cloud save is keyed on. CrazyGames supplies a *username* but
    no id, so its players are keyed on tier 2/3 and merely labelled with it.
-2. **The uuid in the save blob** (`ts_player_id`) — rides the cloud save, so it
+2. **The uuid in the save blob** (`gx_player_id`) — rides the cloud save, so it
    follows the player between devices.
 3. **The uuid in its own localStorage key** (`towersiege_uid`) — deliberately
-   outside the `ts_`-prefixed blob that `SaveMergePolicy` syncs, so a cloud
+   outside the `gx_`-prefixed blob that `SaveMergePolicy` syncs, so a cloud
    hydrate arriving with an older blob cannot replace it. This is the tier that
    stops duplicate rows.
 
@@ -373,9 +379,9 @@ wins forever:
 
 | Tier | Slot | Source |
 |---|---|---|
-| 1 | `ts_player_name` | chosen by the player |
-| 2 | `ts_sdk_name` | CrazyGames username, Yandex `getName()`, Playgama `player.name` |
-| 3 | `ts_anon_name` | generated: `Watcher333915` — a random word and six random digits |
+| 1 | `gx_player_name` | chosen by the player |
+| 2 | `gx_sdk_name` | CrazyGames username, Yandex `getName()`, Playgama `player.name` |
+| 3 | `gx_anon_name` | generated: `Watcher333915` — a random word and six random digits |
 
 The generated name is minted once and cached in both the save blob and a
 standalone `towersiege_name` key, so replacing the blob (a cloud hydrate) does
@@ -387,7 +393,7 @@ showing the wrong name:
 
 * **The SDK answers late.** `getUser()` resolves after the first death, so the
   opening submission can go up generated. The next `reportRun` notices the name
-  no longer matches `ts_posted_name` and sends one write to correct the row —
+  no longer matches `gx_posted_name` and sends one write to correct the row —
   otherwise it would keep the generated name until the player beat their own
   record, which might be never.
 * **The SDK goes quiet again** (offline, signed out, a slower `getUser()`). The

@@ -1,10 +1,15 @@
 {
   "name": "glyphyx",
-  "version": "2.1.3",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "art:prompts": "node --import ./tools/ts-resolve.mjs tools/art-prompts.mjs",
+    "art:export": "node tools/export-sheets.mjs",
+    "art:status": "node --import ./tools/ts-resolve.mjs tools/art-status.mjs",
+    "art:slice": "node tools/slice-sheets.mjs",
+    "art:measure": "python tools/measure-art.py",
     "dev-playgama": "vite --mode playgama",
     "build": "run-p type-check \"build-only {@}\" --",
     "build-only": "vite build",
@@ -26,12 +31,10 @@
     "leaderboard:seed": "node scripts/leaderboard-seed.mjs",
     "leaderboard:snapshot": "node scripts/leaderboard-snapshot.mjs",
     "perf:ab": "node scripts/perf-ab.mjs",
-    "perf:play": "node scripts/perf-play.mjs",
     "qa:portal": "node scripts/portal-qa.mjs",
-    "art:export": "node tools/export-sheets.mjs",
-    "slice-sheets": "node tools/slice-sheets.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts"
   },
   "dependencies": {
     "@vueuse/core": "^14.2.1",
@@ -44,6 +47,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.6",
     "@intlify/unplugin-vue-i18n": "^11.0.7",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tsconfig/node24": "^24.0.4",
     "@types/lodash.clonedeep": "^4.5.9",

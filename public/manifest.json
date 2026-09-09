@@ -1,7 +1,7 @@
 {
-  "name": "glyphyx",
-  "short_name": "glyphyx",
-  "description": "Shoot the gates to grow them, run your crowd through, and turn three survivors into an army before the boss turns them into dust.",
+  "name": "Glyphyx",
+  "short_name": "Glyphyx",
+  "description": "Drag glowing rune pebbles onto a 4x4 board, swipe to aim, and watch both sides fire at once. Hold eight tiles to win.",
   "display": "standalone",
   "display_override": [
     "fullscreen",

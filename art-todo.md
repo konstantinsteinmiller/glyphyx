@@ -1,115 +1,181 @@
 # Art todo — drop-in manifest
 
-glyphyx draws **everything** from code: the survivors and the monster cast
-are hand-inked vector art baked to frame strips at runtime, and the lane, gates,
-crates, rounds and effects are Canvas 2D. Nothing below is required for the game
-to ship — each entry is an *optional upgrade* that replaces a procedural drawing
-with a painting, with **no code change**: drop the file at the exact path,
-switch the art layer on, and the renderer picks it up. A missing or
-still-decoding file always falls back to the drawing.
+Glyphyx draws its whole board from code: the slate tiles, the stone frame, the
+sandstone runes with their engraved glyphs, the reveal arrows, projectiles,
+beams, shards and rings are Canvas 2D (`src/use/arenaPainters.ts`), baked to
+sprites at runtime and blitted. Nothing below is required for the game to ship
+— each entry is an *optional upgrade* that replaces a drawing with a painting,
+with **no code change**: drop the file at the exact path and the renderer picks
+it up on its next probe. A missing or still-decoding file always falls back to
+the drawing.
 
-**Every path here is produced by the art pipeline** rather than by hand — see
-[`art-sheets/README.md`](./art-sheets/README.md). The `/art-sheets` bench
-exports a reference sheet and a master prompt per entry, an image model paints
-it in the dark-fantasy register, and `pnpm slice-sheets` cuts the return back to
-the path, registered against the drawing it replaces. The manifest that owns
-this table is `src/game/artSheet.ts`; the runtime catalogue is
-`src/game/artCatalogue.ts`; a test keeps the two in step.
+**There is a pipeline for producing these** — reference sheets baked from the
+drawings, generated prompts in the game's hand-drawn mythical-fantasy style, a
+slicer that registers each return onto the drawing it replaces, and a
+playground to check the result in motion. Start at `art-sheets/README.md`.
+Everything in this file is the *contract* that pipeline honours; you can also
+hand-paint any single file and drop it in.
 
-Format for everything: **WebP**, sRGB, premultiplied alpha, at the size the
-slicer caps it to: **256 px tall per frame** by default, or the manifest's
-`maxEdge` where that is smaller. The logo is PNG, at the 512 its PWA icon needs.
+The runtime catalogue is `src/game/artCatalogue.ts` (the id scheme lives
+there); the probe is `spriteFor(kind, id)` in `src/game/art.ts`, which looks
+for `public/images/<folder>/<id>.webp`. Staged loading is
+`src/game/artPreload.ts`: the first screen's paintings wait behind the splash
+(10 s cap), the first reveals' stones follow one at a time, everything else
+arrives on an idle slot.
 
-**Nothing may read fixed pixel offsets out of one of these files.** The size
-above is a payload decision and it changes; the reference sizes in `artSheet.ts`
-are the shape the sheet is PAINTED at, not the shape it is written at. The gate
-frame's nine-slice cut at `GATE_FRAME`'s own 1344x576 and lost its right-hand
-post entirely the first time the gates were re-sliced at the default cap — the
-cut simply started past the end of a 597 px file. Slice by FRACTION of the
-bitmap that arrived, the way `paintGateFrame` and `blitBanner` both do now.
+Format for everything: **WebP**, sRGB, premultiplied alpha, at most **256 px
+per frame** (the slicer's rule; only the frame is bigger). The renderer fits by
+fraction, never by fixed offsets. Style: **hand-drawn, stylized mythical
+fantasy** — ink contour lines, painterly gouache washes with visible brush
+texture, warm sandstone / ochre / umber / slate, the glyph glows and the violet
+grid light as the only saturated notes. Transparent surround unless the row
+says the file fills its rect.
 
-**The paintings are OFF by default.** `spriteFor()` probes nothing until
-`?art=on` (remembered per device) or `VITE_ENABLE_ART_OVERRIDES=true` in the
-build's env — a portal's QA console reports every missed probe as a broken
-resource, so the flag stays off in every `.env.<platform>` until the art is in.
+**The flag.** `VITE_ENABLE_ART_OVERRIDES` is `true` in the dev `.env` (probes
+run, misses are silent) and should stay `false` in every `.env.<platform>`
+until the paintings are in, because a portal QA console reports every 404 as a
+broken resource. `?art=on` / `?art=off` flips it per device without a rebuild;
+`window.__art.refresh()` re-probes after dropping new files.
 
-## Walk cycles (strips: N panels side by side, one locomotion cycle)
+## The blit contract (why a painting needs no tuning knob)
 
-| Path | Subject | Notes |
-| --- | --- | --- |
-| `public/images/monsters/<design>.webp` | each of the 13 designs in `monsters.ts` | Played from the same clock as the bake, so the swap is seamless mid-stride. Authored facing as the bake does; the field mirrors by travel. Frame count is read off the strip's shape. |
-| `public/images/heroes/<outfit>.webp` | the survivor, ×3 (`teal`, `amber`, `violet`) | Seen from BEHIND; the outfit's coat colour is its identity in the crowd. |
+A stone file is drawn into **exactly the box `paintPebble(ctx, w, h)` paints
+in** — the whole file maps to the whole box. So a painting must sit where the
+drawing sat: centred, spanning the same fraction of the box. The slicer does
+this for you (it measures the drawn extent when the sheet is exported and
+normalises the return onto it); a hand-painted file should copy the reference
+sheet's placement. Tiles and the frame are the opposite: they fill their file
+edge to edge.
 
-## Stills
+## Runes (the ones that matter most)
 
-| Path | Subject | Stays live over it |
-| --- | --- | --- |
-| `public/images/props/crate-damage.webp` | green-sealed supply crate | rim, chevron badge, HP number |
-| `public/images/props/crate-rate.webp` | blue-sealed supply crate | rim, bolt badge, HP number |
-| `public/images/props/barricade.webp` | barricade stone, **tiles left↔right** | chevrons, damage bar, HP number |
-| `public/images/props/boulder-1..3.webp` | unbreakable boulder, three silhouettes | — (no number, on purpose) |
-| `public/images/props/barrel.webp` | powder keg, intact | damage cracks, lit strobe |
-| `public/images/props/pillar.webp` | divider pillar, 288×640 box | warning glow, hot overlay, beacon, topple |
-| `public/images/props/coin.webp` | face-on coin | the spin (a squash on X) |
-| `public/images/props/weapon-box.webp` | the weapon puzzle's prize, **shut** — cold, inert steel | weapon glyph, the shut cross-brace |
-| `public/images/props/weapon-box-open.webp` | the same case **open** — lit, warm, obviously a pickup | weapon glyph, cracks, halo, reveal ring |
-| `public/images/props/guard-plate.webp` | one plate of the armour over the shut case; **two butt edge to edge** | the damage dim, the hit flash |
-| `public/images/props/lever-post.webp` | the lever's housing, 512×256 — bolted to the road, never moves | — |
-| `public/images/props/lever-arm.webp` | the lever's arm, authored **UP**, 288×512, socket left EMPTY | the swing, the red/green knob in the socket |
-| `public/images/gates/frame-add|sub|mul|div.webp` | gate frame per op, **nine-sliced** across the leaf | curtain, chevrons, plate, charge meter, sparks |
-| `public/images/rounds/tracer.webp` | the crowd's round, authored UP | batched per bullet |
-| `public/images/rounds/bolt-gunner.webp` | gunner's round, authored RIGHT | turned to heading |
-| `public/images/rounds/bolt-boss.webp` | healer's bolt, authored RIGHT | turned to heading, ground shadow |
-| `public/images/rounds/roller.webp` | the rolling boulder, face-on | scrolling bands, lane, shadow |
-| `public/images/rounds/meteor.webp` | the boss's rock, tail UP | the ground mark |
-| `public/images/rounds/bomb.webp` | bomber's charge | the fuse spark, the ring |
-| `public/images/rounds/grenade.webp` | player's grenade | the tumble, the fuse spark, trail |
-| `public/images/rounds/rocket.webp` | the launcher's rocket, nose UP, 288×512 box | turned to heading; the blast |
-| `public/images/fx/muzzle.webp` | muzzle flash (additive) | the fade |
-| `public/images/fx/smoke.webp` | smoke puff, **greyscale** | tinted per emitter |
-| `public/images/fx/scorch.webp` | scorch mark, 512×282 | the fade |
-| `public/images/fx/ring-shock|heat|heal.webp` | the three ring families, full circles | squashed flat, faded |
-| `public/images/fx/shield.webp` | shield dome, face-on circle | ground ring, crest, countdown |
-| `public/images/fx/guard.webp` | boss guard hexagon | crest, pulse |
-| `public/images/fx/crest-shield|guard.webp` | the two heater-shield crests | — |
-| `public/images/bg/ridge-far|near.webp` | ridge silhouettes, 1536×384, sky keyed | tinted per stage |
-| `public/images/ui/crown.webp` | the elite's crown | — |
-| `public/images/ui/ribbon.webp` | the result screen's banner, 1344×576, **nine-sliced by CSS** at the outer 17% | the title, printed across the middle band |
-| `public/images/ui/chest.webp` | the shop button's chest (HUD and result screen) | — |
-| `public/images/ui/skill-grenade.webp` | the grenade skill's button icon (skill bar and shop row) | the cooldown ring and count |
-| `public/images/ui/skill-shield.webp` | the shield skill's button icon (skill bar and shop row) | the cooldown ring and count |
-| `public/images/logo/logo_512x512.png` (+192 png, +256 webp) | the title logo | — |
+Ids: `<type>` ∈ `melee` (Sword), `archer` (Bow), `mage` (Orb), `defense`
+(Shield), `support` (Cross), `cleave` (Axe), `roller` (Boulder), `bombard`
+(Mortar), `nuker` (Warhead). Skins: `river`, `obsidian`, `jade`, `amber`,
+`marble`, `ember`. Factions: `skeleton`, `goblin`, `orc`, `undead`.
 
-## Shipping today (the asset library's own bitmaps, always on)
+The last FOUR are the campaign's late unlocks and were added after the first
+art pass, so **every one of their 84 files is still un-painted** (21 each: 12
+player stones, 8 enemy stones, 1 glyph) — they are the
+largest single gap in this manifest. Their glyphs, in the same words the
+prompts use: the Axe is a broad crescent bit with drooping horns on a short
+haft; the Boulder is a chipped round rock mid-roll with two cracks and speed
+bars behind it; the Mortar is a squat tube canted up-right on a base plate with
+its shell already in the air; and the Warhead is a three-bladed hazard trefoil,
+a solid round core with three heavy wedges around it and a clear ring of empty
+space between — the one rune drawn as a SIGN rather than a weapon, because it
+is the one rune nobody aims.
 
-| Path | Subject | Notes |
-| --- | --- | --- |
-| `public/images/props/box_256x256.webp` | supply crate | Stands in for both crates until `crate-damage` / `crate-rate` arrive. |
-| `public/images/props/stone_256x256.webp` | barricade block | Tiled horizontally. |
-| `public/images/props/coin_128x128.webp` | coin | Face-on. |
+| Path | Subject | Size | Stays live over it |
+| --- | --- | --- | --- |
+| `public/images/runes/<type>-<skin>-lv1.webp` | the player's stone: the rune's glyph cut into that skin's material and silhouette (54 files) | 256² | direction arrow, HP pips, glow pulse |
+| `public/images/runes/<type>-<skin>-lv2.webp` | the same, level 2: a little larger and heavier, a gold rim, a small gold crest on the shoulder, a stronger glow — **no wreath** (54 files) | 256² | same; the wreath is `fx/laurel.webp` |
+| `public/images/runes/<type>-e-<faction>-lv1.webp` | the enemy's stone in the faction's red-tinted rock, the faction's accent on the rim (36 files) | 256² | same |
+| `public/images/runes/<type>-e-<faction>-lv2.webp` | level 2 of the above (36 files) | 256² | same |
+| `public/images/runes/<type>.webp` | the glyph ALONE on transparency — the unlock card, the campaign map, the shop | 256² | the stone under it |
+
+Every stone is a single square still, the stone centred and spanning roughly
+80 % of the file. A skin decides the stone's **shape** (pebble / shard / oval /
+hex / disc / slab) and how the glyph is **cut** (engraved / neon / inlay / gem /
+carved / ember) — see `SKINS` in `src/game/rules.ts` for the exact colours.
+
+**A level-2 stone carries NO wreath of its own.** It differs from level 1 by a
+gold rim, a small gold crest on the shoulder and a stronger glow, and that is
+all. The laurel is `images/fx/laurel.webp`, one file the renderer lays over
+every upgraded stone — painted into a stone that already has one, it ends up
+under a second.
+
+Reference sheets: `sheet-runes-<type>.png` (six skins × two levels, 4×3) and
+`sheet-runes-enemy-<type>.png` (four factions × two levels, 4×2), prompts in
+`art-sheets/PROMPTS-RUNES.md`.
+
+## Board
+
+| Path | Subject | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/tiles/neutral.webp` | one slate tile, bevelled, faint cracks, a faint violet edge light | 256² | **fills the file edge to edge**, square corners |
+| `public/images/tiles/player.webp` | the same tile, its bevel lit teal-blue | 256² | fills the file |
+| `public/images/tiles/enemy.webp` | the same tile, its bevel lit red-magenta | 256² | fills the file |
+| `public/images/tiles/frame.webp` | the carved sandstone ring around the 4×4, **nine-sliced** at the outer 12 %, EMPTY in the middle | 1024² | reaches all four edges; the streak flames and the sudden-death pulse are drawn over it |
+
+Reference sheets: `sheet-tiles.png`, `sheet-frame.png`; prompts in `PROMPTS-BOARD.md`.
+
+## Effects
+
+| Path | Subject | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/fx/ring-heal.webp` | the heal ring (gold) | 256² | reused today; a restyle is optional |
+| `public/images/fx/ring-shock.webp` | the capture / clash shockwave ring | 256² | reused today |
+| `public/images/fx/ring-heat.webp` | the level-2 orb's burst ring | 256² | reused today |
+| `public/images/fx/shield.webp` | the dome over a shielded rune | 256² | reused today |
+| `public/images/fx/guard.webp`, `crest-shield.webp`, `crest-guard.webp` | the absorb flash and the two crests | 256² / 128² | reused today |
+| `public/images/fx/smoke.webp` | the tinted dust puff | 192² | reused today |
+| `public/images/fx/scorch.webp` | the mark a shattered rune leaves on its tile | 261×144 | reused today |
+| `public/images/fx/muzzle.webp` | the flash at an archer's release | 128² | reused today |
+| `public/images/rounds/bolt.webp` | the archer's arrow: ONE arrow lying flat, flying RIGHT — ash shaft, iron head, emerald vanes, a short streak | 256×64 | a single still, NOT a strip: the renderer rotates it to the heading |
+| `public/images/rounds/spark.webp` | the mage beam's travelling spark (additive) | 128² | drawn today |
+| `public/images/fx/laurel.webp` | the gold laurel wreath the game lays around a **level-2 stone** — two branches, open at the top, nothing inside it | 256² | ONE file for all 180 stones; drawn in the stone's own box, so it is blitted straight over the pebble |
+
+Glows must stay tight to their shape: a halo over the key colour cannot be
+removed. Reference sheet `sheet-fx.png`; prompts in `PROMPTS-BOARD.md`.
+
+## HUD
+
+| Path | Subject | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/ui/forge.webp` | the Rune Forge chip (anvil with a glowing rune) | 256² | drawn today; drain overlay and countdown drawn over it |
+| `public/images/ui/reroll.webp` | the reroll chip (a blank pebble with two chasing arrows) | 256² | drawn today |
+| `public/images/ui/chest.webp` | the reward chest | 256² | reused today (128²) |
+| `public/images/ui/crown.webp` | the elite crown | 256² | reused today |
+| `public/images/ui/coin.webp` | the wallet coin | 256² | reused today |
+| `public/images/ui/ribbon.webp` | the result banner, nine-sliced by CSS at the outer 17 %, the middle a plain band | 597×256 | reused today; keep the middle EMPTY |
+| `public/images/logo/logo_512x512.png` (+192) | **the Glyphyx logo** — the PWA/portal icons still carry the previous game's mark | 512² PNG | replace before any store listing |
+| `public/favicon.ico` | derive from the new logo | 48² | — |
+
+Reference sheet `sheet-ui.png`; prompts in `PROMPTS-BOARD.md`.
+
+## Cast (bitmaps that already ship; a restyle is optional)
+
+| Path | Subject | Size | Notes |
+| --- | --- | --- | --- |
+| `public/images/monsters/bonecap.webp` | Bone Dummies commander, 8-panel walk strip | 8 × 228×256 | animated on the HUD badge with `steps(8)` |
+| `public/images/monsters/nibbler.webp` | Goblin Archers commander | 8 × 228×256 | — |
+| `public/images/monsters/snaggletusk.webp` | Orc Berserkers commander | 8 × 228×256 | — |
+| `public/images/monsters/marrowknight.webp` | Undead Mages commander | 8 × 228×256 | — |
+| `public/images/heroes/teal.webp` | the player's commander run cycle | 8 × 192² | — |
+| `public/images/bg/sky.webp` | the night sky the whole arena stands in: indigo to near-black, a moon high on the RIGHT, an aurora over the upper left, stars, a violet haze along the bottom | 1024×576 | **fills the file, no magenta** — it IS the background. Drawn at the screen's WIDTH from the top, so keep the interest in the top third and the middle quiet: the board covers it |
+| `public/images/bg/ridge-far.webp` | the far ridge: hazy blue peaks with three tall stone pinnacles, moonlight on the top edge | 1024×256 | base on the bottom edge, magenta above |
+| `public/images/bg/ridge-near.webp` | the near ridge: broken black rock carrying five standing rune monoliths, two lit with a violet glyph | 1024×256 | base on the bottom edge, magenta above |
+
+Reference sheets `walk-<id>.png` (the strip laid out 4×2) and `bg-<id>.png`;
+prompts in `PROMPTS-CAST.md`. The slicer composes a 4×2 return back into the
+8-panel strip the game reads.
+
+**The three backdrop layers are painted, and they stack.** The sky goes behind
+everything; the far band sits over it at 30 % of the height, the near band at
+45 %, and each one's rock is continued to the bottom of the screen in its own
+base colour. So a band must be rock along its bottom edge and NOTHING above its
+skyline — no sky, no moon, no stars — because the sky it would cover is a
+painting of its own. Their references are drawn by the game
+(`arenaPainters.paintSky` / `paintRidge`); the graveyard silhouettes that used
+to ship here belonged to the game that lived in this repo before Glyphyx.
 
 ## Deliberately NOT bitmaps
 
-* **The road tile** — a painted cobble tile was tried through the pipeline and
-  was worse than the drawing: stones big enough to read at all read as objects
-  under the crowd, and the ground must never compete with what stands on it.
-  `paintLaneTile` in `useSurvivalArt.ts` has no probe on purpose.
-* **Particles other than the smoke puff** — sparks, shards and dots are a few
-  pixels each and tinted per emitter; a painting buys nothing at that size.
-* **The gate curtain, the plate, the chevrons, the dismissal debris, the
-  vignette, the speed lines** — additive or text-bearing Canvas work that
-  animates every frame; a bitmap would only make them heavier or freeze them.
-* **The claw furrows, the elite sweep band, the rocket's blast** — telegraphs
-  and hits drawn from the simulation's own numbers, and a painting that stayed
-  one size would be a lie the player only discovers by dying to it. (The
-  rocket ITSELF is painted — it is an object with a fixed size — the blast is
-  not.)
+* **Direction arrows, HP pips, the glow pulse, the timer ring, the tile
+  counters, the ghost hand, the lock ring** — drawn over the stones every
+  frame from the rune's own state; a painting would freeze them.
+* **Reveal trajectories, beams, slash arcs, damage numbers** — animated from
+  the resolution timeline and the layout; they scale with the board.
+* **Particles** — shards, sparks and dust are a few pixels each, tinted per
+  emitter and drawn from the pool; only the smoke puff and the spark are
+  bitmaps.
 
 ## Promo art still needed for store listings
 
 | Path | Size | Notes |
 | --- | --- | --- |
-| `src/assets/promotion/cover_1080x1920.webp` | 1080×1920 | Portrait key art: a big crowd mid-gate-pass, the `+12` plate blown out. |
+| `src/assets/promotion/cover_1080x1920.webp` | 1080×1920 | Portrait key art: a Lv 2 sword mid-swing, an orb beam cutting the diagonal, shards flying. |
 | `src/assets/promotion/cover_1920x1080.webp` | 1920×1080 | Landscape variant of the same moment. |
-| `src/assets/promotion/cover_800x800.webp` | 800² | Square icon-ish crop — crowd + one gate. |
-| `public/favicon.ico` | 48² | Derive from the painted logo once it lands. |
+| `src/assets/promotion/cover_628x628.png` | 628² | Poki thumbnail: 1:1, full-bleed, **no text**. |
+| `src/assets/promotion/cover_800x800.webp` | 800² | Square icon-ish crop — one glowing stone on slate. |

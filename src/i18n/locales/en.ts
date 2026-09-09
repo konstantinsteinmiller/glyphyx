@@ -2,8 +2,35 @@
 // new player-facing string gets a key here first; the per-language files in
 // this folder mirror the shape. Vite ships each non-English locale as its own
 // lazy chunk (see `src/i18n/index.ts`).
+//
+// Glyphyx is a zero-text-onboarding game: the words below are labels, aria
+// names, result screens and menus — never instructions the player has to read
+// to get started. Keep every value SHORT: most of them render on a 320 px
+// phone in a pill or a chip.
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': 'Heals 3 and sharpens its neighbours\' attack, from the very first turn.',
+      'defense': 'A wall that shields its neighbours, from the very first turn.',
+      'mage': 'Its beam bursts in a cross at the end, from the very first turn.',
+      'archer': 'Fires at two tiles at once, from the very first turn.',
+      'melee': 'Knocks its target back — three stones\' worth of steel in one drop.',
+      'cleave': 'Fells all three tiles ahead at once, from the very first turn.',
+      'roller': 'Ploughs through two survivors before it stops, from the very first turn.',
+      'bombard': 'Shells the far rank and the tile between, from the very first turn.',
+      'nuker': 'Lands at Lv 3, tough enough to hold the board it just cleared, from the very first turn.'
+    },
+    'watchAd': 'Watch ad',
+    'armed': 'Armed ×{n}',
+    'landsAt': 'Lands at Lv {n} on your first placement next match.',
+    'runesTagline': 'Your first placement of each armed rune lands at Lv {n}.',
+    'tabs': {
+      'skins': 'Skins',
+      'runes': 'Power Runes',
+    },
+    'title': 'Shop',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'Cancel',
   'close': 'Close',
   'ok': 'Ok',
@@ -15,18 +42,7 @@ export default {
   'crazyGamesOnly': 'This game is only available on',
 
   // ─── Shared UI labels ─────────────────────────────────────────────────────
-  //
-  // NOT DEAD KEYS. The icon pass replaced button captions with glyphs
-  // (skip-forward, replay, the shop cart), and a glyph has no accessible name
-  // of its own — so these survive as the `aria-label` on icon-only controls.
-  // They are read aloud, not seen, which is exactly why nothing on screen will
-  // tell you when one goes missing.
-  //
-  // Only the generic names with no existing home live here. A control whose
-  // action the game already names uses THAT key instead — the settings cog is
-  // `options.title`, the cart is `upgrades.title`, the trophy is
-  // `leaderboard.title` — so no word is translated twice. See the fallback map
-  // in `FHudButton.vue`.
+  // The `aria-label` of icon-only controls. Read aloud, never seen.
   'ui': {
     'next': 'Next',
     'replay': 'Replay',
@@ -35,200 +51,276 @@ export default {
     'pause': 'Pause',
     'menu': 'Menu',
     'home': 'Home',
-    'info': 'Info'
+    'info': 'Info',
+    'skip': 'Skip'
   },
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
   'hud': {
-    'stage': 'Stage {n}',
-    'best': 'Best {n}',
-    'boss': 'Boss',
-    'miniboss': 'Miniboss',
-    // Live fire-rate chip. It sits in a HUD pill next to a number, so every
-    // locale keeps this to ~6 characters.
-    'fireRate': 'Rate',
-    'incoming': 'Incoming attack!',
-    'dodge': 'Dodge',
-    // ─── The weapon tag ─────────────────────────────────────────────────────
-    // Both are `aria-label`s on a badge that is otherwise a glyph and two dots,
-    // so they are READ ALOUD and never seen. Translate for clarity, not for
-    // brevity — nothing on screen depends on their length.
-    // `{n}` / `{total}` are the levers pulled and the levers there are.
-    'weaponActive': '{name} ready',
-    'weaponLocked': '{name} locked — {n} of {total} levers shot'
+    // `{c}` chapter, `{n}` node inside it — "Stage 1-3".
+    'stage': 'Stage {c}-{n}',
+    'conquest': 'Conquest',
+    // `{n}` tiles held of `{total}` needed — "5 / 8".
+    'tiles': '{n} / {total}',
+    'turn': 'Turn {n}',
+    'you': 'You',
+    'enemy': 'Enemy',
+    'streak': 'Win streak',
+    'streakMult': '×{n} gold',
+    'suddenDeath': 'Sudden death!',
+    'reroll': 'Reroll',
+    'rerollsLeft': '{n} left'
   },
 
-  // ─── The per-stage weapons ────────────────────────────────────────────────
-  // Shown on a HUD badge roughly 8 characters wide before it ellipsises, so
-  // prefer the SHORT name a player would say out loud ("Gatling", "Rockets")
-  // over the full mechanical one. The glyph beside it already says what it is.
-  'weapons': {
-    'rocket': 'Rocket Launcher',
-    'gatling': 'Gatling Gun'
+  // ─── Factions ─────────────────────────────────────────────────────────────
+  'factions': {
+    'skeleton': 'Bone Dummies',
+    'goblin': 'Goblin Archers',
+    'orc': 'Orc Berserkers',
+    'undead': 'Undead Mages'
   },
 
-  // ─── Control hints ────────────────────────────────────────────────────────
-  // Each has a touch and a pointer phrasing — a wrong verb reads as a bug.
-  // These render in a single pill at the top of a phone screen: keep every
-  // translation short and punchy rather than literal.
-  // ─── First-run controls lightbox ──────────────────────────────────────────
-  // Shown ONCE, over a frozen road, under an animated swipe/pointer glyph. It
-  // is the only instruction in the game a player cannot dismiss without doing,
-  // so it has to fit on one line of a 320 px phone: an instruction, not a
-  // sentence. Translate for brevity over literalness.
-  'tutorial': {
-    'touch': 'Swipe to move your squad',
-    'desktop': 'Move the mouse to steer your squad'
-  },
-  'hints': {
-    'move': {
-      'touch': 'Tap to move',
-      'desktop': 'Click to move'
+  // ─── Runes ────────────────────────────────────────────────────────────────
+  'runes': {
+    'level': 'Lv {n}',
+    'hp': 'HP',
+    'atk': 'ATK',
+    'names': {
+      'melee': 'Sword',
+      'archer': 'Bow',
+      'mage': 'Arcane Orb',
+      'defense': 'Shield',
+      'support': 'Radiant Cross',
+      'cleave': 'Axe',
+      'roller': 'Boulder',
+      'bombard': 'Mortar',
+      'nuker': 'Nuker'
     },
-    'gate': {
-      'touch': 'Keep shooting a gate — it grows +1 every half second',
-      'desktop': 'Keep shooting a gate — it grows +1 every half second'
-    },
-    'trap': {
-      'touch': 'Red gates SHRINK your squad — take the other side!',
-      'desktop': 'Red gates SHRINK your squad — take the other side!'
-    },
-    'divider': {
-      'touch': 'Never touch the pillar between gates',
-      'desktop': 'Never touch the pillar between gates'
-    },
-    // Two crate flavours now, so the hint has to name the colour.
-    'crate': {
-      'touch': 'Green crates make everyone hit harder',
-      'desktop': 'Green crates make everyone hit harder'
-    },
-    'rate': {
-      'touch': 'Blue crates make everyone shoot faster',
-      'desktop': 'Blue crates make everyone shoot faster'
-    },
-    'boss': {
-      'touch': 'Stay out of the red ring!',
-      'desktop': 'Stay out of the red ring!'
-    },
-    // The weapon puzzle, shown once ever, while an unshot lever is on screen.
-    // The two things it must carry are BOTH and WHERE: a player who shoots one
-    // post and stops has done nothing, and a player looking down the middle of
-    // the road will never find either. Keep it to one line on a 320 px phone.
-    'lever': {
-      'touch': 'Shoot BOTH levers at the road edges — they open the weapon box',
-      'desktop': 'Shoot BOTH levers at the road edges — they open the weapon box'
-    },
-    // Fires the first time the boss shields. Without it the phase reads as a
-    // broken hitbox — the player IS still shooting, and it IS doing nothing.
-    'guard': {
-      'touch': 'Shield up — your fire does nothing. MOVE!',
-      'desktop': 'Shield up — your fire does nothing. MOVE!'
+    'descriptions': {
+      'melee': 'Strikes the tile it faces. Lv 2 knocks the target back.',
+      'archer': 'Skips one tile and hits the next. Lv 2 fires at two tiles.',
+      'mage': 'Fires a diagonal beam through two tiles. Lv 2 explodes at the end.',
+      'defense': 'Absorbs 1 damage from every hit. Lv 2 shields its neighbours.',
+      'support': 'Heals friendly neighbours every turn. Lv 2 also sharpens their attack.',
+      'cleave': 'Cuts the three tiles ahead — the one it faces and both beside it.',
+      'roller': 'Rolls until a rune survives it, friends included. Lv 2 rolls one further.',
+      'bombard': 'Shells three tiles, three ranks ahead, over any wall. Lv 2 also hits halfway.',
+      'nuker': 'Detonates where it lands: every Lv 1 rune on the board dies, yours too. Lv 2 stacks live.'
     }
   },
 
-  // ─── Result / stage summary ───────────────────────────────────────────────
-  'flow': {
+  // ─── Control hints ────────────────────────────────────────────────────────
+  // One pill at a time, retired the moment the thing it names has happened.
+  'hints': {
+    'drag': {
+      'touch': 'Drag a rune onto the board',
+      'desktop': 'Drag a rune onto the board'
+    },
+    'aim': {
+      'touch': 'Swipe to aim, release to lock',
+      'desktop': 'Drag to aim, or press an arrow key / WASD, then release'
+    },
+    'archer': {
+      'touch': 'Bows skip a tile and hit the next',
+      'desktop': 'Bows skip a tile and hit the next'
+    },
+    'stack': {
+      'touch': 'Drop a matching rune on yours to level it up',
+      'desktop': 'Drop a matching rune on yours to level it up'
+    },
+    'conquest': {
+      'touch': 'Hold 8 tiles to win',
+      'desktop': 'Hold 8 tiles to win'
+    },
+    'siege': {
+      'touch': 'Surrounded! Break out and hold 8 tiles',
+      'desktop': 'Surrounded! Break out and hold 8 tiles'
+    },
+    'mage': {
+      'touch': 'The orb beams two tiles diagonally',
+      'desktop': 'The orb beams two tiles diagonally'
+    },
+    'defense': {
+      'touch': 'The shield blocks arrows and beams',
+      'desktop': 'The shield blocks arrows and beams'
+    },
+    'support': {
+      'touch': 'The cross heals and sharpens its neighbours',
+      'desktop': 'The cross heals and sharpens its neighbours'
+    },
+    'cleave': {
+      'touch': 'The axe cuts all three tiles ahead',
+      'desktop': 'The axe cuts all three tiles ahead'
+    },
+    'roller': {
+      'touch': 'The boulder rolls on through everything it breaks',
+      'desktop': 'The boulder rolls on through everything it breaks'
+    },
+    'bombard': {
+      'touch': 'The mortar shells three tiles, three ranks away',
+      'desktop': 'The mortar shells three tiles, three ranks away'
+    },
+    'correct': {
+      'touch': 'Tap an arrow or swipe to re-aim',
+      'desktop': 'Click & drag anywhere, or press an arrow key / WASD, to re-aim'
+    },
+    'tap': {
+      'touch': 'Tap a tile to place it',
+      'desktop': 'Click a tile to place it'
+    },
+    'nuker': {
+      'touch': 'The nuker destroys every Lv 1 rune — including yours',
+      'desktop': 'The nuker destroys every Lv 1 rune — including yours'
+    }
+  },
+
+  // ─── Words the canvas prints ──────────────────────────────────────────────
+  // Floating text and banners drawn by the renderer. Uppercase where the
+  // glyph font looks best; translate for punch, not for literalness.
+  'canvas': {
+    'level': 'Lv.{n}',
+    'combo': '×{n} COMBO',
+    'clash': 'CLASH!',
+    'victory': 'VICTORY!',
+    'defeat': 'DEFEAT',
+    'reveal': 'REVEAL',
+    'suddenDeath': 'SUDDEN DEATH',
+    'turn': 'TURN {n}',
+    'you': 'YOU',
+    'foe': 'FOE',
+    'reroll': 'REROLL',
+    'lastTurn': 'LAST TURN'
+  },
+
+  // ─── The stage banner ─────────────────────────────────────────────────────
+  'banner': {
+    'duel': '1v1 Duel',
+    'siege': '1v3 Siege',
+    'vs': 'vs {name}',
     'unlocked': 'Unlocked!'
   },
+
+  // ─── Result screen ────────────────────────────────────────────────────────
   'result': {
-    'stageClear': 'Stage Clear!',
-    'wipedOut': 'Squad Wiped Out',
-    'reachedStage': 'Stage {n}',
+    'chestCoins': 'Chest +{n}',
+    'victory': 'Victory!',
+    'defeat': 'Defeat',
+    'turns': 'Turns',
+    'playAgain': 'Play again',
+    'nextStage': 'Next stage',
     'newRecord': 'New record!',
-    // Badge for a retried stage whose enemies came back weakened.
-    'rallied': 'Second wind',
-    'peakSquad': 'Biggest squad',
-    'kills': 'Kills',
-    // ─── The ×3, the game's primary income ──────────────────────────────────
-    // The label renders as `[film] 3× [coin] (+123)` — two strings with a coin
-    // ICON between them, so the currency never has to be named in 21 languages
-    // and the button stays short enough for a 320 px screen.
-    //
-    // Split in two because the multiplier's ORDER is locale-dependent (`3×` in
-    // most, `×3` in ru/uk/kk/ar) while the bonus is the same shape everywhere.
-    // `tripleBonus` takes {n} = the BONUS the video adds, not the new total.
+    'streakBonus': 'Streak ×{n}',
+    // Renders as `[film] 3× [coin] (+123)`.
     'tripleCoins': '3×',
     'tripleBonus': '(+{n})',
     'tripleClaimed': 'Coins tripled!',
-    'nextStage': 'Next stage',
-    'tryAgain': 'Try again',
+    'chestTap': 'Tap the chest!',
+    'newRune': 'New rune',
+    'newSkin': 'New skin',
+    'skins': 'Rune skins',
+    'reasons': {
+      'conquest': 'Eight tiles conquered',
+      'conquestLost': 'The enemy conquered eight tiles',
+      'eliminated': 'Every enemy rune shattered',
+      'overrun': 'Your runes were overrun',
+      'turnLimit': 'Decided on tiles held',
+      'suddenDeath': 'Sudden death',
+      'siegeHeld': 'You held the line',
+      'siegeBroken': 'The siege broke you'
+    }
+  },
+
+  // ─── Campaign map ─────────────────────────────────────────────────────────
+  'campaign': {
+    'title': 'Campaign',
+    'chapter': 'Chapter {n}',
+    'cleared': 'Cleared',
+    'current': 'Current',
+    'locked': 'Locked',
+    'modes': {
+      '1v1': '1v1 Duel',
+      'siege': '1v3 Siege'
+    },
+    'objectives': {
+      'conquest': 'Hold 8 tiles',
+      'eliminate': 'Destroy every enemy rune',
+      'siege': 'Break the siege'
+    },
+    'reward': 'Reward',
+    'play': 'Play',
+    'replay': 'Replay',
+    'nextUnlock': 'Win Stage {c}-{n} for',
+    'nextUnlockAria': 'Win Stage {c}-{n} to unlock {rune}'
+  },
+
+  // ─── Rune skins (the coin sink) ───────────────────────────────────────────
+  'skins': {
+    'title': 'Rune Skins',
+    'owned': 'Owned',
+    'equipped': 'Equipped',
+    'equip': 'Equip',
+    'buy': 'Buy',
+    'names': {
+      'river': 'River Stone',
+      'obsidian': 'Obsidian',
+      'jade': 'Jade',
+      'amber': 'Amber',
+      'marble': 'Marble',
+      'ember': 'Ember'
+    },
+    'tagline': 'Every rune you place wears it.',
+    'needMore': '{n} more coins',
+    'blurbs': {
+      'river': 'Warm river sandstone, the glyph cut deep and lit from within.',
+      'obsidian': 'Knapped volcanic glass with a cold neon line.',
+      'jade': 'Polished green jade, the glyph inlaid in gold.',
+      'amber': 'A faceted amber gem, glowing from the inside.',
+      'marble': 'White marble, carved deep and shadowed.',
+      'ember': 'A slab of cooled lava, the glyph burning through the cracks.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Ranks',
+    'title': 'Rune ranks',
+    'tagline': 'Every rank is +{n} max HP — the same for every rune.',
+    'rank': 'Rank {n}/{max}',
+    'maxed': 'Maxed',
+    'hpGain': '+{n} HP',
+    'next': 'Next: +{n} HP',
     'upgrade': 'Upgrade',
-    'upgradeHint': 'Upgrade your squad!',
-    'rankOf': 'of {n}',
-    'upNext': 'Up next: Stage {n}'
+    'locked': 'Not unlocked yet',
+    'free': 'Free',
+    'freeGift': 'Free upgrade!',
+    'freeIn': 'New gift in {t}',
+    'freeTaken': 'Come back for the next one',
+    'nukerUnlock': 'Unlock the Nuker',
+    'nukerLocked': 'Or win it at Stage 4-1'
+  },
+
+  // ─── The offline rune forge ───────────────────────────────────────────────
+  // A drawing with a number under it; these are what a screen reader gets.
+  'forge': {
+    'label': 'Rune Forge',
+    'ready': 'Collect {n} coins from the forge',
+    'filling': 'Rune Forge — forging',
+    'full': 'Rune Forge — full',
+    'perHour': '+{n} / h'
   },
 
   // ─── Leaderboard ──────────────────────────────────────────────────────────
-  // A four-column table on a 320 px phone, so every column header has to be one
-  // short word — translate for brevity over literalness, and reuse whatever
-  // this locale already calls a stage and a squad elsewhere in this file.
-  //
-  // `{n}` in `yourRank` is NOT always a number: it is `100+` once the player is
-  // past the last published row, so no locale may wrap it in a grammatical case
-  // or a counter that only works for digits.
   'leaderboard': {
     'title': 'Leaderboard',
     'rank': '#',
     'player': 'Player',
     'stage': 'Stage',
-    'squad': 'Squad',
-    'empty': 'No runs posted yet. Be the first.',
+    'streak': 'Streak',
+    'empty': 'No matches posted yet. Be the first.',
     'failed': "Couldn't reach the leaderboard.",
     'loading': 'Loading…',
     'you': 'You',
     'yourRank': 'You are #{n}',
     'of': 'of {n} players'
-  },
-
-  // ─── Upgrades ─────────────────────────────────────────────────────────────
-  // ─── The idle treasure chest ──────────────────────────────────
-  //
-  // The chest is a drawing with a number under it and no words of its own, so
-  // these are what a screen reader has to work with. One line per STATE:
-  // announcing "treasure chest" for a chest that cannot be opened for another
-  // four minutes tells the player nothing they can act on. `label` is the
-  // floor under the glyph itself — see `iconLabels.ts`.
-  'chest': {
-    'label': 'Treasure chest',
-    'ready': 'Open the treasure chest for {n} coins',
-    'filling': 'Treasure chest — filling up',
-    'spent': 'Treasure chest — empty until tomorrow'
-  },
-
-  'skills': {
-    'grenade': 'Grenade',
-    'shield': 'Shield'
-  },
-  'upgrades': {
-    'title': 'Upgrades',
-    'spotlight': 'Spend!',
-    'level': 'Lv {n}',
-    'maxed': 'Maxed',
-    'names': {
-      'squad': 'Squad',
-      'power': 'Firepower',
-      'rate': 'Fire Rate',
-      'range': 'Reach',
-      'scavenge': 'Scavenging',
-      'grenade': 'Grenade',
-      'shield': 'Shield',
-      // The two weapon tracks. Named for the WEAPON rather than for the stat,
-      // because the player's question in the shop is "which of the two things I
-      // keep finding do I want to be better", not "what does this percentage do".
-      'rocket': 'Rocket Power',
-      'gatling': 'Gatling Power'
-    },
-    'descriptions': {
-      'squad': 'Start every stage with more survivors.',
-      'power': 'Every survivor deals more damage per shot.',
-      'rate': 'Every survivor shoots faster.',
-      'range': 'Your squad opens fire further up the road.',
-      'scavenge': 'Earn more coins from every run.',
-      'grenade': 'Throw a grenade for a burst of heavy damage.',
-      'shield': 'Halve the damage your squad takes for a few seconds.',
-      'rocket': 'Rocket launchers you unlock on a stage deal more damage.',
-      'gatling': 'Gatling guns you unlock on a stage deal more damage.'
-    }
   },
 
   // ─── Options ──────────────────────────────────────────────────────────────
@@ -242,8 +334,8 @@ export default {
     'music': 'Music',
     'musicTrack': 'Music Track',
     'musicTracks': {
-      'cozy': 'Cozy Harmony',
-      'trance': 'Trance Tunnel'
+      'cozy': 'Quiet Stone',
+      'trance': 'Rune Pulse'
     },
     'close': 'Save & Close',
     'difficulties': {
@@ -252,9 +344,9 @@ export default {
       'hard': 'Hard'
     },
     'difficultyHints': {
-      'easy': 'Softer enemies and thinner barricades.',
-      'medium': 'The standard run.',
-      'hard': 'Tougher enemies and heavier barricades.'
+      'easy': 'Enemies hesitate and misfire more often.',
+      'medium': 'The standard campaign.',
+      'hard': 'Enemies plan sharper and stack faster.'
     }
   },
 
@@ -276,13 +368,7 @@ export default {
     'dismiss': 'dismiss'
   },
   'loading': {
-    'tooLong': 'Loading taking too long? Try disabling your ad blocker and refresh.',
-    // The splash mascot's two-beat gag: the little ghost pops out with the
-    // first line, then drops the act and giggles. Both are onomatopoeia, so
-    // every locale wants its OWN startle noise and laugh, not a translation
-    // of the English letters.
-    'boo': 'Boo!',
-    'laugh': 'Hahaha!'
+    'tooLong': 'Loading taking too long? Try disabling your ad blocker and refresh.'
   },
   'license': {
     'denied': 'Access Denied: Please purchase a license.'

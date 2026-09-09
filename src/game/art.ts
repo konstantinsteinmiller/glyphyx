@@ -1,19 +1,21 @@
 import { prependBaseUrl } from '@/utils/function'
+import { ART_FOLDERS, type ArtKind } from './artCatalogue'
 
 /**
  * ─── Art contract ───────────────────────────────────────────────────────────
  *
- * glyphyx ships with ZERO gameplay bitmaps of its own making: the cast is
- * hand-inked vector art baked to frame strips at runtime, and the road, the
- * gates, the crates and every effect are Canvas 2D. That keeps the download
- * tiny, makes the art crisp at any DPR, and means the game is playable the
- * instant the JS parses.
+ * Glyphyx draws its own field: the pebbles, the glyphs, the stone tiles and
+ * every effect are Canvas 2D, baked to sprites at runtime. That keeps the
+ * download tiny, makes the art crisp at any DPR, and means the game is
+ * playable the instant the JS parses.
  *
  * When painted art arrives it drops in with NO renderer change: `spriteFor()`
  * probes `public/images/<folder>/<id>.webp` and, if the image decodes, the
  * renderer blits it instead of drawing. A missing file simply means "keep
- * drawing it". Every path is catalogued by the manifest in `artSheet.ts`,
- * which is also what exports the reference sheets the paintings are made from.
+ * drawing it". Every id is catalogued in `artCatalogue.ts`, the drop-in
+ * manifest for artists is `art-todo.md`, and the pipeline that turns the
+ * drawings into paintings — reference sheets, prompts, slicer, playground —
+ * is `art-sheets/README.md` (bench at `/#/art-sheets`, dev only).
  *
  * ─── The feature flag ───────────────────────────────────────────────────────
  *
@@ -38,38 +40,13 @@ import { prependBaseUrl } from '@/utils/function'
  * body on the road for a value that changes when a human clicks something.
  */
 
-/** Folder layout the art pipeline targets, one per drawable kind. */
-export const ART_FOLDERS = {
-  /**
-   * Painted WALK CYCLES, one horizontal strip per monster design.
-   *
-   * Keyed on the DESIGN (the thing that has a gait), sliced back into frames at
-   * runtime by `spriteStrip`, and played from the same clock that drives the
-   * procedural bake — so a design can swap from the drawing to the painting
-   * mid-stride without a pop.
-   */
-  monster: 'images/monsters',
-  /** The squad's RUN CYCLES, one strip per outfit, on the same terms. */
-  hero: 'images/heroes',
-  /** Road props: the two crates, the barricade tile, boulders, the powder keg,
-   *  the divider pillar, the coin. One still each. */
-  prop: 'images/props',
-  /** Gate frames, one per op, nine-sliced across the leaf's own width. */
-  gate: 'images/gates',
-  /** Projectiles in flight, authored at rest and turned by the renderer. */
-  round: 'images/rounds',
-  /** Effects: the muzzle flash, the smoke puff, scorch, rings, the shield dome,
-   *  the boss guard and both crests. */
-  fx: 'images/fx',
-  /** Backdrop: the two ridge silhouettes. (The road tile stays drawn — a
-   *  painted one was tried, and cobbles read as objects under the crowd.) */
-  bg: 'images/bg',
-  /** The HUD's own art — the elite crown (shared with the field), the result
-   *  banner, the shop chest, the two skill icons — and the logo. */
-  ui: 'images/ui'
-} as const
-
-export type ArtKind = keyof typeof ART_FOLDERS
+/**
+ * The folder layout and the id scheme live in `artCatalogue.ts` — the sheet
+ * manifest and the Node-side prompt generator read them without touching
+ * `window`, and this module re-exports them so every renderer import keeps
+ * working. See there for what `melee-river-lv2` or `archer-e-goblin-lv1` mean.
+ */
+export { ART_FOLDERS, type ArtKind }
 
 const BUILD_DEFAULT = import.meta.env.VITE_ENABLE_ART_OVERRIDES === 'true'
 const STORAGE_KEY = 'artOverrides'
@@ -190,7 +167,33 @@ if (typeof window !== 'undefined') {
     on: () => setArtOverrides(true),
     off: () => setArtOverrides(false),
     refresh: () => { refreshArtOverrides(); console.warn('[art] probes cleared; art re-reads on next draw.') },
-    status: () => ({ enabled, source: artOverrideSource(), probes: probes.size })
+    /**
+     * Why the art on screen is the art on screen.
+     *
+     * `enabled` and `source` answer "is it even looking" — and `source:
+     * 'stored'` is the one that catches people out, because a single `?art=off`
+     * months ago outranks the build flag for ever. `ready` / `missing` answer
+     * "did it find anything": a folder full of freshly sliced WebPs with
+     * `ready: 0` means the probes were resolved before the files existed, and
+     * `__art.refresh()` (or a reload) is the whole fix.
+     */
+    status: () => {
+      let ready = 0
+      let missing = 0
+      for (const probe of probes.values()) {
+        if (probe.state === 'ready') ready++
+        else if (probe.state === 'missing') missing++
+      }
+      return { enabled, source: artOverrideSource(), probes: probes.size, ready, missing }
+    }
+  }
+
+  // One line in dev, because "I sliced the art and nothing changed" has three
+  // causes and none of them are visible: the flag off, a remembered `?art=off`,
+  // or probes that resolved to 404 before the files landed.
+  if (import.meta.env.DEV) {
+    console.info(`[art] overrides ${enabled ? 'ON' : 'OFF'} (from ${artOverrideSource()}).`
+      + ' __art.status() / .on() / .off() / .refresh()')
   }
 }
 

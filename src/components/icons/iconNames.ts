@@ -45,7 +45,22 @@ export const GAME_ICON_NAMES = [
   // badge, which is the same rule the five stat glyphs above follow: the thing
   // bought and the thing carried must be one drawing, or the player has to
   // learn the same object twice. See `game/weapons.ts`.
-  'rocket', 'gatling'
+  'rocket', 'gatling',
+  // ── Glyphyx ─────────────────────────────────────────────────────────────
+  // The nine rune glyphs (`shield` above doubles as the defense rune's), the
+  // offline forge, the campaign map, the skin shop and a board tile. The rune
+  // glyphs front the unlock card, the campaign modal's reward column and the
+  // hint pills — the same silhouettes the renderer carves into the pebbles, so
+  // the thing unlocked and the thing placed are one drawing.
+  //
+  // `cleave` / `roller` / `bombard` are the three late unlocks, and each icon
+  // has to carry its ATTACK, not just its weapon: the axe's edge is drawn as
+  // the arc it sweeps, the boulder trails the bars of its lane, and the mortar
+  // is separated from its shell by the gap it lobs the round across.
+  //
+  // `nuker` is the odd one out and is meant to be: a hazard trefoil, a SIGN
+  // rather than a weapon, because it is the one rune nobody aims.
+  'sword', 'bow', 'orb', 'cross', 'cleave', 'roller', 'bombard', 'nuker', 'forge', 'map', 'skin', 'tile'
 ] as const
 
 export type GameIconName = (typeof GAME_ICON_NAMES)[number]

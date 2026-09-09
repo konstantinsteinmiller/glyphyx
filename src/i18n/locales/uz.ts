@@ -1,17 +1,37 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': '3 davolaydi va qo\'shnilarining hujumini kuchaytiradi, birinchi yurishdanoq.',
+      'defense': 'Qo\'shnilarini himoya qiluvchi devor, birinchi yurishdanoq.',
+      'mage': 'Nuri oxirida xoch bo\'lib portlaydi, birinchi yurishdanoq.',
+      'archer': 'Birinchi yurishdanoq bir vaqtda ikki katakka otadi.',
+      'melee': 'Nishonni orqaga itaradi — bir yurishda uch tosh po\'lat.',
+      'cleave': 'Birinchi yurishdanoq oldidagi uchta katakni birdan qulatadi.',
+      'roller': 'Birinchi yurishdanoq toʻxtashdan oldin ikki omon qolganni bosib oʻtadi.',
+      'bombard': 'Birinchi yurishdanoq uzoq qator va oradagi katakni otadi.',
+      'nuker': '3-dar. tushadi va endigina boʻshatgan taxtani ushlab turadi, birinchi yurishdanoq.'
+    },
+    'watchAd': 'Reklama ko\'rish',
+    'armed': 'Qurollangan ×{n}',
+    'landsAt': 'Keyingi jangda birinchi qo\'yganingizda {n}-daraja bilan tushadi.',
+    'runesTagline': 'Qurollangan har bir turning birinchi qo\'yilgan runasi darhol {n}-darajada bo\'ladi.',
+    'tabs': {
+      'skins': 'Skinlar',
+      'runes': 'Kuch runalari',
+    },
+    'title': 'Do\'kon',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'Bekor qilish',
   'close': 'Yopish',
   'ok': 'Ok',
   'continue': 'Davom etish',
   'tapToContinue': 'Davom etish uchun bosing',
-  'clickToContinue': 'Davom etish uchun cherting',
+  'clickToContinue': 'Davom etish uchun bosing',
   'rewards': 'MUKOFOTLAR',
   'tip': 'Maslahat',
-  'crazyGamesOnly': 'Bu o‘yin faqat quyidagi joyda mavjud:',
+  'crazyGamesOnly': 'Bu oʻyin faqat shu yerda mavjud:',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
     'next': 'Keyingi',
     'replay': 'Qayta',
@@ -20,151 +40,306 @@ export default {
     'pause': 'Pauza',
     'menu': 'Menyu',
     'home': 'Bosh sahifa',
-    'info': 'Maʼlumot'
+    'info': 'Maʼlumot',
+    'skip': 'Oʻtkazib yuborish'
   },
 
   'hud': {
-    'stage': '{n}-bosqich',
-    'best': 'Rekord {n}',
-    'boss': 'Bos',
-    'miniboss': 'Mini bos',
-    'fireRate': 'Tezlik',
-    'incoming': 'Hujum kelmoqda!',
-    'dodge': 'Chetlan',
-    'weaponActive': '{name} tayyor',
-    'weaponLocked': '{name} qulflangan — {total} tadan {n} ta richag otildi'
-  },
-
-  'weapons': {
-    'rocket': 'Raketa otar',
-    'gatling': 'Gatling pulemyoti'
-  },
-
-  'tutorial': {
-    'touch': 'Otryadni harakatlantirish uchun suring',
-    'desktop': 'Otryadni boshqarish uchun sichqonchani suring'
-  },
-  'hints': {
-    'move': { 'touch': 'Harakat uchun bosing', 'desktop': 'Harakat uchun bosing' },
-    'gate': { 'touch': 'Darvozaga otishda davom eting: har yarim soniyada +1', 'desktop': 'Darvozaga otishda davom eting: har yarim soniyada +1' },
-    'trap': { 'touch': 'Qizil darvoza guruhni KAMAYTIRADI — boshqasini tanlang!', 'desktop': 'Qizil darvoza guruhni KAMAYTIRADI — boshqasini tanlang!' },
-    'divider': { 'touch': 'Darvozalar orasidagi ustunga hech tegmang', 'desktop': 'Darvozalar orasidagi ustunga hech tegmang' },
-    'crate': { 'touch': 'Yashil sandiq: hamma kuchliroq uradi', 'desktop': 'Yashil sandiq: hamma kuchliroq uradi' },
-    'rate': { 'touch': 'Ko‘k sandiq: hamma tezroq otadi', 'desktop': 'Ko‘k sandiq: hamma tezroq otadi' },
-    'boss': { 'touch': 'Qizil doiradan uzoqroq turing!', 'desktop': 'Qizil doiradan uzoqroq turing!' },
-    'lever': { 'touch': 'Yo‘l chetidagi IKKALA richagni ham ot — ular qurol sandig‘ini ochadi', 'desktop': 'Yo‘l chetidagi IKKALA richagni ham ot — ular qurol sandig‘ini ochadi' },
-    'guard': { 'touch': 'Qalqon yoqilgan — o‘qlaring o‘tmaydi. QOCH!', 'desktop': 'Qalqon yoqilgan — o‘qlaring o‘tmaydi. QOCH!' }
-  },
-
-  'flow': {
-
-    'unlocked': 'Ochildi!'
-
-  },
-
-  'result': {
-    'stageClear': 'Bosqich tugadi!',
-    'wipedOut': 'Guruh yo‘q qilindi',
-    'reachedStage': '{n}-bosqich',
-    'newRecord': 'Yangi rekord!',
-    'rallied': 'Ikkinchi nafas',
-    'peakSquad': 'Eng katta guruh',
-    'kills': 'Yo‘q qilingan',
-    'tripleCoins': '3×',
-    'tripleBonus': '(+{n})',
-    'tripleClaimed': 'Tangalar uch barobar!',
-    'nextStage': 'Keyingi bosqich',
-    'tryAgain': 'Qayta urinish',
-    'upgrade': 'Yaxshilash',
-    'upgradeHint': 'Otryadingizni yaxshilang!',
-    'rankOf': '{n} dan',
-    'upNext': 'Keyingi: {n}-bosqich'
-  },
-
-  'leaderboard': {
-    'title': 'Reyting',
-    'rank': '#',
-    'player': 'O‘yinchi',
-    'stage': 'Bosqich',
-    'squad': 'Guruh',
-    'empty': 'Hozircha bo‘sh. Birinchi bo‘ling!',
-    'failed': 'Reytingga ulanib bo‘lmadi.',
-    'loading': 'Yuklanmoqda…',
+    'stage': '{c}-{n} bosqich',
+    'conquest': 'Istilo',
+    'tiles': '{n} / {total}',
+    'turn': '{n}-yurish',
     'you': 'Siz',
-    'yourRank': 'Siz #{n} o‘rindasiz',
-    'of': '{n} o‘yinchidan'
+    'enemy': 'Dushman',
+    'streak': 'Gʻalabalar seriyasi',
+    'streakMult': '×{n} oltin',
+    'suddenDeath': 'Toʻsatdan oʻlim!',
+    'reroll': 'Almashtirish',
+    'rerollsLeft': '{n} ta qoldi'
   },
 
-  'chest': {
-    'label': 'Xazina sandiqi',
-    'ready': 'Sandiqni {n} tanga uchun oching',
-    'filling': 'Xazina sandiqi to‘lmoqda',
-    'spent': 'Xazina sandiqi ertagacha bo‘sh'
+  'factions': {
+    'skeleton': 'Suyak qoʻgʻirchoqlar',
+    'goblin': 'Goblin kamonchilar',
+    'orc': 'Ork berserklar',
+    'undead': 'Oʻlik sehrgarlar'
   },
 
-  'skills': {
-
-    'grenade': 'Granata',
-
-    'shield': 'Qalqon'
-
-  },
-
-  'upgrades': {
-    'title': 'Yaxshilashlar',
-    'spotlight': 'Sarflang!',
-    'level': 'Dar. {n}',
-    'maxed': 'Maks',
+  'runes': {
+    'level': '{n}-dar.',
+    'hp': 'HY',
+    'atk': 'HUJ',
     'names': {
-      'squad': 'Guruh',
-      'power': 'Otish kuchi',
-      'rate': 'Otish tezligi',
-      'range': 'Masofa',
-      'scavenge': 'Yig‘ish',
-      'grenade': 'Granata',
-      'shield': 'Qalqon',
-      'rocket': 'Raketa kuchi',
-      'gatling': 'Gatling kuchi'
+      'melee': 'Qilich',
+      'archer': 'Kamon',
+      'mage': 'Sirli shar',
+      'defense': 'Qalqon',
+      'support': 'Nurli xoch',
+      'cleave': 'Bolta',
+      'roller': 'Qoyatosh',
+      'bombard': 'Mortira',
+      'nuker': 'Vayronkor'
     },
     'descriptions': {
-      'squad': 'Har bosqichni ko‘proq omon qolgan bilan boshlang.',
-      'power': 'Har bir omon qolgan har otishda ko‘proq zarar beradi.',
-      'rate': 'Har bir omon qolgan tezroq otadi.',
-      'range': 'Otryading yo‘lda uzoqroqdan o‘q ochadi.',
-      'scavenge': 'Har o‘yindan ko‘proq tanga oling.',
-      'grenade': "Og'ir zarar uchun granata uloqtiring.",
-      'shield': 'Bir necha soniya otryadga zararni yarmiga kamaytiradi.',
-      'rocket': 'Bosqichda ochilgan raketa otarlar ko‘proq zarar yetkazadi.',
-      'gatling': 'Bosqichda ochilgan gatlinglar ko‘proq zarar yetkazadi.'
+      'melee': 'Roʻparasidagi katakka uradi. 2-dar. nishonni orqaga itaradi.',
+      'archer': 'Bir katakni oʻtkazib, keyingisiga uradi. 2-dar. ikki katakka otadi.',
+      'mage': 'Ikki katak orqali diagonal nur otadi. 2-dar. oxirida portlaydi.',
+      'defense': 'Har zarbadan 1 zararni yutadi. 2-dar. qoʻshnilarni himoya qiladi.',
+      'support': 'Har yurishda ittifoqchi qoʻshnilarni davolaydi. 2-dar. ularning hujumini ham kuchaytiradi.',
+      'cleave': 'Oldidagi uchta katakni kesadi: roʻparasi va ikki yoni.',
+      'roller': 'Runa bardosh bermaguncha dumalaydi, oʻzinikilar ham. 2-dar. bittaga uzoqroq dumalaydi.',
+      'bombard': 'Uch qator oldindagi uchta katakni devor osha otadi. 2-dar. oʻrtaga ham tegadi.',
+      'nuker': 'Tushgan joyida portlaydi: taxtadagi barcha 1-dar. runalar yoʻq boʻladi, sizniki ham. 2-dar. bardosh beradi.'
     }
   },
 
+  'hints': {
+    'drag': {
+      'touch': 'Runani taxtaga torting',
+      'desktop': 'Runani taxtaga torting'
+    },
+    'aim': {
+      'touch': 'Nishon uchun suring, qulflash uchun qoʻyib yuboring',
+      'desktop': 'Nishonga olish uchun torting yoki strelka / WASD tugmalarini bosing, mahkamlash uchun qoʻyib yuboring'
+    },
+    'archer': {
+      'touch': 'Kamon bir katakni oʻtkazib, keyingisiga uradi',
+      'desktop': 'Kamon bir katakni oʻtkazib, keyingisiga uradi'
+    },
+    'stack': {
+      'touch': 'Darajani oshirish uchun bir xil runani oʻzingiznikiga qoʻying',
+      'desktop': 'Darajani oshirish uchun bir xil runani oʻzingiznikiga qoʻying'
+    },
+    'conquest': {
+      'touch': 'Gʻalaba uchun 8 katakni ushlab turing',
+      'desktop': 'Gʻalaba uchun 8 katakni ushlab turing'
+    },
+    'siege': {
+      'touch': 'Qurshovdasiz! Yorib chiqing va 8 katakni ushlab turing',
+      'desktop': 'Qurshovdasiz! Yorib chiqing va 8 katakni ushlab turing'
+    },
+    'mage': {
+      'touch': "Shar diagonal bo'ylab ikki katak orqali nur otadi",
+      'desktop': "Shar diagonal bo'ylab ikki katak orqali nur otadi"
+    },
+    'defense': {
+      'touch': "Qalqon o'q va nurlarni to'sadi",
+      'desktop': "Qalqon o'q va nurlarni to'sadi"
+    },
+    'support': {
+      'touch': "Xoch qo'shnilarini davolaydi va kuchaytiradi",
+      'desktop': "Xoch qo'shnilarini davolaydi va kuchaytiradi"
+    },
+    'cleave': {
+      'touch': 'Bolta oldidagi uchala katakni ham kesadi',
+      'desktop': 'Bolta oldidagi uchala katakni ham kesadi'
+    },
+    'roller': {
+      'touch': 'Qoyatosh sindirgan narsasidan oshib dumalayveradi',
+      'desktop': 'Qoyatosh sindirgan narsasidan oshib dumalayveradi'
+    },
+    'bombard': {
+      'touch': 'Mortira uch qator oldindagi uchta katakni otadi',
+      'desktop': 'Mortira uch qator oldindagi uchta katakni otadi'
+    },
+    'correct': {
+      'touch': 'Qayta nishonga olish uchun strelkaga teging yoki suring',
+      'desktop': 'Qayta nishonga olish uchun istalgan joyda bosib torting yoki strelka / WASD tugmalarini bosing'
+    },
+    'tap': {
+      'touch': 'Qoʻyish uchun katakka teging',
+      'desktop': 'Qoʻyish uchun katakka bosing'
+    },
+    'nuker': {
+      'touch': 'Vayronkor barcha 1-dar. runalarni yoʻq qiladi — sizniki ham',
+      'desktop': 'Vayronkor barcha 1-dar. runalarni yoʻq qiladi — sizniki ham'
+    }
+  },
+
+  'canvas': {
+    'level': '{n}-DAR.',
+    'combo': '×{n} KOMBO',
+    'clash': 'TOʻQNASHUV!',
+    'victory': 'GʻALABA!',
+    'defeat': 'MAGʻLUBIYAT',
+    'reveal': 'OCHISH',
+    'suddenDeath': 'TOʻSATDAN OʻLIM',
+    'turn': '{n}-YURISH',
+    'you': 'SIZ',
+    'foe': 'DUSHMAN',
+    'reroll': 'ALMASHTIRISH',
+    'lastTurn': 'SOʻNGGI YURISH'
+  },
+
+  'banner': {
+    'duel': '1v1 duel',
+    'siege': '1v3 qamal',
+    'vs': '{name} bilan',
+    'unlocked': 'Ochildi!'
+  },
+
+  'result': {
+    'chestCoins': 'Sandiq +{n}',
+    'victory': 'Gʻalaba!',
+    'defeat': 'Magʻlubiyat',
+    'turns': 'Yurishlar',
+    'playAgain': 'Qayta oʻynash',
+    'nextStage': 'Keyingi bosqich',
+    'newRecord': 'Yangi rekord!',
+    'streakBonus': 'Seriya ×{n}',
+    'tripleCoins': '3×',
+    'tripleBonus': '(+{n})',
+    'tripleClaimed': 'Tangalar uch baravar!',
+    'chestTap': 'Sandiqni bosing!',
+    'newRune': 'Yangi runa',
+    'newSkin': 'Yangi koʻrinish',
+    'skins': 'Runa koʻrinishlari',
+    'reasons': {
+      'conquest': 'Sakkiz katak istilo qilindi',
+      'conquestLost': 'Dushman sakkiz katakni egalladi',
+      'eliminated': 'Barcha dushman runalari sindirildi',
+      'overrun': 'Runalaringiz bosib olindi',
+      'turnLimit': 'Ushlangan kataklar boʻyicha hal qilindi',
+      'suddenDeath': 'Toʻsatdan oʻlim',
+      'siegeHeld': 'Siz chiziqni ushlab turdingiz',
+      'siegeBroken': 'Qamal sizni sindirdi'
+    }
+  },
+
+  'campaign': {
+    'title': 'Yurish',
+    'chapter': '{n}-bob',
+    'cleared': 'Oʻtildi',
+    'current': 'Joriy',
+    'locked': 'Yopiq',
+    'modes': {
+      '1v1': '1v1 duel',
+      'siege': '1v3 qamal'
+    },
+    'objectives': {
+      'conquest': '8 katakni ushlab turing',
+      'eliminate': 'Barcha dushman runalarini yoʻq qiling',
+      'siege': 'Qamalni yoring'
+    },
+    'reward': 'Mukofot',
+    'play': 'Oʻynash',
+    'replay': 'Qayta',
+    'nextUnlock': '{c}-{n} bosqichda gʻalaba qozoning:',
+    'nextUnlockAria': '{rune} ochish uchun {c}-{n} bosqichda gʻalaba qozoning'
+  },
+
+  'skins': {
+    'title': 'Runa koʻrinishlari',
+    'owned': 'Bor',
+    'equipped': 'Kiyilgan',
+    'equip': 'Kiyish',
+    'buy': 'Sotib olish',
+    'names': {
+      'river': 'Daryo toshi',
+      'obsidian': 'Obsidian',
+      'jade': 'Nefrit',
+      'amber': 'Qahrabo',
+      'marble': 'Marmar',
+      'ember': 'Choʻgʻ'
+    },
+    'tagline': "Siz qo'ygan har bir runa shuni kiyadi.",
+    'needMore': 'Yana {n} tanga kerak',
+    'blurbs': {
+      'river': "Iliq daryo qumtoshi, runa chuqur o'yilgan va ichidan yorishadi.",
+      'obsidian': "Yo'nilgan vulqon shishasi, sovuq neon chiziq bilan.",
+      'jade': 'Sayqallangan yashil nefrit, runa oltin bilan bezatilgan.',
+      'amber': 'Qirrali qahrabo toshi, ichidan porlaydi.',
+      'marble': "Oq marmar, chuqur o'yilgan va soyali.",
+      'ember': 'Sovigan lava plitasi, runa yoriqlardan yonadi.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Martaba',
+    'title': 'Runa martabalari',
+    'tagline': 'Har martaba +{n} maks. HY beradi — barcha runaga bir xil.',
+    'rank': 'Martaba {n}/{max}',
+    'maxed': 'Eng yuqori',
+    'hpGain': '+{n} HY',
+    'next': 'Keyingi: +{n} HY',
+    'upgrade': 'Yaxshilash',
+    'locked': 'Hali ochilmagan',
+    'free': 'Bepul',
+    'freeGift': 'Bepul yaxshilash!',
+    'freeIn': 'Yangi sovgʻa {t} dan keyin',
+    'freeTaken': 'Keyingisi uchun qayting',
+    'nukerUnlock': 'Vayronkorni ochish',
+    'nukerLocked': 'Yoki 4-1 bosqichda gʻalaba qozoning'
+  },
+
+  'forge': {
+    'label': 'Runa ustaxonasi',
+    'ready': 'Ustaxonadan {n} tanga oling',
+    'filling': 'Runa ustaxonasi — ishlamoqda',
+    'full': 'Runa ustaxonasi — toʻla',
+    'perHour': '+{n} / soat'
+  },
+
+  'leaderboard': {
+    'title': 'Yetakchilar jadvali',
+    'rank': '#',
+    'player': 'Oʻyinchi',
+    'stage': 'Bosqich',
+    'streak': 'Seriya',
+    'empty': 'Hali oʻyinlar yoʻq. Birinchi boʻling.',
+    'failed': 'Jadvalni yuklab boʻlmadi.',
+    'loading': 'Yuklanmoqda…',
+    'you': 'Siz',
+    'yourRank': 'Siz #{n}',
+    'of': '{n} oʻyinchi ichida'
+  },
+
   'options': {
-    'title': 'Sozlamalar', 'general': 'Umumiy', 'audio': 'Ovoz', 'language': 'Til',
-    'difficulty': 'Qiyinlik', 'soundEffects': 'Ovoz effektlari', 'music': 'Musiqa', 'musicTrack': 'Musiqa treki',
-    'musicTracks': { 'cozy': 'Qulay ohang', 'trance': 'Trans tunneli' },
+    'title': 'Sozlamalar',
+    'general': 'Umumiy',
+    'audio': 'Ovoz',
+    'language': 'Til',
+    'difficulty': 'Qiyinlik',
+    'soundEffects': 'Ovoz effektlari',
+    'music': 'Musiqa',
+    'musicTrack': 'Musiqa treki',
+    'musicTracks': {
+      'cozy': 'Sokin tosh',
+      'trance': 'Runa pulsi'
+    },
     'close': 'Saqlash va yopish',
-    'difficulties': { 'easy': 'Oson', 'medium': 'O‘rta', 'hard': 'Qiyin' },
+    'difficulties': {
+      'easy': 'Oson',
+      'medium': 'Oʻrtacha',
+      'hard': 'Qiyin'
+    },
     'difficultyHints': {
-      'easy': 'Kuchsizroq dushmanlar va ingichka to‘siqlar.',
-      'medium': 'Standart o‘yin.',
-      'hard': 'Kuchliroq dushmanlar va og‘ir to‘siqlar.'
+      'easy': 'Dushmanlar koʻproq ikkilanadi va xato qiladi.',
+      'medium': 'Standart yurish.',
+      'hard': 'Dushmanlar aniqroq rejalashtiradi va tezroq kuchayadi.'
     }
   },
 
   'adsBlocked': {
-    'title': 'Reklamani ko‘rsatib bo‘lmadi',
-    'body': 'Mukofot olishingiz uchun video ko‘rsatmoqchi edik, lekin brauzeringizdagi nimadir reklamani to‘smoqda.',
-    'allowPrefix': 'Iltimos, quyidagi saytda reklamaga ruxsat bering:',
-    'allowSuffix': '(yoki bu o‘yin uchun reklama bloklagichni to‘xtating) va qayta urinib ko‘ring.',
-    'gotIt': 'Tushunarli'
+    'title': 'Reklamani koʻrsatib boʻlmadi',
+    'body': 'Mukofot olishingiz uchun video koʻrsatmoqchi edik, lekin brauzeringizdagi nimadir reklamani bloklayapti.',
+    'allowPrefix': 'Shu yerda reklamaga ruxsat bering:',
+    'allowSuffix': '(yoki bu oʻyin uchun reklama blokerini toʻxtating) va qayta urinib koʻring.',
+    'gotIt': 'Tushundim'
   },
   'saveStatus': {
-    'restoredTitle': 'Bulutli saqlash tiklandi', 'restoredBody': 'Tiklash uchun +{n} bonus tanga',
-    'tap': 'bosing', 'pausedTitle': 'Bulutli sinxronlash to‘xtatildi',
-    'pausedBody': 'Oflayn o‘ynayapsiz. Yutuqlaringiz shu yerda saqlanadi.',
-    'retry': 'Qayta urinish', 'dismiss': 'yashirish'
+    'restoredTitle': 'Bulutli saqlash tiklandi',
+    'restoredBody': 'Tiklash uchun +{n} bonus tanga',
+    'tap': 'bosing',
+    'pausedTitle': 'Bulut sinxronlash toʻxtatildi',
+    'pausedBody': 'Oflayn oʻynayapsiz. Progress shu yerda saqlanadi.',
+    'retry': 'Qayta urinish',
+    'dismiss': 'yopish'
   },
-  'loading': { 'tooLong': 'Yuklash juda uzoq davom etyaptimi? Reklama bloklagichni o‘chirib, sahifani yangilang.', 'boo': 'Bu!', 'laugh': 'Hahaha!' },
-  'license': { 'denied': 'Kirish rad etildi: iltimos, litsenziya sotib oling.' }
+  'loading': {
+    'tooLong': 'Yuklanish juda uzoqmi? Reklama blokerini oʻchirib, sahifani yangilang.'
+  },
+  'license': {
+    'denied': 'Kirish rad etildi: litsenziya sotib oling.'
+  }
 }

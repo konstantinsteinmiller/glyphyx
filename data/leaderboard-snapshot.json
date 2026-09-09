@@ -1,625 +1,621 @@
 {
-  "source": "https://glyphyx-leaderboard.hyperg8.workers.dev",
-  "fetchedAt": 1788886647693,
-  "updatedAt": 1788886585973,
-  "total": 3069,
+  "source": "seeded:retention-curve",
+  "fetchedAt": 1788891781100,
+  "updatedAt": 1788891781100,
+  "total": 154331,
   "entries": [
     {
       "rank": 1,
-      "name": "Hippiriot",
-      "score": 134,
-      "squad": 4000
+      "name": "Sashila",
+      "score": 60,
+      "squad": 13
     },
     {
       "rank": 2,
-      "name": "PANDASSI",
-      "score": 74,
-      "squad": 2179
+      "name": "FrostRocket",
+      "score": 59,
+      "squad": 13
     },
     {
       "rank": 3,
-      "name": "JuicyCloud.Jbql",
-      "score": 72,
-      "squad": 4000
+      "name": "RustyFalcon.Jbql",
+      "score": 58,
+      "squad": 10
     },
     {
       "rank": 4,
-      "name": "RealMilkshake.RX",
-      "score": 69,
-      "squad": 4000
+      "name": "Tarrossi",
+      "score": 57,
+      "squad": 11
     },
     {
       "rank": 5,
-      "name": "Kazekorashi",
-      "score": 57,
-      "squad": 1090
+      "name": "IronTurtle",
+      "score": 56,
+      "squad": 11
     },
     {
       "rank": 6,
-      "name": "Wanderer219322",
-      "score": 49,
-      "squad": 4000
+      "name": "GoldenMilkshake",
+      "score": 55,
+      "squad": 9
     },
     {
       "rank": 7,
-      "name": "_N3XuS_",
-      "score": 49,
-      "squad": 619
+      "name": "Strider408112",
+      "score": 55,
+      "squad": 10
     },
     {
       "rank": 8,
-      "name": "Kankitsurui",
-      "score": 46,
-      "squad": 3899
+      "name": "RapidGoblin.Jbql",
+      "score": 54,
+      "squad": 10
     },
     {
       "rank": 9,
-      "name": "Ranger736425",
-      "score": 45,
-      "squad": 3414
+      "name": "Kakkonix",
+      "score": 54,
+      "squad": 9
     },
     {
       "rank": 10,
-      "name": "Strangemoskito",
-      "score": 42,
-      "squad": 424
+      "name": "Scout381610",
+      "score": 53,
+      "squad": 13
     },
     {
       "rank": 11,
-      "name": "yaruki",
-      "score": 39,
-      "squad": 4000
+      "name": "LuckyViper",
+      "score": 53,
+      "squad": 10
     },
     {
       "rank": 12,
-      "name": "Drifter351369",
-      "score": 35,
-      "squad": 2005
+      "name": "JuicyComet.TV",
+      "score": 53,
+      "squad": 10
     },
     {
       "rank": 13,
-      "name": "RealMermaid.gUzn",
-      "score": 33,
-      "squad": 651
+      "name": "Leliathas",
+      "score": 52,
+      "squad": 9
     },
     {
       "rank": 14,
-      "name": "Vandam999",
-      "score": 31,
-      "squad": 1012
+      "name": "SilentBishop.Jbq",
+      "score": 52,
+      "squad": 12
     },
     {
       "rank": 15,
-      "name": "Scout930853",
-      "score": 28,
-      "squad": 56
+      "name": "TurboYeti.kk",
+      "score": 52,
+      "squad": 10
     },
     {
       "rank": 16,
-      "name": "Ranger124921",
-      "score": 28,
-      "squad": 192
+      "name": "MOPPIMI",
+      "score": 52,
+      "squad": 9
     },
     {
       "rank": 17,
-      "name": "FancyNinja.J5vv",
-      "score": 28,
-      "squad": 177
+      "name": "FeralCloud",
+      "score": 52,
+      "squad": 12
     },
     {
       "rank": 18,
-      "name": "Drifter902358",
-      "score": 27,
-      "squad": 2335
+      "name": "BrilliantBishop",
+      "score": 51,
+      "squad": 10
     },
     {
       "rank": 19,
-      "name": "BrilliantPunk.rD",
-      "score": 27,
-      "squad": 560
+      "name": "SaltyCloud.Q",
+      "score": 51,
+      "squad": 9
     },
     {
       "rank": 20,
-      "name": "Nomad313195",
-      "score": 26,
-      "squad": 357
+      "name": "RapidBadger.io",
+      "score": 51,
+      "squad": 11
     },
     {
       "rank": 21,
-      "name": "Strider496470",
-      "score": 26,
-      "squad": 525
+      "name": "RapidTurtle",
+      "score": 51,
+      "squad": 9
     },
     {
       "rank": 22,
-      "name": "Runner490728",
-      "score": 26,
-      "squad": 1318
+      "name": "GoldenKoala",
+      "score": 51,
+      "squad": 12
     },
     {
       "rank": 23,
-      "name": "Trekker281388",
-      "score": 25,
-      "squad": 686
+      "name": "Kazela",
+      "score": 51,
+      "squad": 10
     },
     {
       "rank": 24,
-      "name": "RoyalCat.Hht4",
-      "score": 25,
-      "squad": 1149
+      "name": "Sazela",
+      "score": 51,
+      "squad": 11
     },
     {
       "rank": 25,
-      "name": "Roamer599485",
-      "score": 25,
-      "squad": 188
+      "name": "QuietGremlin",
+      "score": 50,
+      "squad": 10
     },
     {
       "rank": 26,
-      "name": "Drifter173901",
-      "score": 24,
-      "squad": 1072
+      "name": "GoldenDemon.x",
+      "score": 50,
+      "squad": 11
     },
     {
       "rank": 27,
-      "name": "Drifter854419",
-      "score": 24,
-      "squad": 216
+      "name": "GoldenPhantom",
+      "score": 50,
+      "squad": 9
     },
     {
       "rank": 28,
-      "name": "SharpUnicorn.anv",
-      "score": 24,
-      "squad": 277
+      "name": "Voppirashi",
+      "score": 50,
+      "squad": 10
     },
     {
       "rank": 29,
-      "name": "HotLettuce.KL4d",
-      "score": 23,
-      "squad": 248
+      "name": "Dondara",
+      "score": 50,
+      "squad": 11
     },
     {
       "rank": 30,
-      "name": "Roamer272769",
-      "score": 23,
-      "squad": 924
+      "name": "BrilliantMuffin",
+      "score": 50,
+      "squad": 8
     },
     {
       "rank": 31,
-      "name": "Nomad198817",
-      "score": 21,
-      "squad": 43
+      "name": "Scout168450",
+      "score": 50,
+      "squad": 9
     },
     {
       "rank": 32,
-      "name": "Trekker435131",
-      "score": 21,
-      "squad": 43
+      "name": "KARROSSI",
+      "score": 50,
+      "squad": 10
     },
     {
       "rank": 33,
-      "name": "Ranger840657",
-      "score": 21,
-      "squad": 43
+      "name": "CrimsonCloud",
+      "score": 50,
+      "squad": 11
     },
     {
       "rank": 34,
-      "name": "Strider477081",
-      "score": 21,
-      "squad": 43
+      "name": "RapidRaven",
+      "score": 49,
+      "squad": 10
     },
     {
       "rank": 35,
-      "name": "Runner768882",
-      "score": 21,
-      "squad": 43
+      "name": "Rappila",
+      "score": 49,
+      "squad": 10
     },
     {
       "rank": 36,
-      "name": "Scout269995",
-      "score": 21,
-      "squad": 43
+      "name": "Kappiriot",
+      "score": 49,
+      "squad": 9
     },
     {
       "rank": 37,
-      "name": "Drifter433912",
-      "score": 21,
-      "squad": 43
+      "name": "LEKKORASHI",
+      "score": 49,
+      "squad": 8
     },
     {
       "rank": 38,
-      "name": "Nomad496706",
-      "score": 21,
-      "squad": 44
+      "name": "TurboPanda.RX",
+      "score": 49,
+      "squad": 9
     },
     {
       "rank": 39,
-      "name": "Trekker626182",
-      "score": 21,
-      "squad": 767
+      "name": "LuckyBadger.io",
+      "score": 49,
+      "squad": 9
     },
     {
       "rank": 40,
-      "name": "Trekker469859",
-      "score": 21,
-      "squad": 589
+      "name": "NeonPanda",
+      "score": 49,
+      "squad": 9
     },
     {
       "rank": 41,
-      "name": "DeadNinja.hPWH",
-      "score": 21,
-      "squad": 173
+      "name": "VelvetTurtle.Jbq",
+      "score": 49,
+      "squad": 9
     },
     {
       "rank": 42,
-      "name": "Strider888038",
-      "score": 21,
-      "squad": 175
+      "name": "ShadowCloud",
+      "score": 49,
+      "squad": 10
     },
     {
       "rank": 43,
-      "name": "Survivor919080",
-      "score": 21,
-      "squad": 333
+      "name": "NeonPixel",
+      "score": 49,
+      "squad": 10
     },
     {
       "rank": 44,
-      "name": "Drifter428871",
-      "score": 20,
-      "squad": 219
+      "name": "PrimeBishop",
+      "score": 49,
+      "squad": 12
     },
     {
       "rank": 45,
-      "name": "SugarhillMdot",
-      "score": 20,
-      "squad": 146
+      "name": "Nivenko",
+      "score": 49,
+      "squad": 10
     },
     {
       "rank": 46,
-      "name": "Survivor810469",
-      "score": 20,
-      "squad": 564
+      "name": "RealOtter",
+      "score": 49,
+      "squad": 11
     },
     {
       "rank": 47,
-      "name": "Scout261918",
-      "score": 20,
-      "squad": 226
+      "name": "ZULIAKO",
+      "score": 48,
+      "squad": 8
     },
     {
       "rank": 48,
-      "name": "strang.ki",
-      "score": 19,
-      "squad": 333
+      "name": "NeonMuffin",
+      "score": 48,
+      "squad": 11
     },
     {
       "rank": 49,
-      "name": "Strider897927",
-      "score": 19,
-      "squad": 265
+      "name": "HyperComet",
+      "score": 48,
+      "squad": 12
     },
     {
       "rank": 50,
-      "name": "DrivingCactus.W8",
-      "score": 19,
-      "squad": 513
+      "name": "Strider257112",
+      "score": 48,
+      "squad": 8
     },
     {
       "rank": 51,
-      "name": "Scout211852",
-      "score": 19,
-      "squad": 224
+      "name": "RAPPIKO",
+      "score": 48,
+      "squad": 11
     },
     {
       "rank": 52,
-      "name": "Survivor783554",
-      "score": 19,
-      "squad": 288
+      "name": "Lezedor",
+      "score": 48,
+      "squad": 9
     },
     {
       "rank": 53,
-      "name": "LoudCoconut.vNFm",
-      "score": 19,
-      "squad": 382
+      "name": "Vozenix",
+      "score": 48,
+      "squad": 10
     },
     {
       "rank": 54,
-      "name": "stgwer",
-      "score": 19,
-      "squad": 241
+      "name": "Sandariot",
+      "score": 48,
+      "squad": 8
     },
     {
       "rank": 55,
-      "name": "Drifter292658",
-      "score": 18,
-      "squad": 879
+      "name": "RealKoala",
+      "score": 48,
+      "squad": 9
     },
     {
       "rank": 56,
-      "name": "PaperWizard.G0B6",
-      "score": 18,
-      "squad": 205
+      "name": "IronFalcon",
+      "score": 48,
+      "squad": 10
     },
     {
       "rank": 57,
-      "name": "Wanderer605163",
-      "score": 18,
-      "squad": 843
+      "name": "Nirrossi",
+      "score": 48,
+      "squad": 11
     },
     {
       "rank": 58,
-      "name": "Scout544501",
-      "score": 18,
-      "squad": 218
+      "name": "YUGANNIX",
+      "score": 48,
+      "squad": 9
     },
     {
       "rank": 59,
-      "name": "Survivor771291",
-      "score": 18,
-      "squad": 640
+      "name": "CrimsonKoala",
+      "score": 48,
+      "squad": 11
     },
     {
       "rank": 60,
-      "name": "KieuDuyBao123",
-      "score": 18,
-      "squad": 95
+      "name": "Doliala",
+      "score": 48,
+      "squad": 8
     },
     {
       "rank": 61,
-      "name": "Wanderer823486",
-      "score": 18,
-      "squad": 269
+      "name": "LuckyTurtle.RX",
+      "score": 48,
+      "squad": 9
     },
     {
       "rank": 62,
-      "name": "Scout939155",
-      "score": 18,
-      "squad": 320
+      "name": "VelvetOtter",
+      "score": 48,
+      "squad": 10
     },
     {
       "rank": 63,
-      "name": "Runner509877",
-      "score": 18,
-      "squad": 799
+      "name": "PrimeDemon",
+      "score": 48,
+      "squad": 9
     },
     {
       "rank": 64,
-      "name": "angernageer",
-      "score": 18,
-      "squad": 265
+      "name": "GoldenComet",
+      "score": 48,
+      "squad": 10
     },
     {
       "rank": 65,
-      "name": "Drifter433183",
-      "score": 17,
-      "squad": 578
+      "name": "YUMBALA",
+      "score": 47,
+      "squad": 12
     },
     {
       "rank": 66,
-      "name": "Scout683939",
-      "score": 17,
-      "squad": 423
+      "name": "MOSHISSI",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 67,
-      "name": "_deathxszz",
-      "score": 17,
-      "squad": 282
+      "name": "Yukkodor",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 68,
-      "name": "Scout525768",
-      "score": 17,
-      "squad": 325
+      "name": "VelvetWolf",
+      "score": 47,
+      "squad": 8
     },
     {
       "rank": 69,
-      "name": "Nomad491569",
-      "score": 17,
-      "squad": 45
+      "name": "HyperNomad.x",
+      "score": 47,
+      "squad": 8
     },
     {
       "rank": 70,
-      "name": "Drifter170930",
-      "score": 17,
-      "squad": 47
+      "name": "BrilliantRocket",
+      "score": 47,
+      "squad": 11
     },
     {
       "rank": 71,
-      "name": "Runner475400",
-      "score": 17,
-      "squad": 58
+      "name": "Lezela",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 72,
-      "name": "Wanderer230344",
-      "score": 17,
-      "squad": 47
+      "name": "NINDASSI",
+      "score": 47,
+      "squad": 10
     },
     {
       "rank": 73,
-      "name": "Roamer399450",
-      "score": 16,
-      "squad": 750
+      "name": "BrilliantBandit",
+      "score": 47,
+      "squad": 11
     },
     {
       "rank": 74,
-      "name": "Survivor538418",
-      "score": 16,
-      "squad": 291
+      "name": "WildYeti.x",
+      "score": 47,
+      "squad": 10
     },
     {
       "rank": 75,
-      "name": "Drifter955594",
-      "score": 16,
-      "squad": 803
+      "name": "FeralComet",
+      "score": 47,
+      "squad": 8
     },
     {
       "rank": 76,
-      "name": "Nomad979249",
-      "score": 16,
-      "squad": 390
+      "name": "CosmicKoala",
+      "score": 47,
+      "squad": 10
     },
     {
       "rank": 77,
-      "name": "StickyHorse.a47H",
-      "score": 16,
-      "squad": 132
+      "name": "MadHydra.zz",
+      "score": 47,
+      "squad": 10
     },
     {
       "rank": 78,
-      "name": "Ranger389871",
-      "score": 16,
-      "squad": 576
+      "name": "CrimsonPixel",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 79,
-      "name": "FreezyHamster.R3",
-      "score": 15,
-      "squad": 218
+      "name": "Scout339648",
+      "score": 47,
+      "squad": 11
     },
     {
       "rank": 80,
-      "name": "ThunderBurger.DF",
-      "score": 15,
-      "squad": 78
+      "name": "RapidViper",
+      "score": 47,
+      "squad": 8
     },
     {
       "rank": 81,
-      "name": "Wanderer200749",
-      "score": 15,
-      "squad": 165
+      "name": "NeonCloud",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 82,
-      "name": "DrivingCocktail.",
-      "score": 15,
-      "squad": 114
+      "name": "CosmicOtter",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 83,
-      "name": "FireBroccoli.HFE",
-      "score": 15,
-      "squad": 103
+      "name": "LEVENRIOT",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 84,
-      "name": "Runner369803",
-      "score": 15,
-      "squad": 125
+      "name": "QuietViper",
+      "score": 47,
+      "squad": 10
     },
     {
       "rank": 85,
-      "name": "Scout419368",
-      "score": 15,
-      "squad": 122
+      "name": "MadGoblin.Jbql",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 86,
-      "name": "Roamer410327",
-      "score": 15,
-      "squad": 81
+      "name": "HISHILA",
+      "score": 47,
+      "squad": 8
     },
     {
       "rank": 87,
-      "name": "skl000000",
-      "score": 15,
-      "squad": 124
+      "name": "Tazedor",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 88,
-      "name": "ADELNAFEA",
-      "score": 15,
-      "squad": 83
+      "name": "SaltyNomad",
+      "score": 47,
+      "squad": 9
     },
     {
       "rank": 89,
-      "name": "Drifter153498",
-      "score": 15,
-      "squad": 150
+      "name": "Roamer683799",
+      "score": 47,
+      "squad": 11
     },
     {
       "rank": 90,
-      "name": "Duckrace",
-      "score": 15,
-      "squad": 102
+      "name": "Higanko",
+      "score": 46,
+      "squad": 8
     },
     {
       "rank": 91,
-      "name": "Survivor147241",
-      "score": 14,
-      "squad": 386
+      "name": "HyperPanda",
+      "score": 46,
+      "squad": 10
     },
     {
       "rank": 92,
-      "name": "bhgkfbgvxjk",
-      "score": 14,
-      "squad": 440
+      "name": "VelvetPanda.Q",
+      "score": 46,
+      "squad": 9
     },
     {
       "rank": 93,
-      "name": "Kravel",
-      "score": 14,
-      "squad": 126
+      "name": "Dogannix",
+      "score": 46,
+      "squad": 8
     },
     {
       "rank": 94,
-      "name": "EccentricKitty.x",
-      "score": 14,
-      "squad": 305
+      "name": "MadTurtle.y",
+      "score": 46,
+      "squad": 10
     },
     {
       "rank": 95,
-      "name": "Tina213010",
-      "score": 14,
-      "squad": 177
+      "name": "Nomad940203",
+      "score": 46,
+      "squad": 8
     },
     {
       "rank": 96,
-      "name": "Runner497510",
-      "score": 14,
-      "squad": 131
+      "name": "NeonBishop",
+      "score": 46,
+      "squad": 9
     },
     {
       "rank": 97,
-      "name": "Scout133837",
-      "score": 14,
-      "squad": 127
+      "name": "Trekker567578",
+      "score": 46,
+      "squad": 11
     },
     {
       "rank": 98,
-      "name": "Scout649986",
-      "score": 14,
-      "squad": 214
+      "name": "HyperGremlin.GG",
+      "score": 46,
+      "squad": 11
     },
     {
       "rank": 99,
-      "name": "tsukasa0811",
-      "score": 14,
-      "squad": 149
+      "name": "Kakkorashi",
+      "score": 46,
+      "squad": 10
     },
     {
       "rank": 100,
-      "name": "annnnnnnnnnnnnn",
-      "score": 14,
-      "squad": 199
+      "name": "HyperTurtle",
+      "score": 46,
+      "squad": 9
     }
   ],
   "dist": [
     [
-      134,
+      60,
       1
     ],
     [
-      74,
+      59,
       1
     ],
     [
-      72,
-      1
-    ],
-    [
-      69,
+      58,
       1
     ],
     [
@@ -627,148 +623,228 @@
       1
     ],
     [
-      49,
+      56,
       1
     ],
     [
-      48,
-      1
-    ],
-    [
-      46,
-      1
-    ],
-    [
-      45,
-      1
-    ],
-    [
-      42,
-      1
-    ],
-    [
-      39,
-      1
-    ],
-    [
-      35,
-      1
-    ],
-    [
-      33,
-      1
-    ],
-    [
-      31,
-      1
-    ],
-    [
-      28,
+      55,
       2
     ],
     [
-      27,
+      54,
       2
     ],
     [
-      26,
+      53,
       3
     ],
     [
-      25,
-      3
+      52,
+      5
     ],
     [
-      24,
-      2
-    ],
-    [
-      23,
-      2
-    ],
-    [
-      21,
-      12
-    ],
-    [
-      20,
-      4
-    ],
-    [
-      19,
+      51,
       7
     ],
     [
-      18,
-      10
+      50,
+      9
     ],
     [
-      17,
-      8
+      49,
+      13
     ],
     [
-      16,
-      6
+      48,
+      18
     ],
     [
-      15,
-      12
-    ],
-    [
-      14,
-      11
-    ],
-    [
-      13,
-      19
-    ],
-    [
-      12,
-      30
-    ],
-    [
-      11,
-      38
-    ],
-    [
-      10,
-      36
-    ],
-    [
-      9,
+      47,
       25
     ],
     [
+      46,
+      34
+    ],
+    [
+      45,
+      48
+    ],
+    [
+      44,
+      48
+    ],
+    [
+      43,
+      61
+    ],
+    [
+      42,
+      78
+    ],
+    [
+      41,
+      101
+    ],
+    [
+      40,
+      129
+    ],
+    [
+      39,
+      132
+    ],
+    [
+      38,
+      162
+    ],
+    [
+      37,
+      199
+    ],
+    [
+      36,
+      243
+    ],
+    [
+      35,
+      298
+    ],
+    [
+      34,
+      291
+    ],
+    [
+      33,
+      344
+    ],
+    [
+      32,
+      406
+    ],
+    [
+      31,
+      478
+    ],
+    [
+      30,
+      564
+    ],
+    [
+      29,
+      581
+    ],
+    [
+      28,
+      673
+    ],
+    [
+      27,
+      778
+    ],
+    [
+      26,
+      900
+    ],
+    [
+      25,
+      881
+    ],
+    [
+      24,
+      998
+    ],
+    [
+      23,
+      1130
+    ],
+    [
+      22,
+      1267
+    ],
+    [
+      21,
+      1434
+    ],
+    [
+      20,
+      1490
+    ],
+    [
+      19,
+      1670
+    ],
+    [
+      18,
+      1871
+    ],
+    [
+      17,
+      2097
+    ],
+    [
+      16,
+      2350
+    ],
+    [
+      15,
+      2634
+    ],
+    [
+      14,
+      2952
+    ],
+    [
+      13,
+      3308
+    ],
+    [
+      12,
+      3708
+    ],
+    [
+      11,
+      4155
+    ],
+    [
+      10,
+      6306
+    ],
+    [
+      9,
+      7336
+    ],
+    [
       8,
-      40
+      8535
     ],
     [
       7,
-      81
+      9930
     ],
     [
       6,
-      181
+      11553
     ],
     [
       5,
-      159
+      13441
     ],
     [
       4,
-      209
+      21505
     ],
     [
       3,
-      491
+      26339
     ],
     [
       2,
-      655
+      5304
     ],
     [
       1,
-      1007
+      5500
     ]
   ]
 }

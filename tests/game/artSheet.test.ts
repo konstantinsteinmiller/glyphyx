@@ -1,359 +1,319 @@
 import { describe, expect, it } from 'vitest'
 import {
-  WALKS, STILLS, MONSTER_WALKS, HERO_WALKS, WALK_FRAMES, WALK_COLS, WALK_ROWS,
-  promptForWalk, promptForStill, catalogueDrift, BACKGROUND_RULE, GATE_POST, GATE_REF_POST_W,
-  framesOf, colsOf, rowsOf, sheetW, sheetH
+  CELL, MAX_EDGE, SHEETS, WALKS, SCENERY, SINGLES, STONE_SPAN,
+  sheetRows, sheetSize, aspectOf, manifestTargets, promptForSheet, promptForWalk, promptForScenery, promptForSingle, promptDocs,
+  NO_LAUREL
 } from '@/game/artSheet'
-import { ART_CATALOGUE } from '@/game/artCatalogue'
-import { ART_FOLDERS } from '@/game/art'
-import { MONSTERS } from '@/game/monsters'
-import { OUTFITS, HERO_FRAME_ASPECT } from '@/game/heroSprites'
-import { MONSTER_FRAME_ASPECT } from '@/game/monsterSprites'
-import {
-  GATE_FRAME, RIDGE_BAND, ROLLER_ART_PAD, FX_PAD, ROCKET_BOX,
-  ROLLER_BANDS_ON_FACE, ROLLER_BANDS_AROUND, ROLLER_ROLL_HZ, ROLLER_SPIN_PER_LOOP
-} from '@/use/useSurvivalArt'
-import { ROLLER_R, ROLLER_SPEED } from '@/game/threats'
-import { BANNER, UI_ICON_IDS } from '@/game/uiArt'
+import { ART_CATALOGUE, allArtIds, artTarget } from '@/game/artCatalogue'
+import { RUNE_TYPES, SKIN_IDS, FACTION_DEFS } from '@/game/rules'
 
-/**
- * The art manifest is a contract between three parties that never meet: the
- * bench that draws the reference, the slicer that cuts the return, and the
- * renderer that blits the result. These pin the parts a diff would not catch.
- */
+/** The aspect ratios an image tool can actually be told to return. */
+const STANDARD = new Set(['1:1', '2:1', '4:3', '16:9'])
 
-describe('the manifest covers the cast', () => {
-  it('paints a walk cycle for every design and every outfit, and nothing else', () => {
-    expect(MONSTER_WALKS.map((w) => w.id).sort()).toEqual(MONSTERS.map((m) => m.id).sort())
-    expect(HERO_WALKS.map((w) => w.id).sort()).toEqual(OUTFITS.map((o) => o.id).sort())
+describe('the manifest and the catalogue agree, both ways', () => {
+  it('every catalogue id has exactly one manifest target, and every target is a catalogue id', () => {
+    const targets = manifestTargets()
+    const catalogue = new Set(allArtIds().map(([kind, id]) => artTarget(kind, id)))
+    const missing = [...catalogue].filter((t) => !targets.has(t))
+    const extra = [...targets.keys()].filter((t) => !catalogue.has(t))
+    expect(missing).toEqual([])
+    expect(extra).toEqual([])
+    expect(targets.size).toBe(catalogue.size)
   })
 
-  it('paints every still the runtime probes, and probes every still it paints', () => {
-    expect(catalogueDrift()).toEqual({ unpainted: [], unprobed: [] })
+  it('names every player stone (type × skin × level) and every enemy stone (type × faction × level)', () => {
+    const runes = new Set(ART_CATALOGUE.rune)
+    for (const t of RUNE_TYPES) {
+      expect(runes.has(t)).toBe(true)
+      for (const s of SKIN_IDS) {
+        expect(runes.has(`${t}-${s}-lv1`)).toBe(true)
+        expect(runes.has(`${t}-${s}-lv2`)).toBe(true)
+      }
+      for (const f of Object.keys(FACTION_DEFS)) {
+        expect(runes.has(`${t}-e-${f}-lv1`)).toBe(true)
+        expect(runes.has(`${t}-e-${f}-lv2`)).toBe(true)
+      }
+    }
+    expect(ART_CATALOGUE.rune.length).toBe(RUNE_TYPES.length * (1 + SKIN_IDS.length * 2 + Object.keys(FACTION_DEFS).length * 2))
   })
 
-  it('never sends two returns to one file', () => {
-    const targets = [
-      ...WALKS.map((w) => w.target),
-      ...STILLS.map((s) => s.target),
-      ...STILLS.flatMap((s) => (s.extra ?? []).map((e) => e.target))
-    ]
-    expect(new Set(targets).size).toBe(targets.length)
-    const files = [...WALKS.map((w) => w.file), ...STILLS.map((s) => s.file)]
+  it('a target is never claimed twice', () => {
+    const seen = new Map<string, string>()
+    for (const s of SHEETS) {
+      for (const c of s.cells) {
+        if (!c.target) continue
+        expect(seen.has(c.target), `${c.target} claimed by ${seen.get(c.target)} and ${s.id}`).toBe(false)
+        seen.set(c.target, s.id)
+      }
+    }
+    for (const w of WALKS) {
+      expect(seen.has(w.target)).toBe(false)
+      seen.set(w.target, w.file)
+    }
+    for (const a of SCENERY) {
+      expect(seen.has(a.target)).toBe(false)
+      seen.set(a.target, a.file)
+    }
+  })
+})
+
+describe('the lattice is the contract', () => {
+  it('sheet ids, files and cell ids are unique', () => {
+    const ids = SHEETS.map((s) => s.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    const files = SHEETS.map((s) => s.file)
     expect(new Set(files).size).toBe(files.length)
+    const cellIds = SHEETS.flatMap((s) => s.cells.map((c) => `${s.id}/${c.id}`))
+    expect(new Set(cellIds).size).toBe(cellIds.length)
+    // A targeted cell's id is its filename stem, so those are unique across sheets too.
+    const targeted = SHEETS.flatMap((s) => s.cells.filter((c) => c.target).map((c) => c.id))
+    expect(new Set(targeted).size).toBe(targeted.length)
   })
 
-  it('lands every probed still under its kind\'s own folder', () => {
-    for (const s of STILLS) {
-      if (s.id === 'logo') continue
-      expect(s.target).toBe(`${ART_FOLDERS[s.kind]}/${s.id}.webp`)
+  it('every cell sits on integer lattice coordinates inside its sheet, and no two overlap', () => {
+    for (const s of SHEETS) {
+      const rows = sheetRows(s)
+      const taken: string[][] = []
+      for (const c of s.cells) {
+        for (const v of [c.col, c.row, c.cw, c.ch]) expect(Number.isInteger(v)).toBe(true)
+        expect(c.cw).toBeGreaterThanOrEqual(1)
+        expect(c.ch).toBeGreaterThanOrEqual(1)
+        expect(c.col + c.cw).toBeLessThanOrEqual(s.cols)
+        expect(c.row + c.ch).toBeLessThanOrEqual(rows)
+        for (let y = c.row; y < c.row + c.ch; y++) {
+          for (let x = c.col; x < c.col + c.cw; x++) {
+            taken[y] ??= []
+            expect(taken[y]![x], `${s.id}: ${c.id} overlaps ${taken[y]![x]} at ${x},${y}`).toBeUndefined()
+            taken[y]![x] = c.id
+          }
+        }
+      }
     }
-    for (const w of WALKS) expect(w.target).toBe(`${ART_FOLDERS[w.kind]}/${w.id}.webp`)
   })
 
-  it('keeps the catalogue keyed by real art kinds', () => {
-    for (const kind of Object.keys(ART_CATALOGUE)) expect(ART_FOLDERS).toHaveProperty(kind)
+  it('every sheet is a whole number of cells and a standard aspect ratio', () => {
+    for (const s of SHEETS) {
+      const { w, h } = sheetSize(s)
+      expect(w % CELL).toBe(0)
+      expect(h % CELL).toBe(0)
+      expect(STANDARD.has(aspectOf(w, h)), `${s.id} is ${aspectOf(w, h)}`).toBe(true)
+    }
+  })
+
+  it('no frame is written above 256 px unless the manifest says so, and only the frame does', () => {
+    for (const s of SHEETS) {
+      for (const c of s.cells) {
+        // A letterboxed bitmap is restored to its native size, whatever its panel.
+        if (!c.target || c.letterboxed) continue
+        const edge = Math.max(c.cw, c.ch) * CELL
+        if (edge > MAX_EDGE) expect(c.maxEdge, `${c.id} is ${edge} px with no maxEdge`).toBeGreaterThanOrEqual(edge)
+        if (c.maxEdge && c.maxEdge > MAX_EDGE) expect(c.id).toBe('frame')
+      }
+    }
+  })
+
+  it('every non-blank cell has a label, a blurb and a target; every blank has none', () => {
+    for (const s of SHEETS) {
+      for (const c of s.cells) {
+        if (c.art.kind === 'blank') {
+          expect(c.target).toBeUndefined()
+          expect(c.blurb).toBe('')
+        } else {
+          expect(c.label.length).toBeGreaterThan(0)
+          expect(c.blurb.length).toBeGreaterThan(20)
+          expect(c.target).toMatch(/^images\/[a-z]+\/[a-z0-9-]+\.webp$/)
+        }
+      }
+    }
+  })
+
+  it('the glyph sheet is one square panel per rune, with no blanks to lose', () => {
+    // The grid is sized to the ROSTER, not the other way round: nine runes tile
+    // three across exactly. A blank panel is the thing these prompts most often
+    // lose — an image model fills it in — so the sheet that could most easily
+    // grow one is pinned to have none, and to stay square.
+    const g = SHEETS.find((s) => s.id === 'glyphs')!
+    expect(g.cells).toHaveLength(RUNE_TYPES.length)
+    expect(g.cells.map((c) => c.id)).toEqual([...RUNE_TYPES])
+    expect(g.cells.some((c) => c.art.kind === 'blank')).toBe(false)
+    expect(g.cols * sheetRows(g)).toBe(RUNE_TYPES.length)
+    const { w, h } = sheetSize(g)
+    expect(aspectOf(w, h)).toBe('1:1')
+  })
+
+  it('a cell that fills its panel is a tile or the frame, and a fill cell never carries a fit-normalised shape', () => {
+    for (const s of SHEETS) {
+      for (const c of s.cells) {
+        if (c.fill) expect(['tiles', 'frame']).toContain(s.kind)
+        if (s.kind === 'tiles' && c.art.kind !== 'blank') expect(c.fill).toBe(true)
+      }
+    }
+  })
+
+  it('walks are grids of the strip\'s own panels; bands are 4:1', () => {
+    for (const w of WALKS) {
+      expect(w.frames).toBe(w.cols * w.rows)
+      expect(w.w).toBe(w.panelW * w.cols)
+      expect(w.h).toBe(w.panelH * w.rows)
+      // Within a percent of 16:9 or 2:1 — what a tool can be asked for.
+      const r = w.w / w.h
+      expect(Math.min(Math.abs(r - 16 / 9), Math.abs(r - 2))).toBeLessThan(0.02)
+    }
+    // A keyed band is 4:1; the sky is a full-bleed 16:9 backdrop, not a band.
+    for (const a of SCENERY) expect(aspectOf(a.w, a.h)).toBe(a.bg === 'opaque' ? '16:9' : '4:1')
+  })
+
+  it('there is one single per targeted cell', () => {
+    const targeted = SHEETS.flatMap((s) => s.cells.filter((c) => c.target))
+    expect(SINGLES.length).toBe(targeted.length)
+    expect(new Set(SINGLES.map((t) => t.file)).size).toBe(SINGLES.length)
   })
 })
 
-describe('the sheets are cut blindly, so their shapes are exact', () => {
-  it('lays every walk out on a grid of the bake\'s own frame box, at a ratio tools offer', () => {
-    for (const w of WALKS) {
-      expect(w.cols).toBe(WALK_COLS)
-      expect(w.rows).toBe(WALK_ROWS)
-      expect(w.frames).toBe(WALK_FRAMES)
-      expect(w.w).toBe(w.cols * w.panelW)
-      expect(w.h).toBe(w.rows * w.panelH)
-      // 16:9 for the taller monster frame, 2:1 for the square survivor frame.
-      expect(w.w * 9 === w.h * 16 || w.w === w.h * 2, `${w.id} ${w.w}x${w.h}`).toBe(true)
-      expect(w.maxEdge).toBeGreaterThanOrEqual(w.panelH / 4)
-      // The panel IS the frame box scaled up, to within the strip counter's slack.
-      const frameAspect = w.kind === 'monster' ? MONSTER_FRAME_ASPECT : HERO_FRAME_ASPECT
-      expect(Math.abs(w.panelW / w.panelH - frameAspect) / frameAspect).toBeLessThan(0.01)
-      expect(promptForWalk(w)).toContain(w.w * 9 === w.h * 16 ? '(16:9, landscape)' : '(2:1, landscape)')
-    }
-  })
-
-  it('gives every still whole pixels and a cap no bigger than its reference', () => {
-    for (const s of STILLS) {
-      expect(Number.isInteger(s.w) && Number.isInteger(s.h)).toBe(true)
-      expect(s.maxEdge).toBeLessThanOrEqual(s.h)
-      expect(s.maxEdge).toBeGreaterThan(0)
-    }
-  })
-
-  it('marks the logo exact, because the PWA manifest reads that file at 512', () => {
-    // The slicer writes every frame at most 256 px tall by default; the one
-    // file something outside the game reads at a fixed size opts out by name.
-    const logo = STILLS.find((s) => s.id === 'logo')!
-    expect(logo.exact).toBe(true)
-    expect(logo.maxEdge).toBe(512)
-    expect(logo.target).toContain('512x512')
-    for (const s of STILLS) if (s.id !== 'logo') expect(s.exact, s.id).toBeUndefined()
-  })
-
-  it('draws the gate frames at the renderer\'s own nine-slice geometry', () => {
-    for (const s of STILLS.filter((x) => x.kind === 'gate')) {
-      expect(s.w).toBe(GATE_FRAME.w)
-      expect(s.h).toBe(GATE_FRAME.h)
-    }
-    // The cap has to contain the whole post band with room to spare, the band
-    // has to sit inside the panel, and a post at the band's width must still
-    // hide under a divider pillar where two leaves share an edge.
-    expect(GATE_POST.outer).toBeGreaterThan(0)
-    expect(GATE_POST.inner).toBeLessThan(GATE_POST.cut)
-    expect(GATE_POST.cut * 2).toBeLessThan(1)
-    expect(GATE_POST.width).toBeCloseTo(GATE_REF_POST_W * GATE_FRAME.ppu / GATE_FRAME.w, 9)
-    expect(GATE_REF_POST_W - 0.09).toBeLessThanOrEqual(0.25)
-    expect(GATE_POST.bottom).toBeGreaterThan(0.5)
-    expect(GATE_POST.bottom).toBeLessThan(1)
-    // 21:9 — a ratio the image tools actually offer.
-    expect(GATE_FRAME.w * 9).toBe(GATE_FRAME.h * 21)
-  })
-
-  it('leaves the roller and the glowing effects the margin their paintings reach into', () => {
-    // A spiked ball needs air for its spikes and a ring for its glow; the
-    // blit is padded by the same factor, so the shape lands where it did.
-    expect(ROLLER_ART_PAD).toBeGreaterThan(1.2)
-    expect(FX_PAD).toBeGreaterThan(1.05)
-    expect(promptForStill(STILLS.find((s) => s.id === 'roller')!)).toContain('12% to 88%')
-    expect(promptForStill(STILLS.find((s) => s.id === 'ring-heat')!)).toContain('89% of the frame')
-  })
-
-  it('draws the ridge bands at the renderer\'s own band shape', () => {
-    for (const s of STILLS.filter((x) => x.id.startsWith('ridge-'))) {
-      expect(s.w / s.h).toBeCloseTo(RIDGE_BAND.w / RIDGE_BAND.h, 6)
-      expect(s.bg).toBe('magenta-sky')
-      expect(s.tile).toBe('x')
-    }
-  })
-
-  it('never fits a glow-only effect onto a solid-pixel box', () => {
-    // A drawn flash is a third solid and two thirds glow; a painting fitted
-    // onto that box shrinks to a third. These are placed by the prompt instead.
-    // The roller joins them for a different reason: its painting carries
-    // spikes the drawing does not, and a fit would shrink the sphere to make
-    // room for them. The prompt places the sphere by measured fractions.
-    // The gates join them too: the slicer re-composes a gate onto its post
-    // band, and a fit on top of that shrank the frame and slid the posts into
-    // the doorway.
-    // The rocket is a shell on a plume of light; the plume is most of it.
-    for (const id of ['muzzle', 'smoke', 'scorch', 'tracer', 'bolt-gunner', 'bolt-boss', 'meteor', 'bomb', 'roller',
-      'frame-add', 'frame-sub', 'frame-mul', 'frame-div', 'rocket']) {
-      expect(STILLS.find((s) => s.id === id)?.fit, id).toBe(false)
-    }
-    // …and the solid things ARE fitted, because that is what registers them —
-    // the banner among them, since a painted end piece has to land under the
-    // CSS cut, and the fit is what puts it there.
-    for (const id of ['crate-damage', 'pillar', 'coin', 'grenade', 'crown', 'ring-heat',
-      'ribbon', ...UI_ICON_IDS]) {
-      expect(STILLS.find((s) => s.id === id)?.fit, id).toBeUndefined()
-    }
-  })
-
-  it('draws the banner and the rocket at ratios the image tools offer, from the runtime\'s own boxes', () => {
-    const banner = STILLS.find((s) => s.id === 'ribbon')!
-    expect(banner.w).toBe(BANNER.w)
-    expect(banner.h).toBe(BANNER.h)
-    expect(banner.w * 9).toBe(banner.h * 21)
-    // The prompt states the end piece as the fraction CSS cuts at.
-    expect(promptForStill(banner)).toContain(`${Math.round(BANNER.cap * 100)}%`)
-    expect(promptForStill(banner)).toContain('STRETCHES THE MIDDLE')
-    const rocket = STILLS.find((s) => s.id === 'rocket')!
-    expect(rocket.w * 16).toBe(rocket.h * 9)
-    expect(rocket.w / rocket.h).toBeCloseTo(ROCKET_BOX.w / ROCKET_BOX.h, 9)
-    expect(promptForStill(rocket)).toContain('portrait, 9:16')
-    expect(promptForStill(rocket)).toContain('pointing UP')
-  })
-
-  it('paints an icon for the chest and both skills, and probes each', () => {
-    for (const id of ['chest', 'skill-grenade', 'skill-shield']) {
-      const s = STILLS.find((x) => x.id === id)
-      expect(s?.kind, id).toBe('ui')
-      expect(ART_CATALOGUE.ui).toContain(id)
-      expect(promptForStill(s!)).toContain('24 px')
-    }
-  })
-
-  it('marks the barricade tile opaque and seamless, and paints no road tile at all', () => {
-    const wall = STILLS.find((s) => s.id === 'barricade')!
-    expect(wall.bg).toBe('opaque')
-    expect(wall.tile).toBe('x')
-    // A painted road was tried and read as objects under the crowd.
-    expect(STILLS.find((s) => s.id === 'lane')).toBeUndefined()
-    expect(ART_CATALOGUE.bg).not.toContain('lane')
-  })
-
-  it('states the gate posts as the fractions of the frame the reference draws them at', () => {
-    const add = STILLS.find((s) => s.id === 'frame-add')!
-    const p = promptForStill(add)
-    expect(p).toContain('THE POSTS — measure them against the FRAME')
-    expect(p).toContain(`${Math.round(GATE_POST.width * 100)}% of the frame wide`)
-    expect(p).toContain(`${Math.round(GATE_POST.doorway * 100)}% of the width`)
-    expect(p).toContain('Exactly TWO posts')
-    expect(p).toContain('squeezed thinner by the slicer')
-    expect(p).toContain('BEFORE YOU CALL IT FINISHED')
-    expect(p).toContain('landscape, 21:9')
-  })
-})
-
-describe('the prompts carry the clauses that decide whether a return is usable', () => {
-  it('walk prompts state the shape first, the count as a number, and the ground last', () => {
-    for (const w of WALKS) {
-      const p = promptForWalk(w)
-      expect(p.indexOf('SPRITE SHEET')).toBeLessThan(p.indexOf('STYLE'))
-      expect(p).toContain(`EXACTLY ${w.frames} panels`)
-      expect(p).toContain(`${w.w} x ${w.h} pixels`)
+describe('the prompts are generated, complete and deterministic', () => {
+  it('a sheet prompt states the deliverable\'s shape, names every panel and carries the magenta rule', () => {
+    for (const s of SHEETS) {
+      const { w, h } = sheetSize(s)
+      const p = promptForSheet(s)
+      expect(p).toContain(`${w} x ${h} pixels`)
       expect(p).toContain('#FF00FF')
-      expect(p).toContain(w.blurb)
-      expect(p.indexOf('ONE CHARACTER')).toBeLessThan(p.indexOf('STYLE'))
-      // The survivors are the one thing seen from behind.
-      if (w.kind === 'hero') expect(p).toContain('seen from behind')
-    }
-  })
-
-  it('still prompts name the exact pixels and the right ground', () => {
-    for (const s of STILLS) {
-      const p = promptForStill(s)
-      // The SHEET's pixels, which for an animated still is its whole grid and
-      // not one panel. Asking for a panel-sized canvas and eight panels inside
-      // it is the contradiction that comes back as one squashed frame.
-      expect(p, s.id).toContain(`${sheetW(s)} x ${sheetH(s)} pixels`)
-      expect(p).toContain(s.blurb)
-      if (s.bg === 'opaque') expect(p).toContain('FULLY OPAQUE')
-      else if (s.bg === 'magenta-sky') expect(p).toContain('ABOVE the ridge line')
-      else expect(p).toContain(BACKGROUND_RULE)
-      if (s.tile === 'x') expect(p).toContain('TILEABLE, HORIZONTALLY')
-      if (s.tile === 'xy') expect(p).toContain('TILEABLE ON BOTH AXES')
-      // A cycle sheet is ASKED for motion, so "draw it at rest" would
-      // contradict its own `WHAT MOVES` clause; the orientation survives.
-      if (s.authored) {
-        expect(p, s.id).toContain(framesOf(s) > 1 ? 'ORIENTATION, in every panel' : 'DRAW IT AT REST')
+      expect(p).toContain(`(${s.file}.png)`)
+      if (s.kind !== 'frame') expect(p).toContain(`· ${s.cells.length} panels.`)
+      for (const c of s.cells) {
+        if (c.art.kind === 'blank') expect(p).toContain('BLANK')
+        else expect(p).toContain(c.blurb)
       }
-      if (s.live) expect(p).toContain('LEAVE OUT WHAT THE GAME PAINTS LIVE')
-      if (s.greyscale) expect(p).toContain('GREYSCALE ONLY')
+      // The style block comes in the fill variant for the board and the part variant for everything else.
+      expect(p).toContain(s.kind === 'tiles' || s.kind === 'frame' ? 'fills the panel edge to edge' : 'right up to its outline')
     }
   })
 
-  it('asks an animated still for a LOOP, and counts its panels', () => {
-    // A projectile is a solid object inside an effect, and only the effect may
-    // move: the head of a round is what the game measures its kill against, so
-    // a head that wanders between panels is a hitbox that lies. Every clause
-    // below is the difference between a return that can be sliced and one that
-    // has to be re-rolled.
-    const cycles = STILLS.filter((s) => framesOf(s) > 1)
-    // The five the player called lifeless — every projectile a boss or an
-    // elite puts on the road.
-    expect(cycles.map((s) => s.id).sort())
-      .toEqual(['bolt-boss', 'bolt-gunner', 'bomb', 'meteor', 'roller'])
-
-    for (const s of cycles) {
-      const p = promptForStill(s)
-      expect(colsOf(s) * rowsOf(s), s.id).toBe(framesOf(s))
-      expect(p, s.id).toContain('READ THE PANELS')
-      expect(p, s.id).toContain(`${colsOf(s)} columns x ${rowsOf(s)} rows = EXACTLY ${framesOf(s)} panels`)
-      // The two clauses a strip is unusable without: every panel repainted,
-      // and the last one leading back into the first.
-      expect(p, s.id).toContain('Repaint EVERY panel')
-      expect(p, s.id).toContain('IT MUST LOOP')
-      // …and the one that keeps the hitbox honest.
-      expect(p, s.id).toContain('WHAT MOVES:')
-      expect(p, s.id).toContain('keeps the same size, the same colours and the same place')
-      expect(s.cycle, `${s.id} has no WHAT MOVES copy`).toBeTruthy()
-      // The subject is stated before the panels are, per the prompt anatomy.
-      expect(p.indexOf('WHAT IT IS'), s.id).toBeLessThan(p.indexOf('READ THE PANELS'))
-    }
+  it('a stone sheet insists on one glyph and says how big the stone is', () => {
+    const p = promptForSheet(SHEETS[0]!)
+    expect(p).toContain('ONE GLYPH.')
+    expect(p).toContain(`${Math.round(STONE_SPAN * 100)}%`)
+    // …and a measured fit replaces the nominal number.
+    const fits = Object.fromEntries(SHEETS[0]!.cells.map((c) => [c.id, { w: 0.61, h: 0.6, cx: 0.5, cy: 0.5 }]))
+    expect(promptForSheet(SHEETS[0]!, fits)).toContain('61%')
   })
 
-  it('scripts a mechanical cycle panel by panel, and names the row trap', () => {
-    // The failure this is here to stop, twice observed: handed a 4x2 grid, a
-    // painter returns ONE arrangement across the top row and a second across
-    // the bottom — two states, not eight steps, which plays as a thing that
-    // snaps between two poses. The cure is the one the survivor's stride
-    // already needed (`HERO_PANELS`): name every panel.
-    for (const s of STILLS.filter((x) => framesOf(x) > 1)) {
-      const p = promptForStill(s)
-      expect(p, s.id).toContain('ROWS ARE NOT')
-      expect(p, s.id).toContain('are DIFFERENT from each other')
-      expect(p, s.id).toContain('not one moment repeated across the row')
-      if (!s.panels) continue
-      // A scripted cycle names each frame, with the count matching the grid.
-      expect(s.panels, s.id).toHaveLength(framesOf(s))
-      expect(p, s.id).toContain('PANEL BY PANEL')
-      for (let i = 0; i < framesOf(s); i++) {
-        expect(p, `${s.id} panel ${i + 1}`).toContain(`· panel ${i + 1}:`)
-      }
-      // Measured against panel 1, not against the neighbour — an error that
-      // accumulates leaves the loop unable to close.
-      expect(p, s.id).toContain('measure each one against panel 1')
-    }
-  })
-
-  it('derives the roller\'s roll rate and its band count from the same picture', () => {
-    // Got this wrong once, in a way no test would have caught: the four bands
-    // were counted as four around the WHOLE ball rather than four across its
-    // face, which halved the roll rate and would have shipped a ball whose
-    // surface travelled at half the speed of the ground — a skid.
-    //
-    // The face is half the ball, so bands around it are twice what is on it.
-    expect(ROLLER_BANDS_AROUND).toBe(ROLLER_BANDS_ON_FACE * 2)
-    // One loop is one band gap of surface travel, and the surface travels at
-    // the ball's own speed: revolutions a second, times bands around.
-    const revsPerSecond = ROLLER_SPEED / (2 * Math.PI * ROLLER_R)
-    expect(ROLLER_ROLL_HZ).toBeCloseTo(revsPerSecond * ROLLER_BANDS_AROUND, 9)
-    // …and at eight frames that has to land somewhere a painted strip can be
-    // read as motion rather than as steps.
-    const fps = ROLLER_ROLL_HZ * 8
-    expect(fps, `${fps.toFixed(1)} fps`).toBeGreaterThan(10)
-    expect(fps, `${fps.toFixed(1)} fps`).toBeLessThan(30)
-    // The drawn bands step exactly one gap per loop, so the drawing and a
-    // painted strip cover the same ground per frame — the whole point of
-    // driving both from one cycle.
-    expect(ROLLER_SPIN_PER_LOOP).toBeCloseTo(2 / ROLLER_BANDS_ON_FACE, 9)
-  })
-
-  it('leaves every other still a one-panel sheet', () => {
-    // The grid is opt-in. A still that quietly gained panels would be exported
-    // as a strip, sliced into slivers and blitted as a flicker.
-    for (const s of STILLS.filter((x) => framesOf(x) === 1)) {
-      expect(colsOf(s), s.id).toBe(1)
-      expect(rowsOf(s), s.id).toBe(1)
-      expect(sheetW(s), s.id).toBe(s.w)
-      expect(sheetH(s), s.id).toBe(s.h)
-      expect(promptForStill(s), s.id).not.toContain('READ THE PANELS')
-    }
-  })
-
-  it('scripts the survivor\'s stride panel by panel, and only the survivor\'s', () => {
-    // The painter held one pose for two panels and jumped to the next, three
-    // returns running; the reference of the time invited it. Now every panel
-    // is named, the flight moments included, and the legs are told to stay
-    // under the hips.
-    for (const w of HERO_WALKS) {
+  it('walk and band prompts state their size and the ONE CHARACTER rule', () => {
+    for (const w of WALKS) {
       const p = promptForWalk(w)
-      expect(p).toContain('READ THE PANELS')
-      expect(p).toContain('· panel 1:')
-      expect(p).toContain('· panel 8:')
-      expect(p).toContain('FLIGHT')
-      expect(p).toContain('never splay')
-      expect(p).toContain('DIRECTLY BEHIND')
-      expect(p.indexOf('READ THE PANELS')).toBeLessThan(p.indexOf('WHAT IT IS'))
+      expect(p).toContain(`${w.w} x ${w.h} pixels`)
+      expect(p).toContain(`· ${w.frames} panels.`)
+      expect(p).toContain(w.faces.toUpperCase())
+      expect(p).toContain('#FF00FF')
     }
-    for (const w of MONSTER_WALKS) expect(promptForWalk(w)).not.toContain('READ THE PANELS')
+    for (const a of SCENERY) {
+      const p = promptForScenery(a)
+      expect(p).toContain(`${a.w} x ${a.h} pixels`)
+      expect(p).toContain(a.blurb)
+    }
   })
 
-  it('locks the dark register and forbids the cozy one it replaces', () => {
-    const p = promptForWalk(WALKS[0]!)
-    expect(p).toContain('dark fantasy')
-    expect(p).toContain('NO cute, cozy, storybook')
-    expect(p).not.toMatch(/cozy hand-drawn/)
-    expect(p).toContain('UPPER LEFT')
+  it('the documents hold one block per drawable and nothing time-dependent', () => {
+    const docs = promptDocs()
+    const blocks = (text: string): number => text.split('\n').filter((l) => l.startsWith('## ')).length
+    const stones = SHEETS.filter((s) => s.kind === 'stones' || s.kind === 'enemyStones' || s.kind === 'glyphs').length
+    expect(blocks(docs['PROMPTS-RUNES.md']!)).toBe(stones)
+    expect(blocks(docs['PROMPTS-BOARD.md']!)).toBe(SHEETS.length - stones)
+    expect(blocks(docs['PROMPTS-CAST.md']!)).toBe(WALKS.length + SCENERY.length)
+    expect(blocks(docs['PROMPTS-SINGLES.md']!)).toBe(SINGLES.length)
+    expect(promptDocs()).toEqual(docs)
+    for (const text of Object.values(docs)) expect(text).not.toMatch(/\d{4}-\d{2}-\d{2}T/)
   })
 
-  it('never asks a painter for magenta on the object', () => {
-    // The multiplier gate's game tint is magenta-pink — the one place a naive
-    // colour clause would hand the painter the chroma key itself.
-    const mul = STILLS.find((s) => s.id === 'frame-mul')!
-    expect(promptForStill(mul)).toContain('never magenta')
+  // The copy button in a markdown preview belongs to a fenced block, so every
+  // prompt has to BE one: opened and closed exactly once, with the heading and
+  // the document's own prose outside it and nothing inside that could close it
+  // early. A prompt that leaks a line past its fence is copied short.
+  it('every prompt is one fenced block a preview can copy in a click', () => {
+    for (const [name, text] of Object.entries(promptDocs())) {
+      const headings = text.split('\n').filter((l) => l.startsWith('## ')).length
+      const opens = text.match(/^`{3,}text$/gm)?.length ?? 0
+      const fences = text.match(/^`{3,}(text)?$/gm)?.length ?? 0
+      expect(opens, name).toBe(headings)
+      expect(fences, name).toBe(headings * 2)
+      // Inside a fence, a stray ``` would end the block early — the bodies carry none.
+      let inside = false
+      for (const line of text.split('\n')) {
+        if (/^`{3,}(text)?$/.test(line)) inside = !inside
+        else expect(inside ? line.includes('```') : false, `${name}: ${line}`).toBe(false)
+      }
+      expect(inside, name).toBe(false)
+      expect(text, name).toContain('copy button')
+    }
+  })
+
+  // The wreath used to live in WORDS in every stone prompt and in no reference
+  // panel, so each generation designed its own and no two sheets matched. It is
+  // a drawable now — one wreath, painted once, composited by the renderer — and
+  // a stone prompt that asks for one again would put a second wreath under it.
+  it('no stone prompt asks for a laurel, and every one forbids it', () => {
+    const stoneSheets = SHEETS.filter((s) => s.kind === 'stones' || s.kind === 'enemyStones')
+    const asks = (text: string): boolean => /laurel|wreath/i.test(text.replace(NO_LAUREL, ''))
+    for (const s of stoneSheets) {
+      const p = promptForSheet(s)
+      expect(p).toContain(NO_LAUREL)
+      expect(asks(p), s.id).toBe(false)
+      for (const c of s.cells) expect(asks(`${c.blurb} ${c.colour ?? ''}`), c.id).toBe(false)
+    }
+    for (const t of SINGLES.filter((x) => stoneSheets.some((s) => s.id === x.sheet))) {
+      const p = promptForSingle(t)
+      expect(p).toContain(NO_LAUREL)
+      expect(asks(p), t.id).toBe(false)
+    }
+  })
+
+  it('the laurel is a drawable of its own — one per stone silhouette — on the fx sheet and in the catalogue', () => {
+    for (const shape of ['pebble', 'shard', 'oval', 'hex', 'disc', 'slab'] as const) {
+      const cell = SHEETS.flatMap((s) => s.cells).find((c) => c.id === `laurel-${shape}`)
+      expect(cell?.target).toBe(artTarget('fx', `laurel-${shape}`))
+      expect(cell?.art.kind).toBe('laurel')
+      expect(ART_CATALOGUE.fx).toContain(`laurel-${shape}`)
+    }
+    const cell = SHEETS.flatMap((s) => s.cells).find((c) => c.id === 'laurel-pebble')
+    // Its own prompt has to say the wreath comes back EMPTY, or it arrives
+    // wrapped round a stone that the game will then draw its own stone behind.
+    const p = promptForSheet(SHEETS.find((s) => s.cells.some((c) => c.id === 'laurel-pebble'))!)
+    expect(p).toContain('no stone')
+  })
+
+  // The sky is the one drawable with no background behind it — it IS the
+  // background. Handing it the magenta contract would weld a key colour into
+  // the largest bitmap the game ships, and asking a painter to key a band's
+  // sky is the opposite mistake: two prompts, and each must carry only its own
+  // half of the contract.
+  it('the sky prompt fills the frame and never mentions magenta; a band prompt always does', () => {
+    const sky = SCENERY.find((a) => a.id === 'sky')!
+    expect(sky.bg).toBe('opaque')
+    const p = promptForScenery(sky)
+    expect(p).toContain('IT FILLS THE IMAGE')
+    expect(p).toContain('NO magenta anywhere')
+    expect(p).not.toContain('#FF00FF')
+    expect(p).toContain(`${sky.w} x ${sky.h} pixels`)
+    for (const band of SCENERY.filter((a) => a.bg !== 'opaque')) {
+      const b = promptForScenery(band)
+      expect(b).toContain('#FF00FF')
+      // …and a band must not paint the sky that now sits behind it.
+      expect(b).toContain('no stars')
+    }
+  })
+
+  it('every backdrop layer is drawn by the game, not restyled from a shipped bitmap', () => {
+    // The ridges were the previous game's graveyard silhouettes; a restyle of a
+    // graveyard is a graveyard, however the prompt describes it.
+    for (const a of SCENERY) expect(a.art.kind, a.id).not.toBe('bitmap')
+    expect(SCENERY.map((a) => a.id)).toContain('sky')
+    for (const a of SCENERY) expect(ART_CATALOGUE.bg).toContain(a.id)
+  })
+
+  it('a single prompt is square and names its target', () => {
+    const t = SINGLES.find((x) => x.id === 'melee-river-lv1')!
+    const p = promptForSingle(t)
+    expect(p).toContain('512 x 512')
+    expect(p).toContain('images/runes/melee-river-lv1.webp')
+    expect(p).toContain('THE GLYPH is')
   })
 })

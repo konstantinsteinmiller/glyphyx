@@ -1,317 +1,175 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-/**
- * Staged art loading: what the splash holds for is derived from the stage the
- * player is about to play, not listed — so a new player waits for a stage's
- * worth of bitmaps and a returning one waits for THEIR stage's cast.
- */
-
-let stage = 1
-vi.mock('@/use/useTowerState', () => ({
-  getState: (_key: string, fallback: unknown) => stage ?? fallback
+const state = new Map<string, unknown>()
+vi.mock('@/use/useGlyphyxState', () => ({
+  getState: (key: string, fallback?: unknown) => (state.has(key) ? state.get(key) : fallback)
 }))
 
-const trackImages = (): string[] => {
-  const requested: string[] = []
-  class FakeImage {
-    decoding = 'auto'
-    naturalWidth = 0
-    addEventListener(): void { /* never fires */ }
-    set src(value: string) { requested.push(value) }
-    get src(): string { return '' }
+const settled: [string, string, string | undefined][] = []
+let overridesOn = true
+vi.mock('@/game/art', () => ({
+  artOverridesEnabled: () => overridesOn,
+  artSettled: (kind: string, id: string, priority?: string) => {
+    settled.push([kind, id, priority])
+    return Promise.resolve()
   }
-  vi.stubGlobal('Image', FakeImage as unknown as typeof Image)
-  return requested
-}
+}))
 
-const load = async (artOn: boolean) => {
-  vi.resetModules()
-  vi.stubEnv('VITE_ENABLE_ART_OVERRIDES', artOn ? 'true' : '')
-  return import('@/game/artPreload')
-}
+import {
+  criticalArtWants, earlyArtWants, allArtWants, artTiers, resumeNode, resumeRunes, resumeSkin, skinStoneWants, factionStoneWants,
+  preloadRemainingArt, __resetArtPreload
+} from '@/game/artPreload'
+import { allArtIds, ART_CATALOGUE } from '@/game/artCatalogue'
+import { nodeConfig } from '@/game/campaign'
+import { FACTION_DEFS, SKIN_IDS } from '@/game/rules'
+import { NODE_KEY, SKIN_KEY, UNLOCKED_RUNES_KEY } from '@/keys'
 
-const has = (wants: readonly (readonly [string, string])[], kind: string, id: string): boolean =>
-  wants.some(([k, i]) => k === kind && i === id)
-
-/** Let the microtask queue and one macrotask drain. */
-const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 0))
-
-/** Records every request AND settles it, so an awaited tier can finish. */
-const trackSettlingImages = (): string[] => {
-  const requested: string[] = []
-  class FakeImage extends EventTarget {
-    decoding = 'auto'
-    naturalWidth = 0
-    private _src = ''
-    get src(): string { return this._src }
-    set src(value: string) {
-      this._src = value
-      requested.push(value)
-      setTimeout(() => {
-        this.naturalWidth = 64
-        this.dispatchEvent(new Event('load'))
-      }, 0)
-    }
-  }
-  vi.stubGlobal('Image', FakeImage as unknown as typeof Image)
-  return requested
-}
-
-/** Pretend the connection reports Data Saver. Cleared in `beforeEach`. */
-const stubDataSaver = (): void => {
-  Object.defineProperty(navigator, 'connection', {
-    value: { saveData: true }, configurable: true
-  })
-}
+const key = (w: readonly [string, string]): string => `${w[0]}/${w[1]}`
 
 beforeEach(() => {
-  vi.unstubAllEnvs()
-  vi.unstubAllGlobals()
-  window.history.replaceState({}, '', '/')
-  localStorage.removeItem('artOverrides')
-  delete (navigator as { connection?: unknown }).connection
-  stage = 1
+  state.clear()
+  settled.length = 0
+  overridesOn = true
+  __resetArtPreload()
 })
+afterEach(() => { vi.useRealTimers() })
 
-describe('tier 0 — behind the splash', () => {
-  it('is a stage\'s worth, not the cast: a new player waits for stage 1', async () => {
-    stage = 1
-    const m = await load(true)
-    const t0 = m.criticalArtWants()
-    expect(has(t0, 'hero', 'teal')).toBe(true)
-    expect(has(t0, 'monster', 'grumpling')).toBe(true)
-    expect(has(t0, 'bg', 'ridge-far')).toBe(true)
-    // The road tile is drawn, never painted, so it is never fetched.
-    expect(has(t0, 'bg', 'lane')).toBe(false)
-    expect(has(t0, 'prop', 'crate-damage')).toBe(true)
-    expect(has(t0, 'round', 'tracer')).toBe(true)
-    // The shop button and the grenade button are on screen from the first second.
-    expect(has(t0, 'ui', 'chest')).toBe(true)
-    expect(has(t0, 'ui', 'skill-grenade')).toBe(true)
-    // The rocket's first box is stage 8's — see `weaponForStage`.
-    expect(has(t0, 'round', 'rocket')).toBe(false)
-    // Stage 7's brute, stage 3's bill door and the stage-6 arena's keg are not
-    // on stage 1's screen and must not be on its splash.
-    expect(has(t0, 'monster', 'snaggletusk')).toBe(false)
-    expect(has(t0, 'gate', 'frame-sub')).toBe(false)
-    expect(has(t0, 'prop', 'barrel')).toBe(false)
-    expect(t0.length).toBeLessThan(40)
+describe('what the save says', () => {
+  it('resumes at node 1 and the starting skin with no save, and never trusts a surprise', () => {
+    expect(resumeNode()).toBe(1)
+    expect(resumeSkin()).toBe('river')
+    state.set(NODE_KEY, '7.9')
+    state.set(SKIN_KEY, 'ember')
+    expect(resumeNode()).toBe(7)
+    expect(resumeSkin()).toBe('ember')
+    state.set(NODE_KEY, 'NaN')
+    state.set(SKIN_KEY, 'diamond')
+    expect(resumeNode()).toBe(1)
+    expect(resumeSkin()).toBe('river')
   })
 
-  it('follows a returning player to their own stage', async () => {
-    stage = 7
-    const m = await load(true)
-    const t0 = m.criticalArtWants()
-    expect(m.resumeStage()).toBe(7)
-    expect(has(t0, 'monster', 'snaggletusk')).toBe(true)
-    expect(has(t0, 'gate', 'frame-sub')).toBe(true)
-    // The crown belongs to an ELITE, which is a midpoint and not an opening —
-    // so it follows the splash rather than holding it.
-    expect(has(t0, 'ui', 'crown')).toBe(false)
-    expect(has(m.earlyArtWants(), 'ui', 'crown')).toBe(true)
-  })
-
-  it('holds for the first SCREEN: the squad, the gates, their post, the pickups', async () => {
-    // The list the splash is allowed to wait on, stated as the thing it is:
-    // what a first-time player is looking at in the opening seconds.
-    stage = 1
-    const m = await load(true)
-    const t0 = m.criticalArtWants()
-    for (const o of ['teal', 'amber', 'violet']) expect(has(t0, 'hero', o), o).toBe(true)
-    // The gates, and the divider post between two leaves — painted frames with
-    // a grey post between them read as a half-finished gate.
-    expect(has(t0, 'gate', 'frame-add')).toBe(true)
-    expect(has(t0, 'gate', 'frame-mul')).toBe(true)
-    expect(has(t0, 'prop', 'pillar')).toBe(true)
-    // Both pickup crates and the coin.
-    expect(has(t0, 'prop', 'crate-damage')).toBe(true)
-    expect(has(t0, 'prop', 'crate-rate')).toBe(true)
-    expect(has(t0, 'prop', 'coin')).toBe(true)
-    // The grenade button is on screen from the first second, so is its round.
-    expect(has(t0, 'round', 'grenade')).toBe(true)
-  })
-
-  it('never holds for a beat the player has not reached yet', async () => {
-    // Stage 6 carries a weapon puzzle, an elite and a boss. None of the three
-    // is on the first screen, so none of them may hold it.
-    stage = 6
-    const m = await load(true)
-    const t0 = m.criticalArtWants()
-    for (const id of ['lever-post', 'lever-arm', 'guard-plate', 'weapon-box', 'weapon-box-open']) {
-      expect(has(t0, 'prop', id), id).toBe(false)
-    }
-    expect(has(t0, 'ui', 'crown')).toBe(false)
-    // …and what a boss or a miniboss throws is all tier 1 too.
-    for (const id of ['roller', 'bomb', 'bolt-gunner', 'meteor', 'bolt-boss']) {
-      expect(has(t0, 'round', id), id).toBe(false)
-    }
-    expect(has(t0, 'fx', 'guard')).toBe(false)
-  })
-
-  it('leaves the boss OUT of the splash, and picks it up first thing after', async () => {
-    stage = 6
-    const m = await load(true)
-    const { bossDesign, rosterDesigns } = await import('@/game/foes')
-    const boss = bossDesign(6)
-    const t1 = m.earlyArtWants()
-    // Every boss design in the campaign so far is ALSO a roster design — a
-    // stage's boss is the creep it has been fighting, at boss scale — so tier 0
-    // legitimately carries it as a road foe and tier 1 has nothing to add.
-    // The split still has to exist: the day `BOSS_DESIGNS` names something the
-    // roster does not, the splash must not silently grow by a strip.
-    expect(rosterDesigns(6)).toContain(boss)
-    expect(has(t1, 'monster', boss)).toBe(false)
-    // The proof the rule is real: tier 0 asks for the roster, not `stageDesigns`.
-    const t0 = m.criticalArtWants().filter(([k]) => k === 'monster').map(([, id]) => id)
-    expect([...t0].sort()).toEqual([...rosterDesigns(6)].sort())
-  })
-
-  it('treats a broken save as a new player', async () => {
-    stage = Number.NaN
-    const m = await load(true)
-    expect(m.resumeStage()).toBe(1)
+  it('reads the unlocked roster, and a garbled one still holds the sword', () => {
+    // No save at all: one rune, so the splash waits for two stones.
+    expect(resumeRunes()).toEqual(['melee'])
+    state.set(UNLOCKED_RUNES_KEY, ['melee', 'archer', 'cleave'])
+    expect(resumeRunes()).toEqual(['melee', 'archer', 'cleave'])
+    // Junk, duplicates and a rune that no longer exists are dropped; the
+    // starting sword is added back whatever the blob says.
+    state.set(UNLOCKED_RUNES_KEY, ['archer', 'archer', 'catapult', 7, null])
+    expect(resumeRunes()).toEqual(['archer', 'melee'])
+    state.set(UNLOCKED_RUNES_KEY, 'not an array')
+    expect(resumeRunes()).toEqual(['melee'])
   })
 })
 
-describe('tiers 1 and 2', () => {
-  it('puts the stage\'s own threats and the next stage\'s newcomers first, without repeating tier 0', async () => {
-    stage = 6
-    const m = await load(true)
-    const t0 = new Set(m.criticalArtWants().map(([k, i]) => `${k}/${i}`))
-    const t1 = m.earlyArtWants()
-    for (const [k, i] of t1) expect(t0.has(`${k}/${i}`)).toBe(false)
-    // Stage 6's arena has barrels, and stage 7 brings the brutes. Stage 6's
-    // own boss is the summoner, which is always the Marrow Knight — already
-    // in tier 0 as a husk design — so both brutes are stage-7 newcomers here.
-    expect(has(t1, 'prop', 'barrel')).toBe(true)
-    expect(has(t1, 'monster', 'thornwick')).toBe(true)
-    expect(has(t1, 'monster', 'snaggletusk')).toBe(true)
-    // The grenade is tier 0 now — its button is on screen from the first
-    // second, so the round behind it is too.
-    expect(has(t1, 'round', 'grenade')).toBe(false)
-    // The shield's button and the banner the stage ends on follow the splash.
-    expect(has(t1, 'ui', 'skill-shield')).toBe(true)
-    expect(has(t1, 'ui', 'ribbon')).toBe(true)
-    // Stage 6's box holds the GATLING — it is the first puzzle stage, and the
-    // first prize is the weapon that does not also teach a new verb. Neither
-    // stage 6 nor stage 7 needs the rocket painted.
-    expect(has(t1, 'round', 'rocket')).toBe(false)
-    // The box itself is on stage 6's road, though, in both its states.
-    expect(has(t1, 'prop', 'weapon-box')).toBe(true)
-  })
-
-  it('fetches the rocket only for the stages whose box holds it', async () => {
-    stage = 1
-    let m = await load(true)
-    expect(has(m.earlyArtWants(), 'round', 'rocket')).toBe(false)
-    // Stage 7 carries no puzzle at all, but stage 8 — the next — is the
-    // rocket's first box, and tier 1 covers the stage after this one.
-    stage = 7
-    m = await load(true)
-    expect(has(m.earlyArtWants(), 'round', 'rocket')).toBe(true)
-    // Stage 9 and stage 10 are a blank road and a gatling box: nothing to fetch.
-    stage = 9
-    m = await load(true)
-    expect(has(m.earlyArtWants(), 'round', 'rocket')).toBe(false)
-  })
-
-  it('fetches no puzzle art at all for the stages between the boxes', async () => {
-    // Half the campaign's roads carry no weapon beat — see `WEAPON_EVERY`.
-    // Holding the splash for a box that is not on the road is a slower start
-    // bought for nothing.
-    stage = 3
-    const m = await load(true)
-    const t0 = new Set(m.criticalArtWants().map(([k, i]) => `${k}/${i}`))
-    expect(t0.has('prop/weapon-box')).toBe(false)
-    expect(has(m.earlyArtWants(), 'prop', 'weapon-box')).toBe(false)
-  })
-
-  it('reaches the puzzle before the boss, in the order the road does', async () => {
-    stage = 6
-    const m = await load(true)
-    const t1 = m.earlyArtWants().map(([k, i]) => `${k}/${i}`)
-    const at = (key: string): number => t1.indexOf(key)
-    // The levers are the one thing the beat asks the player to NOTICE, and the
-    // beat is on the road before the arena is — so it is fetched before what
-    // the boss throws, and both before the next stage's newcomers.
-    expect(at('prop/lever-post')).toBeGreaterThanOrEqual(0)
-    expect(at('prop/lever-post')).toBeLessThan(at('prop/weapon-box'))
-    expect(at('prop/weapon-box')).toBeLessThan(at('prop/barrel'))
-    expect(at('prop/barrel')).toBeLessThan(at('monster/thornwick'))
-  })
-
-  it('skips the final sweep when the connection says data saver', async () => {
-    const requested = trackSettlingImages()
-    vi.stubGlobal('requestIdleCallback', (cb: () => void) => { cb(); return 1 })
-    stubDataSaver()
-    stage = 1
-    const m = await load(true)
-    await m.preloadRemainingArt()
-
-    // Tier 1 is what is on THIS road and still goes out in full…
-    for (const [, id] of m.earlyArtWants()) {
-      expect(requested.some((u) => u.includes(`/${id}.webp`)), id).toBe(true)
+describe('tier 0 — the first screen', () => {
+  it('holds the board, the horizon, the chips, the commanders of the node and the EQUIPPED skin\'s UNLOCKED stones', () => {
+    state.set(SKIN_KEY, 'jade')
+    state.set(UNLOCKED_RUNES_KEY, ['melee', 'archer', 'mage', 'defense', 'support'])
+    const wants = criticalArtWants(nodeConfig(1, 'medium')).map(key)
+    for (const id of ['tile/player', 'tile/enemy', 'tile/neutral', 'tile/frame', 'bg/ridge-far', 'bg/ridge-near',
+      'ui/chest', 'ui/ribbon', 'ui/coin', 'ui/forge', 'ui/reroll', 'hero/teal']) {
+      expect(wants).toContain(id)
     }
-    // …and tier 2 — art for stages the player may never reach — does not.
-    // Data saver is an explicit setting, and the procedural renderer is
-    // precisely the fallback it is asking for.
-    const wanted = new Set([
-      ...m.criticalArtWants().map(([k, i]) => `${k}/${i}`),
-      ...m.earlyArtWants().map(([k, i]) => `${k}/${i}`)
-    ])
-    const swept = m.allArtWants()
-      .filter(([k, i]) => !wanted.has(`${k}/${i}`))
-      .filter(([, id]) => requested.some((u) => u.includes(`/${id}.webp`)))
-    expect(swept).toEqual([])
+    // Both levels of each of the five runes this save has earned…
+    const jade = skinStoneWants('jade', ['melee', 'archer', 'mage', 'defense', 'support']).map(key)
+    expect(jade.length).toBe(10)
+    for (const id of jade) expect(wants).toContain(id)
+    // …and not one stone for the three the campaign has not handed over yet.
+    for (const locked of ['cleave', 'roller', 'bombard']) {
+      expect(wants.some((w) => w.startsWith(`rune/${locked}-`))).toBe(false)
+    }
+    // Not the other skins — an ember orb is bought in chapter 3.
+    expect(wants.some((w) => w.includes('-ember-'))).toBe(false)
+    // Only the node's own commander(s), not all four.
+    const commanders = wants.filter((w) => w.startsWith('monster/'))
+    expect(commanders.length).toBe(new Set(nodeConfig(1, 'medium').enemies.map((e) => e.faction)).size)
   })
 
-  it('runs the final sweep when it does not', async () => {
-    const requested = trackSettlingImages()
-    vi.stubGlobal('requestIdleCallback', (cb: () => void) => { cb(); return 1 })
-    stage = 1
-    const m = await load(true)
-    await m.preloadRemainingArt()
-    // The promise resolves only once the LAST painting has settled — which is
-    // what lets `useAssets` hold the SFX decode behind it.
-    for (const [, id] of m.allArtWants()) {
-      expect(requested.some((u) => u.includes(`/${id}.webp`)), id).toBe(true)
+  it('fetches every commander when the node is unknown', () => {
+    const wants = criticalArtWants(null).map(key)
+    for (const f of Object.values(FACTION_DEFS)) expect(wants).toContain(`monster/${f.avatar}`)
+  })
+
+  it('never lists a want twice', () => {
+    const wants = criticalArtWants(null).map(key)
+    expect(new Set(wants).size).toBe(wants.length)
+  })
+})
+
+describe('tier 1 — the first reveals', () => {
+  it('puts the node\'s own factions first, then the rest of the chapter, then the effects', () => {
+    const config = nodeConfig(2, 'medium')
+    const own = [...new Set(config.enemies.map((e) => e.faction))]
+    const wants = earlyArtWants(config, ['undead', 'orc', ...own]).map(key)
+    const ownStones = own.flatMap((f) => factionStoneWants(f).map(key))
+    expect(wants.slice(0, ownStones.length)).toEqual(ownStones)
+    expect(wants.filter((w) => w.startsWith('fx/')).length).toBe(ART_CATALOGUE.fx.length)
+    expect(wants).toContain('round/spark')
+  })
+})
+
+describe('the three tiers together', () => {
+  it('cover every catalogue id exactly once, for a new player and for one deep in the campaign', () => {
+    for (const [node, skin] of [[1, 'river'], [19, 'amber']] as const) {
+      state.set(NODE_KEY, node)
+      state.set(SKIN_KEY, skin)
+      const config = nodeConfig(node, 'medium')
+      const [t0, t1, t2] = artTiers(config, Object.keys(FACTION_DEFS) as (keyof typeof FACTION_DEFS)[])
+      const all = [...t0, ...t1, ...t2].map(key)
+      expect(new Set(all).size).toBe(all.length)
+      expect(new Set(all)).toEqual(new Set(allArtIds().map(key)))
+      expect(all.length).toBe(allArtWants().length)
+      // The equipped skin's UNLOCKED stones are in tier 0 and the rest of that
+      // skin in tier 1 (a chest can hand a locked rune over at any moment);
+      // every other skin's stones wait for tier 2. Neither save here sets an
+      // unlocked roster, so the sword is all either of them holds.
+      for (const s of SKIN_IDS) {
+        for (const w of skinStoneWants(s)) {
+          const tier = s !== skin ? t2 : key(w).startsWith('rune/melee-') ? t0 : t1
+          expect(tier.map(key)).toContain(key(w))
+        }
+      }
     }
   })
+})
 
-  it('sweeps every painting in the end, so nothing is orphaned', async () => {
-    const m = await load(true)
-    const { ART_CATALOGUE } = await import('@/game/artCatalogue')
-    const { allMonsterIds } = await import('@/game/monsterSprites')
-    const all = m.allArtWants()
-    for (const [kind, ids] of Object.entries(ART_CATALOGUE)) {
-      for (const id of ids) expect(has(all, kind, id)).toBe(true)
+describe('preloadRemainingArt', () => {
+  it('asks for nothing with the art layer off', async () => {
+    overridesOn = false
+    await preloadRemainingArt()
+    expect(settled).toEqual([])
+  })
+
+  it('awaits tier 1 in order, then sweeps tier 2 at low priority, once', async () => {
+    vi.useFakeTimers()
+    state.set(NODE_KEY, 3)
+    const run = preloadRemainingArt()
+    await vi.runAllTimersAsync()
+    await run
+    const config = nodeConfig(3, 'medium')
+    const [, t1, t2] = artTiers(config, Object.keys(FACTION_DEFS) as (keyof typeof FACTION_DEFS)[])
+    expect(settled.length).toBe(t1.length + t2.length)
+    expect(settled.slice(0, t1.length).map(([k, id]) => `${k}/${id}`)).toEqual(t1.map(key))
+    for (const [, , priority] of settled.slice(t1.length)) expect(priority).toBe('low')
+    // Idempotent.
+    const again = preloadRemainingArt()
+    await vi.runAllTimersAsync()
+    await again
+    expect(settled.length).toBe(t1.length + t2.length)
+  })
+
+  it('stops after tier 1 on a data-saver connection', async () => {
+    vi.useFakeTimers()
+    Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true })
+    try {
+      const run = preloadRemainingArt()
+      await vi.runAllTimersAsync()
+      await run
+      const [, t1] = artTiers(nodeConfig(1, 'medium'), Object.keys(FACTION_DEFS) as (keyof typeof FACTION_DEFS)[])
+      expect(settled.length).toBe(t1.length)
+    } finally {
+      Object.defineProperty(navigator, 'connection', { value: undefined, configurable: true })
     }
-    for (const id of allMonsterIds()) expect(has(all, 'monster', id)).toBe(true)
-    expect(new Set(all.map(([k, i]) => `${k}/${i}`)).size).toBe(all.length)
-  })
-
-  it('requests nothing at all with overrides off', async () => {
-    const requested = trackImages()
-    const m = await load(false)
-    await m.preloadRemainingArt()
-    expect(requested).toEqual([])
-  })
-
-  it('requests tier 1 serially and then the rest when on', async () => {
-    const requested = trackImages()
-    vi.stubGlobal('requestIdleCallback', (cb: () => void) => { cb(); return 1 })
-    const m = await load(true)
-    const early = m.earlyArtWants()
-    const p = m.preloadRemainingArt()
-    // NOTHING on the spot: the tiers hold for the page's own load and then for
-    // an idle slot, so they never land in the window where the scene is
-    // mounting and the document is still fetching its own subresources.
-    expect(requested).toEqual([])
-    await tick()
-    // Tier 1 awaits each probe, and the fakes never settle — so only the
-    // first is asked for before the promise parks. That IS the serial order.
-    expect(requested).toHaveLength(1)
-    expect(requested[0]).toContain(`${early[0]![1]}.webp`)
-    void p
   })
 })

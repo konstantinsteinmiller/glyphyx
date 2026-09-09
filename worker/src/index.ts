@@ -11,9 +11,12 @@
  * the published rows stop at 100, so on a board of thousands almost everyone is
  * below the cut and could otherwise only be told "#100+".
  *
- * THE SCORE IS THE HIGHEST STAGE REACHED. Not a point total — the game's whole
- * progression is "how deep did you get", so the board is a depth chart and
- * `score` is a small integer that grows by one at a time.
+ * THE SCORE IS THE HIGHEST CAMPAIGN NODE CLEARED (1-1 = 1, 2-1 = 9, …). Not a
+ * point total — the game's whole progression is "how deep did you get", so the
+ * board is a depth chart and `score` is a small integer that grows by one at a
+ * time. The second column, still called `squad` on the wire and in the table
+ * for compatibility with the deployed schema, carries the player's BEST WIN
+ * STREAK.
  *
  * Design rules, in the order they matter:
  *
@@ -67,16 +70,16 @@ const WRITE_COOLDOWN_MS = 3_000
 /**
  * The only real cheat cap, and it is deliberately generous.
  *
- * Stages are unbounded by design (the generator runs forever), so this cannot
- * be "the last stage" — it is a bound on the absurd. A player physically cannot
- * clear a stage in under ~30 s, so 2 000 stages is well over a day of unbroken
- * play; anything past it is a fabricated request. A false reject silently loses
+ * Campaign nodes are unbounded by design (the generator runs forever), so this
+ * cannot be "the last node" — it is a bound on the absurd. A node takes at least
+ * three five-second turns plus their resolutions, so 2 000 nodes is well over a
+ * day of unbroken play; anything past it is a fabricated request. A false reject silently loses
  * somebody's genuine best, which is far worse than admitting an outlier, so the
  * bound is set where no honest run can ever reach it.
  */
 const MAX_STAGE = 2_000
-/** Squad is capped in the client at `MAX_SQUAD` = 4 000 (raised from 1 600 when
- *  the road went endless); the headroom here is for the next raise. */
+/** The best win streak. A streak is bounded by the nodes won in a row, so
+ *  anything near this is fabricated; the headroom is deliberate. */
 const MAX_SQUAD = 100_000
 
 const plausible = (score: number, squad: number): boolean =>

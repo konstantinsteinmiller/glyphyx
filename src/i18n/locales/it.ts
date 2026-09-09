@@ -1,5 +1,27 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': 'Cura 3 e affila l\'attacco dei vicini, fin dal primo turno.',
+      'defense': 'Un muro che protegge i vicini, fin dal primo turno.',
+      'mage': 'Il suo raggio esplode a croce in fondo, fin dal primo turno.',
+      'archer': 'Colpisce due caselle alla volta, fin dal primo turno.',
+      'melee': 'Respinge il bersaglio: tre pietre d\'acciaio in una sola mossa.',
+      'cleave': 'Abbatte le tre caselle davanti in un colpo, fin dal primo turno.',
+      'roller': 'Travolge due superstiti prima di fermarsi, fin dal primo turno.',
+      'bombard': 'Bombarda la fila lontana e la casella di mezzo, fin dal primo turno.',
+      'nuker': 'Arriva a Lv 3 e regge il tabellone che ha appena svuotato, fin dal primo turno.'
+    },
+    'watchAd': 'Guarda un annuncio',
+    'armed': 'Armata ×{n}',
+    'landsAt': 'Arriva al Lv {n} al tuo primo piazzamento nella prossima partita.',
+    'runesTagline': 'La prima runa piazzata di ogni tipo armato arriva al Lv {n}.',
+    'tabs': {
+      'skins': 'Skin',
+      'runes': 'Rune del potere',
+    },
+    'title': 'Negozio',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'Annulla',
   'close': 'Chiudi',
   'ok': 'Ok',
@@ -10,75 +32,252 @@ export default {
   'tip': 'Consiglio',
   'crazyGamesOnly': 'Questo gioco è disponibile solo su',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
     'next': 'Avanti',
-    'replay': 'Riprova',
+    'replay': 'Rigioca',
     'back': 'Indietro',
     'play': 'Gioca',
     'pause': 'Pausa',
     'menu': 'Menu',
     'home': 'Home',
-    'info': 'Info'
+    'info': 'Info',
+    'skip': 'Salta'
   },
 
   'hud': {
-    'stage': 'Livello {n}',
-    'best': 'Record {n}',
-    'boss': 'Boss',
-    'miniboss': 'Miniboss',
-    'fireRate': 'Ritmo',
-    'incoming': 'Attacco in arrivo!',
-    'dodge': 'Schiva',
-    'weaponActive': '{name} pronto',
-    'weaponLocked': '{name} bloccato — {n} di {total} leve colpite'
+    'stage': 'Livello {c}-{n}',
+    'conquest': 'Conquista',
+    'tiles': '{n} / {total}',
+    'turn': 'Turno {n}',
+    'you': 'Tu',
+    'enemy': 'Nemico',
+    'streak': 'Serie di vittorie',
+    'streakMult': '×{n} oro',
+    'suddenDeath': 'Morte improvvisa!',
+    'reroll': 'Ripesca',
+    'rerollsLeft': '{n} rimasti'
   },
 
-  'weapons': {
-    'rocket': 'Lanciarazzi',
-    'gatling': 'Gatling'
+  'factions': {
+    'skeleton': 'Manichini d’ossa',
+    'goblin': 'Arcieri goblin',
+    'orc': 'Berserker orchi',
+    'undead': 'Maghi non morti'
   },
 
-  'tutorial': {
-    'touch': 'Scorri per muovere la squadra',
-    'desktop': 'Muovi il mouse per guidare la squadra'
+  'runes': {
+    'level': 'Lv {n}',
+    'hp': 'PV',
+    'atk': 'ATT',
+    'names': {
+      'melee': 'Spada',
+      'archer': 'Arco',
+      'mage': 'Sfera arcana',
+      'defense': 'Scudo',
+      'support': 'Croce radiosa',
+      'cleave': 'Ascia',
+      'roller': 'Masso',
+      'bombard': 'Mortaio',
+      'nuker': 'Detonatore'
+    },
+    'descriptions': {
+      'melee': 'Colpisce la casella di fronte. Lv 2 respinge il bersaglio.',
+      'archer': 'Salta una casella e colpisce la successiva. Lv 2 spara su due caselle.',
+      'mage': 'Lancia un raggio diagonale attraverso due caselle. Lv 2 esplode alla fine.',
+      'defense': 'Assorbe 1 danno per colpo. Lv 2 protegge i vicini.',
+      'support': 'Cura i vicini alleati ogni turno. Lv 2 ne potenzia anche l’attacco.',
+      'cleave': 'Taglia le tre caselle davanti: quella di fronte e le due accanto.',
+      'roller': 'Rotola finché una runa resiste, alleate incluse. Lv 2 rotola una in più.',
+      'bombard': 'Bombarda tre caselle a tre file, oltre ogni muro. Lv 2 colpisce anche a metà.',
+      'nuker': 'Esplode dove atterra: ogni runa Lv 1 sul tabellone muore, anche le tue. Lv 2 resiste.'
+    }
   },
+
   'hints': {
-    'move': { 'touch': 'Tocca per muoverti', 'desktop': 'Clicca per muoverti' },
-    'gate': { 'touch': 'Continua a sparare al cancello: +1 ogni mezzo secondo', 'desktop': 'Continua a sparare al cancello: +1 ogni mezzo secondo' },
-    'trap': { 'touch': 'I cancelli rossi RIDUCONO la squadra: prendi l’altro!', 'desktop': 'I cancelli rossi RIDUCONO la squadra: prendi l’altro!' },
-    'divider': { 'touch': 'Non toccare mai il pilastro tra i cancelli', 'desktop': 'Non toccare mai il pilastro tra i cancelli' },
-    'crate': { 'touch': 'Casse verdi: tutti colpiscono più forte', 'desktop': 'Casse verdi: tutti colpiscono più forte' },
-    'rate': { 'touch': 'Casse blu: tutti sparano più veloce', 'desktop': 'Casse blu: tutti sparano più veloce' },
-    'boss': { 'touch': 'Stai fuori dal cerchio rosso!', 'desktop': 'Stai fuori dal cerchio rosso!' },
-    'lever': { 'touch': 'Colpisci ENTRAMBE le leve ai bordi: aprono la cassa delle armi', 'desktop': 'Colpisci ENTRAMBE le leve ai bordi: aprono la cassa delle armi' },
-    'guard': { 'touch': 'Scudo attivo: i tuoi colpi non fanno nulla. MUOVITI!', 'desktop': 'Scudo attivo: i tuoi colpi non fanno nulla. MUOVITI!' }
+    'drag': {
+      'touch': 'Trascina una runa sul tabellone',
+      'desktop': 'Trascina una runa sul tabellone'
+    },
+    'aim': {
+      'touch': 'Scorri per mirare, rilascia per bloccare',
+      'desktop': 'Trascina o usa le frecce / WASD per mirare, rilascia per fissare'
+    },
+    'archer': {
+      'touch': 'Gli archi saltano una casella e colpiscono la successiva',
+      'desktop': 'Gli archi saltano una casella e colpiscono la successiva'
+    },
+    'stack': {
+      'touch': 'Posa una runa uguale sulla tua per salire di livello',
+      'desktop': 'Posa una runa uguale sulla tua per salire di livello'
+    },
+    'conquest': {
+      'touch': 'Tieni 8 caselle per vincere',
+      'desktop': 'Tieni 8 caselle per vincere'
+    },
+    'siege': {
+      'touch': 'Circondato! Sfonda e tieni 8 caselle',
+      'desktop': 'Circondato! Sfonda e tieni 8 caselle'
+    },
+    'mage': {
+      'touch': 'La sfera spara in diagonale attraverso due caselle',
+      'desktop': 'La sfera spara in diagonale attraverso due caselle'
+    },
+    'defense': {
+      'touch': 'Lo scudo blocca frecce e raggi',
+      'desktop': 'Lo scudo blocca frecce e raggi'
+    },
+    'support': {
+      'touch': 'La croce cura e rinforza i vicini',
+      'desktop': 'La croce cura e rinforza i vicini'
+    },
+    'cleave': {
+      'touch': 'L’ascia taglia tutte e tre le caselle davanti',
+      'desktop': 'L’ascia taglia tutte e tre le caselle davanti'
+    },
+    'roller': {
+      'touch': 'Il masso rotola oltre tutto ciò che spezza',
+      'desktop': 'Il masso rotola oltre tutto ciò che spezza'
+    },
+    'bombard': {
+      'touch': 'Il mortaio bombarda tre caselle a tre file',
+      'desktop': 'Il mortaio bombarda tre caselle a tre file'
+    },
+    'correct': {
+      'touch': 'Tocca una freccia o scorri per rimirare',
+      'desktop': 'Clicca e trascina ovunque, o usa le frecce / WASD, per rimirare'
+    },
+    'tap': {
+      'touch': 'Tocca una casella per posarla',
+      'desktop': 'Clicca una casella per posarla'
+    },
+    'nuker': {
+      'touch': 'Il detonatore distrugge ogni runa Lv 1 — anche le tue',
+      'desktop': 'Il detonatore distrugge ogni runa Lv 1 — anche le tue'
+    }
   },
 
-  'flow': {
+  'canvas': {
+    'level': 'Lv.{n}',
+    'combo': '×{n} COMBO',
+    'clash': 'SCONTRO!',
+    'victory': 'VITTORIA!',
+    'defeat': 'SCONFITTA',
+    'reveal': 'RIVELA',
+    'suddenDeath': 'MORTE IMPROVVISA',
+    'turn': 'TURNO {n}',
+    'you': 'TU',
+    'foe': 'NEMICO',
+    'reroll': 'RIPESCA',
+    'lastTurn': 'ULTIMO TURNO'
+  },
 
+  'banner': {
+    'duel': 'Duello 1v1',
+    'siege': 'Assedio 1v3',
+    'vs': 'contro {name}',
     'unlocked': 'Sbloccato!'
-
   },
 
   'result': {
-    'stageClear': 'Livello superato!',
-    'wipedOut': 'Squadra annientata',
-    'reachedStage': 'Livello {n}',
+    'chestCoins': 'Forziere +{n}',
+    'victory': 'Vittoria!',
+    'defeat': 'Sconfitta',
+    'turns': 'Turni',
+    'playAgain': 'Rigioca',
+    'nextStage': 'Livello successivo',
     'newRecord': 'Nuovo record!',
-    'rallied': 'Secondo fiato',
-    'peakSquad': 'Squadra massima',
-    'kills': 'Eliminazioni',
+    'streakBonus': 'Serie ×{n}',
     'tripleCoins': '3×',
     'tripleBonus': '(+{n})',
     'tripleClaimed': 'Monete triplicate!',
-    'nextStage': 'Livello successivo',
-    'tryAgain': 'Riprova',
+    'chestTap': 'Tocca il forziere!',
+    'newRune': 'Nuova runa',
+    'newSkin': 'Nuovo aspetto',
+    'skins': 'Aspetti delle rune',
+    'reasons': {
+      'conquest': 'Otto caselle conquistate',
+      'conquestLost': 'Il nemico ha conquistato otto caselle',
+      'eliminated': 'Tutte le rune nemiche infrante',
+      'overrun': 'Le tue rune sono state travolte',
+      'turnLimit': 'Deciso dalle caselle tenute',
+      'suddenDeath': 'Morte improvvisa',
+      'siegeHeld': 'Hai tenuto la linea',
+      'siegeBroken': 'L’assedio ti ha spezzato'
+    }
+  },
+
+  'campaign': {
+    'title': 'Campagna',
+    'chapter': 'Capitolo {n}',
+    'cleared': 'Completato',
+    'current': 'Attuale',
+    'locked': 'Bloccato',
+    'modes': {
+      '1v1': 'Duello 1v1',
+      'siege': 'Assedio 1v3'
+    },
+    'objectives': {
+      'conquest': 'Tieni 8 caselle',
+      'eliminate': 'Distruggi ogni runa nemica',
+      'siege': 'Spezza l’assedio'
+    },
+    'reward': 'Ricompensa',
+    'play': 'Gioca',
+    'replay': 'Rigioca',
+    'nextUnlock': 'Vinci il Livello {c}-{n} e ottieni:',
+    'nextUnlockAria': 'Vinci il Livello {c}-{n} per sbloccare {rune}'
+  },
+
+  'skins': {
+    'title': 'Aspetti delle rune',
+    'owned': 'Posseduto',
+    'equipped': 'Equipaggiato',
+    'equip': 'Equipaggia',
+    'buy': 'Compra',
+    'names': {
+      'river': 'Ciottolo di fiume',
+      'obsidian': 'Ossidiana',
+      'jade': 'Giada',
+      'amber': 'Ambra',
+      'marble': 'Marmo',
+      'ember': 'Brace'
+    },
+    'tagline': 'Ogni runa che posi la indossa.',
+    'needMore': 'Mancano {n} monete',
+    'blurbs': {
+      'river': 'Arenaria di fiume calda, il glifo inciso a fondo e illuminato da dentro.',
+      'obsidian': 'Vetro vulcanico scheggiato con una fredda linea al neon.',
+      'jade': 'Giada verde levigata, il glifo intarsiato in oro.',
+      'amber': "Una gemma d'ambra sfaccettata che brilla da dentro.",
+      'marble': 'Marmo bianco, scolpito a fondo e in ombra.',
+      'ember': 'Una lastra di lava raffreddata, il glifo arde tra le crepe.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Gradi',
+    'title': 'Gradi delle rune',
+    'tagline': 'Ogni grado dà +{n} PV max: uguale per ogni runa.',
+    'rank': 'Grado {n}/{max}',
+    'maxed': 'Al massimo',
+    'hpGain': '+{n} PV',
+    'next': 'Prossimo: +{n} PV',
     'upgrade': 'Potenzia',
-    'upgradeHint': 'Potenzia la squadra!',
-    'rankOf': 'su {n}',
-    'upNext': 'Prossimo: Livello {n}'
+    'locked': 'Non ancora sbloccata',
+    'free': 'Gratis',
+    'freeGift': 'Potenziamento gratis!',
+    'freeIn': 'Nuovo regalo tra {t}',
+    'freeTaken': 'Torna per il prossimo',
+    'nukerUnlock': 'Sblocca il Detonatore',
+    'nukerLocked': 'O vinci il Livello 4-1'
+  },
+
+  'forge': {
+    'label': 'Forgia delle rune',
+    'ready': 'Raccogli {n} monete dalla forgia',
+    'filling': 'Forgia delle rune — al lavoro',
+    'full': 'Forgia delle rune — piena',
+    'perHour': '+{n} / h'
   },
 
   'leaderboard': {
@@ -86,8 +285,8 @@ export default {
     'rank': '#',
     'player': 'Giocatore',
     'stage': 'Livello',
-    'squad': 'Squadra',
-    'empty': 'Ancora nessun punteggio. Sii il primo!',
+    'streak': 'Serie',
+    'empty': 'Nessuna partita ancora. Sii il primo.',
     'failed': 'Classifica non raggiungibile.',
     'loading': 'Caricamento…',
     'you': 'Tu',
@@ -95,76 +294,52 @@ export default {
     'of': 'su {n} giocatori'
   },
 
-  'chest': {
-    'label': 'Forziere',
-    'ready': 'Apri il forziere per {n} monete',
-    'filling': 'Forziere: si sta riempiendo',
-    'spent': 'Forziere: vuoto fino a domani'
-  },
-
-  'skills': {
-
-    'grenade': 'Granata',
-
-    'shield': 'Scudo'
-
-  },
-
-  'upgrades': {
-    'title': 'Potenziamenti',
-    'spotlight': 'Spendi!',
-    'level': 'Lv {n}',
-    'maxed': 'Max',
-    'names': {
-      'squad': 'Squadra',
-      'power': 'Potenza',
-      'rate': 'Cadenza',
-      'range': 'Gittata',
-      'scavenge': 'Recupero',
-      'grenade': 'Granata',
-      'shield': 'Scudo',
-      'rocket': 'Potenza razzi',
-      'gatling': 'Potenza Gatling'
-    },
-    'descriptions': {
-      'squad': 'Inizia ogni livello con più sopravvissuti.',
-      'power': 'Ogni sopravvissuto infligge più danni per colpo.',
-      'rate': 'Ogni sopravvissuto spara più velocemente.',
-      'range': 'La squadra apre il fuoco più avanti sulla strada.',
-      'scavenge': 'Guadagna più monete a ogni partita.',
-      'grenade': 'Lancia una granata per un colpo di danno pesante.',
-      'shield': 'Dimezza i danni alla squadra per qualche secondo.',
-      'rocket': 'I lanciarazzi che sblocchi in un livello fanno più danni.',
-      'gatling': 'Le Gatling che sblocchi in un livello fanno più danni.'
-    }
-  },
-
   'options': {
-    'title': 'Opzioni', 'general': 'Generale', 'audio': 'Audio', 'language': 'Lingua',
-    'difficulty': 'Difficoltà', 'soundEffects': 'Effetti sonori', 'music': 'Musica', 'musicTrack': 'Traccia musicale',
-    'musicTracks': { 'cozy': 'Armonia accogliente', 'trance': 'Tunnel trance' },
+    'title': 'Opzioni',
+    'general': 'Generale',
+    'audio': 'Audio',
+    'language': 'Lingua',
+    'difficulty': 'Difficoltà',
+    'soundEffects': 'Effetti sonori',
+    'music': 'Musica',
+    'musicTrack': 'Brano musicale',
+    'musicTracks': {
+      'cozy': 'Pietra quieta',
+      'trance': 'Pulsar runico'
+    },
     'close': 'Salva e chiudi',
-    'difficulties': { 'easy': 'Facile', 'medium': 'Media', 'hard': 'Difficile' },
+    'difficulties': {
+      'easy': 'Facile',
+      'medium': 'Normale',
+      'hard': 'Difficile'
+    },
     'difficultyHints': {
-      'easy': 'Nemici più deboli e barricate più sottili.',
-      'medium': 'La partita standard.',
-      'hard': 'Nemici più duri e barricate più resistenti.'
+      'easy': 'I nemici esitano e sbagliano più spesso.',
+      'medium': 'La campagna standard.',
+      'hard': 'I nemici pianificano meglio e impilano più in fretta.'
     }
   },
 
   'adsBlocked': {
     'title': 'Impossibile mostrare l’annuncio',
-    'body': 'Abbiamo provato a mostrarti un video per farti ottenere la ricompensa, ma qualcosa nel tuo browser blocca gli annunci.',
+    'body': 'Abbiamo provato a mostrarti un video per farti guadagnare la ricompensa, ma qualcosa nel tuo browser blocca gli annunci.',
     'allowPrefix': 'Consenti gli annunci su',
-    'allowSuffix': '(o metti in pausa il blocco annunci per questo gioco) e riprova.',
+    'allowSuffix': '(o metti in pausa il tuo ad-blocker per questo gioco) e riprova.',
     'gotIt': 'Capito'
   },
   'saveStatus': {
-    'restoredTitle': 'Salvataggio cloud ripristinato', 'restoredBody': '+{n} monete bonus per il recupero',
-    'tap': 'tocca', 'pausedTitle': 'Sincronizzazione in pausa',
+    'restoredTitle': 'Salvataggio cloud ripristinato',
+    'restoredBody': '+{n} monete bonus per il recupero',
+    'tap': 'tocca',
+    'pausedTitle': 'Sincronizzazione cloud in pausa',
     'pausedBody': 'Stai giocando offline. I progressi sono salvati qui.',
-    'retry': 'Riprova', 'dismiss': 'ignora'
+    'retry': 'Riprova',
+    'dismiss': 'chiudi'
   },
-  'loading': { 'tooLong': 'Il caricamento è troppo lento? Disattiva il blocco annunci e ricarica.', 'boo': 'Bu!', 'laugh': 'Ahahah!' },
-  'license': { 'denied': 'Accesso negato: acquista una licenza.' }
+  'loading': {
+    'tooLong': 'Il caricamento è troppo lento? Disattiva l’ad-blocker e ricarica.'
+  },
+  'license': {
+    'denied': 'Accesso negato: acquista una licenza.'
+  }
 }

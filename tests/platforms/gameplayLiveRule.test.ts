@@ -15,9 +15,9 @@
 import { describe, expect, it } from 'vitest'
 import { isGameplayLive, type GameplayLiveInputs } from '@/use/useGameplayLifecycle'
 
-/** A player mid-run with nothing in the way. Each test negates one thing. */
+/** A player mid-match with nothing in the way. Each test negates one thing. */
 const playing: GameplayLiveInputs = {
-  phase: 'run',
+  matchActive: true,
   showResult: false,
   anyModalOpen: false,
   adShowing: false,
@@ -27,14 +27,12 @@ const playing: GameplayLiveInputs = {
 }
 
 describe('isGameplayLive', () => {
-  it('is live while a run or a boss fight is in progress', () => {
+  it('is live while a match is in progress', () => {
     expect(isGameplayLive(playing)).toBe(true)
-    expect(isGameplayLive({ ...playing, phase: 'boss' })).toBe(true)
   })
 
-  it('is not live in the terminal phases — the run is over either way', () => {
-    expect(isGameplayLive({ ...playing, phase: 'clear' })).toBe(false)
-    expect(isGameplayLive({ ...playing, phase: 'wipe' })).toBe(false)
+  it('is not live once the match has ended — win or loss', () => {
+    expect(isGameplayLive({ ...playing, matchActive: false })).toBe(false)
   })
 
   // ─── The two that were missing ───────────────────────────────────────────
@@ -70,9 +68,9 @@ describe('isGameplayLive', () => {
   })
 
   it('is not live during the onboarding hold', () => {
-    // The road is frozen and no stage is running. A `gameplayStart` here opens a
-    // session the player has not begun — and on Poki inflates the very C2P
-    // number the web fit test grades.
+    // The clock is held and the ghost hand is teaching. A `gameplayStart` here
+    // opens a session the player has not begun — and on Poki inflates the very
+    // C2P number the web fit test grades.
     expect(isGameplayLive({ ...playing, tutorialActive: true })).toBe(false)
   })
 

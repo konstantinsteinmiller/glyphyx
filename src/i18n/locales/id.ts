@@ -1,170 +1,345 @@
 export default {
-  'gameName': 'glyphyx',
+  'shop': {
+    'boosts': {
+      'support': 'Menyembuhkan 3 dan mempertajam serangan tetangganya, sejak giliran pertama.',
+      'defense': 'Tembok yang melindungi tetangganya, sejak giliran pertama.',
+      'mage': 'Sinarnya meledak berbentuk salib di ujung, sejak giliran pertama.',
+      'archer': 'Menembak dua petak sekaligus, sejak giliran pertama.',
+      'melee': 'Mendorong targetnya mundur — tiga batu baja dalam satu lemparan.',
+      'cleave': 'Merobohkan tiga petak di depan sekaligus, sejak giliran pertama.',
+      'roller': 'Menerjang dua yang bertahan sebelum berhenti, sejak giliran pertama.',
+      'bombard': 'Menembaki baris jauh dan petak di antaranya, sejak giliran pertama.',
+      'nuker': 'Turun di Lv 3 dan bertahan di papan yang baru dikosongkannya, sejak giliran pertama.'
+    },
+    'watchAd': 'Tonton iklan',
+    'armed': 'Bersenjata ×{n}',
+    'landsAt': 'Mendarat di Lv {n} saat pemasangan pertamamu di pertandingan berikutnya.',
+    'runesTagline': 'Rune pertama yang kamu pasang dari tiap jenis bersenjata langsung Lv {n}.',
+    'tabs': {
+      'skins': 'Skin',
+      'runes': 'Rune Kekuatan',
+    },
+    'title': 'Toko',
+  },
+  'gameName': 'Glyphyx',
   'cancel': 'Batal',
   'close': 'Tutup',
-  'ok': 'Oke',
+  'ok': 'Ok',
   'continue': 'Lanjut',
   'tapToContinue': 'Ketuk untuk lanjut',
   'clickToContinue': 'Klik untuk lanjut',
   'rewards': 'HADIAH',
   'tip': 'Tips',
-  'crazyGamesOnly': 'Gim ini hanya tersedia di',
+  'crazyGamesOnly': 'Game ini hanya tersedia di',
 
-  // Shared UI labels. NOT dead keys: they are the `aria-label` on the game's
-  // icon-only buttons, read aloud rather than shown. See `en.ts`.
   'ui': {
-    'next': 'Lanjut',
+    'next': 'Berikutnya',
     'replay': 'Ulangi',
     'back': 'Kembali',
     'play': 'Main',
     'pause': 'Jeda',
     'menu': 'Menu',
     'home': 'Beranda',
-    'info': 'Info'
+    'info': 'Info',
+    'skip': 'Lewati'
   },
 
   'hud': {
-    'stage': 'Tahap {n}',
-    'best': 'Rekor {n}',
-    'boss': 'Bos',
-    'miniboss': 'Mini Bos',
-    'fireRate': 'Laju',
-    'incoming': 'Serangan datang!',
-    'dodge': 'Hindari',
-    'weaponActive': '{name} siap',
-    'weaponLocked': '{name} terkunci — {n} dari {total} tuas ditembak'
+    'stage': 'Level {c}-{n}',
+    'conquest': 'Penaklukan',
+    'tiles': '{n} / {total}',
+    'turn': 'Giliran {n}',
+    'you': 'Kamu',
+    'enemy': 'Musuh',
+    'streak': 'Rentetan menang',
+    'streakMult': '×{n} emas',
+    'suddenDeath': 'Sudden death!',
+    'reroll': 'Kocok ulang',
+    'rerollsLeft': 'Sisa {n}'
   },
 
-  'weapons': {
-    'rocket': 'Peluncur Roket',
-    'gatling': 'Senapan Gatling'
+  'factions': {
+    'skeleton': 'Boneka Tulang',
+    'goblin': 'Pemanah Goblin',
+    'orc': 'Berserker Orc',
+    'undead': 'Penyihir Undead'
   },
 
-  'tutorial': {
-    'touch': 'Geser untuk menggerakkan pasukanmu',
-    'desktop': 'Gerakkan mouse untuk mengarahkan pasukan'
+  'runes': {
+    'level': 'Lv {n}',
+    'hp': 'HP',
+    'atk': 'ATK',
+    'names': {
+      'melee': 'Pedang',
+      'archer': 'Busur',
+      'mage': 'Bola Arkana',
+      'defense': 'Perisai',
+      'support': 'Salib Cahaya',
+      'cleave': 'Kapak',
+      'roller': 'Batu Besar',
+      'bombard': 'Mortir',
+      'nuker': 'Penghancur'
+    },
+    'descriptions': {
+      'melee': 'Menyerang petak di depannya. Lv 2 mendorong target mundur.',
+      'archer': 'Melompati satu petak dan mengenai petak berikutnya. Lv 2 menembak dua petak.',
+      'mage': 'Menembakkan sinar diagonal menembus dua petak. Lv 2 meledak di ujung.',
+      'defense': 'Menyerap 1 damage dari setiap serangan. Lv 2 melindungi tetangganya.',
+      'support': 'Menyembuhkan tetangga sekutu tiap giliran. Lv 2 juga mempertajam serangan mereka.',
+      'cleave': 'Menebas tiga petak di depan: yang dihadapi dan kedua sisinya.',
+      'roller': 'Menggelinding sampai ada rune bertahan, termasuk kawan. Lv 2 menggelinding satu lagi.',
+      'bombard': 'Menembaki tiga petak, tiga baris di depan, melewati dinding. Lv 2 juga kena tengahnya.',
+      'nuker': 'Meledak di tempat ia jatuh: semua rune Lv 1 di papan mati, milikmu juga. Lv 2 selamat.'
+    }
   },
+
   'hints': {
-    'move': { 'touch': 'Ketuk untuk bergerak', 'desktop': 'Klik untuk bergerak' },
-    'gate': { 'touch': 'Terus tembak gerbang: +1 tiap setengah detik', 'desktop': 'Terus tembak gerbang: +1 tiap setengah detik' },
-    'trap': { 'touch': 'Gerbang merah MENGURANGI regu — ambil yang lain!', 'desktop': 'Gerbang merah MENGURANGI regu — ambil yang lain!' },
-    'divider': { 'touch': 'Jangan sentuh pilar di antara gerbang', 'desktop': 'Jangan sentuh pilar di antara gerbang' },
-    'crate': { 'touch': 'Peti hijau: semua memukul lebih keras', 'desktop': 'Peti hijau: semua memukul lebih keras' },
-    'rate': { 'touch': 'Peti biru: semua menembak lebih cepat', 'desktop': 'Peti biru: semua menembak lebih cepat' },
-    'boss': { 'touch': 'Jauhi lingkaran merah!', 'desktop': 'Jauhi lingkaran merah!' },
-    'lever': { 'touch': 'Tembak KEDUA tuas di tepi jalan — keduanya membuka kotak senjata', 'desktop': 'Tembak KEDUA tuas di tepi jalan — keduanya membuka kotak senjata' },
-    'guard': { 'touch': 'Perisai aktif — tembakanmu tak berguna. MINGGIR!', 'desktop': 'Perisai aktif — tembakanmu tak berguna. MINGGIR!' }
+    'drag': {
+      'touch': 'Seret rune ke papan',
+      'desktop': 'Seret rune ke papan'
+    },
+    'aim': {
+      'touch': 'Geser untuk membidik, lepas untuk mengunci',
+      'desktop': 'Seret atau tekan tombol panah / WASD untuk membidik, lepas untuk mengunci'
+    },
+    'archer': {
+      'touch': 'Busur melompati satu petak dan mengenai berikutnya',
+      'desktop': 'Busur melompati satu petak dan mengenai berikutnya'
+    },
+    'stack': {
+      'touch': 'Jatuhkan rune yang sama di atas rune-mu untuk naik level',
+      'desktop': 'Jatuhkan rune yang sama di atas rune-mu untuk naik level'
+    },
+    'conquest': {
+      'touch': 'Kuasai 8 petak untuk menang',
+      'desktop': 'Kuasai 8 petak untuk menang'
+    },
+    'siege': {
+      'touch': 'Terkepung! Tembus dan kuasai 8 petak',
+      'desktop': 'Terkepung! Tembus dan kuasai 8 petak'
+    },
+    'mage': {
+      'touch': 'Orb menembak diagonal menembus dua petak',
+      'desktop': 'Orb menembak diagonal menembus dua petak'
+    },
+    'defense': {
+      'touch': 'Perisai menahan panah dan sinar',
+      'desktop': 'Perisai menahan panah dan sinar'
+    },
+    'support': {
+      'touch': 'Salib menyembuhkan dan memperkuat tetangganya',
+      'desktop': 'Salib menyembuhkan dan memperkuat tetangganya'
+    },
+    'cleave': {
+      'touch': 'Kapak menebas ketiga petak di depan',
+      'desktop': 'Kapak menebas ketiga petak di depan'
+    },
+    'roller': {
+      'touch': 'Batu besar terus menggelinding menembus semua yang dipecahkannya',
+      'desktop': 'Batu besar terus menggelinding menembus semua yang dipecahkannya'
+    },
+    'bombard': {
+      'touch': 'Mortir menembaki tiga petak, tiga baris di depan',
+      'desktop': 'Mortir menembaki tiga petak, tiga baris di depan'
+    },
+    'correct': {
+      'touch': 'Ketuk panah atau geser untuk membidik ulang',
+      'desktop': 'Klik dan seret di mana saja, atau tekan tombol panah / WASD, untuk membidik ulang'
+    },
+    'tap': {
+      'touch': 'Ketuk petak untuk meletakkannya',
+      'desktop': 'Klik petak untuk meletakkannya'
+    },
+    'nuker': {
+      'touch': 'Penghancur memusnahkan semua rune Lv 1 — termasuk milikmu',
+      'desktop': 'Penghancur memusnahkan semua rune Lv 1 — termasuk milikmu'
+    }
   },
 
-  'flow': {
+  'canvas': {
+    'level': 'Lv.{n}',
+    'combo': '×{n} COMBO',
+    'clash': 'TABRAKAN!',
+    'victory': 'MENANG!',
+    'defeat': 'KALAH',
+    'reveal': 'BUKA',
+    'suddenDeath': 'SUDDEN DEATH',
+    'turn': 'GILIRAN {n}',
+    'you': 'KAMU',
+    'foe': 'MUSUH',
+    'reroll': 'KOCOK',
+    'lastTurn': 'GILIRAN TERAKHIR'
+  },
 
+  'banner': {
+    'duel': 'Duel 1v1',
+    'siege': 'Pengepungan 1v3',
+    'vs': 'vs {name}',
     'unlocked': 'Terbuka!'
-
   },
 
   'result': {
-    'stageClear': 'Tahap selesai!',
-    'wipedOut': 'Regu habis',
-    'reachedStage': 'Tahap {n}',
+    'chestCoins': 'Peti +{n}',
+    'victory': 'Menang!',
+    'defeat': 'Kalah',
+    'turns': 'Giliran',
+    'playAgain': 'Main lagi',
+    'nextStage': 'Level berikutnya',
     'newRecord': 'Rekor baru!',
-    'rallied': 'Napas kedua',
-    'peakSquad': 'Regu terbesar',
-    'kills': 'Bunuh',
+    'streakBonus': 'Rentetan ×{n}',
     'tripleCoins': '3×',
     'tripleBonus': '(+{n})',
-    'tripleClaimed': 'Koin dilipatgandakan!',
-    'nextStage': 'Tahap berikutnya',
-    'tryAgain': 'Coba lagi',
+    'tripleClaimed': 'Koin dilipatgandakan 3×!',
+    'chestTap': 'Ketuk petinya!',
+    'newRune': 'Rune baru',
+    'newSkin': 'Skin baru',
+    'skins': 'Skin rune',
+    'reasons': {
+      'conquest': 'Delapan petak ditaklukkan',
+      'conquestLost': 'Musuh menaklukkan delapan petak',
+      'eliminated': 'Semua rune musuh hancur',
+      'overrun': 'Rune-mu digilas',
+      'turnLimit': 'Ditentukan oleh petak yang dikuasai',
+      'suddenDeath': 'Sudden death',
+      'siegeHeld': 'Kamu bertahan',
+      'siegeBroken': 'Pengepungan mematahkanmu'
+    }
+  },
+
+  'campaign': {
+    'title': 'Kampanye',
+    'chapter': 'Bab {n}',
+    'cleared': 'Selesai',
+    'current': 'Sekarang',
+    'locked': 'Terkunci',
+    'modes': {
+      '1v1': 'Duel 1v1',
+      'siege': 'Pengepungan 1v3'
+    },
+    'objectives': {
+      'conquest': 'Kuasai 8 petak',
+      'eliminate': 'Hancurkan semua rune musuh',
+      'siege': 'Patahkan pengepungan'
+    },
+    'reward': 'Hadiah',
+    'play': 'Main',
+    'replay': 'Ulangi',
+    'nextUnlock': 'Menangkan Level {c}-{n} dan dapatkan:',
+    'nextUnlockAria': 'Menangkan Level {c}-{n} untuk membuka {rune}'
+  },
+
+  'skins': {
+    'title': 'Skin Rune',
+    'owned': 'Dimiliki',
+    'equipped': 'Dipakai',
+    'equip': 'Pakai',
+    'buy': 'Beli',
+    'names': {
+      'river': 'Batu Sungai',
+      'obsidian': 'Obsidian',
+      'jade': 'Giok',
+      'amber': 'Ambar',
+      'marble': 'Marmer',
+      'ember': 'Bara'
+    },
+    'tagline': 'Setiap rune yang kamu pasang memakainya.',
+    'needMore': 'Kurang {n} koin',
+    'blurbs': {
+      'river': 'Batu pasir sungai yang hangat, glif terukir dalam dan bercahaya dari dalam.',
+      'obsidian': 'Kaca vulkanik pahatan dengan garis neon dingin.',
+      'jade': 'Giok hijau terpoles, glif bertatahkan emas.',
+      'amber': 'Permata ambar berfaset yang menyala dari dalam.',
+      'marble': 'Marmer putih, terukir dalam dan berbayang.',
+      'ember': 'Lempengan lava yang membeku, glif membara di sela retakan.'
+    }
+  },
+
+  'ranks': {
+    'tab': 'Pangkat',
+    'title': 'Pangkat rune',
+    'tagline': 'Tiap pangkat +{n} HP maks — sama untuk semua rune.',
+    'rank': 'Pangkat {n}/{max}',
+    'maxed': 'Maksimal',
+    'hpGain': '+{n} HP',
+    'next': 'Berikutnya: +{n} HP',
     'upgrade': 'Tingkatkan',
-    'upgradeHint': 'Tingkatkan pasukanmu!',
-    'rankOf': 'dari {n}',
-    'upNext': 'Berikutnya: Level {n}'
+    'locked': 'Belum terbuka',
+    'free': 'Gratis',
+    'freeGift': 'Peningkatan gratis!',
+    'freeIn': 'Hadiah baru dalam {t}',
+    'freeTaken': 'Kembali untuk yang berikutnya',
+    'nukerUnlock': 'Buka Penghancur',
+    'nukerLocked': 'Atau menangkan Level 4-1'
+  },
+
+  'forge': {
+    'label': 'Tempa Rune',
+    'ready': 'Ambil {n} koin dari tempa',
+    'filling': 'Tempa Rune — menempa',
+    'full': 'Tempa Rune — penuh',
+    'perHour': '+{n} / jam'
   },
 
   'leaderboard': {
     'title': 'Papan Peringkat',
     'rank': '#',
     'player': 'Pemain',
-    'stage': 'Tahap',
-    'squad': 'Regu',
-    'empty': 'Belum ada skor. Jadilah yang pertama!',
-    'failed': 'Papan peringkat tidak terjangkau.',
+    'stage': 'Level',
+    'streak': 'Rentetan',
+    'empty': 'Belum ada pertandingan. Jadilah yang pertama.',
+    'failed': 'Papan peringkat tidak dapat dijangkau.',
     'loading': 'Memuat…',
     'you': 'Kamu',
-    'yourRank': 'Kamu peringkat #{n}',
+    'yourRank': 'Kamu #{n}',
     'of': 'dari {n} pemain'
   },
 
-  'chest': {
-    'label': 'Peti harta',
-    'ready': 'Buka peti harta untuk {n} koin',
-    'filling': 'Peti harta sedang terisi',
-    'spent': 'Peti harta kosong sampai besok'
-  },
-
-  'skills': {
-
-    'grenade': 'Granat',
-
-    'shield': 'Perisai'
-
-  },
-
-  'upgrades': {
-    'title': 'Peningkatan',
-    'spotlight': 'Belanja!',
-    'level': 'Lv {n}',
-    'maxed': 'Maks',
-    'names': {
-      'squad': 'Regu',
-      'power': 'Daya tembak',
-      'rate': 'Laju tembak',
-      'range': 'Jangkauan',
-      'scavenge': 'Pemulungan',
-      'grenade': 'Granat',
-      'shield': 'Perisai',
-      'rocket': 'Kekuatan Roket',
-      'gatling': 'Kekuatan Gatling'
-    },
-    'descriptions': {
-      'squad': 'Mulai tiap tahap dengan lebih banyak penyintas.',
-      'power': 'Tiap penyintas memberi damage lebih besar per tembakan.',
-      'rate': 'Tiap penyintas menembak lebih cepat.',
-      'range': 'Pasukanmu melepas tembakan lebih jauh di jalan.',
-      'scavenge': 'Dapatkan lebih banyak koin tiap ronde.',
-      'grenade': 'Lempar granat untuk ledakan kerusakan besar.',
-      'shield': 'Kurangi setengah kerusakan pada pasukan beberapa detik.',
-      'rocket': 'Peluncur roket yang kamu buka di stage memberi lebih banyak damage.',
-      'gatling': 'Senapan Gatling yang kamu buka di stage memberi lebih banyak damage.'
-    }
-  },
-
   'options': {
-    'title': 'Opsi', 'general': 'Umum', 'audio': 'Audio', 'language': 'Bahasa',
-    'difficulty': 'Kesulitan', 'soundEffects': 'Efek Suara', 'music': 'Musik', 'musicTrack': 'Trek Musik',
-    'musicTracks': { 'cozy': 'Harmoni Nyaman', 'trance': 'Terowongan Trance' },
+    'title': 'Pengaturan',
+    'general': 'Umum',
+    'audio': 'Audio',
+    'language': 'Bahasa',
+    'difficulty': 'Kesulitan',
+    'soundEffects': 'Efek suara',
+    'music': 'Musik',
+    'musicTrack': 'Trek musik',
+    'musicTracks': {
+      'cozy': 'Batu Hening',
+      'trance': 'Denyut Rune'
+    },
     'close': 'Simpan & Tutup',
-    'difficulties': { 'easy': 'Mudah', 'medium': 'Sedang', 'hard': 'Sulit' },
+    'difficulties': {
+      'easy': 'Mudah',
+      'medium': 'Normal',
+      'hard': 'Sulit'
+    },
     'difficultyHints': {
-      'easy': 'Musuh lebih lemah dan barikade lebih tipis.',
-      'medium': 'Ronde standar.',
-      'hard': 'Musuh lebih kuat dan barikade lebih tebal.'
+      'easy': 'Musuh lebih sering ragu dan meleset.',
+      'medium': 'Kampanye standar.',
+      'hard': 'Musuh merencanakan lebih tajam dan menumpuk lebih cepat.'
     }
   },
 
   'adsBlocked': {
-    'title': 'Tidak dapat menampilkan iklan',
-    'body': 'Kami mencoba menampilkan video agar kamu bisa mendapat hadiah, tetapi ada yang memblokir iklan di peramban kamu.',
+    'title': 'Iklan tidak dapat ditampilkan',
+    'body': 'Kami mencoba menampilkan video agar kamu mendapat hadiah, tapi sesuatu di browsermu memblokir iklan.',
     'allowPrefix': 'Izinkan iklan di',
-    'allowSuffix': '(atau jeda pemblokir iklan untuk gim ini) lalu coba lagi.',
+    'allowSuffix': '(atau jeda pemblokir iklan untuk game ini) lalu coba lagi.',
     'gotIt': 'Mengerti'
   },
   'saveStatus': {
-    'restoredTitle': 'Simpanan cloud dipulihkan', 'restoredBody': '+{n} koin bonus untuk pemulihan',
-    'tap': 'ketuk', 'pausedTitle': 'Sinkronisasi cloud dijeda',
+    'restoredTitle': 'Simpanan cloud dipulihkan',
+    'restoredBody': '+{n} koin bonus untuk pemulihan',
+    'tap': 'ketuk',
+    'pausedTitle': 'Sinkronisasi cloud dijeda',
     'pausedBody': 'Bermain offline. Progresmu disimpan di sini.',
-    'retry': 'Coba lagi', 'dismiss': 'tutup'
+    'retry': 'Coba lagi',
+    'dismiss': 'tutup'
   },
-  'loading': { 'tooLong': 'Memuat terlalu lama? Nonaktifkan pemblokir iklan lalu muat ulang.', 'boo': 'Dor!', 'laugh': 'Hahaha!' },
-  'license': { 'denied': 'Akses ditolak: silakan beli lisensi.' }
+  'loading': {
+    'tooLong': 'Memuat terlalu lama? Matikan pemblokir iklan dan muat ulang.'
+  },
+  'license': {
+    'denied': 'Akses ditolak: silakan beli lisensi.'
+  }
 }

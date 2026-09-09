@@ -1,608 +1,468 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
-  WALKS, STILLS, promptForWalk, promptForStill, GATE_POST, GATE_REF_POST_W,
-  framesOf, colsOf, rowsOf,
-  type WalkSpec, type StillSpec
+  CELL, SINGLE_SIZE, SHEETS, WALKS, SCENERY, SINGLES, sheetRows, sheetSize, promptDocs,
+  type CellArt, type Fit, type FitMap, type SheetCell, type SheetSpec, type SingleSpec, type WalkSpec, type SceneryAsset
 } from '@/game/artSheet'
-import { paintMonsterFrame } from '@/game/monsterSprites'
-import { paintSurvivorFrame, OUTFITS } from '@/game/heroSprites'
-import { paintSmokeRef } from '@/use/useVfx'
+import { SKINS, type GlyphStyle } from '@/game/rules'
 import {
-  paintCoin, paintCrateBody, paintBarrelBody, paintBoulder, paintBarricadeBody,
-  paintWeaponBoxBody, paintGuardPlate, paintLeverPost, paintLeverArm, LEVER_ART,
-  paintGateFrame, GATE_FRAME, paintPillarBody, hazardPatternFor,
-  paintRollerBall, ROLLER_ART_PAD, ROLLER_SPIN_PER_LOOP,
-  paintGunnerBolt, paintBossBolt, paintMeteorRock, METEOR_BOX,
-  ROUND_BOX, paintBombCharge, paintGrenadeBody, paintTracerRef, FX_PAD,
-  ROCKET_BOX, paintRocketBody,
-  muzzleRamp, paintMuzzleFlash, paintScorch, paintRing, paintShieldDome,
-  paintGuardHex, paintCrest, paintCrown, paintRidge, RIDGE_BAND
-} from '@/use/useSurvivalArt'
-import { paintBanner, paintUiIcon, type UiIconId } from '@/game/uiArt'
-import { BARREL_R, DIVIDER_HALF_W, DIVIDER_H } from '@/game/survival'
-import { BOLT_R, ROLLER_R } from '@/game/threats'
-import { WEAPON_BOX_R } from '@/game/weapons'
+  paintPebble, paintGlyph, paintTile, paintBoardFrame, paintForge, paintRerollChip, paintLaurel, paintSky, paintRidge, paintBolt
+} from '@/use/arenaPainters'
+import { prependBaseUrl } from '@/utils/function'
 
 /**
- * `/art-sheets` — the reference bench.
+ * `/art-sheets` — the contact-sheet bench. Dev only; see the router.
  *
- * glyphyx has no art folder. Every monster, prop and effect is a few
- * hundred canvas operations, which is exactly what you want in a bundle and
- * exactly what you cannot hand to somebody who paints. This screen bakes the
- * whole cast onto the sheets described in `artSheet.ts` and writes them into
- * `art-sheets/` through a dev-only endpoint, so the art can go out to be
- * repainted and come back as drop-in bitmaps.
+ * Glyphyx has no art folder for its stones: every rune, tile and chip is a few
+ * hundred canvas operations in `arenaPainters.ts`, which is exactly what you
+ * want in a bundle and exactly what you cannot hand to somebody who paints.
+ * This screen bakes the whole cast onto the lattice described in
+ * `artSheet.ts` and writes the sheets into `art-sheets/` through a dev-only
+ * endpoint, so the art can go out to be repainted and come back as drop-in
+ * bitmaps.
  *
  * THREE RULES, and they are all about the return trip.
  *
- *   1. Every reference is drawn by the GAME'S OWN PAINTER into the exact box
- *      the game blits the painting back into. A reference drawn from a private
- *      copy of the geometry agrees with itself and proves nothing.
- *   2. Nothing is written inside a panel. Captions live on the key sheets —
- *      text inside a frame is text an image model will dutifully repaint.
- *   3. Every reference is rendered on a TRANSPARENT canvas first and measured
- *      there, then laid on the magenta sheet. The sheet itself has no alpha to
- *      measure, and the effects paint additively — additive light over magenta
- *      is a pink smear, over nothing it is the effect.
+ *   1. Every panel is clipped to its exact rect. One glow bleeding into the
+ *      neighbouring panel and the whole sheet has to be sliced by hand.
+ *   2. Nothing is written inside a panel. Captions live on the key sheet,
+ *      rendered from the same manifest — text inside a panel is text an
+ *      image model will faithfully repaint as art.
+ *   3. It paints through the GAME'S OWN painters, never lookalikes, so a
+ *      painted return is registered against exactly the drawing it replaces.
  *
- * Everything animated is frozen at a fixed phase rather than at the wall clock,
- * so re-exporting produces a byte-identical sheet and a diff means the art
- * actually changed.
+ * Until the painters land (`arenaPainters.ts` ships as a stub that throws)
+ * every such panel draws a neutral STUB and the bar says so: the sheets still
+ * export, the lattice and the prompts are right, only the pictures — and the
+ * measured fits — are placeholders to be re-exported later.
  */
 
-const status = ref('idle')
-const busy = ref(false)
 const previews = ref<{ id: string; title: string; url: string; dims: string }[]>([])
+const status = ref('')
+const busy = ref(false)
+const includeSingles = ref(false)
+const stubbed = ref(0)
 
-/** Procedural only, always: the bench must never bake a painting into the
- *  reference it is about to be replaced by. */
-const REF = { procedural: true } as const
+/** Existing bitmaps referenced by the manifest, decoded once. */
+const bitmaps = new Map<string, HTMLImageElement>()
 
-// ─── Fit measurement ────────────────────────────────────────────────────────
-//
-// Where the reference actually SITS inside its panel, as fractions of one.
-// Measured, not declared, because it is the thing a painter is most likely to
-// change without noticing. The slicer reads this back and normalises what it
-// gets to match.
+const loadBitmaps = async (): Promise<void> => {
+  const srcs = new Set<string>()
+  for (const s of SHEETS) for (const c of s.cells) if (c.art.kind === 'bitmap') srcs.add(c.art.src)
+  for (const w of WALKS) srcs.add(w.src)
+  // The backdrop layers are painted now, not restyled from a shipped bitmap,
+  // so scenery contributes a source only if one of them ever goes back to a
+  // `bitmap` reference.
+  for (const a of SCENERY) if (a.art.kind === 'bitmap') srcs.add(a.art.src)
+  await Promise.all([...srcs].filter((src) => !bitmaps.has(src)).map((src) => new Promise<void>((done) => {
+    const img = new Image()
+    img.addEventListener('load', () => { bitmaps.set(src, img); done() }, { once: true })
+    // A missing bitmap is not worth failing the export over — the panel comes
+    // out empty and the key sheet still names it.
+    img.addEventListener('error', () => done(), { once: true })
+    img.src = prependBaseUrl(src)
+  })))
+}
+
+// ─── Painting one panel ─────────────────────────────────────────────────────
+
+/** What a panel shows while the real painter is still a stub: a flat disc, unmistakably not art. */
+const paintStub = (ctx: CanvasRenderingContext2D, w: number, h: number): void => {
+  ctx.save()
+  ctx.fillStyle = 'rgba(120,120,130,0.85)'
+  ctx.beginPath()
+  ctx.ellipse(w / 2, h / 2, w * 0.36, h * 0.34, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+  stubbed.value++
+}
+
+/** A bitmap letterboxed into the box, centred, proportions kept. */
+const paintBitmap = (ctx: CanvasRenderingContext2D, src: string, w: number, h: number): void => {
+  const img = bitmaps.get(src)
+  if (!img?.naturalWidth) return
+  const k = Math.min(w / img.naturalWidth, h / img.naturalHeight)
+  const dw = img.naturalWidth * k, dh = img.naturalHeight * k
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh)
+}
+
+/** The rune's own neon, when a skin has no glow colour of its own. */
+const glowFor = (art: Extract<CellArt, { kind: 'glyph' }>): string =>
+  SKINS[art.skin].glow ?? '#ffffff'
+
+/** Draw a panel's art into (0, 0, w, h). Never throws: a stub stands in for a painter that does. */
+const paintCell = (ctx: CanvasRenderingContext2D, art: CellArt, w: number, h: number): void => {
+  if (art.kind === 'blank') return
+  if (art.kind === 'bitmap') { paintBitmap(ctx, art.src, w, h); return }
+  try {
+    ctx.save()
+    switch (art.kind) {
+      case 'pebble':
+        // `laurel: false` — the wreath is its own panel on the fx sheet and its
+        // own layer in play. A stone reference that wore one would be repainted
+        // with one, and the game would lay a second wreath over that.
+        paintPebble(ctx, w, h, {
+          type: art.type, level: art.level, owner: art.owner, faction: art.faction ?? null,
+          skin: SKINS[art.skin], pulse: 0.5, laurel: false
+        })
+        break
+      case 'bolt':
+        paintBolt(ctx, w, h)
+        break
+      case 'sky':
+        paintSky(ctx, w, h)
+        break
+      case 'ridge':
+        paintRidge(ctx, w, h, art.layer)
+        break
+      case 'laurel':
+        paintLaurel(ctx, w, h, art.shape)
+        break
+      case 'glyph': {
+        const skin = SKINS[art.skin]
+        const style: GlyphStyle = skin.glyph
+        paintGlyph(ctx, w, h, art.type, style, skin.ink, glowFor(art))
+        break
+      }
+      case 'tile':
+        paintTile(ctx, w, h, { owner: art.owner, faction: art.faction ?? null })
+        break
+      case 'frame':
+        paintBoardFrame(ctx, w, h)
+        break
+      case 'forge':
+        paintForge(ctx, w, h)
+        break
+      case 'reroll':
+        paintRerollChip(ctx, w, h)
+        break
+      case 'spark': {
+        // The beam's spark has no painter of its own — it is a few pooled
+        // particles in `useVfx` — so the reference is a stand-in the prompt
+        // describes in words: a bright star with a short trail, flying right.
+        const cx = w * 0.55, cy = h / 2, r = w * 0.09
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.2)
+        g.addColorStop(0, '#ffffff')
+        g.addColorStop(0.35, '#d9b8ff')
+        g.addColorStop(1, 'rgba(181,123,255,0)')
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.arc(cx, cy, r * 2.2, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(181,123,255,0.8)'
+        ctx.lineWidth = r * 0.5
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(cx - r * 4.5, cy)
+        ctx.lineTo(cx - r * 0.8, cy)
+        ctx.stroke()
+        break
+      }
+    }
+    ctx.restore()
+  } catch {
+    ctx.restore()
+    paintStub(ctx, w, h)
+  }
+}
+
+// ─── Sheets ─────────────────────────────────────────────────────────────────
+
+const MAGENTA = '#ff00ff'
+
+/** The clean sheet: magenta ground, every panel clipped to its rect. `transparent` for measuring. */
+const renderSheet = (spec: SheetSpec, transparent = false): HTMLCanvasElement => {
+  const { w, h } = sheetSize(spec)
+  const cv = document.createElement('canvas')
+  cv.width = w
+  cv.height = h
+  const ctx = cv.getContext('2d')!
+  if (!transparent) {
+    ctx.fillStyle = MAGENTA
+    ctx.fillRect(0, 0, w, h)
+  }
+  for (const cell of spec.cells) {
+    const x = cell.col * CELL, y = cell.row * CELL
+    const cw = cell.cw * CELL, ch = cell.ch * CELL
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(x, y, cw, ch)
+    ctx.clip()
+    ctx.translate(x, y)
+    paintCell(ctx, cell.art, cw, ch)
+    ctx.restore()
+  }
+  return cv
+}
 
 /**
- * Alpha floor for the fit measurement. Deliberately high: the procedural
- * effects have soft glows and the creatures cast a soft ground shadow, and a
- * soft edge is light, not extent. At 140 a 32%-opacity shadow is not part of
- * the object on either side.
+ * Alpha floor for the fit measurement. Deliberately high: a soft glow is
+ * light, not extent, and letting a halo into the bounding box is how a fitted
+ * stone ends up a fraction of the size it should be. The slicer measures a
+ * return at the same floor, or the two disagree about what the subject is.
  */
 const FIT_ALPHA = 140
 
-interface Fit { h: number; w: number; bottom: number; cx: number }
-
-/**
- * Alpha bbox of one rectangle of a canvas, in that rectangle's own pixels.
- *
- * Solid pixels are grouped into connected pieces and a sliver (three pixels
- * or thinner) or a speck is left out — the SAME rule the slicer applies to a
- * return, so the two measure the same thing. The slicer needs it because a
- * neighbour's shadow bleeds across the cut line as a thin solid line; the
- * bench applies it so a design's own sparkle dots do not put the reference's
- * box somewhere the return's can never land.
- */
-const boxOf = (
+/** Solid-pixel bbox of one rect of a canvas, in that rect's own pixels. */
+const solidBox = (
   cv: HTMLCanvasElement, ox: number, oy: number, W: number, H: number
 ): { x0: number; y0: number; x1: number; y1: number } | null => {
   const d = cv.getContext('2d')!.getImageData(ox, oy, W, H).data
-  const N = W * H
-  const solid = new Uint8Array(N)
-  for (let k = 0; k < N; k++) if (d[k * 4 + 3]! > FIT_ALPHA) solid[k] = 1
-  const seen = new Uint8Array(N)
-  const stack: number[] = []
   let x0 = W, y0 = H, x1 = -1, y1 = -1
-  for (let k0 = 0; k0 < N; k0++) {
-    if (!solid[k0] || seen[k0]) continue
-    let n = 0
-    let cx0 = W, cy0 = H, cx1 = -1, cy1 = -1
-    seen[k0] = 1
-    stack.push(k0)
-    while (stack.length) {
-      const k = stack.pop()!
-      n++
-      const x = k % W
-      const y = (k / W) | 0
-      if (x < cx0) cx0 = x
-      if (x > cx1) cx1 = x
-      if (y < cy0) cy0 = y
-      if (y > cy1) cy1 = y
-      if (x > 0 && solid[k - 1] && !seen[k - 1]) { seen[k - 1] = 1; stack.push(k - 1) }
-      if (x < W - 1 && solid[k + 1] && !seen[k + 1]) { seen[k + 1] = 1; stack.push(k + 1) }
-      if (y > 0 && solid[k - W] && !seen[k - W]) { seen[k - W] = 1; stack.push(k - W) }
-      if (y < H - 1 && solid[k + W] && !seen[k + W]) { seen[k + W] = 1; stack.push(k + W) }
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (d[(y * W + x) * 4 + 3]! <= FIT_ALPHA) continue
+      if (x < x0) x0 = x
+      if (x > x1) x1 = x
+      if (y < y0) y0 = y
+      if (y > y1) y1 = y
     }
-    if (Math.min(cx1 - cx0 + 1, cy1 - cy0 + 1) <= 3 || n < 16) continue
-    if (cx0 < x0) x0 = cx0
-    if (cx1 > x1) x1 = cx1
-    if (cy0 < y0) y0 = cy0
-    if (cy1 > y1) y1 = cy1
   }
   return x1 < 0 ? null : { x0, y0, x1, y1 }
 }
 
-/** The union of every panel's box, folded back into one panel. */
-const fitOf = (
-  cv: HTMLCanvasElement, cols: number, rows: number, pw: number, ph: number
-): Fit | null => {
-  let x0 = pw, y0 = ph, x1 = -1, y1 = -1
-  for (let i = 0; i < cols * rows; i++) {
-    const b = boxOf(cv, (i % cols) * pw, Math.floor(i / cols) * ph, pw, ph)
+/** Where each panel's drawing sits inside its rect, measured on a TRANSPARENT render. */
+const measureFits = (spec: SheetSpec): FitMap => {
+  const probe = renderSheet(spec, true)
+  const fits: FitMap = {}
+  for (const cell of spec.cells) {
+    if (!cell.target) continue
+    const W = cell.cw * CELL, H = cell.ch * CELL
+    const b = solidBox(probe, cell.col * CELL, cell.row * CELL, W, H)
+    if (!b) continue
+    fits[cell.id] = {
+      w: (b.x1 - b.x0 + 1) / W,
+      h: (b.y1 - b.y0 + 1) / H,
+      cx: ((b.x0 + b.x1 + 1) / 2) / W,
+      cy: ((b.y0 + b.y1 + 1) / 2) / H
+    }
+  }
+  return fits
+}
+
+/** The human half of the pair: same lattice, art knocked back, captions over it. */
+const renderKey = (spec: SheetSpec): HTMLCanvasElement => {
+  const { w, h } = sheetSize(spec)
+  const cv = document.createElement('canvas')
+  cv.width = w
+  cv.height = h
+  const ctx = cv.getContext('2d')!
+  ctx.fillStyle = '#11151c'
+  ctx.fillRect(0, 0, w, h)
+
+  for (const cell of spec.cells) {
+    const x = cell.col * CELL, y = cell.row * CELL
+    const cw = cell.cw * CELL, ch = cell.ch * CELL
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(x, y, cw, ch)
+    ctx.clip()
+    ctx.translate(x, y)
+    ctx.globalAlpha = 0.45
+    paintCell(ctx, cell.art, cw, ch)
+    ctx.restore()
+
+    const blank = cell.art.kind === 'blank'
+    ctx.save()
+    ctx.strokeStyle = cell.target ? 'rgba(120,224,255,0.8)' : 'rgba(255,255,255,0.2)'
+    ctx.lineWidth = cell.target ? 3 : 1
+    if (blank) ctx.setLineDash([8, 8])
+    ctx.strokeRect(x + 1.5, y + 1.5, cw - 3, ch - 3)
+    ctx.restore()
+
+    ctx.fillStyle = 'rgba(6,9,14,0.82)'
+    ctx.fillRect(x, y + ch - 48, cw, 48)
+    ctx.fillStyle = '#eef4fb'
+    ctx.font = '700 19px ui-sans-serif, system-ui, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'alphabetic'
+    ctx.fillText(blank ? 'blank' : cell.label, x + 8, y + ch - 27, cw - 16)
+    ctx.fillStyle = cell.target ? '#7fe0ff' : '#8e9aa8'
+    ctx.font = '500 15px ui-sans-serif, system-ui, sans-serif'
+    ctx.fillText(blank ? 'leave magenta' : `${cell.sub}${cell.fill ? ' · fills panel' : ''}`, x + 8, y + ch - 8, cw - 16)
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'
+    ctx.font = '600 14px ui-monospace, monospace'
+    ctx.textAlign = 'right'
+    ctx.fillText(`c${cell.col} r${cell.row}`, x + cw - 8, y + 22)
+    ctx.textAlign = 'left'
+  }
+  return cv
+}
+
+// ─── Walks and scenery: the bitmaps that already ship, laid out for a restyle ─
+
+/** The slicer's fit format for a strip: folded into ONE panel. */
+interface WalkFit { h: number; w: number; bottom: number; cx: number }
+const walkFits = new Map<string, WalkFit>()
+
+const renderWalk = (walk: WalkSpec, transparent = false): HTMLCanvasElement => {
+  const cv = document.createElement('canvas')
+  cv.width = walk.w
+  cv.height = walk.h
+  const ctx = cv.getContext('2d')!
+  if (!transparent) {
+    ctx.fillStyle = MAGENTA
+    ctx.fillRect(0, 0, walk.w, walk.h)
+  }
+  const img = bitmaps.get(walk.src)
+  if (img?.naturalWidth) {
+    // The strip's own panel count, read off its shape — the same rule the
+    // runtime uses — so a strip of six frames lays out as six.
+    const n = Math.max(1, Math.round(img.naturalWidth / (img.naturalHeight * (walk.panelW / walk.panelH))))
+    const fw = img.naturalWidth / n, fh = img.naturalHeight
+    for (let i = 0; i < walk.frames; i++) {
+      const src = i % n
+      const x = (i % walk.cols) * walk.panelW, y = Math.floor(i / walk.cols) * walk.panelH
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(x, y, walk.panelW, walk.panelH)
+      ctx.clip()
+      ctx.drawImage(img, src * fw, 0, fw, fh, x, y, walk.panelW, walk.panelH)
+      ctx.restore()
+    }
+  }
+  return cv
+}
+
+const measureWalk = (walk: WalkSpec): void => {
+  const probe = renderWalk(walk, true)
+  const w = walk.panelW, h = walk.panelH
+  let x0 = w, y0 = h, x1 = -1, y1 = -1
+  for (let i = 0; i < walk.frames; i++) {
+    const b = solidBox(probe, (i % walk.cols) * w, Math.floor(i / walk.cols) * h, w, h)
     if (!b) continue
     if (b.x0 < x0) x0 = b.x0
     if (b.y0 < y0) y0 = b.y0
     if (b.x1 > x1) x1 = b.x1
     if (b.y1 > y1) y1 = b.y1
   }
-  if (x1 < 0) return null
-  return {
-    h: (y1 - y0 + 1) / ph,
-    w: (x1 - x0 + 1) / pw,
-    bottom: (y1 + 1) / ph,
-    cx: ((x0 + x1) / 2) / pw
+  if (x1 >= 0) {
+    walkFits.set(`${walk.kind}/${walk.id}`, {
+      h: (y1 - y0 + 1) / h, w: (x1 - x0 + 1) / w, bottom: (y1 + 1) / h, cx: ((x0 + x1) / 2) / w
+    })
   }
 }
 
-const fits = new Map<string, Fit>()
-
-// ─── Walks ──────────────────────────────────────────────────────────────────
-
-/** Every panel of a walk on a transparent canvas, through the bake's own painter. */
-const renderWalkAlpha = (walk: WalkSpec): HTMLCanvasElement => {
+/**
+ * One backdrop layer. A BAND is drawn over magenta — its sky is keyed out in
+ * play — while the sky itself is opaque by contract and covers the key colour
+ * completely, which is exactly what `bg: 'opaque'` tells the slicer to expect.
+ */
+const renderScenery = (a: SceneryAsset): HTMLCanvasElement => {
   const cv = document.createElement('canvas')
-  cv.width = walk.w
-  cv.height = walk.h
+  cv.width = a.w
+  cv.height = a.h
   const ctx = cv.getContext('2d')!
-  const outfit = walk.kind === 'hero' ? OUTFITS.findIndex((o) => o.id === walk.id) : -1
-  for (let i = 0; i < walk.frames; i++) {
-    ctx.save()
-    ctx.translate((i % walk.cols) * walk.panelW, Math.floor(i / walk.cols) * walk.panelH)
-    // Clipped to its own panel, exactly as the bake's frame clips it: a sword
-    // tip or a canopy that overruns the frame is cut off in play, and left
-    // unclipped here it lands in the NEXT panel — where it is measured as
-    // that panel's creature and drags the whole strip's fit off by a quarter.
-    ctx.beginPath()
-    ctx.rect(0, 0, walk.panelW, walk.panelH)
-    ctx.clip()
-    // Straight through the renderer's own frame painter, so the reference is
-    // provably the frame box the game draws rather than a lookalike.
-    if (walk.kind === 'hero') paintSurvivorFrame(ctx, outfit, i, walk.frames, walk.panelW, walk.panelH)
-    else paintMonsterFrame(ctx, walk.id, i, walk.frames, walk.panelW, walk.panelH)
-    ctx.restore()
-  }
+  ctx.fillStyle = MAGENTA
+  ctx.fillRect(0, 0, a.w, a.h)
+  paintCell(ctx, a.art, a.w, a.h)
   return cv
 }
 
-// ─── Stills ─────────────────────────────────────────────────────────────────
-
-/**
- * One still on a transparent canvas, through the game's own painter, into
- * the exact box the runtime blits the painting back into.
- *
- * Every size here is DERIVED from the panel and the painter's own blit
- * contract — a crate is blitted into (-r, -r, 2r, 2r), so the reference draws
- * it with r at half the panel; a round is blitted into `ROUND_BOX`, so the
- * reference puts its head where `ROUND_BOX.head` says. Nothing is eyeballed.
- */
-const renderStillAlpha = (s: StillSpec, cycle = 0): HTMLCanvasElement => {
+/** One object, one image, no lattice — the sturdy route. */
+const renderSingle = (t: SingleSpec): HTMLCanvasElement => {
   const cv = document.createElement('canvas')
-  cv.width = s.w
-  cv.height = s.h
+  cv.width = SINGLE_SIZE
+  cv.height = SINGLE_SIZE
   const ctx = cv.getContext('2d')!
-  const S = s.w
-  const cx = s.w / 2
-  const cy = s.h / 2
-  // The bench's own paint options, plus WHERE IN ITS LOOP this panel is. Only
-  // the animated subjects read it; for everything else `cycle` is 0 and the
-  // reference is exactly the one still it always was.
-  const ref = { ...REF, cycle }
+  ctx.fillStyle = MAGENTA
+  ctx.fillRect(0, 0, SINGLE_SIZE, SINGLE_SIZE)
+  // A wide panel (the ribbon) keeps its proportions inside the square.
+  const cell = t.cell
+  const boxW = SINGLE_SIZE, boxH = Math.round(SINGLE_SIZE * (cell.ch / cell.cw))
   ctx.save()
-
-  switch (`${s.kind}/${s.id}`) {
-    case 'prop/crate-damage':
-    case 'prop/crate-rate':
-      ctx.translate(cx, cy)
-      paintCrateBody(ctx, s.id === 'crate-rate' ? 'rate' : 'damage', S / 2, REF)
-      break
-    case 'prop/barricade':
-      // A slice of a WIDER block, so the block's rounded corners fall outside
-      // the tile: a tile is square-cornered or it seams when repeated.
-      ctx.translate(cx, cy)
-      paintBarricadeBody(ctx, S * 1.6, S, REF)
-      break
-    case 'prop/boulder-1':
-    case 'prop/boulder-2':
-    case 'prop/boulder-3': {
-      // `paintBoulder` picks the painting by `seed % 3`; the seed here is the
-      // one that lands on this variant, and it is also what shapes the lump.
-      const seed = Number(s.id.slice(-1)) - 1
-      ctx.translate(cx, cy)
-      paintBoulder(ctx, S / 1.08, S / 1.08, seed, REF)
-      break
-    }
-    case 'prop/barrel':
-      ctx.translate(cx, cy)
-      paintBarrelBody(ctx, S / 2, (S / 2) / BARREL_R, false, 0, 0, REF)
-      break
-    case 'prop/pillar': {
-      // The painting's box is 2.5 half-widths by 1.26 heights, the pillar's
-      // origin 0.6 heights below the box's top.
-      const halfPx = s.w / 2.5
-      const h = s.h / 1.26
-      const scale = halfPx / DIVIDER_HALF_W
-      void DIVIDER_H
-      ctx.translate(cx, s.h * (0.6 / 1.26))
-      paintPillarBody(ctx, halfPx, h, scale, hazardPatternFor(ctx, scale), REF)
-      break
-    }
-    case 'prop/coin':
-      ctx.translate(cx, cy)
-      paintCoin(ctx, S / 2, 1, 0, REF)
-      break
-    case 'prop/guard-plate':
-      // The plate fills its box exactly, as it does in play.
-      ctx.translate(cx, cy)
-      paintGuardPlate(ctx, s.w, s.h, REF)
-      break
-    case 'prop/lever-post': {
-      // The housing's box is `LEVER_ART.post` wide, its TOP edge on the post's
-      // origin — so the origin is the panel's top, not its middle.
-      const r = s.w / LEVER_ART.post.w
-      ctx.translate(cx, 0)
-      paintLeverPost(ctx, r, r, REF)
-      break
-    }
-    case 'prop/lever-arm': {
-      // The arm's box is `LEVER_ART.arm`, drawn from its PIVOT — which sits
-      // `pivot` radii above the panel's bottom edge.
-      const r = s.w / LEVER_ART.arm.w
-      ctx.translate(cx, s.h - LEVER_ART.arm.pivot * r)
-      paintLeverArm(ctx, r, REF)
-      break
-    }
-    case 'prop/weapon-box':
-    case 'prop/weapon-box-open':
-      // The case AND its face plate: the glyph, the brace and the halo are
-      // the only things left live over a painting. `pulse` at 0 so the
-      // reference is the open box's steady colour, not a frame of its throb.
-      ctx.translate(cx, cy)
-      paintWeaponBoxBody(ctx, S / 2, S / 2 / WEAPON_BOX_R, s.id.endsWith('-open'), 0, REF)
-      break
-
-    case 'gate/frame-add':
-    case 'gate/frame-sub':
-    case 'gate/frame-mul':
-    case 'gate/frame-div': {
-      const op = s.id.slice('frame-'.length) as 'add' | 'sub' | 'mul' | 'div'
-      const ppu = GATE_FRAME.ppu
-      ctx.translate(cx, cy)
-      // Posts at the band's full width, so the painter copies a heavy post
-      // rather than inventing one. See `GATE_REF_POST_W`.
-      paintGateFrame(ctx, op, GATE_FRAME.refHalfW * ppu, 1.5 * ppu, ppu,
-        { ...REF, postW: GATE_REF_POST_W })
-      break
-    }
-
-    case 'round/tracer':
-      // The streak fills the `len`-square box from its top edge.
-      ctx.translate(cx, 0)
-      paintTracerRef(ctx, 0, S / 0.55)
-      break
-    case 'round/bolt-gunner': {
-      const r = S / ROUND_BOX.side
-      ctx.translate(ROUND_BOX.head * r, cy)
-      paintGunnerBolt(ctx, r, 1, 0, r / BOLT_R, false, ref)
-      break
-    }
-    case 'round/bolt-boss': {
-      const r = S / ROUND_BOX.side
-      ctx.translate(ROUND_BOX.head * r, cy)
-      paintBossBolt(ctx, r, 1, 0, 1, false, ref)
-      break
-    }
-    case 'round/roller': {
-      // The sphere at 1/1.3 of the panel: the margin is where the spikes go.
-      //
-      // The reference has to SHOW the roll, or the painter has nothing to
-      // follow — the first return came back as one ball copied eight times
-      // with sparks added, because that is exactly what the sheet in front of
-      // it looked like. `spin` therefore walks one ring spacing (a quarter
-      // turn) across the loop, which is what the game plays it back at.
-      const r = S / 2 / ROLLER_ART_PAD
-      ctx.translate(cx, cy)
-      paintRollerBall(ctx, r, cycle * ROLLER_SPIN_PER_LOOP, r / ROLLER_R, false, ref)
-      break
-    }
-    case 'round/meteor': {
-      const R = S / METEOR_BOX.side
-      ctx.translate(cx, METEOR_BOX.centre * R)
-      paintMeteorRock(ctx, R, false, R / 0.55, false, ref)
-      break
-    }
-    case 'round/bomb': {
-      const bodyR = S / 4.4
-      ctx.translate(cx, cy)
-      paintBombCharge(ctx, bodyR, bodyR * 2.1, ref)
-      break
-    }
-    case 'round/grenade': {
-      const r = S / 2.6
-      ctx.translate(cx, cy)
-      paintGrenadeBody(ctx, r, r / 0.26, REF)
-      break
-    }
-    case 'round/rocket': {
-      // The panel IS `ROCKET_BOX`: the shell's centre `top` radii below the
-      // top edge, nose up, the plume running down.
-      const rr = S / ROCKET_BOX.w
-      ctx.translate(cx, ROCKET_BOX.top * rr)
-      paintRocketBody(ctx, rr, REF)
-      break
-    }
-
-    case 'fx/muzzle': {
-      const flashR = S / 2
-      ctx.translate(cx, cy)
-      paintMuzzleFlash(ctx, 0, flashR, muzzleRamp(ctx, 0, flashR), REF)
-      break
-    }
-    case 'fx/smoke':
-      ctx.translate(cx, cy)
-      paintSmokeRef(ctx, S / 2)
-      break
-    case 'fx/scorch':
-      // The panel is the scorch's own 2 : 1.1 box, so the file maps 1:1.
-      ctx.translate(cx, cy)
-      paintScorch(ctx, S / 2, REF)
-      break
-    case 'fx/ring-shock':
-    case 'fx/ring-heat':
-    case 'fx/ring-heal': {
-      const kind = s.id.slice('ring-'.length) as 'shock' | 'heat' | 'heal'
-      const lw = S * 0.06
-      const colour = kind === 'shock' ? 'rgba(215,240,255,0.9)' : kind === 'heat' ? '#ff7a2a' : '#5cf08a'
-      // The ring's edge at 1/1.12 of the panel: the margin is for its glow.
-      ctx.translate(cx, cy)
-      paintRing(ctx, kind, S / 2 / FX_PAD - lw / 2, S / 2 / FX_PAD - lw / 2, lw, colour, REF)
-      break
-    }
-    case 'fx/shield': {
-      const rr = S / 2 / FX_PAD
-      paintShieldDome(ctx, cx, cy, rr, rr, 1, 0, false, S / 4, REF)
-      break
-    }
-    case 'fx/guard': {
-      const rr = S / 2 / FX_PAD
-      ctx.translate(cx, cy)
-      paintGuardHex(ctx, 0, rr, rr, 0.5, S / 4, REF)
-      break
-    }
-    case 'fx/crest-shield': {
-      const m = S * 0.06
-      paintCrest(ctx, 'shield', cx, cy, S / 2 - m, S / 2 - m, {
-        fill: '#6fd6ff', rim: '#06263a', rimW: S * 0.05,
-        rib: 'rgba(6,38,58,0.9)', ribW: S * 0.025
-      }, REF)
-      break
-    }
-    case 'fx/crest-guard': {
-      const m = S * 0.06
-      paintCrest(ctx, 'guard', cx, cy, S / 2 - m, S / 2 - m, {
-        fill: '#ffc46a', rim: '#2a0f05', rimW: S * 0.06,
-        rib: 'rgba(42,15,5,0.9)', ribW: S * 0.03
-      }, REF)
-      break
-    }
-
-    case 'bg/ridge-far':
-    case 'bg/ridge-near':
-      // Black silhouette, ridge line at `RIDGE_BAND.line`: the game tints it.
-      paintRidge(ctx, s.id as 'ridge-far' | 'ridge-near', s.w, s.h,
-        s.h * RIDGE_BAND.line, s.h * 0.16, '#000000', s.id === 'ridge-far' ? 1.7 : 4.2, REF)
-      break
-
-    case 'ui/crown': {
-      const cw = S * 0.92
-      paintCrown(ctx, cx, S * 0.96, cw, cw / 1.15, S * 0.04, REF)
-      break
-    }
-    case 'ui/ribbon':
-      // The whole box: CSS slices it at `BANNER.cap` from each end.
-      paintBanner(ctx, s.w, s.h, REF)
-      break
-    case 'ui/chest':
-    case 'ui/forge':
-    case 'ui/skill-grenade':
-    case 'ui/skill-shield':
-      // The button's own mark — the glyph through the same paths `GameIcon`
-      // renders, or, for the forge, the drawing `paintForge` makes.
-      ctx.translate(cx, cy)
-      paintUiIcon(ctx, s.id as UiIconId, S, REF)
-      break
-    case 'ui/logo': {
-      // There is no procedural logo — the one on disk is the previous
-      // project's — so the reference is a layout: the word, its size and its
-      // place. The prompt describes the treatment.
-      ctx.fillStyle = '#ffffff'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      let px = S * 0.2
-      ctx.font = `900 ${px}px Angry, sans-serif`
-      const want = S * 0.9
-      const got = ctx.measureText('glyphyx').width
-      if (got > want) { px *= want / got; ctx.font = `900 ${px}px Angry, sans-serif` }
-      ctx.fillText('glyphyx', cx, cy)
-      break
-    }
-  }
-
+  ctx.translate(0, (SINGLE_SIZE - boxH) / 2)
+  ctx.beginPath()
+  ctx.rect(0, 0, boxW, boxH)
+  ctx.clip()
+  paintCell(ctx, cell.art, boxW, boxH)
   ctx.restore()
-  return cv
-}
-
-// ─── Composition ────────────────────────────────────────────────────────────
-
-/** The reference laid on its ground: magenta, or nothing for an opaque tile. */
-const onGround = (alpha: HTMLCanvasElement, bg: StillSpec['bg']): HTMLCanvasElement => {
-  const cv = document.createElement('canvas')
-  cv.width = alpha.width
-  cv.height = alpha.height
-  const ctx = cv.getContext('2d')!
-  if (bg !== 'opaque') {
-    ctx.fillStyle = '#ff00ff'
-    ctx.fillRect(0, 0, cv.width, cv.height)
-  }
-  ctx.drawImage(alpha, 0, 0)
-  return cv
-}
-
-const renderWalk = (walk: WalkSpec): HTMLCanvasElement => {
-  const alpha = renderWalkAlpha(walk)
-  const fit = fitOf(alpha, walk.cols, walk.rows, walk.panelW, walk.panelH)
-  if (fit) fits.set(`${walk.kind}/${walk.id}`, fit)
-  return onGround(alpha, 'magenta')
-}
-
-/**
- * One still, or one LOOP of an animated one, on the lattice.
- *
- * The grid is laid out exactly as a walk's is — panels are an integer multiple
- * of the panel box from the origin, no gutters, no centring fudge — because
- * that is what lets the slicer cut the return with integer arithmetic. Panel k
- * is the painter called at `cycle = k / frames`, so the eight panels are eight
- * real moments of the same fire rather than one picture stamped eight times.
- *
- * The FIT is measured on panel 0 only. It describes where the subject sits in
- * ONE panel, which is the same box for all of them; measuring the union of
- * eight frames of a whipping flame would hand the slicer a box the size of the
- * biggest lick and shrink every panel to fit it.
- */
-const renderStill = (s: StillSpec): HTMLCanvasElement => {
-  const frames = framesOf(s)
-  const cols = colsOf(s)
-  const rows = rowsOf(s)
-
-  const alpha0 = renderStillAlpha(s, 0)
-  const fit = fitOf(alpha0, 1, 1, s.w, s.h)
-  if (fit) fits.set(`${s.kind}/${s.id}`, fit)
-  if (frames <= 1) return onGround(alpha0, s.bg)
-
-  const grid = document.createElement('canvas')
-  grid.width = s.w * cols
-  grid.height = s.h * rows
-  const g = grid.getContext('2d')!
-  for (let i = 0; i < frames; i++) {
-    const panel = i === 0 ? alpha0 : renderStillAlpha(s, i / frames)
-    g.drawImage(panel, (i % cols) * s.w, Math.floor(i / cols) * s.h)
-  }
-  return onGround(grid, s.bg)
-}
-
-/**
- * The human half: every walk's first frame and every still, at thumbnail size,
- * captioned. Divide nothing by anything — the index carries the real rects.
- */
-const renderKey = (
-  items: { title: string; sub: string; cv: HTMLCanvasElement }[], cell: number, cols: number
-): HTMLCanvasElement => {
-  const rows = Math.ceil(items.length / cols)
-  const cv = document.createElement('canvas')
-  cv.width = cols * cell
-  cv.height = rows * (cell + 44)
-  const ctx = cv.getContext('2d')!
-  ctx.fillStyle = '#11151c'
-  ctx.fillRect(0, 0, cv.width, cv.height)
-  items.forEach((it, i) => {
-    const x = (i % cols) * cell
-    const y = Math.floor(i / cols) * (cell + 44)
-    const k = Math.min((cell - 8) / it.cv.width, (cell - 8) / it.cv.height)
-    const w = it.cv.width * k
-    const h = it.cv.height * k
-    ctx.drawImage(it.cv, x + (cell - w) / 2, y + (cell - h) / 2, w, h)
-    ctx.strokeStyle = 'rgba(120,224,255,0.6)'
-    ctx.lineWidth = 2
-    ctx.strokeRect(x + 1, y + 1, cell - 2, cell - 2)
-    ctx.fillStyle = '#eef4fb'
-    ctx.font = '700 15px ui-sans-serif, system-ui, sans-serif'
-    ctx.textBaseline = 'alphabetic'
-    ctx.fillText(it.title, x + 6, y + cell + 18, cell - 12)
-    ctx.fillStyle = '#7fe0ff'
-    ctx.font = '500 12px ui-monospace, monospace'
-    ctx.fillText(it.sub, x + 6, y + cell + 36, cell - 12)
-  })
   return cv
 }
 
 // ─── The index ──────────────────────────────────────────────────────────────
 
-/**
- * Every sheet as the slicer reads it: a grid of panels, a target, and the
- * measured fit. A still is a one-panel walk with a TIGHT box — the space the
- * game lends it — while a creature's box is not, because it stands on open
- * ground and shrinking it because a painted arm swings wider would lift its
- * feet off the line.
- */
-const buildIndex = () => ({
+const nativeSize = (src: string): { w: number; h: number } | undefined => {
+  const img = bitmaps.get(src)
+  return img?.naturalWidth ? { w: img.naturalWidth, h: img.naturalHeight } : undefined
+}
+
+const cellEntry = (c: SheetCell, fits: FitMap, x: number, y: number, w: number, h: number) => ({
+  id: c.id,
+  label: c.label,
+  variant: c.sub,
+  x, y, w, h,
+  ...(c.target ? { target: c.target } : {}),
+  ...(c.fill ? { fill: true } : {}),
+  ...(c.maxEdge ? { maxEdge: c.maxEdge } : {}),
+  // A panel holding an EXISTING bitmap was letterboxed to fit — the ribbon is
+  // 2.3:1, the scorch 1.8:1. Without its true size the slicer would write a
+  // padded rect back over the file and wreck the result screen; with it, it
+  // trims the margin and restores the shape.
+  ...(c.letterboxed ? { letterboxed: c.letterboxed } : c.art.kind === 'bitmap' && nativeSize(c.art.src) ? { letterboxed: nativeSize(c.art.src) } : {}),
+  // Where the drawing sits in its panel. The slicer normalises a returned
+  // panel onto this, so a stone painted twice its size lands at the size the
+  // renderer blits.
+  ...(fits[c.id] ? { fit: fits[c.id] } : {}),
+  ...(c.art.kind === 'blank' ? { blank: true } : {}),
+  ...(c.note ? { note: c.note } : {})
+})
+
+const buildIndex = (fits: FitMap) => ({
   generated: new Date().toISOString(),
-  note:
-    'Every entry is a grid of panels cut into one strip, and a still is a one-panel '
-    + 'grid. `fit` is where the reference sits in a panel (fractions, measured on solid '
-    + 'pixels); the slicer normalises a return onto it. `target` is the path under '
-    + 'public/ a repainted slice belongs at. Generated by /art-sheets — do not hand-edit.',
-  walks: [
-    ...WALKS.map((w) => ({
-      id: w.id,
-      file: `${w.file}.png`,
-      width: w.w,
-      height: w.h,
-      cols: w.cols,
-      rows: w.rows,
-      frames: w.frames,
-      kind: w.kind,
-      panel: { w: w.panelW, h: w.panelH },
-      ...(fits.has(`${w.kind}/${w.id}`) ? { fit: fits.get(`${w.kind}/${w.id}`) } : {}),
-      faces: w.faces,
-      anchor: 'feet',
-      tight: false,
-      maxEdge: w.maxEdge,
-      target: w.target
-    })),
-    ...STILLS.map((s) => ({
+  cell: CELL,
+  note: 'Rects are in clean-sheet pixels. `target` is the path under public/ a repainted slice belongs at; '
+    + '`fit` is the drawn content\'s box as fractions of its panel (solid pixels, alpha > 140); '
+    + '`fill` marks a panel the art fills edge to edge.',
+  sheets: SHEETS.map((s) => {
+    const { w, h } = sheetSize(s)
+    return {
       id: s.id,
-      // An animated still's SHEET is its grid; its PANEL is still one box, and
-      // the panel is what every fit and every cap below is about.
-      file: `${s.file}.png`,
-      width: s.w * colsOf(s),
-      height: s.h * rowsOf(s),
-      cols: colsOf(s),
-      rows: rowsOf(s),
-      frames: framesOf(s),
+      title: s.title,
       kind: s.kind,
-      panel: { w: s.w, h: s.h },
-      // A glow-only effect carries no fit: measured on solid pixels its box
-      // is a fraction of what the eye sees, and a painting fitted onto it
-      // would shrink to match. See `StillSpec.fit`.
-      ...(s.fit !== false && fits.has(`${s.kind}/${s.id}`) ? { fit: fits.get(`${s.kind}/${s.id}`) } : {}),
-      anchor: s.anchor,
-      tight: true,
-      bg: s.bg,
-      // A gate frame's post band, so the slicer can re-compose a return's
-      // posts onto it — whatever width they came back at.
-      ...(s.kind === 'gate' ? { post: GATE_POST } : {}),
-      ...(s.tile ? { tile: s.tile } : {}),
-      ...(s.fill ? { fill: true } : {}),
-      // A size the world reads the file at (the PWA logo), which the slicer's
-      // default cap must not lower.
-      ...(s.exact ? { exact: true } : {}),
-      maxEdge: s.maxEdge,
-      target: s.target,
-      ...(s.extra ? { extra: s.extra } : {})
-    }))
-  ]
+      brief: s.brief,
+      files: { clean: `${s.file}.png`, key: `${s.file}-key.png` },
+      cols: s.cols,
+      rows: sheetRows(s),
+      width: w,
+      height: h,
+      cells: s.cells.map((c) => cellEntry(c, fits, c.col * CELL, c.row * CELL, c.cw * CELL, c.ch * CELL)),
+      singles: SINGLES.filter((t) => t.sheet === s.id).map((t) => {
+        const boxH = Math.round(SINGLE_SIZE * (t.cell.ch / t.cell.cw))
+        return {
+          id: t.id,
+          file: `singles/${t.file}.png`,
+          width: SINGLE_SIZE,
+          height: SINGLE_SIZE,
+          cells: [cellEntry(t.cell, fits, 0, (SINGLE_SIZE - boxH) / 2, SINGLE_SIZE, boxH)]
+        }
+      })
+    }
+  }),
+  walks: WALKS.map((w) => ({
+    id: w.id,
+    kind: w.kind,
+    file: `${w.file}.png`,
+    width: w.w,
+    height: w.h,
+    cols: w.cols,
+    rows: w.rows,
+    frames: w.frames,
+    panel: { w: w.panelW, h: w.panelH },
+    ...(walkFits.has(`${w.kind}/${w.id}`) ? { fit: walkFits.get(`${w.kind}/${w.id}`) } : {}),
+    faces: w.faces,
+    anchor: w.anchor,
+    target: w.target
+  })),
+  scenery: SCENERY.map((a) => ({
+    id: a.id,
+    file: `${a.file}.png`,
+    width: a.w,
+    height: a.h,
+    tileable: a.tileable,
+    bg: a.bg,
+    target: a.target
+  }))
 })
 
 // ─── Export ─────────────────────────────────────────────────────────────────
@@ -616,90 +476,71 @@ const save = async (name: string, payload: { dataUrl?: string; text?: string }):
   if (!res.ok) throw new Error(`${name}: ${res.status} ${await res.text()}`)
 }
 
-const tick = (): Promise<void> => new Promise((r) => requestAnimationFrame(() => r()))
+const frame = (): Promise<void> => new Promise((r) => requestAnimationFrame(() => r()))
 
 const preview = async (): Promise<void> => {
-  await document.fonts?.ready
+  await loadBitmaps()
+  stubbed.value = 0
   const out: typeof previews.value = []
-  for (const w of WALKS.slice(0, 3)) {
-    const cv = renderWalk(w)
-    out.push({ id: w.id, title: `${w.name} — walk`, url: cv.toDataURL('image/png'),
-      dims: `${cv.width}x${cv.height} · ${w.cols}x${w.rows} panels` })
+  for (const s of SHEETS) {
+    const cv = renderSheet(s)
+    const { w, h } = sheetSize(s)
+    out.push({ id: s.id, title: s.title, url: cv.toDataURL('image/png'), dims: `${w}x${h} · ${s.cols}x${sheetRows(s)} panels · ${s.cells.length} cells` })
   }
-  const stills = STILLS.map((s) => ({ title: s.name, sub: s.target, cv: renderStill(s) }))
-  const key = renderKey(stills, 160, 8)
-  out.push({ id: 'stills', title: 'Every still', url: key.toDataURL('image/png'),
-    dims: `${STILLS.length} stills` })
+  for (const w of WALKS) {
+    out.push({ id: w.id, title: w.name, url: renderWalk(w).toDataURL('image/png'), dims: `${w.w}x${w.h} · ${w.cols}x${w.rows} panels` })
+  }
+  for (const a of SCENERY) {
+    out.push({ id: a.id, title: a.name, url: renderScenery(a).toDataURL('image/png'), dims: `${a.w}x${a.h} band` })
+  }
   previews.value = out
 }
 
 const exportAll = async (): Promise<void> => {
   busy.value = true
+  let files = 0
   try {
-    await document.fonts?.ready
-    fits.clear()
-    const walkKeys: { title: string; sub: string; cv: HTMLCanvasElement }[] = []
-    for (const walk of WALKS) {
-      status.value = `rendering ${walk.file}`
-      await tick()
-      const cv = renderWalk(walk)
-      await save(`${walk.file}.png`, { dataUrl: cv.toDataURL('image/png') })
-      const first = document.createElement('canvas')
-      first.width = walk.panelW
-      first.height = walk.panelH
-      first.getContext('2d')!.drawImage(cv, 0, 0, walk.panelW, walk.panelH, 0, 0, walk.panelW, walk.panelH)
-      walkKeys.push({ title: walk.name, sub: walk.target, cv: first })
-    }
-    await save('key-walks.png', { dataUrl: renderKey(walkKeys, 192, 8).toDataURL('image/png') })
-
-    const stillKeys: { title: string; sub: string; cv: HTMLCanvasElement }[] = []
-    for (const s of STILLS) {
+    await loadBitmaps()
+    stubbed.value = 0
+    const fits: FitMap = {}
+    for (const s of SHEETS) {
       status.value = `rendering ${s.file}`
-      await tick()
-      const cv = renderStill(s)
-      await save(`${s.file}.png`, { dataUrl: cv.toDataURL('image/png') })
-      stillKeys.push({ title: s.name, sub: s.target, cv })
+      await frame()
+      Object.assign(fits, measureFits(s))
+      await save(`${s.file}.png`, { dataUrl: renderSheet(s).toDataURL('image/png') })
+      await save(`${s.file}-key.png`, { dataUrl: renderKey(s).toDataURL('image/png') })
+      files += 2
     }
-    await save('key-stills.png', { dataUrl: renderKey(stillKeys, 192, 8).toDataURL('image/png') })
-
-    await save('PROMPTS-WALKS.md', {
-      text: [
-        '# Walk-cycle prompts — one design per generation',
-        '',
-        'Generated from the manifest — do not hand-edit, re-export instead.',
-        '',
-        'Attach `art-sheets/walk-<id>.png` and paste the matching block beside it.',
-        'Each is a grid of panels showing ONE subject through ONE cycle, and the',
-        'whole job is that it comes back as one subject and not eight.',
-        '',
-        'Drop results in `art-sheets/painted/`, keeping the `walk-<id>` in the name,',
-        'then run `pnpm slice-sheets`. The slicer cuts the grid by proportion, so an',
-        'off-size return is fine as long as the panels are where the grid says.',
-        '',
-        WALKS.map((w) => promptForWalk(w)).join('\n\n---\n\n'),
-        ''
-      ].join('\n')
-    })
-    await save('PROMPTS-STILLS.md', {
-      text: [
-        '# Still prompts — one object per generation',
-        '',
-        'Generated from the manifest — do not hand-edit, re-export instead.',
-        '',
-        'Attach `art-sheets/still-<kind>-<id>.png` and paste the matching block',
-        'beside it. There is no grid to preserve here, which is the whole point.',
-        '',
-        'Drop results in `art-sheets/painted/`, keeping the `still-<kind>-<id>` in',
-        'the name, then run `pnpm slice-sheets`. Every return is measured against',
-        'its reference and normalised onto it.',
-        '',
-        STILLS.map((s) => promptForStill(s)).join('\n\n---\n\n'),
-        ''
-      ].join('\n')
-    })
-
-    await save('sheet-index.json', { text: JSON.stringify(buildIndex(), null, 2) + '\n' })
-    status.value = `wrote ${WALKS.length + STILLS.length + 5} files to art-sheets/`
+    for (const w of WALKS) {
+      status.value = `rendering ${w.file}`
+      await frame()
+      measureWalk(w)
+      await save(`${w.file}.png`, { dataUrl: renderWalk(w).toDataURL('image/png') })
+      files++
+    }
+    for (const a of SCENERY) {
+      status.value = `rendering ${a.file}`
+      await frame()
+      await save(`${a.file}.png`, { dataUrl: renderScenery(a).toDataURL('image/png') })
+      files++
+    }
+    if (includeSingles.value) {
+      for (const t of SINGLES) {
+        status.value = `rendering ${t.file}`
+        await frame()
+        await save(`singles/${t.file}.png`, { dataUrl: renderSingle(t).toDataURL('image/png') })
+        files++
+      }
+    }
+    const docs = promptDocs(fits)
+    for (const [name, text] of Object.entries(docs)) {
+      await save(name, { text })
+      files++
+    }
+    await save('sheet-index.json', { text: JSON.stringify(buildIndex(fits), null, 2) + '\n' })
+    files++
+    status.value = `wrote ${files} files to art-sheets/`
+      + (stubbed.value ? ` — ${stubbed.value} panels drew the STUB painter; re-export once arenaPainters lands` : '')
   } catch (e) {
     status.value = `FAILED — ${(e as Error).message}`
   } finally {
@@ -712,100 +553,94 @@ onMounted(preview)
 
 <template lang="pug">
   .art-sheets
-    header
+    header.bar
       h1 Art sheets
-      p.lede
-        | Every drawable in the game, through its own painter, onto a reference
-        |  the painting is registered against. Export writes into #[code art-sheets/].
-      .bar
-        button(:disabled="busy" @click="exportAll") {{ busy ? 'Exporting…' : 'Export all sheets' }}
-        button.ghost(:disabled="busy" @click="preview") Re-render preview
-        span.status {{ status }}
-
-    section.sheet(v-for="p in previews" :key="p.id")
-      h2 {{ p.title }}
-      p.dims {{ p.dims }}
-      .frame
-        img(:src="p.url" :alt="p.title")
+      button(:disabled="busy" @click="exportAll") Export all sheets
+      label.tick
+        input(type="checkbox" v-model="includeSingles" :disabled="busy")
+        |  singles (one object per file)
+      span.status {{ status }}
+      span.stub(v-if="stubbed") {{ stubbed }} panels are STUBS — arenaPainters is not implemented yet
+      span.hint
+        | Clean sheets go to a painter with the matching block from art-sheets/PROMPTS-*.md; the key sheet carries the captions.
+    .grid
+      figure(v-for="p in previews" :key="p.id")
+        img(:src="p.url" :alt="p.title" draggable="false")
+        figcaption
+          strong {{ p.title }}
+          span {{ p.dims }}
 </template>
 
 <style scoped lang="sass">
 .art-sheets
-  min-height: 100vh
+  // The app shell is a fixed-height, overflow-hidden game screen, so this
+  // does its own scrolling or the last sheet is unreachable.
   height: 100vh
   overflow-y: auto
-  padding: 24px
   background: #0d1117
-  color: #e6edf3
-  font: 14px/1.5 ui-sans-serif, system-ui, sans-serif
-
-h1
-  margin: 0 0 6px
-  font-size: 22px
-
-.lede
-  max-width: 70ch
-  margin: 0 0 14px
-  color: #9aa7b4
-
-code
-  padding: 1px 5px
-  border-radius: 4px
-  background: #1b222c
-  font-family: ui-monospace, monospace
+  color: #c7d0dd
+  font: 13px system-ui, sans-serif
 
 .bar
+  position: sticky
+  top: 0
+  z-index: 2
   display: flex
+  flex-wrap: wrap
+  gap: 0.75rem
   align-items: center
-  gap: 10px
-  margin-bottom: 28px
+  padding: 0.6rem 1.5rem
+  background: #10141b
+  border-bottom: 1px solid #222a36
 
-button
-  padding: 9px 16px
-  border: 1px solid #2f7d9e
-  border-radius: 7px
-  background: #14364a
-  color: #cfeeff
-  font: inherit
-  font-weight: 600
-  cursor: pointer
+  h1
+    margin: 0
+    font-size: 1rem
+    font-weight: 700
 
-  &:disabled
-    opacity: 0.5
-    cursor: default
+  button
+    padding: 0.3rem 0.8rem
+    border: 1px solid #2f7d9e
+    border-radius: 6px
+    background: #16323d
+    color: #cfe4ff
+    cursor: pointer
+    &:disabled
+      opacity: 0.5
+      cursor: wait
 
-  &.ghost
-    border-color: #2a323d
-    background: transparent
-    color: #9aa7b4
+  .status
+    color: #7fe0ff
+  .stub
+    color: #ffb060
+  .hint
+    margin-left: auto
+    color: #5f6b7e
 
-.status
-  color: #7fe0ff
-  font-family: ui-monospace, monospace
-  font-size: 13px
+.grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr))
+  gap: 1.25rem
+  padding: 1.25rem 1.5rem 3rem
 
-.sheet
-  margin-bottom: 30px
-
-h2
-  margin: 0 0 2px
-  font-size: 16px
-
-.dims
-  margin: 0 0 8px
-  color: #7d8894
-  font-family: ui-monospace, monospace
-  font-size: 12px
-
-.frame
-  display: inline-block
-  padding: 8px
-  border: 1px solid #242c36
-  border-radius: 8px
-  background-color: #1a2029
-
-img
-  display: block
-  max-width: 100%
-  height: auto
+figure
+  margin: 0
+  img
+    display: block
+    width: 100%
+    height: auto
+    border: 1px solid #242c36
+    // A checker, so a magenta ground is visibly the ground and a transparent
+    // panel is visibly transparent.
+    background-color: #1a2029
+    background-image: linear-gradient(45deg, #232b35 25%, transparent 25%), linear-gradient(-45deg, #232b35 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #232b35 75%), linear-gradient(-45deg, transparent 75%, #232b35 75%)
+    background-size: 16px 16px
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0
+  figcaption
+    display: flex
+    justify-content: space-between
+    gap: 0.5rem
+    padding: 0.35rem 0.1rem
+    span
+      color: #5f6b7e
 </style>

@@ -103,7 +103,7 @@ const musicTrackList = computed(() => [
             :model-value="userDifficulty"
             @update:model-value="setSettingValue('difficulty', $event)"
           )
-          p.text-white.game-text.opacity-70.leading-tight.px-1(class="text-[10px] md:text-xs") {{ difficultyHint }}
+          p.text-white.game-text.opacity-70.leading-tight.px-1.options-hint {{ difficultyHint }}
         hr(v-if="!isMobileLandscape" class="border-slate-600 my-1 md:my-2 pt-0")
         FSlider.px-4(class="!py-1 !pb-3 w-full max-w-[min(20rem,90%)]" :model-value="userSoundVolume" @update:modelValue="setSettingValue('sound', $event)" :label="t('options.soundEffects')" :min="0" :max="1" :step="0.01")
         FSlider.px-4(class="!py-1 !pb-2 w-full max-w-[min(20rem,90%)]" :model-value="userMusicVolume" @update:modelValue="setSettingValue('music', $event)" :label="t('options.music')" :min="0" :max="1" :step="0.01")
@@ -128,7 +128,7 @@ const musicTrackList = computed(() => [
       hr(class="border-slate-600 my-1 md:my-2 pt-0")
 
     template(#footer)
-      FButton(class="px-6 sm:px-8" @click="emit('close')") {{ t('options.close') }}
+      FButton(@click="emit('close')") {{ t('options.close') }}
 </template>
 
 <style lang="sass" scoped>

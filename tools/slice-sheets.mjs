@@ -2,18 +2,26 @@
 /**
  * ─── Sheet slicer ───────────────────────────────────────────────────────────
  *
- * The return half of the art pipeline. `/art-sheets` bakes the procedural cast
- * onto reference sheets and out to an image model; this takes the repainted
- * sheet and cuts it back into the drop-in bitmaps `spriteFor()` probes for.
+ * The return half of the art pipeline. `/#/art-sheets` bakes the procedural
+ * cast onto a 256 px lattice and out to an image model; this takes the
+ * repainted sheet and cuts it back into the drop-in bitmaps `spriteFor()`
+ * probes for — `public/images/runes/melee-river-lv1.webp` and the rest.
  *
- * Every sheet is a grid of panels that becomes ONE horizontal strip — a walk
- * cycle is eight panels, a still is a one-panel grid — so there is one code
- * path: identify, guard the aspect, key the ground, fit onto the reference,
- * compose, encode. See `art-sheets/README.md`.
+ *   node tools/slice-sheets.mjs art-sheets/painted/sheet-runes-melee.png
+ *   pnpm art:slice                         # every image in art-sheets/painted/
+ *   pnpm art:slice -- --dry                # print the plan, write nothing
  *
- *   node tools/slice-sheets.mjs art-sheets/painted/walk-grumpling.png
- *   pnpm slice-sheets                      # every PNG in art-sheets/painted/
- *   pnpm slice-sheets --dry                # print the plan, write nothing
+ * WHAT IT DOES TO A PANEL
+ *
+ * A lattice sheet is cut on the index's rects. Every panel with a target is
+ * keyed (magenta → transparent), then NORMALISED onto the reference: the
+ * bench recorded where the drawing sat in its panel (`fit`: the solid-pixel
+ * box as fractions of the panel), the return is measured the same way, and
+ * one scale-and-move puts the painted stone exactly where the drawn one was.
+ * The renderer then blits the file into the same box it paints in, and the
+ * painting replaces the drawing 1:1 without a scale knob anywhere. A panel
+ * the index marks `fill` (a tile, the frame) is trimmed to its own edges
+ * instead: it must reach all four sides or it tiles with a seam.
  *
  * WHY IT DRIVES A BROWSER
  *
@@ -29,8 +37,8 @@
  * The whole contract is that cell N comes back at the pixels cell N went out
  * at. An image model that re-composed the grid produces a file that still looks
  * fine and slices into garbage — every sprite a few pixels off centre, which
- * nobody notices until the tower looks subtly wrong in motion. So a sheet whose
- * aspect ratio does not match the index is REJECTED rather than best-guessed.
+ * nobody notices until the board looks subtly wrong. So a sheet whose aspect
+ * ratio does not match the index is REJECTED rather than best-guessed.
  */
 import { spawn } from 'node:child_process'
 import {
@@ -57,7 +65,7 @@ const CHROME_CANDIDATES = [
 // Options that consume the next argument. Everything else that is not a flag
 // is an input path — walked in order rather than filtered, so `--out public`
 // cannot leave "public" behind looking like a file to slice.
-const VALUED = new Set(['--sheet', '--out', '--size', '--quality', '--fit', '--frames', '--take-rows'])
+const VALUED = new Set(['--sheet', '--out', '--size', '--quality', '--fit', '--frames'])
 const argv = process.argv.slice(2)
 const opts = {}
 const files = []
@@ -95,22 +103,21 @@ const FORCE_SHEET = opts['--sheet'] ?? null
  * with nothing visibly lost. So it is the DEFAULT, not a flag remembered on a
  * good day. Three things bend it:
  *
- *   · the manifest's own `maxEdge` can only LOWER it — a coin is 20 px in play
- *     and a crown 12, and 256 of either is payload;
- *   · a sheet that ships resized copies keeps whatever its biggest copy needs,
- *     because an extra is cut from the master and a 512 PWA icon upsampled from
- *     a 256 master is a blurred icon in every app drawer;
- *   · an explicit `--size` FORCES the edge for one run, manifest or not, which
- *     is how a re-slice for a retina promo shot is done without editing anything;
- *   · a sheet marked `exact` in the index is written at its manifest size
- *     whatever else is asked — the file is read at that size by something
- *     outside the game (the PWA manifest and the 512 logo).
+ *   · the manifest's own `maxEdge` (if the index carries one) can only LOWER
+ *     it — a coin is 20 px in play, and 256 of it is payload;
+ *   · a sheet that ships resized copies (`extra` in the index) keeps whatever
+ *     its biggest copy needs, because an extra is cut from the master and a
+ *     512 PWA icon upsampled from a 256 master is a blurred icon;
+ *   · an explicit `--size` FORCES the edge for one run, manifest or not;
+ *   · a sheet the index marks `exact` is written at its manifest size whatever
+ *     else is asked — the file is read at that size by something outside the
+ *     game (a PWA manifest and its 512 icon).
  */
 const DEFAULT_EDGE = 256
 const SIZE = num('--size', DEFAULT_EDGE)
 const SIZE_FORCED = opts['--size'] != null
 const edgeCap = (sheet) => {
-  const manifest = sheet.maxEdge ?? (sheet.frames === 1 ? 640 : 384)
+  const manifest = sheet.maxEdge ?? DEFAULT_EDGE
   const cap = sheet.exact ? manifest : SIZE_FORCED ? SIZE : Math.min(SIZE, manifest)
   return Math.max(cap, ...(sheet.extra ?? []).map((ex) => ex.size ?? 0))
 }
@@ -127,13 +134,10 @@ const walkEdge = (sheet, cell, sy) =>
 // treating what arrived as one cycle. Only honoured when it matches what the
 // detector actually measured, so it cannot be used to force a bad cut.
 const FRAMES_OVERRIDE = num('--frames', null)
-// Cut only the first n rows of a walk sheet that came back with MORE rows than
-// asked. A model handed a low, wide creature fills the air above it with another
-// row or two of the same cycle; the top rows are the cycle it was asked for.
-const TAKE_ROWS = num('--take-rows', null)
 const NO_CHROMA = flag('--no-chroma')
 const NO_TRIM = flag('--no-trim')
 const NO_AUTO_BG = flag('--no-auto-bg')
+const NO_FIT = flag('--no-fit')
 // How to square up a single-cell image that did not come back square.
 const FIT = opts['--fit'] ?? 'squash'
 if (!['squash', 'crop'].includes(FIT)) {
@@ -148,28 +152,31 @@ Slice repainted contact sheets back into drop-in bitmaps.
   node tools/slice-sheets.mjs [files…] [options]
 
   files            One or more PNGs, or a directory. Defaults to art-sheets/painted/.
-  --sheet <id>     Force the target: a design (grumpling), an outfit (teal) or a
-                   still (crate-damage, frame-add, tracer, muzzle, lane, logo …).
-                   Otherwise inferred from the filename, then from the aspect ratio.
+  --sheet <id>     Force the target: a sheet (runes-melee, runes-enemy-mage, glyphs,
+                   tiles, frame, ui, fx), a walk (bonecap, teal, bolt), a band
+                   (ridge-far) or a single (single-melee-river-lv1). Otherwise
+                   inferred from the filename, then from the aspect ratio.
   --out <dir>      Where targets are written, relative to the repo. Default: public
   --size <px>      Force a frame's height, in px, for this run. Default: 256,
-                   lowered to the sheet's own cap where that is smaller and
-                   raised to the biggest resized copy a sheet ships. A sheet
-                   the manifest marks 'exact' (the PWA logo) ignores both.
+                   lowered to the sheet's own cap where the index carries a
+                   smaller one, raised to the biggest resized copy it ships.
   --quality <0-1>  WebP quality. Default: 0.92
   --no-chroma      Keep a magenta background instead of keying it out.
   --no-auto-bg     Do not flood-fill a uniform background away. Auto-removal
-                   handles white, cream and painted-in checkerboards; it never
-                   runs on an opaque tile.
-  --no-trim        Reserved; nothing in this manifest is trimmed.
-  --fit squash|crop  Reserved; every return is fitted onto its reference.
+                   handles white, cream and painted-in checkerboards; it is
+                   skipped on panels the index marks 'fill' (tiles, the frame),
+                   whose borders are artwork.
+  --no-trim        Keep a tile's margin instead of cropping it back to its own
+                   edges. Tiles must reach all four sides or they sit with a
+                   seam, so this is on by default for 'fill' panels.
+  --no-fit         Do not normalise a panel onto the reference's measured box.
+  --fit squash|crop  How to square up a single-cell image that came back
+                   non-square. squash (default) keeps every feature and
+                   distorts; crop keeps proportions and loses the edges.
   --frames <n>     Accept a walk sheet that came back with n panels instead of
                    the 8 it was asked for, and play them as one cycle. Must
                    match the grid the slicer measured.
-  --take-rows <n>  A walk sheet came back with MORE rows than asked (a 4x4 for
-                   a 4x2): cut only the first n rows and play them as the
-                   cycle. Use this when the extra rows repeat the cycle;
-                   use --frames when they continue it.
+  --size <px>      See above. 256 is the rule (LOADING.md, payload sizing).
   --dry            Print the plan and write nothing.
 `)
   process.exit(0)
@@ -211,80 +218,98 @@ if (!inputs.length) { console.error('nothing to slice'); process.exit(1) }
  * only trusted when exactly one sheet matches — two sheets with the same shape
  * would make a wrong guess silently destructive.
  */
-// Every entry in the index is a grid of panels that becomes ONE horizontal
-// strip: a walk cycle is eight panels, a still is a one-panel grid. The panels
-// are cut, keyed and de-fringed separately and then composed into the file the
-// game loads.
-//
-// Nothing here is trimmed. Trimming per frame would re-centre each pose
-// independently and the character would jitter around its own feet for the
-// entire walk; a still is instead FITTED onto its reference, which is the same
-// correction applied to the whole strip at once.
-const TARGETS = (index.walks ?? []).map((a) => ({
-  id: a.id, kind: 'walk',
-  // Where the reference sits inside a panel, so a return painted at a
-  // different size can be normalised back onto it.
-  fit: a.fit ?? null, anchor: a.anchor ?? 'feet',
-  // A still's box is a hard boundary — it is the space the game blits the
-  // painting into — so a return is fitted INSIDE it in both axes. A
-  // creature's box is not: it stands on open ground, and shrinking it
-  // because a painted arm swings wider would lift its feet off the line.
-  tight: a.tight ?? (a.kind !== 'monster' && a.kind !== 'hero'),
-  maxEdge: a.maxEdge ?? null,
-  // `maxEdge` is the SIZE, not a cap: something outside the game reads the
-  // file at exactly that size (the PWA manifest and the logo). Neither the
-  // 256 default nor `--size` lowers it.
-  exact: !!a.exact,
-  // The manifest's own kind (prop, gate, round, …), for the checks that only
-  // one kind of drawable needs — and where a gate frame's nine-slice cuts.
-  artKind: a.kind ?? null,
-  // A gate frame's post band, as fractions of the panel: where a return's
-  // posts are re-composed to. See the gate branch in the cut.
-  post: a.post ?? null,
-  // What the empty part of the frame is: magenta, magenta above a ridge line,
-  // or nothing at all (an opaque tile has no background to key).
-  bg: a.bg ?? 'magenta',
-  tile: a.tile ?? null,
-  // A subject that fills its frame by contract: a solid rectangle is right.
-  fill: !!a.fill,
-  // Resized copies of the same return, for the assets that ship twice.
-  extra: a.extra ?? [],
-  // `walk-grumpling` and a bare `grumpling` both land; longest stem wins, so
-  // the prefixed form is never mistaken for anything else.
-  stems: [a.file.replace(/\.png$/, ''), a.id],
-  width: a.width, height: a.height,
-  frames: a.frames, cols: a.cols, rows: a.rows,
-  target: a.target,
-  cells: Array.from({ length: a.frames }, (_, i) => ({
-    id: `${a.id}#${i}`,
-    label: a.id,
-    variant: `frame ${i + 1}/${a.frames}`,
-    x: (i % a.cols) * a.panel.w,
-    y: Math.floor(i / a.cols) * a.panel.h,
-    w: a.panel.w, h: a.panel.h,
+// Sheets, singles, bands and walks are the same thing to the slicer: a name,
+// a size, and a list of rects. Flattening them into one list means none needs
+// a second code path — identification, the aspect guard and the cutting are
+// shared.
+const TARGETS = [
+  // Lattice sheets. Every cell carries its own target, its own measured
+  // `fit`, and `fill` where the drawing reaches the panel's edges.
+  ...index.sheets.map((s) => ({
+    id: s.id, kind: 'sheet',
+    stems: [s.files.clean.replace(/\.png$/, '')],
+    width: s.width, height: s.height, cells: s.cells
+  })),
+  // One object per image: the rect is the whole image, so a repaint has
+  // nothing to stay aligned with and cannot drift out of a lattice.
+  ...index.sheets.flatMap((s) => (s.singles ?? []).map((t) => ({
+    id: t.id, kind: 'cell',
+    stems: [basename(t.file).replace(/\.png$/, '')],
+    width: t.width, height: t.height, cells: t.cells
+  }))),
+  // Landscape bands: not lattice cells and not square, so the whole image IS
+  // the asset and its declared shape is the shape it is written at.
+  ...(index.scenery ?? []).map((a) => ({
+    id: a.id, kind: 'scenery',
+    // Both `bg-ridge-far` and a plain `ridge-far` are accepted: the prefix is
+    // a convenience of the export, not something a painter has to preserve
+    // through a chat window and a download folder.
+    stems: [a.file.replace(/\.png$/, ''), a.id],
+    width: a.width, height: a.height,
+    tileable: a.tileable,
+    bg: a.bg ?? 'magenta',
+    cells: [{
+      id: a.id, label: a.id, variant: 'scenery',
+      x: 0, y: 0, w: a.width, h: a.height, target: a.target
+    }]
+  })),
+  // Walk cycles. A grid of panels in, ONE horizontal strip out — the panels
+  // are frames of a single animation, so they are cut, keyed and de-fringed
+  // separately and then composed into the file the game loads.
+  //
+  // Nothing here is trimmed. Every other sprite is registered to its own
+  // content; doing that per frame would re-centre each pose independently
+  // and the character would jitter around its own feet for the entire walk.
+  ...(index.walks ?? []).map((a) => ({
+    id: a.id, kind: 'walk',
+    // Where the reference sits inside a panel, so a return painted at a
+    // different size can be normalised back onto it.
+    fit: a.fit ?? null, anchor: a.anchor ?? 'feet',
+    // The bolt's box is a hard boundary — the renderer turns the whole panel
+    // to the arrow's heading — so it is fitted INSIDE it on both axes. A
+    // commander's box is not: it stands on open ground, and shrinking it
+    // because a painted arm swings wider would lift its feet off the line.
+    tight: a.kind === 'round',
+    // `walk-bonecap` and a bare `bonecap` both land; longest stem wins, so
+    // the prefixed form is never mistaken for anything else.
+    stems: [a.file.replace(/\.png$/, ''), a.id],
+    width: a.width, height: a.height,
+    frames: a.frames, cols: a.cols, rows: a.rows,
     target: a.target,
-    frame: i
+    cells: Array.from({ length: a.frames }, (_, i) => ({
+      id: `${a.id}#${i}`,
+      label: a.id,
+      variant: `frame ${i + 1}/${a.frames}`,
+      x: (i % a.cols) * a.panel.w,
+      y: Math.floor(i / a.cols) * a.panel.h,
+      w: a.panel.w, h: a.panel.h,
+      target: a.target,
+      frame: i
+    }))
   }))
-}))
+]
 
-/** The leading `word-` of a name, including the dash, or '' if it has none. */
-const prefixOf = (n) => (n.includes('-') ? n.slice(0, n.indexOf('-') + 1) : '')
-
-/** Which sheet does this FILENAME name, or null if none of them do. */
-const identifyByName = (file) => {
+const identify = (file, w, h) => {
+  if (FORCE_SHEET) {
+    const t = TARGETS.find((x) => x.id === FORCE_SHEET)
+    if (!t) {
+      throw new Error(`--sheet ${FORCE_SHEET} is unknown. Try one of:\n  `
+        + TARGETS.map((x) => x.id).join(', '))
+    }
+    return t
+  }
   const name = basename(file).toLowerCase()
+  /** The leading `word-` of a name, including the dash, or '' if it has none. */
+  const prefixOf = (n) => (n.includes('-') ? n.slice(0, n.indexOf('-') + 1) : '')
 
   // Longest stem wins, so "strip-blocks-r1" beats "blocks", and
   // "mountains-near" beats a bare "mountains".
   //
   // A BARE-ID hit is refused when the file carries somebody else's prefix.
-  // Every walk entry answers to its id alone, so `mount-archer.jpg` — a
-  // sheet that was deleted from the manifest, whose file nobody removed —
-  // matched on `archer` and was sliced straight over the archer's FIXTURE.
-  // The tower then flew a stone parapet where its bow should be, and the
-  // only trace was a good sprite silently getting smaller on disk. The
-  // same shape of accident is waiting in every `roll-*.jpg` left over from
-  // the eight-panel siege sheets.
+  // Every walk and band entry answers to its id alone, so a retired sheet's
+  // file left in painted/ — `old-bolt.png`, say — would otherwise match the
+  // bolt's walk on the bare id and be sliced straight over a good strip, with
+  // no trace but a sprite silently getting smaller on disk.
   const byName = TARGETS
     .map((t) => {
       const hit = t.stems.filter((st) => name.includes(st.toLowerCase()))
@@ -301,20 +326,7 @@ const identifyByName = (file) => {
     })
     .filter((x) => x.hit)
     .sort((a, b) => b.hit.length - a.hit.length)
-  return byName.length ? byName[0].t : null
-}
-
-const identify = (file, w, h) => {
-  if (FORCE_SHEET) {
-    const t = TARGETS.find((x) => x.id === FORCE_SHEET)
-    if (!t) {
-      throw new Error(`--sheet ${FORCE_SHEET} is unknown. Try one of:\n  `
-        + TARGETS.map((x) => x.id).join(', '))
-    }
-    return t
-  }
-  const named = identifyByName(file)
-  if (named) return named
+  if (byName.length) return byName[0].t
 
   const ratio = w / h
   const byShape = TARGETS.filter((t) => Math.abs(t.width / t.height - ratio) < 0.01)
@@ -322,40 +334,6 @@ const identify = (file, w, h) => {
   throw new Error(byShape.length
     ? `${w}x${h} matches ${byShape.length} targets (${byShape.map((t) => t.id).join(', ')}) — pass --sheet <id>`
     : `${w}x${h} matches nothing in the index — pass --sheet <id>`)
-}
-
-// ─── One return per sheet ───────────────────────────────────────────────────
-//
-// A directory walk cannot tell a re-roll from a leftover. `still-gate-frame-div`
-// sitting in `painted/` as BOTH a .jpg and a .png identifies twice, slices
-// twice, and writes the same file twice — and the one that happens to sort last
-// silently wins. That is how the trap gate came to ship the return whose posts
-// the slicer had to squeeze to a fifth of their painted width, while the one
-// that registered cleanly sat right beside it in the same folder.
-//
-// Refused rather than guessed, on the same grounds as the aspect check: both
-// files look fine, the loser leaves no trace, and picking by extension or by
-// sort order would be the tool inventing an answer to a question only the
-// person who painted them can settle.
-const AMBIGUOUS = new Set()
-{
-  const byId = new Map()
-  for (const f of FORCE_SHEET ? [] : inputs) {
-    const t = identifyByName(f)
-    if (!t) continue
-    byId.set(t.id, [...(byId.get(t.id) ?? []), f])
-  }
-  for (const [id, fs] of byId) {
-    if (fs.length < 2) continue
-    AMBIGUOUS.add(id)
-    console.error(`\n✗ ${id} — ${fs.length} files in the input name this sheet:`)
-    for (const f of fs) console.error(`      ${relative(ROOT, f)}`)
-    console.error('  They all write the same target, so whichever is read last would'
-      + ' silently win.')
-    console.error(`  Move the ones you are done with into`
-      + ` ${relative(ROOT, join(PAINTED, 'retired'))}${sep}, or pass the one you`)
-    console.error('  want on its own. Nothing was written for this sheet.')
-  }
 }
 
 // ─── Chrome, for decode / crop / WebP encode ────────────────────────────────
@@ -405,9 +383,7 @@ const safeTarget = (target) => {
 
 let written = 0
 let skipped = 0
-// The sheets refused above for having more than one return in the input are
-// already counted, so the run exits non-zero and the tally names them.
-let failed = AMBIGUOUS.size
+let failed = 0
 
 try {
   let page = null
@@ -467,8 +443,6 @@ try {
       failed++
       continue
     }
-    // Reported once, up front, with every file that claims it.
-    if (AMBIGUOUS.has(sheet.id)) continue
 
     // The sheet may come back at a different resolution than it left at, which
     // is fine and expected. What is NOT fine is a different SHAPE: that means
@@ -490,20 +464,21 @@ try {
     // proportion it comes back at is simply resized to the target square, which
     // is why one object per file is the sturdiest way through — there is
     // nothing left for a repaint to knock out of alignment.
-    // A still has no lattice: the rect IS the image, and whatever proportion
-    // it comes back at is resampled to the panel. Warn, because a squeeze
-    // distorts, but never refuse a good generation over it.
-    const still = sheet.frames === 1
-    if (still && Math.abs((w / h) / (sheet.width / sheet.height) - 1) > 0.06) {
+    if (sheet.kind === 'scenery' && Math.abs((w / h) / (sheet.width / sheet.height) - 1) > 0.06) {
       console.warn(`  ! aspect is ${(w / h).toFixed(2)}:1, wanted`
         + ` ${(sheet.width / sheet.height).toFixed(2)}:1 — it will be squeezed to fit.`)
-      console.warn('    Set the aspect ratio in your image tool to match to avoid this.')
     }
-    if (sheet.tile) {
-      console.log(`  · tileable (${sheet.tile}) — check the seam in the playground`)
+    if (sheet.tileable) {
+      console.log('  · tileable band — checking the seam after slicing')
     }
-    void FIT
-    const drift = still ? 0 : Math.abs(sx - sy) / Math.max(sx, sy)
+    if (sheet.kind === 'cell' && Math.abs(w / h - 1) > 0.05) {
+      console.warn(`  ! not square (${w}x${h}, ${(w / h).toFixed(2)}:1).`
+        + ` Squaring by --fit ${FIT}${FIT === 'squash' ? ' (distorts)' : ' (crops the edges)'}.`)
+      console.warn('    Set the aspect ratio in your image tool to 1:1 to avoid this.')
+    }
+    const drift = sheet.kind === 'cell' || sheet.kind === 'scenery'
+      ? 0
+      : Math.abs(sx - sy) / Math.max(sx, sy)
     if (drift > 0.01) {
       // A walk sheet is forgiven the same way a strip is, and for the same
       // reason: the panels still divide the frame evenly, every one is distorted
@@ -665,12 +640,7 @@ try {
       const wantCols = sheet.cols
       const wantRows = sheet.rows
 
-      if (sheet.frames === 1) {
-        // A still has no grid to verify — two posts with an open doorway
-        // between them, or a word with gaps between its letters, read as
-        // several panels to a cut-line detector, and they are ONE object.
-        // Only the ground is checked below.
-      } else if (!got || got.cols < 1 || got.rows < 1) {
+      if (!got || got.cols < 1 || got.rows < 1) {
         console.warn('  ! could not read the panel grid — cutting the nominal'
           + ` ${wantCols}x${wantRows}. Check the result before shipping it.`)
       } else if (got.cols === wantCols && got.rows === wantRows) {
@@ -683,14 +653,6 @@ try {
         console.warn('  ! the whole sheet reads as ONE panel. Either the creatures'
           + ' touch each other or the background is not one flat colour.')
         console.warn(`    Cutting the nominal ${wantCols}x${wantRows} anyway.`)
-      } else if (TAKE_ROWS && got.cols === wantCols && got.rows > wantRows && got.rows >= TAKE_ROWS) {
-        // The columns are right and there are too many rows: the model filled
-        // the air above a low creature with more of the same. The top rows are
-        // the cycle it was asked for; the rest are cut off and never written.
-        console.warn(`  ! grid reads ${got.cols}x${got.rows} = ${got.cols * got.rows} panels,`
-          + ` not ${wantCols}x${wantRows} — taking the first ${TAKE_ROWS} row(s),`
-          + ` ${got.cols * TAKE_ROWS} panels, as the cycle.`)
-        sheet = { ...sheet, cols: got.cols, rows: got.rows, frames: got.cols * TAKE_ROWS }
       } else {
         const n = got.cols * got.rows
         console.error(`  ✗ grid came back ${got.cols}x${got.rows} = ${n} panels,`
@@ -698,11 +660,7 @@ try {
         console.error('    The panels are not where the cut expects them, so slicing'
           + ' this would shred every frame.')
         console.error(`    Re-generate it, or run again with --frames ${n} to accept`
-          + ` it as a ${n}-frame cycle`
-          + (got.cols === wantCols && got.rows > wantRows
-            ? `, or --take-rows ${wantRows} to cut only the first ${wantRows} rows if the`
-              + ' extra rows just repeat it.'
-            : '.'))
+          + ` it as a ${n}-frame cycle.`)
         failed++
         continue
       }
@@ -711,9 +669,7 @@ try {
       // key, which can never touch the artwork, and the flood fallback, which
       // eats any pale paint it can reach. One return came back on dusty pink and
       // lost three of its eight fish to exactly that.
-      // Not for a subject that fills its frame by contract, and not for a
-      // band with artwork on three sides: there, the frame ring IS artwork.
-      if (got && got.isMagenta === false && sheet.bg === 'magenta' && !sheet.fill) {
+      if (got && got.isMagenta === false) {
         console.warn(`  ! the background is ${got.hex}, not #ff00ff.`)
         console.warn('    Only true magenta can be keyed safely. Anything else falls')
         console.warn('    back to a flood fill, which eats pale artwork it can reach —')
@@ -756,14 +712,17 @@ try {
       // A single-cell image is capped: a model handed back 1536x1536 would
       // otherwise become a 1536 px block sprite, which is six times the size
       // `art-todo.md` asks for and pure payload for no visible gain.
-      fit: 'squash',
-      isBlock: false,
-      trim: !NO_TRIM,
-      // Never on an OPAQUE tile, and never on a subject that FILLS its frame:
-      // both are artwork edge to edge, so the frame ring the flood seeds from
-      // is the drawing itself. Seeded from a crate's own dark planks, the
-      // flood ate a fifth of the crate.
-      autoBg: !NO_AUTO_BG && sheet.bg !== 'opaque' && !sheet.fill,
+      fit: sheet.kind === 'cell' ? FIT : 'squash',
+      // A panel the index marks `fill` (a tile, the frame) fills its rect by
+      // contract: trimmed to its own edges, never flood-filled, never fitted.
+      isBlock: !!c.fill,
+      trim: !NO_TRIM && sheet.kind !== 'scenery',
+      // Never on a fill panel: its border IS artwork and a flood fill would
+      // eat straight into it. An OPAQUE band is all artwork, edge to edge.
+      autoBg: !NO_AUTO_BG && !c.fill && sheet.bg !== 'opaque',
+      // Where the DRAWN content sat in this panel, as fractions of the panel
+      // (solid pixels, alpha > 140). The return is normalised onto it below.
+      refFit: NO_FIT ? null : (c.fit ?? null),
       // Which frame edges may SEED the flood.
       //
       // A band whose sky is at the top has artwork touching the other three
@@ -806,9 +765,11 @@ try {
         : sheet.kind === 'walk'
           ? walkEdge(sheet, c, sy)
           : undefined,
-      out: SIZE_FORCED ? SIZE : (sheet.kind === 'cell'
-        ? Math.min(512, Math.round(Math.max(c.w * sx, c.h * sy)))
-        : Math.round(c.w * sx))
+      // Every frame at most 256 px, in every branch — the manifest's own
+      // `maxEdge` may only lower it (a crest is 128 in play) or, for the one
+      // nine-sliced frame, declare that it needs the full 1024.
+      out: SIZE_FORCED ? SIZE : Math.min(c.maxEdge ?? DEFAULT_EDGE,
+        Math.round(Math.max(c.w * sx, c.h * sy)))
     }))
 
     const cut = await send('Runtime.evaluate', {
@@ -820,13 +781,6 @@ try {
         const FIT_REF = ${JSON.stringify(sheet.fit ?? null)};
         const FIT_TIGHT = ${sheet.tight ? 'true' : 'false'};
         const ANCHOR_REF = ${JSON.stringify(sheet.anchor ?? 'feet')};
-        // The logo ships as PNG where the PWA manifest reads it; everything
-        // else the renderer probes is WebP.
-        const MIME_OUT = ${JSON.stringify(/\.png$/i.test(sheet.target ?? '') ? 'image/png' : 'image/webp')};
-        const EXTRA = ${JSON.stringify(sheet.extra ?? [])};
-        const ART_KIND = ${JSON.stringify(sheet.artKind ?? '')};
-        const GATE_REF = ${JSON.stringify(sheet.post ?? null)};
-        const encode = (cv2, mime) => mime === 'image/png' ? cv2.toDataURL('image/png') : cv2.toDataURL('image/webp', q);
         const out = [];
         // Walk-cycle panels, held back so they can be composed into one strip.
         const strip = [];
@@ -1174,156 +1128,26 @@ try {
             }
           }
 
-          // ── Gate frame: put the posts where the reference has them ──
-          //
-          // Every gate return but one came back with posts three times the
-          // reference width — a pair of slabs per side, a pillar the width of
-          // a tower — and two re-rolls with the width stated as a fraction of
-          // the frame changed nothing: an image model does not measure. So
-          // the frame is RE-COMPOSED rather than refused. Each post is found
-          // by scanning from the doorway's centre outward (below the lintel,
-          // above the floor line, so a pair per side is caught by its
-          // innermost member), anchored by its INNER face on the reference's
-          // band and squashed to the band's width when it is wider; the span
-          // between the two inner faces keeps only its top — the lintel —
-          // stretched between the posts, and everything else painted into the
-          // doorway is cleared; then the whole frame is stood on the
-          // reference's ground line. The nine-slice downstream then always
-          // finds a post inside its cap.
-          let posts = null;
-          if (ART_KIND === 'gate' && GATE_REF) {
-            const W = p.sw, H = p.sh;
-            const yA = Math.round(H * 0.45), yB = Math.round(H * 0.9);
-            const solidCol = (x) => {
-              let n = 0;
-              for (let y = yA; y < yB; y++) if (d[(y * W + x) * 4 + 3] > 140) n++;
-              return n / (yB - yA) > 0.2;
-            };
-            const mid = Math.floor(W / 2);
-            let xiL = mid; while (xiL > 0 && !solidCol(xiL)) xiL--;
-            let xiR = mid; while (xiR < W - 1 && !solidCol(xiR)) xiR++;
-            let xoL = 0; while (xoL < xiL && !solidCol(xoL)) xoL++;
-            let xoR = W - 1; while (xoR > xiR && !solidCol(xoR)) xoR--;
-            const found = xiL > 0 && xiR < W - 1;
-            posts = {
-              found,
-              left: (xiL + 1) / W, right: 1 - xiR / W,
-              squashedLeft: 1, squashedRight: 1, dy: 0
-            };
-            if (found) {
-              const bandO = Math.round(GATE_REF.outer * W);
-              const bandI = Math.round(GATE_REF.inner * W);
-              const bandW = bandI - bandO;
-              const wL = xiL - xoL + 1, wR = xoR - xiR + 1;
-              const dwL = Math.min(wL, bandW), dwR = Math.min(wR, bandW);
-              posts.squashedLeft = dwL / wL;
-              posts.squashedRight = dwR / wR;
-              const re = document.createElement('canvas');
-              re.width = W; re.height = H;
-              const rc = re.getContext('2d');
-              rc.drawImage(cell, xoL, 0, wL, H, bandI - dwL, 0, dwL, H);
-              rc.drawImage(cell, xiR, 0, wR, H, W - bandI, 0, dwR, H);
-              const lintelH = Math.round(H * GATE_REF.lintel);
-              const spanW = xiR - xiL - 1;
-              if (spanW > 2 && W - 2 * bandI > 2) {
-                rc.drawImage(cell, xiL + 1, 0, spanW, lintelH, bandI, 0, W - 2 * bandI, lintelH);
-              }
-              // Stand it on the ground line: the lowest solid row of either post.
-              const rd = rc.getImageData(0, 0, W, H).data;
-              let bottom = -1;
-              for (let y = H - 1; y >= 0 && bottom < 0; y--) {
-                for (let x = bandO; x < W - bandO; x++) {
-                  if ((x < bandI || x >= W - bandI) && rd[(y * W + x) * 4 + 3] > 140) { bottom = y; break; }
-                }
-              }
-              const dy = bottom >= 0 ? Math.round(GATE_REF.bottom * H - (bottom + 1)) : 0;
-              posts.dy = dy / H;
-              cc.clearRect(0, 0, W, H);
-              cc.drawImage(re, 0, Math.abs(dy) > 2 ? dy : 0);
-              d.set(cc.getImageData(0, 0, W, H).data);
-            }
-          }
-
-          // ── The fit box, on solid pixels grouped into pieces ──
-          //
+          let x0 = p.sw, y0 = p.sh, x1 = -1, y1 = -1, opaque = 0;
           // A SECOND box at a high alpha floor, for the fit measurement only.
           // The reference is measured the same way: a soft shadow belongs to
           // neither silhouette, and letting one into the comparison sinks the
           // sprite by the depth of a shadow the other side never painted.
-          //
-          // Grouped into connected pieces first, because of the neighbour's
-          // ink. A cast shadow painted under a creature runs a pixel or two
-          // past the grid line into the next panel, where it lands as a thin
-          // dark line along that panel's edge — and at the alpha the unmix
-          // leaves it, it is SOLID. One such line at the top of every
-          // bottom-row panel stretched the measured box to the full panel
-          // height, and the fit then shrank the creature to 56%. So a piece
-          // that is a sliver (three pixels or thinner) or a speck is left out
-          // of the fit box, and one that also touches the panel's edge is the
-          // neighbour's and is erased, along with the soft bleed beside it.
-          const PW = p.sw, PH = p.sh, PN = PW * PH;
-          const solid = new Uint8Array(PN);
-          for (let k = 0; k < PN; k++) if (d[k * 4 + 3] > 140) solid[k] = 1;
-          const seenS = new Uint8Array(PN);
-          let fx0 = PW, fy0 = PH, fx1 = -1, fy1 = -1;
-          let slivers = 0;
-          const stackS = [];
-          for (let k0 = 0; k0 < PN; k0++) {
-            if (!solid[k0] || seenS[k0]) continue;
-            const cells = [];
-            let cx0 = PW, cy0 = PH, cx1 = -1, cy1 = -1;
-            seenS[k0] = 1; stackS.push(k0);
-            while (stackS.length) {
-              const k = stackS.pop();
-              cells.push(k);
-              const x = k % PW, y = (k / PW) | 0;
-              if (x < cx0) cx0 = x; if (x > cx1) cx1 = x;
-              if (y < cy0) cy0 = y; if (y > cy1) cy1 = y;
-              if (x > 0 && solid[k - 1] && !seenS[k - 1]) { seenS[k - 1] = 1; stackS.push(k - 1); }
-              if (x < PW - 1 && solid[k + 1] && !seenS[k + 1]) { seenS[k + 1] = 1; stackS.push(k + 1); }
-              if (y > 0 && solid[k - PW] && !seenS[k - PW]) { seenS[k - PW] = 1; stackS.push(k - PW); }
-              if (y < PH - 1 && solid[k + PW] && !seenS[k + PW]) { seenS[k + PW] = 1; stackS.push(k + PW); }
-            }
-            const cw = cx1 - cx0 + 1, ch = cy1 - cy0 + 1;
-            if (Math.min(cw, ch) <= 3 || cells.length < 16) {
-              slivers++;
-              // Erased only when it lies ENTIRELY within two pixels of an
-              // edge — a bleed line does; a fragment of a canopy the panel
-              // clips at its edge reaches deeper, and is the creature's.
-              const bleed = cy1 <= 1 || cy0 >= PH - 2 || cx1 <= 1 || cx0 >= PW - 2;
-              if (bleed) for (const k of cells) d[k * 4 + 3] = 0;
-              continue;
-            }
-            if (cx0 < fx0) fx0 = cx0; if (cx1 > fx1) fx1 = cx1;
-            if (cy0 < fy0) fy0 = cy0; if (cy1 > fy1) fy1 = cy1;
-          }
-          if (slivers) {
-            // The soft part of the bleed sits beside the erased line, under
-            // the solid floor: clear the outermost two rows and columns of
-            // anything that is not solid. A creature's own anti-aliased edge
-            // there loses two pixels of softness, which nobody can see.
-            for (let y = 0; y < PH; y++) {
-              for (let x = 0; x < PW; x++) {
-                if (x > 1 && x < PW - 2 && y > 1 && y < PH - 2) continue;
-                const i = (y * PW + x) * 4;
-                if (d[i + 3] > 8 && d[i + 3] <= 140) d[i + 3] = 0;
-              }
-            }
-            cc.putImageData(id, 0, 0);
-          }
-
-          let x0 = PW, y0 = PH, x1 = -1, y1 = -1, opaque = 0;
-          for (let y = 0; y < PH; y++)
-            for (let x = 0; x < PW; x++) {
-              const a = d[(y * PW + x) * 4 + 3];
+          let fx0 = p.sw, fy0 = p.sh, fx1 = -1, fy1 = -1;
+          for (let y = 0; y < p.sh; y++)
+            for (let x = 0; x < p.sw; x++) {
+              const a = d[(y * p.sw + x) * 4 + 3];
               if (a > 8) {
                 opaque++;
                 if (x < x0) x0 = x; if (x > x1) x1 = x;
                 if (y < y0) y0 = y; if (y > y1) y1 = y;
               }
+              if (a > 140) {
+                if (x < fx0) fx0 = x; if (x > fx1) fx1 = x;
+                if (y < fy0) fy0 = y; if (y > fy1) fy1 = y;
+              }
             }
           if (fx1 < 0) { fx0 = x0; fy0 = y0; fx1 = x1; fy1 = y1; }
-
           if (x1 < 0) {
             // A dropped panel is the commonest way a walk sheet comes back wrong,
             // and it must not silently become a hole in the animation.
@@ -1343,6 +1167,49 @@ try {
             if (!touches) {
               src = { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
               trimmed = true;
+            }
+          }
+
+          // ── Normalise onto the reference's box ──
+          //
+          // Every returned sheet so far enlarged the subject to fill its panel;
+          // on its own that looks fine, against the drawing it replaces it is
+          // a stone a third too big in a box the renderer sized for the drawn
+          // one. The bench recorded where the drawing sat ('refFit', solid
+          // pixels only); the return is measured the same way, and one scale
+          // and move puts it back. Per panel, because every panel is its own
+          // file — there is no cycle here to keep steady.
+          let fitNote = null;
+          if (p.refFit && !p.isBlock && !p.letterboxed && p.frame === undefined && fx1 >= 0) {
+            const gotW = (fx1 - fx0 + 1) / p.sw, gotH = (fy1 - fy0 + 1) / p.sh;
+            const gotCx = ((fx0 + fx1 + 1) / 2) / p.sw, gotCy = ((fy0 + fy1 + 1) / 2) / p.sh;
+            const kH = gotH > 0.01 ? p.refFit.h / gotH : 1;
+            const kW = gotW > 0.01 ? p.refFit.w / gotW : 1;
+            // Match the reference box's AREA: a painting with the reference's
+            // own proportions is untouched, one drawn longer and slimmer
+            // splits the difference.
+            const k = Math.sqrt(kH * kW);
+            // The box is the rect the renderer blits into, so the measurement
+            // cannot be wild: a factor of four means a stone painted four
+            // times too big, not a mis-measurement. A correction under 4% is
+            // not worth resampling for.
+            if (k > 0.1 && k < 4 && (Math.abs(k - 1) > 0.04
+                || Math.abs(gotCx - p.refFit.cx) > 0.02
+                || Math.abs(gotCy - p.refFit.cy) > 0.02)) {
+              const to = document.createElement('canvas');
+              to.width = p.sw; to.height = p.sh;
+              const g2 = to.getContext('2d');
+              g2.translate(p.refFit.cx * p.sw, p.refFit.cy * p.sh);
+              g2.scale(k, k);
+              g2.translate(-gotCx * p.sw, -gotCy * p.sh);
+              g2.drawImage(cell, 0, 0);
+              cc.clearRect(0, 0, p.sw, p.sh);
+              cc.drawImage(to, 0, 0);
+              fitNote = {
+                k: +k.toFixed(3),
+                dx: +(p.refFit.cx - gotCx).toFixed(3),
+                dy: +(p.refFit.cy - gotCy).toFixed(3)
+              };
             }
           }
 
@@ -1407,9 +1274,7 @@ try {
               foot: (y1 + 1) / p.sh, top: y0 / p.sh,
               midX: ((x0 + x1) / 2) / p.sw,
               box: { x0: fx0 / p.sw, y0: fy0 / p.sh, x1: (fx1 + 1) / p.sw, y1: (fy1 + 1) / p.sh },
-              coverage: opaque / (p.sw * p.sh),
-              posts,
-              slivers
+              coverage: opaque / (p.sw * p.sh)
             });
             continue;
           }
@@ -1450,9 +1315,11 @@ try {
             })(),
             edges,
             trimmed,
+            fill: p.isBlock,
+            fitNote,
             w: dst.width, h: dst.height,
             coverage: opaque / (p.sw * p.sh),
-            dataUrl: encode(dst, MIME_OUT)
+            dataUrl: dst.toDataURL('image/webp', q)
           });
         }
         // ── Compose the walk cycle ──
@@ -1524,17 +1391,17 @@ try {
               // filling its frame — and the 0.25 floor refused to shrink it,
               // which shipped a crane longer than the block it stands on.
               const floor = FIT_TIGHT ? 0.1 : 0.25;
-              // A tight box is centred horizontally whatever the painting did —
-              // centring puts the turn axis through a round's own middle, so a
-              // bolt turns in place instead of orbiting. Vertically the
-              // manifest decides: a creature and the falling rock register by
-              // their BOTTOM edge, which must not move (the feet on the line,
-              // the stone at its point of impact); everything else by its
-              // middle.
-              const byFeet = ANCHOR_REF === 'feet';
+              // A FIXTURE is centred in its box on both axes, whatever the
+              // drawing did. The drawn parts sit wherever their procedural
+              // code put them — a coil standing on the block's top edge, a
+              // barrel with its carriage hanging below — and registering a
+              // painting against that left every part high and to one side.
+              // Centring also puts the turn axis through the part's own
+              // middle, so a bow rotates in place instead of orbiting.
+              const byFeet = ANCHOR_REF !== 'centre';
               const gotMidY = (by0 + by1) / 2;
-              const fromY = byFeet ? gotBottom : gotMidY;
-              const toY = byFeet ? FIT.bottom : 0.5;
+              const fromY = FIT_TIGHT ? gotMidY : byFeet ? gotBottom : gotMidY;
+              const toY = FIT_TIGHT ? 0.5 : byFeet ? FIT.bottom : 0.5;
               const toX = FIT_TIGHT ? 0.5 : FIT.cx;
               if (k > floor && k < 4 && (Math.abs(k - 1) > 0.04
                   || Math.abs(fromY - toY) > 0.02
@@ -1574,20 +1441,8 @@ try {
               fitNote,
               keyed: solid.reduce((a2, f) => a2 + f.keyed, 0),
               srcArea: solid.reduce((a2, f) => a2 + f.srcArea, 0),
-              posts: solid[0].posts ?? null,
-              slivers: solid.reduce((a2, f) => a2 + (f.slivers || 0), 0),
               w: cv.width, h: cv.height,
-              dataUrl: encode(cv, MIME_OUT),
-              // The same return at other sizes — the logo's PWA icons.
-              extras: EXTRA.map((ex) => {
-                const s = document.createElement('canvas');
-                s.width = ex.size; s.height = ex.size;
-                s.getContext('2d').drawImage(cv, 0, 0, ex.size, ex.size);
-                return {
-                  target: ex.target, w: ex.size, h: ex.size,
-                  dataUrl: encode(s, /\\.png$/i.test(ex.target) ? 'image/png' : 'image/webp')
-                };
-              })
+              dataUrl: cv.toDataURL('image/webp', q)
             });
           }
         }
@@ -1606,8 +1461,8 @@ try {
         skipped++
         continue
       }
-      if (!r.dataUrl.startsWith('data:image/webp') && !r.dataUrl.startsWith('data:image/png')) {
-        console.error(`  ✗ ${r.id.padEnd(26)} browser would not encode the image`)
+      if (!r.dataUrl.startsWith('data:image/webp')) {
+        console.error(`  ✗ ${r.id.padEnd(26)} browser would not encode WebP`)
         failed++
         continue
       }
@@ -1617,44 +1472,22 @@ try {
         failed++
         continue
       }
+      if (r.fitNote) {
+        console.log(`    · normalised onto the reference: scaled to`
+          + ` ${(r.fitNote.k * 100).toFixed(0)}% and moved`
+          + ` ${(r.fitNote.dx * 100).toFixed(0)}% / ${(r.fitNote.dy * 100).toFixed(0)}% of the panel.`)
+      }
       // A sprite that is meant to sit ON something needs a background that was
-      // actually removed. The exceptions fill their frame by contract — a
-      // crate, a tile, the guard's hexagon — so an opaque one is correct.
-      if (r.bboxFill !== undefined && r.bboxFill > 0.92 && !sheet.fill
+      // actually removed. Fill panels are the exception: they fill their rect
+      // by contract, so an opaque one is correct. An opaque band IS a solid
+      // rectangle — that is its whole job.
+      if (r.bboxFill !== undefined && r.bboxFill > 0.92
+        && !r.fill
         && sheet.bg !== 'opaque') {
         console.warn(`    ! ${r.id} fills ${(r.bboxFill * 100).toFixed(0)}% of its own`
           + ' bounding box — it is a solid rectangle.')
         console.warn('      The subject was almost certainly painted onto a card or panel')
         console.warn('      that is now welded in. Re-generate it on flat magenta.')
-      }
-
-      // ── Gate frame ──
-      //
-      // Reported rather than refused: the cut re-composed the posts onto the
-      // reference's band (see the gate branch above), so what is printed here
-      // is what it did to them. A post squeezed to under half its painted
-      // width will read as a sliver, and that is worth a re-roll.
-      if (r.posts && sheet.post) {
-        const pct = (v) => `${(v * 100).toFixed(0)}%`
-        if (!r.posts.found) {
-          console.error('    ✗ could not find a post on both sides — is the doorway painted')
-          console.error('      in, or a post missing? Nothing was written.')
-          failed++
-          continue
-        }
-        const sq = (s) => (s < 0.98 ? `squeezed to ${pct(s)} of its painted width` : 'as painted')
-        console.log(`    · posts reached ${pct(r.posts.left)} / ${pct(r.posts.right)} in from the`
-          + ` edges; re-composed onto the band at ${pct(sheet.post.outer)}–${pct(sheet.post.inner)}`
-          + ` (left ${sq(r.posts.squashedLeft)}, right ${sq(r.posts.squashedRight)})`
-          + (Math.abs(r.posts.dy) > 0.005
-            ? `, stood on the ground line (moved ${pct(Math.abs(r.posts.dy))} of the height)`
-            : '')
-          + '. The doorway below the lintel was cleared.')
-        if (Math.min(r.posts.squashedLeft, r.posts.squashedRight) < 0.5) {
-          console.warn('    ! a post came back more than twice the band\'s width and was squeezed')
-          console.warn('      to fit. It will read narrow. Re-roll it if that shows in the')
-          console.warn('      playground — the reference now draws the posts at the band\'s width.')
-        }
       }
 
       // ── Walk-cycle sanity ──
@@ -1665,10 +1498,6 @@ try {
       // panel. None of that is visible in the file — it is visible in the game,
       // as a limp.
       if (r.frames !== undefined) {
-        if (r.slivers) {
-          console.log(`    · left ${r.slivers} sliver${r.slivers > 1 ? 's' : ''} of ink out of the fit`
-            + ' — a neighbour\'s shadow across the cut line, or a speck — and erased the ones on a panel edge.')
-        }
         if (r.fitNote) {
           console.log(`    · normalised onto the reference: scaled to`
             + ` ${(r.fitNote.k * 100).toFixed(0)}% and`
@@ -1683,15 +1512,20 @@ try {
         const spread = (xs) => (xs?.length ? Math.max(...xs) - Math.min(...xs) : 0)
         // The feet must land on one line. This is the difference between a walk
         // and a hop, and it is the single most likely thing to be wrong.
+        // The bolt has no feet — it is centred — so the line-of-contact check
+        // is meaningless for it and reads as the tool having got lost.
+        const wheels = false
+        if ((r.target ?? '').startsWith('images/rounds/')) r.feet = []
         const foot = spread(r.feet)
         if (foot > 0.04) {
-          console.warn(`    ! the feet move ${(foot * 100).toFixed(0)}% of the panel height`
-            + ' between frames — it will bob as it walks.')
+          console.warn(`    ! the ${wheels ? 'wheels' : 'feet'} move`
+            + ` ${(foot * 100).toFixed(0)}% of the panel height between frames —`
+            + ` it will ${wheels ? 'hop as it rolls' : 'bob as it walks'}.`)
         }
         const mid = spread(r.mids)
         if (mid > 0.08) {
           console.warn(`    ! the body drifts ${(mid * 100).toFixed(0)}% of the panel width`
-            + ' between frames — it will slide as it walks.')
+            + ` between frames — it will slide as it ${wheels ? 'rolls' : 'walks'}.`)
         }
         // A frame that is much bigger or smaller than its neighbours is a
         // redraw at a different scale, not a pose.
@@ -1705,6 +1539,18 @@ try {
         }
       }
 
+      // A tile that does not reach its own edges sits with a gap.
+      if (r.fill && r.edges && !r.trimmed) {
+        const names = ['top', 'bottom', 'left', 'right']
+        const short = r.edges
+          .map((v, i) => ({ v, n: names[i] }))
+          .filter((e) => e.v < 0.9)
+        if (short.length) {
+          console.warn(`    ! ${r.id} does not reach its ${short.map((e) => e.n).join('/')} edge`
+            + ` (${short.map((e) => `${(e.v * 100).toFixed(0)}%`).join(', ')}).`
+            + ' Side by side, this shows a seam — ask for square corners, no margin.')
+        }
+      }
       const bytes = Buffer.from(r.dataUrl.slice(r.dataUrl.indexOf(',') + 1), 'base64')
       const shown = `${r.target}  ${r.w}x${r.h}  ${(bytes.length / 1024).toFixed(1)}kB`
         + (r.trimmed ? '  (trimmed to fill)' : '')
@@ -1717,26 +1563,6 @@ try {
         console.log(`  ✓ ${r.id.padEnd(26)} ${shown}`)
       }
       written++
-
-      // The same return at its other sizes.
-      for (const ex of r.extras ?? []) {
-        const exFull = safeTarget(ex.target)
-        if (!exFull) {
-          console.error(`  ✗ ${ex.target} escapes ${relative(ROOT, OUT_ROOT)}/`)
-          failed++
-          continue
-        }
-        const exBytes = Buffer.from(ex.dataUrl.slice(ex.dataUrl.indexOf(',') + 1), 'base64')
-        const exShown = `${ex.target}  ${ex.w}x${ex.h}  ${(exBytes.length / 1024).toFixed(1)}kB`
-        if (DRY) {
-          console.log(`  → ${''.padEnd(26)} ${exShown}`)
-        } else {
-          mkdirSync(dirname(exFull), { recursive: true })
-          writeFileSync(exFull, exBytes)
-          console.log(`  ✓ ${''.padEnd(26)} ${exShown}`)
-        }
-        written++
-      }
     }
   }
 

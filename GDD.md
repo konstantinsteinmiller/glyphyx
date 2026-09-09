@@ -101,6 +101,32 @@ Runes are represented as smooth, dark river pebbles with glowing neon glyphs car
 | **Mage** | Amethyst Arcane Orb | Diagonal (4 Diagonal Angles) | HP: 2 | Atk: 3 | Fires a diagonal energy beam penetrating through **2 diagonal tiles**, damaging all targets. | **HP: 4 | Atk: 5.** Expands into a 3x3 cross-explosion around the end destination tile. |
 | **Defense** | Sapphire Shield | **Omni-Directional** (No swipe needed) | HP: 6 | Atk: 0 | Absorbs incoming attacks. Automatically mitigates 1 extra damage from all directions. | **HP: 12 | Atk: 0.** Grants +1 HP shield aura to all adjacent friendly runes at round start. |
 | **Support** | Topaz Radiant Cross | **Omni-Directional** (No swipe needed) | HP: 3 | Atk: 0 | Restores **+1 HP** to all adjacent friendly runes at the end of each resolution phase. | **HP: 6 | Atk: 0.** Heals **+2 HP** and grants +1 bonus Attack power to adjacent friendly runes. |
+| **Cleave** | Burnt-Orange Axe | Cardinal (Up, Down, Left, Right) | HP: 4 | Atk: 2 | Swings across the **3 tiles ahead** — the one it faces and the two beside it. Never knocks back. | **HP: 8 | Atk: 4.** The same fan, twice the steel. |
+| **Roller** | Teal Boulder | Cardinal (Up, Down, Left, Right) | HP: 3 | Atk: 2 | Rolls down its lane and damages **everything standing in it, friendlies included**. Rolls on through whatever it breaks; comes to rest on the first rune it fails to break, or at the board edge. | **HP: 6 | Atk: 4.** Ploughs through one survivor before stopping (one more per level). |
+| **Bombard** | Magenta Mortar | Cardinal (Up, Down, Left, Right) | HP: 2 | Atk: 2 | **Lobs** a shell onto the 3 side-by-side tiles **3 ranks ahead**. It arcs over everything between, so no shield can intercept it — and nothing beside the tube is ever in danger. | **HP: 4 | Atk: 4.** Also shells the tile 2 ranks ahead, dead centre. |
+| **Nuker** | Acid-Yellow Warhead | **Omni-Directional** (never aimed) | HP: 2 | Atk: 0 | **Detonates once, on the placement itself**, and never attacks again. Every Lv 1 rune on the board is destroyed outright — **friendlies included** — whatever its hit points; Lv 2+ runes survive with 3 damage. The nuker itself is untouched. | **HP: 4 | Atk: 0.** Its own body outlives a second nuke. |
+
+**Why the nuke reads levels, not hit points.** A Lv 1 shield with 9 HP is
+vaporised exactly like a 2-HP bow, and the smallest Lv 2 body in the game (4)
+is larger than the 3 damage a survivor takes. So "stacks survive, singles do
+not" is a rule the player can plan around rather than an arithmetic accident —
+which is what makes the nuker a *reset button with a price*. From behind it
+wipes a board you are losing; from in front it clears everything except the
+stacks you have built. It is the last rune the campaign hands over (4-1).
+
+**Where they come from.** The first five are chapter 1's lessons. The last
+three are the long game: the campaign hands the axe over at **Stage 2-1**, the
+boulder at **2-5** and the mortar at **3-1**, and every result screen and the
+campaign map advertise the next one by name and stone ("Win Stage 2-1 for …"),
+so a new player knows there is something to come before they have earned it.
+
+**And each is taught the node after it is given.** 2-2, 2-6 and 3-2 are
+lessons, built exactly like chapter 1's — a ghost hand, bone dummies that
+never place and cannot hurt, no clock — and each is won by the ghost's single
+placement: three dummies abreast for the axe, three queued down one lane for
+the boulder, three on the far rank behind your own shield for the mortar. A
+rune out of a chest is a rune nobody has used, and these three are the least
+guessable in the game.
 
 ---
 
@@ -112,6 +138,48 @@ Runes are represented as smooth, dark river pebbles with glowing neon glyphs car
     * Amplifies attack damage or support effectiveness.
     * Unlocks enhanced secondary abilities (e.g., Archer multi-shot, Mage AoE explosion).
 * **Cap:** Max Level 2 per tile to preserve strategic mobility and prevent invincible mega-towers.
+  *(Shipped as Lv 8 — see `MAX_LEVEL`; Lv 3+ extrapolate the Lv 1 / Lv 2 pair linearly.)*
+
+### 3.3 Rune Ranks — the permanent upgrade, and the coin sink
+
+Stacking is per match and dies with the board. **Ranks are permanent.** Every
+rune carries a rank from 0 to **5**, and each rank is worth **+1 maximum hit
+point** on the player's runes of that type — nothing else, and the same number
+for every rune.
+
+That uniformity is the balance design, not laziness about it. The game is
+fought with attack values of 2–5 against bodies of 2–9, so one point of attack
+on a sword is a 50 % damage buff and would end the roster's balance by itself;
+hit points make a rune harder to remove without making it kill anything faster.
+Giving every rune the same number per rank means **no rune can pull ahead of
+another by construction** — there is no per-rune table to tune and therefore
+none to get wrong. And because the bonus is flat rather than scaled by level,
+it is transformative on a Lv 1 bow with a body of 2 and a rounding error on a
+Lv 8 sword with 24: worth most exactly where a struggling player needs it.
+
+The enemy never has ranks.
+
+| | |
+| :--- | :--- |
+| **Ladder** | 70 → 140 → 240 → 380 → 560 coins. One rune fully ranked is 1390; the whole roster 12 510. |
+| **Paid with** | coins, **one rewarded video**, or the free gift below. |
+| **Where** | the shop's third tab, beside Power Runes and Skins. |
+
+**The rotating free upgrade.** One rank, on one rune, is free at any moment —
+no coins, no video — and which rune it is is redrawn **every 20 minutes**. It
+is deliberately a rotation rather than a stock: a player who takes it has to
+come back for the next one, and a player who is away is never accumulating a
+debt of unclaimed gifts. The window is derived from the clock rather than
+stored, so it keeps turning while the game is closed and cannot be farmed by
+reloading. Only runes that are not already capped are ever drawn — a gift the
+player cannot use is not a gift. This is the D1–D7 driver.
+
+**Every rewarded button wears the film mark.** Any button in the game that
+costs a video renders the clapper icon before its label or price, so a player
+is never surprised into an ad — and it appears only on builds that actually
+play one (`isRewardGated`: a real ad provider is resolved, which is false on
+the CrazyGames pre-release build and on ad-free builds, where the perk is
+simply granted instead).
 
 ---
 

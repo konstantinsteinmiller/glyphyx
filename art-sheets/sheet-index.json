@@ -1,0 +1,5923 @@
+{
+  "generated": "2026-09-09T00:02:34.524Z",
+  "cell": 256,
+  "note": "Rects are in clean-sheet pixels. `target` is the path under public/ a repainted slice belongs at; `fit` is the drawn content's box as fractions of its panel (solid pixels, alpha > 140); `fill` marks a panel the art fills edge to edge.",
+  "sheets": [
+    {
+      "id": "runes-melee",
+      "title": "Sword stones — the player's six skins",
+      "kind": "stones",
+      "brief": "The player's Sword rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. The glyph is a straight sword point-up: tapered blade, cross-guard, grip, round pommel, in crimson; it is the SAME glyph in every panel — the same rune carved into six different materials.",
+      "files": {
+        "clean": "sheet-runes-melee.png",
+        "key": "sheet-runes-melee-key.png"
+      },
+      "cols": 4,
+      "rows": 3,
+      "width": 1024,
+      "height": 768,
+      "cells": [
+        {
+          "id": "melee-river-lv1",
+          "label": "River",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-river-lv1.webp",
+          "fit": {
+            "w": 0.6796875,
+            "h": 0.546875,
+            "cx": 0.5078125,
+            "cy": 0.50390625
+          }
+        },
+        {
+          "id": "melee-river-lv2",
+          "label": "River",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-river-lv2.webp",
+          "fit": {
+            "w": 0.765625,
+            "h": 0.68359375,
+            "cx": 0.5078125,
+            "cy": 0.470703125
+          }
+        },
+        {
+          "id": "melee-obsidian-lv1",
+          "label": "Obsidian",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-obsidian-lv1.webp",
+          "fit": {
+            "w": 0.66796875,
+            "h": 0.6640625,
+            "cx": 0.501953125,
+            "cy": 0.484375
+          }
+        },
+        {
+          "id": "melee-obsidian-lv2",
+          "label": "Obsidian",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-obsidian-lv2.webp",
+          "fit": {
+            "w": 0.75,
+            "h": 0.74609375,
+            "cx": 0.50390625,
+            "cy": 0.482421875
+          }
+        },
+        {
+          "id": "melee-jade-lv1",
+          "label": "Jade",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-jade-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.546875,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-jade-lv2",
+          "label": "Jade",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-jade-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.67578125,
+            "cx": 0.5,
+            "cy": 0.466796875
+          }
+        },
+        {
+          "id": "melee-amber-lv1",
+          "label": "Amber",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-amber-lv1.webp",
+          "fit": {
+            "w": 0.6015625,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-amber-lv2",
+          "label": "Amber",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-amber-lv2.webp",
+          "fit": {
+            "w": 0.7109375,
+            "h": 0.78125,
+            "cx": 0.515625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-marble-lv1",
+          "label": "Marble",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-marble-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-marble-lv2",
+          "label": "Marble",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-marble-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-ember-lv1",
+          "label": "Ember",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-ember-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.5625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "melee-ember-lv2",
+          "label": "Ember",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-ember-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.68359375,
+            "cx": 0.5,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "melee-river-lv1",
+          "file": "singles/single-melee-river-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-river-lv1",
+              "label": "River",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-river-lv1.webp",
+              "fit": {
+                "w": 0.6796875,
+                "h": 0.546875,
+                "cx": 0.5078125,
+                "cy": 0.50390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-river-lv2",
+          "file": "singles/single-melee-river-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-river-lv2",
+              "label": "River",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-river-lv2.webp",
+              "fit": {
+                "w": 0.765625,
+                "h": 0.68359375,
+                "cx": 0.5078125,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-obsidian-lv1",
+          "file": "singles/single-melee-obsidian-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-obsidian-lv1",
+              "label": "Obsidian",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-obsidian-lv1.webp",
+              "fit": {
+                "w": 0.66796875,
+                "h": 0.6640625,
+                "cx": 0.501953125,
+                "cy": 0.484375
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-obsidian-lv2",
+          "file": "singles/single-melee-obsidian-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-obsidian-lv2",
+              "label": "Obsidian",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-obsidian-lv2.webp",
+              "fit": {
+                "w": 0.75,
+                "h": 0.74609375,
+                "cx": 0.50390625,
+                "cy": 0.482421875
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-jade-lv1",
+          "file": "singles/single-melee-jade-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-jade-lv1",
+              "label": "Jade",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-jade-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.546875,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-jade-lv2",
+          "file": "singles/single-melee-jade-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-jade-lv2",
+              "label": "Jade",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-jade-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.67578125,
+                "cx": 0.5,
+                "cy": 0.466796875
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-amber-lv1",
+          "file": "singles/single-melee-amber-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-amber-lv1",
+              "label": "Amber",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-amber-lv1.webp",
+              "fit": {
+                "w": 0.6015625,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-amber-lv2",
+          "file": "singles/single-melee-amber-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-amber-lv2",
+              "label": "Amber",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-amber-lv2.webp",
+              "fit": {
+                "w": 0.7109375,
+                "h": 0.78125,
+                "cx": 0.515625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-marble-lv1",
+          "file": "singles/single-melee-marble-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-marble-lv1",
+              "label": "Marble",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-marble-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-marble-lv2",
+          "file": "singles/single-melee-marble-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-marble-lv2",
+              "label": "Marble",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-marble-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-ember-lv1",
+          "file": "singles/single-melee-ember-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-ember-lv1",
+              "label": "Ember",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-ember-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.5625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-ember-lv2",
+          "file": "singles/single-melee-ember-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-ember-lv2",
+              "label": "Ember",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-ember-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.68359375,
+                "cx": 0.5,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-archer",
+      "title": "Bow stones — the player's six skins",
+      "kind": "stones",
+      "brief": "The player's Bow rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. The glyph is a bow with the string drawn and an arrow nocked, flying to the right, in emerald; it is the SAME glyph in every panel — the same rune carved into six different materials.",
+      "files": {
+        "clean": "sheet-runes-archer.png",
+        "key": "sheet-runes-archer-key.png"
+      },
+      "cols": 4,
+      "rows": 3,
+      "width": 1024,
+      "height": 768,
+      "cells": [
+        {
+          "id": "archer-river-lv1",
+          "label": "River",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-river-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.62109375,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "archer-river-lv2",
+          "label": "River",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-river-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.71484375,
+            "cx": 0.490234375,
+            "cy": 0.486328125
+          }
+        },
+        {
+          "id": "archer-obsidian-lv1",
+          "label": "Obsidian",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-obsidian-lv1.webp",
+          "fit": {
+            "w": 0.67578125,
+            "h": 0.5078125,
+            "cx": 0.509765625,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "archer-obsidian-lv2",
+          "label": "Obsidian",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-obsidian-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.6484375,
+            "cx": 0.509765625,
+            "cy": 0.453125
+          }
+        },
+        {
+          "id": "archer-jade-lv1",
+          "label": "Jade",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-jade-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.546875,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-jade-lv2",
+          "label": "Jade",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-jade-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.67578125,
+            "cx": 0.5,
+            "cy": 0.466796875
+          }
+        },
+        {
+          "id": "archer-amber-lv1",
+          "label": "Amber",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-amber-lv1.webp",
+          "fit": {
+            "w": 0.6015625,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-amber-lv2",
+          "label": "Amber",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-amber-lv2.webp",
+          "fit": {
+            "w": 0.7109375,
+            "h": 0.78125,
+            "cx": 0.515625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-marble-lv1",
+          "label": "Marble",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-marble-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-marble-lv2",
+          "label": "Marble",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-marble-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-ember-lv1",
+          "label": "Ember",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-ember-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.5625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "archer-ember-lv2",
+          "label": "Ember",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-ember-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.68359375,
+            "cx": 0.5,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "archer-river-lv1",
+          "file": "singles/single-archer-river-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-river-lv1",
+              "label": "River",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-river-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.62109375,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-river-lv2",
+          "file": "singles/single-archer-river-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-river-lv2",
+              "label": "River",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-river-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.71484375,
+                "cx": 0.490234375,
+                "cy": 0.486328125
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-obsidian-lv1",
+          "file": "singles/single-archer-obsidian-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-obsidian-lv1",
+              "label": "Obsidian",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-obsidian-lv1.webp",
+              "fit": {
+                "w": 0.67578125,
+                "h": 0.5078125,
+                "cx": 0.509765625,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-obsidian-lv2",
+          "file": "singles/single-archer-obsidian-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-obsidian-lv2",
+              "label": "Obsidian",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-obsidian-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.6484375,
+                "cx": 0.509765625,
+                "cy": 0.453125
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-jade-lv1",
+          "file": "singles/single-archer-jade-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-jade-lv1",
+              "label": "Jade",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-jade-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.546875,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-jade-lv2",
+          "file": "singles/single-archer-jade-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-jade-lv2",
+              "label": "Jade",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-jade-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.67578125,
+                "cx": 0.5,
+                "cy": 0.466796875
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-amber-lv1",
+          "file": "singles/single-archer-amber-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-amber-lv1",
+              "label": "Amber",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-amber-lv1.webp",
+              "fit": {
+                "w": 0.6015625,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-amber-lv2",
+          "file": "singles/single-archer-amber-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-amber-lv2",
+              "label": "Amber",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-amber-lv2.webp",
+              "fit": {
+                "w": 0.7109375,
+                "h": 0.78125,
+                "cx": 0.515625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-marble-lv1",
+          "file": "singles/single-archer-marble-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-marble-lv1",
+              "label": "Marble",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-marble-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-marble-lv2",
+          "file": "singles/single-archer-marble-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-marble-lv2",
+              "label": "Marble",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-marble-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-ember-lv1",
+          "file": "singles/single-archer-ember-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-ember-lv1",
+              "label": "Ember",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-ember-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.5625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-ember-lv2",
+          "file": "singles/single-archer-ember-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-ember-lv2",
+              "label": "Ember",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-ember-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.68359375,
+                "cx": 0.5,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-mage",
+      "title": "Orb stones — the player's six skins",
+      "kind": "stones",
+      "brief": "The player's Orb rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. The glyph is an arcane orb: a solid core inside a ring, four diagonal sparks, in amethyst violet; it is the SAME glyph in every panel — the same rune carved into six different materials.",
+      "files": {
+        "clean": "sheet-runes-mage.png",
+        "key": "sheet-runes-mage-key.png"
+      },
+      "cols": 4,
+      "rows": 3,
+      "width": 1024,
+      "height": 768,
+      "cells": [
+        {
+          "id": "mage-river-lv1",
+          "label": "River",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-river-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.64453125,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "mage-river-lv2",
+          "label": "River",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-river-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.7265625,
+            "cx": 0.490234375,
+            "cy": 0.4921875
+          }
+        },
+        {
+          "id": "mage-obsidian-lv1",
+          "label": "Obsidian",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-obsidian-lv1.webp",
+          "fit": {
+            "w": 0.67578125,
+            "h": 0.61328125,
+            "cx": 0.509765625,
+            "cy": 0.525390625
+          }
+        },
+        {
+          "id": "mage-obsidian-lv2",
+          "label": "Obsidian",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-obsidian-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.74609375,
+            "cx": 0.509765625,
+            "cy": 0.501953125
+          }
+        },
+        {
+          "id": "mage-jade-lv1",
+          "label": "Jade",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-jade-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.546875,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-jade-lv2",
+          "label": "Jade",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-jade-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.67578125,
+            "cx": 0.5,
+            "cy": 0.466796875
+          }
+        },
+        {
+          "id": "mage-amber-lv1",
+          "label": "Amber",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-amber-lv1.webp",
+          "fit": {
+            "w": 0.6015625,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-amber-lv2",
+          "label": "Amber",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-amber-lv2.webp",
+          "fit": {
+            "w": 0.7109375,
+            "h": 0.78125,
+            "cx": 0.515625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-marble-lv1",
+          "label": "Marble",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-marble-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-marble-lv2",
+          "label": "Marble",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-marble-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-ember-lv1",
+          "label": "Ember",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-ember-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.5625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "mage-ember-lv2",
+          "label": "Ember",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-ember-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.68359375,
+            "cx": 0.5,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "mage-river-lv1",
+          "file": "singles/single-mage-river-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-river-lv1",
+              "label": "River",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-river-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.64453125,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-river-lv2",
+          "file": "singles/single-mage-river-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-river-lv2",
+              "label": "River",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-river-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.7265625,
+                "cx": 0.490234375,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-obsidian-lv1",
+          "file": "singles/single-mage-obsidian-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-obsidian-lv1",
+              "label": "Obsidian",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-obsidian-lv1.webp",
+              "fit": {
+                "w": 0.67578125,
+                "h": 0.61328125,
+                "cx": 0.509765625,
+                "cy": 0.525390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-obsidian-lv2",
+          "file": "singles/single-mage-obsidian-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-obsidian-lv2",
+              "label": "Obsidian",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-obsidian-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.74609375,
+                "cx": 0.509765625,
+                "cy": 0.501953125
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-jade-lv1",
+          "file": "singles/single-mage-jade-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-jade-lv1",
+              "label": "Jade",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-jade-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.546875,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-jade-lv2",
+          "file": "singles/single-mage-jade-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-jade-lv2",
+              "label": "Jade",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-jade-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.67578125,
+                "cx": 0.5,
+                "cy": 0.466796875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-amber-lv1",
+          "file": "singles/single-mage-amber-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-amber-lv1",
+              "label": "Amber",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-amber-lv1.webp",
+              "fit": {
+                "w": 0.6015625,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-amber-lv2",
+          "file": "singles/single-mage-amber-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-amber-lv2",
+              "label": "Amber",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-amber-lv2.webp",
+              "fit": {
+                "w": 0.7109375,
+                "h": 0.78125,
+                "cx": 0.515625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-marble-lv1",
+          "file": "singles/single-mage-marble-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-marble-lv1",
+              "label": "Marble",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-marble-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-marble-lv2",
+          "file": "singles/single-mage-marble-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-marble-lv2",
+              "label": "Marble",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-marble-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-ember-lv1",
+          "file": "singles/single-mage-ember-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-ember-lv1",
+              "label": "Ember",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-ember-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.5625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-ember-lv2",
+          "file": "singles/single-mage-ember-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-ember-lv2",
+              "label": "Ember",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-ember-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.68359375,
+                "cx": 0.5,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-defense",
+      "title": "Shield stones — the player's six skins",
+      "kind": "stones",
+      "brief": "The player's Shield rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. The glyph is a heater shield with a cross cut out of its face, in sapphire blue; it is the SAME glyph in every panel — the same rune carved into six different materials.",
+      "files": {
+        "clean": "sheet-runes-defense.png",
+        "key": "sheet-runes-defense-key.png"
+      },
+      "cols": 4,
+      "rows": 3,
+      "width": 1024,
+      "height": 768,
+      "cells": [
+        {
+          "id": "defense-river-lv1",
+          "label": "River",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-river-lv1.webp",
+          "fit": {
+            "w": 0.66015625,
+            "h": 0.5703125,
+            "cx": 0.517578125,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-river-lv2",
+          "label": "River",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-river-lv2.webp",
+          "fit": {
+            "w": 0.7421875,
+            "h": 0.6875,
+            "cx": 0.51953125,
+            "cy": 0.47265625
+          }
+        },
+        {
+          "id": "defense-obsidian-lv1",
+          "label": "Obsidian",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-obsidian-lv1.webp",
+          "fit": {
+            "w": 0.65625,
+            "h": 0.4921875,
+            "cx": 0.48046875,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-obsidian-lv2",
+          "label": "Obsidian",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-obsidian-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.640625,
+            "cx": 0.490234375,
+            "cy": 0.44921875
+          }
+        },
+        {
+          "id": "defense-jade-lv1",
+          "label": "Jade",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-jade-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.546875,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-jade-lv2",
+          "label": "Jade",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-jade-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.67578125,
+            "cx": 0.5,
+            "cy": 0.466796875
+          }
+        },
+        {
+          "id": "defense-amber-lv1",
+          "label": "Amber",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-amber-lv1.webp",
+          "fit": {
+            "w": 0.6015625,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-amber-lv2",
+          "label": "Amber",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-amber-lv2.webp",
+          "fit": {
+            "w": 0.7109375,
+            "h": 0.78125,
+            "cx": 0.515625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-marble-lv1",
+          "label": "Marble",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-marble-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-marble-lv2",
+          "label": "Marble",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-marble-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-ember-lv1",
+          "label": "Ember",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-ember-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.5625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "defense-ember-lv2",
+          "label": "Ember",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-ember-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.68359375,
+            "cx": 0.5,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "defense-river-lv1",
+          "file": "singles/single-defense-river-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-river-lv1",
+              "label": "River",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-river-lv1.webp",
+              "fit": {
+                "w": 0.66015625,
+                "h": 0.5703125,
+                "cx": 0.517578125,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-river-lv2",
+          "file": "singles/single-defense-river-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-river-lv2",
+              "label": "River",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-river-lv2.webp",
+              "fit": {
+                "w": 0.7421875,
+                "h": 0.6875,
+                "cx": 0.51953125,
+                "cy": 0.47265625
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-obsidian-lv1",
+          "file": "singles/single-defense-obsidian-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-obsidian-lv1",
+              "label": "Obsidian",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-obsidian-lv1.webp",
+              "fit": {
+                "w": 0.65625,
+                "h": 0.4921875,
+                "cx": 0.48046875,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-obsidian-lv2",
+          "file": "singles/single-defense-obsidian-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-obsidian-lv2",
+              "label": "Obsidian",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-obsidian-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.640625,
+                "cx": 0.490234375,
+                "cy": 0.44921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-jade-lv1",
+          "file": "singles/single-defense-jade-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-jade-lv1",
+              "label": "Jade",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-jade-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.546875,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-jade-lv2",
+          "file": "singles/single-defense-jade-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-jade-lv2",
+              "label": "Jade",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-jade-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.67578125,
+                "cx": 0.5,
+                "cy": 0.466796875
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-amber-lv1",
+          "file": "singles/single-defense-amber-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-amber-lv1",
+              "label": "Amber",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-amber-lv1.webp",
+              "fit": {
+                "w": 0.6015625,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-amber-lv2",
+          "file": "singles/single-defense-amber-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-amber-lv2",
+              "label": "Amber",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-amber-lv2.webp",
+              "fit": {
+                "w": 0.7109375,
+                "h": 0.78125,
+                "cx": 0.515625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-marble-lv1",
+          "file": "singles/single-defense-marble-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-marble-lv1",
+              "label": "Marble",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-marble-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-marble-lv2",
+          "file": "singles/single-defense-marble-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-marble-lv2",
+              "label": "Marble",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-marble-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-ember-lv1",
+          "file": "singles/single-defense-ember-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-ember-lv1",
+              "label": "Ember",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-ember-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.5625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-ember-lv2",
+          "file": "singles/single-defense-ember-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-ember-lv2",
+              "label": "Ember",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-ember-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.68359375,
+                "cx": 0.5,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-support",
+      "title": "Cross stones — the player's six skins",
+      "kind": "stones",
+      "brief": "The player's Cross rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. The glyph is a radiant cross, four flared arms and a small burst at the centre, in topaz gold; it is the SAME glyph in every panel — the same rune carved into six different materials.",
+      "files": {
+        "clean": "sheet-runes-support.png",
+        "key": "sheet-runes-support-key.png"
+      },
+      "cols": 4,
+      "rows": 3,
+      "width": 1024,
+      "height": 768,
+      "cells": [
+        {
+          "id": "support-river-lv1",
+          "label": "River",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-river-lv1.webp",
+          "fit": {
+            "w": 0.69140625,
+            "h": 0.5625,
+            "cx": 0.501953125,
+            "cy": 0.5078125
+          }
+        },
+        {
+          "id": "support-river-lv2",
+          "label": "River",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-river-lv2.webp",
+          "fit": {
+            "w": 0.77734375,
+            "h": 0.69921875,
+            "cx": 0.501953125,
+            "cy": 0.478515625
+          }
+        },
+        {
+          "id": "support-obsidian-lv1",
+          "label": "Obsidian",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-obsidian-lv1.webp",
+          "fit": {
+            "w": 0.66796875,
+            "h": 0.640625,
+            "cx": 0.494140625,
+            "cy": 0.52734375
+          }
+        },
+        {
+          "id": "support-obsidian-lv2",
+          "label": "Obsidian",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-obsidian-lv2.webp",
+          "fit": {
+            "w": 0.75390625,
+            "h": 0.76171875,
+            "cx": 0.494140625,
+            "cy": 0.509765625
+          }
+        },
+        {
+          "id": "support-jade-lv1",
+          "label": "Jade",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-jade-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.546875,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-jade-lv2",
+          "label": "Jade",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-jade-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.67578125,
+            "cx": 0.5,
+            "cy": 0.466796875
+          }
+        },
+        {
+          "id": "support-amber-lv1",
+          "label": "Amber",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-amber-lv1.webp",
+          "fit": {
+            "w": 0.6015625,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-amber-lv2",
+          "label": "Amber",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-amber-lv2.webp",
+          "fit": {
+            "w": 0.7109375,
+            "h": 0.78125,
+            "cx": 0.515625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-marble-lv1",
+          "label": "Marble",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-marble-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.6953125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-marble-lv2",
+          "label": "Marble",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-marble-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-ember-lv1",
+          "label": "Ember",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-ember-lv1.webp",
+          "fit": {
+            "w": 0.6953125,
+            "h": 0.5625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "support-ember-lv2",
+          "label": "Ember",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-ember-lv2.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.68359375,
+            "cx": 0.5,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "support-river-lv1",
+          "file": "singles/single-support-river-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-river-lv1",
+              "label": "River",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-river-lv1.webp",
+              "fit": {
+                "w": 0.69140625,
+                "h": 0.5625,
+                "cx": 0.501953125,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-river-lv2",
+          "file": "singles/single-support-river-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-river-lv2",
+              "label": "River",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-river-lv2.webp",
+              "fit": {
+                "w": 0.77734375,
+                "h": 0.69921875,
+                "cx": 0.501953125,
+                "cy": 0.478515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-obsidian-lv1",
+          "file": "singles/single-support-obsidian-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-obsidian-lv1",
+              "label": "Obsidian",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-obsidian-lv1.webp",
+              "fit": {
+                "w": 0.66796875,
+                "h": 0.640625,
+                "cx": 0.494140625,
+                "cy": 0.52734375
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-obsidian-lv2",
+          "file": "singles/single-support-obsidian-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-obsidian-lv2",
+              "label": "Obsidian",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-obsidian-lv2.webp",
+              "fit": {
+                "w": 0.75390625,
+                "h": 0.76171875,
+                "cx": 0.494140625,
+                "cy": 0.509765625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-jade-lv1",
+          "file": "singles/single-support-jade-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-jade-lv1",
+              "label": "Jade",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-jade-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.546875,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-jade-lv2",
+          "file": "singles/single-support-jade-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-jade-lv2",
+              "label": "Jade",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-jade-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.67578125,
+                "cx": 0.5,
+                "cy": 0.466796875
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-amber-lv1",
+          "file": "singles/single-support-amber-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-amber-lv1",
+              "label": "Amber",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-amber-lv1.webp",
+              "fit": {
+                "w": 0.6015625,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-amber-lv2",
+          "file": "singles/single-support-amber-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-amber-lv2",
+              "label": "Amber",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-amber-lv2.webp",
+              "fit": {
+                "w": 0.7109375,
+                "h": 0.78125,
+                "cx": 0.515625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-marble-lv1",
+          "file": "singles/single-support-marble-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-marble-lv1",
+              "label": "Marble",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-marble-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.6953125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-marble-lv2",
+          "file": "singles/single-support-marble-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-marble-lv2",
+              "label": "Marble",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-marble-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-ember-lv1",
+          "file": "singles/single-support-ember-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-ember-lv1",
+              "label": "Ember",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-ember-lv1.webp",
+              "fit": {
+                "w": 0.6953125,
+                "h": 0.5625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-ember-lv2",
+          "file": "singles/single-support-ember-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-ember-lv2",
+              "label": "Ember",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-ember-lv2.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.68359375,
+                "cx": 0.5,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-enemy-melee",
+      "title": "Sword stones — the four enemy factions",
+      "kind": "enemyStones",
+      "brief": "The enemy's Sword rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells it from their own at a glance; the glyph is a straight sword point-up: tapered blade, cross-guard, grip, round pommel, in crimson, the same glyph in every panel.",
+      "files": {
+        "clean": "sheet-runes-enemy-melee.png",
+        "key": "sheet-runes-enemy-melee-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "melee-e-skeleton-lv1",
+          "label": "Bone Dummies",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-skeleton-lv1.webp",
+          "fit": {
+            "w": 0.6796875,
+            "h": 0.546875,
+            "cx": 0.5078125,
+            "cy": 0.50390625
+          }
+        },
+        {
+          "id": "melee-e-skeleton-lv2",
+          "label": "Bone Dummies",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-skeleton-lv2.webp",
+          "fit": {
+            "w": 0.765625,
+            "h": 0.68359375,
+            "cx": 0.5078125,
+            "cy": 0.470703125
+          }
+        },
+        {
+          "id": "melee-e-goblin-lv1",
+          "label": "Goblin Archers",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-goblin-lv1.webp",
+          "fit": {
+            "w": 0.6796875,
+            "h": 0.546875,
+            "cx": 0.5078125,
+            "cy": 0.50390625
+          }
+        },
+        {
+          "id": "melee-e-goblin-lv2",
+          "label": "Goblin Archers",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-goblin-lv2.webp",
+          "fit": {
+            "w": 0.765625,
+            "h": 0.68359375,
+            "cx": 0.5078125,
+            "cy": 0.470703125
+          }
+        },
+        {
+          "id": "melee-e-orc-lv1",
+          "label": "Orc Berserkers",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-orc-lv1.webp",
+          "fit": {
+            "w": 0.6796875,
+            "h": 0.546875,
+            "cx": 0.5078125,
+            "cy": 0.50390625
+          }
+        },
+        {
+          "id": "melee-e-orc-lv2",
+          "label": "Orc Berserkers",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-orc-lv2.webp",
+          "fit": {
+            "w": 0.765625,
+            "h": 0.68359375,
+            "cx": 0.5078125,
+            "cy": 0.470703125
+          }
+        },
+        {
+          "id": "melee-e-undead-lv1",
+          "label": "Undead Mages",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-undead-lv1.webp",
+          "fit": {
+            "w": 0.6796875,
+            "h": 0.546875,
+            "cx": 0.5078125,
+            "cy": 0.50390625
+          }
+        },
+        {
+          "id": "melee-e-undead-lv2",
+          "label": "Undead Mages",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee-e-undead-lv2.webp",
+          "fit": {
+            "w": 0.765625,
+            "h": 0.68359375,
+            "cx": 0.5078125,
+            "cy": 0.470703125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "melee-e-skeleton-lv1",
+          "file": "singles/single-melee-e-skeleton-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-skeleton-lv1",
+              "label": "Bone Dummies",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-skeleton-lv1.webp",
+              "fit": {
+                "w": 0.6796875,
+                "h": 0.546875,
+                "cx": 0.5078125,
+                "cy": 0.50390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-skeleton-lv2",
+          "file": "singles/single-melee-e-skeleton-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-skeleton-lv2",
+              "label": "Bone Dummies",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-skeleton-lv2.webp",
+              "fit": {
+                "w": 0.765625,
+                "h": 0.68359375,
+                "cx": 0.5078125,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-goblin-lv1",
+          "file": "singles/single-melee-e-goblin-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-goblin-lv1",
+              "label": "Goblin Archers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-goblin-lv1.webp",
+              "fit": {
+                "w": 0.6796875,
+                "h": 0.546875,
+                "cx": 0.5078125,
+                "cy": 0.50390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-goblin-lv2",
+          "file": "singles/single-melee-e-goblin-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-goblin-lv2",
+              "label": "Goblin Archers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-goblin-lv2.webp",
+              "fit": {
+                "w": 0.765625,
+                "h": 0.68359375,
+                "cx": 0.5078125,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-orc-lv1",
+          "file": "singles/single-melee-e-orc-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-orc-lv1",
+              "label": "Orc Berserkers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-orc-lv1.webp",
+              "fit": {
+                "w": 0.6796875,
+                "h": 0.546875,
+                "cx": 0.5078125,
+                "cy": 0.50390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-orc-lv2",
+          "file": "singles/single-melee-e-orc-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-orc-lv2",
+              "label": "Orc Berserkers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-orc-lv2.webp",
+              "fit": {
+                "w": 0.765625,
+                "h": 0.68359375,
+                "cx": 0.5078125,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-undead-lv1",
+          "file": "singles/single-melee-e-undead-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-undead-lv1",
+              "label": "Undead Mages",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-undead-lv1.webp",
+              "fit": {
+                "w": 0.6796875,
+                "h": 0.546875,
+                "cx": 0.5078125,
+                "cy": 0.50390625
+              }
+            }
+          ]
+        },
+        {
+          "id": "melee-e-undead-lv2",
+          "file": "singles/single-melee-e-undead-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee-e-undead-lv2",
+              "label": "Undead Mages",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee-e-undead-lv2.webp",
+              "fit": {
+                "w": 0.765625,
+                "h": 0.68359375,
+                "cx": 0.5078125,
+                "cy": 0.470703125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-enemy-archer",
+      "title": "Bow stones — the four enemy factions",
+      "kind": "enemyStones",
+      "brief": "The enemy's Bow rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells it from their own at a glance; the glyph is a bow with the string drawn and an arrow nocked, flying to the right, in emerald, the same glyph in every panel.",
+      "files": {
+        "clean": "sheet-runes-enemy-archer.png",
+        "key": "sheet-runes-enemy-archer-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "archer-e-skeleton-lv1",
+          "label": "Bone Dummies",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-skeleton-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.62109375,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "archer-e-skeleton-lv2",
+          "label": "Bone Dummies",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-skeleton-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.71484375,
+            "cx": 0.490234375,
+            "cy": 0.486328125
+          }
+        },
+        {
+          "id": "archer-e-goblin-lv1",
+          "label": "Goblin Archers",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-goblin-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.62109375,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "archer-e-goblin-lv2",
+          "label": "Goblin Archers",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-goblin-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.71484375,
+            "cx": 0.490234375,
+            "cy": 0.486328125
+          }
+        },
+        {
+          "id": "archer-e-orc-lv1",
+          "label": "Orc Berserkers",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-orc-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.62109375,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "archer-e-orc-lv2",
+          "label": "Orc Berserkers",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-orc-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.71484375,
+            "cx": 0.490234375,
+            "cy": 0.486328125
+          }
+        },
+        {
+          "id": "archer-e-undead-lv1",
+          "label": "Undead Mages",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-undead-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.62109375,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "archer-e-undead-lv2",
+          "label": "Undead Mages",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer-e-undead-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.71484375,
+            "cx": 0.490234375,
+            "cy": 0.486328125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "archer-e-skeleton-lv1",
+          "file": "singles/single-archer-e-skeleton-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-skeleton-lv1",
+              "label": "Bone Dummies",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-skeleton-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.62109375,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-skeleton-lv2",
+          "file": "singles/single-archer-e-skeleton-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-skeleton-lv2",
+              "label": "Bone Dummies",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-skeleton-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.71484375,
+                "cx": 0.490234375,
+                "cy": 0.486328125
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-goblin-lv1",
+          "file": "singles/single-archer-e-goblin-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-goblin-lv1",
+              "label": "Goblin Archers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-goblin-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.62109375,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-goblin-lv2",
+          "file": "singles/single-archer-e-goblin-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-goblin-lv2",
+              "label": "Goblin Archers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-goblin-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.71484375,
+                "cx": 0.490234375,
+                "cy": 0.486328125
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-orc-lv1",
+          "file": "singles/single-archer-e-orc-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-orc-lv1",
+              "label": "Orc Berserkers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-orc-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.62109375,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-orc-lv2",
+          "file": "singles/single-archer-e-orc-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-orc-lv2",
+              "label": "Orc Berserkers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-orc-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.71484375,
+                "cx": 0.490234375,
+                "cy": 0.486328125
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-undead-lv1",
+          "file": "singles/single-archer-e-undead-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-undead-lv1",
+              "label": "Undead Mages",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-undead-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.62109375,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer-e-undead-lv2",
+          "file": "singles/single-archer-e-undead-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer-e-undead-lv2",
+              "label": "Undead Mages",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer-e-undead-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.71484375,
+                "cx": 0.490234375,
+                "cy": 0.486328125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-enemy-mage",
+      "title": "Orb stones — the four enemy factions",
+      "kind": "enemyStones",
+      "brief": "The enemy's Orb rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells it from their own at a glance; the glyph is an arcane orb: a solid core inside a ring, four diagonal sparks, in amethyst violet, the same glyph in every panel.",
+      "files": {
+        "clean": "sheet-runes-enemy-mage.png",
+        "key": "sheet-runes-enemy-mage-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "mage-e-skeleton-lv1",
+          "label": "Bone Dummies",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-skeleton-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.64453125,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "mage-e-skeleton-lv2",
+          "label": "Bone Dummies",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-skeleton-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.7265625,
+            "cx": 0.490234375,
+            "cy": 0.4921875
+          }
+        },
+        {
+          "id": "mage-e-goblin-lv1",
+          "label": "Goblin Archers",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-goblin-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.64453125,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "mage-e-goblin-lv2",
+          "label": "Goblin Archers",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-goblin-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.7265625,
+            "cx": 0.490234375,
+            "cy": 0.4921875
+          }
+        },
+        {
+          "id": "mage-e-orc-lv1",
+          "label": "Orc Berserkers",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-orc-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.64453125,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "mage-e-orc-lv2",
+          "label": "Orc Berserkers",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-orc-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.7265625,
+            "cx": 0.490234375,
+            "cy": 0.4921875
+          }
+        },
+        {
+          "id": "mage-e-undead-lv1",
+          "label": "Undead Mages",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-undead-lv1.webp",
+          "fit": {
+            "w": 0.671875,
+            "h": 0.64453125,
+            "cx": 0.48828125,
+            "cy": 0.494140625
+          }
+        },
+        {
+          "id": "mage-e-undead-lv2",
+          "label": "Undead Mages",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage-e-undead-lv2.webp",
+          "fit": {
+            "w": 0.76171875,
+            "h": 0.7265625,
+            "cx": 0.490234375,
+            "cy": 0.4921875
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "mage-e-skeleton-lv1",
+          "file": "singles/single-mage-e-skeleton-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-skeleton-lv1",
+              "label": "Bone Dummies",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-skeleton-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.64453125,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-skeleton-lv2",
+          "file": "singles/single-mage-e-skeleton-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-skeleton-lv2",
+              "label": "Bone Dummies",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-skeleton-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.7265625,
+                "cx": 0.490234375,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-goblin-lv1",
+          "file": "singles/single-mage-e-goblin-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-goblin-lv1",
+              "label": "Goblin Archers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-goblin-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.64453125,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-goblin-lv2",
+          "file": "singles/single-mage-e-goblin-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-goblin-lv2",
+              "label": "Goblin Archers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-goblin-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.7265625,
+                "cx": 0.490234375,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-orc-lv1",
+          "file": "singles/single-mage-e-orc-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-orc-lv1",
+              "label": "Orc Berserkers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-orc-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.64453125,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-orc-lv2",
+          "file": "singles/single-mage-e-orc-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-orc-lv2",
+              "label": "Orc Berserkers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-orc-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.7265625,
+                "cx": 0.490234375,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-undead-lv1",
+          "file": "singles/single-mage-e-undead-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-undead-lv1",
+              "label": "Undead Mages",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-undead-lv1.webp",
+              "fit": {
+                "w": 0.671875,
+                "h": 0.64453125,
+                "cx": 0.48828125,
+                "cy": 0.494140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage-e-undead-lv2",
+          "file": "singles/single-mage-e-undead-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage-e-undead-lv2",
+              "label": "Undead Mages",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage-e-undead-lv2.webp",
+              "fit": {
+                "w": 0.76171875,
+                "h": 0.7265625,
+                "cx": 0.490234375,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-enemy-defense",
+      "title": "Shield stones — the four enemy factions",
+      "kind": "enemyStones",
+      "brief": "The enemy's Shield rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells it from their own at a glance; the glyph is a heater shield with a cross cut out of its face, in sapphire blue, the same glyph in every panel.",
+      "files": {
+        "clean": "sheet-runes-enemy-defense.png",
+        "key": "sheet-runes-enemy-defense-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "defense-e-skeleton-lv1",
+          "label": "Bone Dummies",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-skeleton-lv1.webp",
+          "fit": {
+            "w": 0.66015625,
+            "h": 0.5703125,
+            "cx": 0.517578125,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-e-skeleton-lv2",
+          "label": "Bone Dummies",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-skeleton-lv2.webp",
+          "fit": {
+            "w": 0.7421875,
+            "h": 0.6875,
+            "cx": 0.51953125,
+            "cy": 0.47265625
+          }
+        },
+        {
+          "id": "defense-e-goblin-lv1",
+          "label": "Goblin Archers",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-goblin-lv1.webp",
+          "fit": {
+            "w": 0.66015625,
+            "h": 0.5703125,
+            "cx": 0.517578125,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-e-goblin-lv2",
+          "label": "Goblin Archers",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-goblin-lv2.webp",
+          "fit": {
+            "w": 0.7421875,
+            "h": 0.6875,
+            "cx": 0.51953125,
+            "cy": 0.47265625
+          }
+        },
+        {
+          "id": "defense-e-orc-lv1",
+          "label": "Orc Berserkers",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-orc-lv1.webp",
+          "fit": {
+            "w": 0.66015625,
+            "h": 0.5703125,
+            "cx": 0.517578125,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-e-orc-lv2",
+          "label": "Orc Berserkers",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-orc-lv2.webp",
+          "fit": {
+            "w": 0.7421875,
+            "h": 0.6875,
+            "cx": 0.51953125,
+            "cy": 0.47265625
+          }
+        },
+        {
+          "id": "defense-e-undead-lv1",
+          "label": "Undead Mages",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-undead-lv1.webp",
+          "fit": {
+            "w": 0.66015625,
+            "h": 0.5703125,
+            "cx": 0.517578125,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "defense-e-undead-lv2",
+          "label": "Undead Mages",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense-e-undead-lv2.webp",
+          "fit": {
+            "w": 0.7421875,
+            "h": 0.6875,
+            "cx": 0.51953125,
+            "cy": 0.47265625
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "defense-e-skeleton-lv1",
+          "file": "singles/single-defense-e-skeleton-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-skeleton-lv1",
+              "label": "Bone Dummies",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-skeleton-lv1.webp",
+              "fit": {
+                "w": 0.66015625,
+                "h": 0.5703125,
+                "cx": 0.517578125,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-skeleton-lv2",
+          "file": "singles/single-defense-e-skeleton-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-skeleton-lv2",
+              "label": "Bone Dummies",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-skeleton-lv2.webp",
+              "fit": {
+                "w": 0.7421875,
+                "h": 0.6875,
+                "cx": 0.51953125,
+                "cy": 0.47265625
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-goblin-lv1",
+          "file": "singles/single-defense-e-goblin-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-goblin-lv1",
+              "label": "Goblin Archers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-goblin-lv1.webp",
+              "fit": {
+                "w": 0.66015625,
+                "h": 0.5703125,
+                "cx": 0.517578125,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-goblin-lv2",
+          "file": "singles/single-defense-e-goblin-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-goblin-lv2",
+              "label": "Goblin Archers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-goblin-lv2.webp",
+              "fit": {
+                "w": 0.7421875,
+                "h": 0.6875,
+                "cx": 0.51953125,
+                "cy": 0.47265625
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-orc-lv1",
+          "file": "singles/single-defense-e-orc-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-orc-lv1",
+              "label": "Orc Berserkers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-orc-lv1.webp",
+              "fit": {
+                "w": 0.66015625,
+                "h": 0.5703125,
+                "cx": 0.517578125,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-orc-lv2",
+          "file": "singles/single-defense-e-orc-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-orc-lv2",
+              "label": "Orc Berserkers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-orc-lv2.webp",
+              "fit": {
+                "w": 0.7421875,
+                "h": 0.6875,
+                "cx": 0.51953125,
+                "cy": 0.47265625
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-undead-lv1",
+          "file": "singles/single-defense-e-undead-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-undead-lv1",
+              "label": "Undead Mages",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-undead-lv1.webp",
+              "fit": {
+                "w": 0.66015625,
+                "h": 0.5703125,
+                "cx": 0.517578125,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense-e-undead-lv2",
+          "file": "singles/single-defense-e-undead-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense-e-undead-lv2",
+              "label": "Undead Mages",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense-e-undead-lv2.webp",
+              "fit": {
+                "w": 0.7421875,
+                "h": 0.6875,
+                "cx": 0.51953125,
+                "cy": 0.47265625
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes-enemy-support",
+      "title": "Cross stones — the four enemy factions",
+      "kind": "enemyStones",
+      "brief": "The enemy's Cross rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells it from their own at a glance; the glyph is a radiant cross, four flared arms and a small burst at the centre, in topaz gold, the same glyph in every panel.",
+      "files": {
+        "clean": "sheet-runes-enemy-support.png",
+        "key": "sheet-runes-enemy-support-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "support-e-skeleton-lv1",
+          "label": "Bone Dummies",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-skeleton-lv1.webp",
+          "fit": {
+            "w": 0.69140625,
+            "h": 0.5625,
+            "cx": 0.501953125,
+            "cy": 0.5078125
+          }
+        },
+        {
+          "id": "support-e-skeleton-lv2",
+          "label": "Bone Dummies",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-skeleton-lv2.webp",
+          "fit": {
+            "w": 0.77734375,
+            "h": 0.69921875,
+            "cx": 0.501953125,
+            "cy": 0.478515625
+          }
+        },
+        {
+          "id": "support-e-goblin-lv1",
+          "label": "Goblin Archers",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-goblin-lv1.webp",
+          "fit": {
+            "w": 0.69140625,
+            "h": 0.5625,
+            "cx": 0.501953125,
+            "cy": 0.5078125
+          }
+        },
+        {
+          "id": "support-e-goblin-lv2",
+          "label": "Goblin Archers",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-goblin-lv2.webp",
+          "fit": {
+            "w": 0.77734375,
+            "h": 0.69921875,
+            "cx": 0.501953125,
+            "cy": 0.478515625
+          }
+        },
+        {
+          "id": "support-e-orc-lv1",
+          "label": "Orc Berserkers",
+          "variant": "Lv 1",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-orc-lv1.webp",
+          "fit": {
+            "w": 0.69140625,
+            "h": 0.5625,
+            "cx": 0.501953125,
+            "cy": 0.5078125
+          }
+        },
+        {
+          "id": "support-e-orc-lv2",
+          "label": "Orc Berserkers",
+          "variant": "Lv 2",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-orc-lv2.webp",
+          "fit": {
+            "w": 0.77734375,
+            "h": 0.69921875,
+            "cx": 0.501953125,
+            "cy": 0.478515625
+          }
+        },
+        {
+          "id": "support-e-undead-lv1",
+          "label": "Undead Mages",
+          "variant": "Lv 1",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-undead-lv1.webp",
+          "fit": {
+            "w": 0.69140625,
+            "h": 0.5625,
+            "cx": 0.501953125,
+            "cy": 0.5078125
+          }
+        },
+        {
+          "id": "support-e-undead-lv2",
+          "label": "Undead Mages",
+          "variant": "Lv 2",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support-e-undead-lv2.webp",
+          "fit": {
+            "w": 0.77734375,
+            "h": 0.69921875,
+            "cx": 0.501953125,
+            "cy": 0.478515625
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "support-e-skeleton-lv1",
+          "file": "singles/single-support-e-skeleton-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-skeleton-lv1",
+              "label": "Bone Dummies",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-skeleton-lv1.webp",
+              "fit": {
+                "w": 0.69140625,
+                "h": 0.5625,
+                "cx": 0.501953125,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-skeleton-lv2",
+          "file": "singles/single-support-e-skeleton-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-skeleton-lv2",
+              "label": "Bone Dummies",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-skeleton-lv2.webp",
+              "fit": {
+                "w": 0.77734375,
+                "h": 0.69921875,
+                "cx": 0.501953125,
+                "cy": 0.478515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-goblin-lv1",
+          "file": "singles/single-support-e-goblin-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-goblin-lv1",
+              "label": "Goblin Archers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-goblin-lv1.webp",
+              "fit": {
+                "w": 0.69140625,
+                "h": 0.5625,
+                "cx": 0.501953125,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-goblin-lv2",
+          "file": "singles/single-support-e-goblin-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-goblin-lv2",
+              "label": "Goblin Archers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-goblin-lv2.webp",
+              "fit": {
+                "w": 0.77734375,
+                "h": 0.69921875,
+                "cx": 0.501953125,
+                "cy": 0.478515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-orc-lv1",
+          "file": "singles/single-support-e-orc-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-orc-lv1",
+              "label": "Orc Berserkers",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-orc-lv1.webp",
+              "fit": {
+                "w": 0.69140625,
+                "h": 0.5625,
+                "cx": 0.501953125,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-orc-lv2",
+          "file": "singles/single-support-e-orc-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-orc-lv2",
+              "label": "Orc Berserkers",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-orc-lv2.webp",
+              "fit": {
+                "w": 0.77734375,
+                "h": 0.69921875,
+                "cx": 0.501953125,
+                "cy": 0.478515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-undead-lv1",
+          "file": "singles/single-support-e-undead-lv1.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-undead-lv1",
+              "label": "Undead Mages",
+              "variant": "Lv 1",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-undead-lv1.webp",
+              "fit": {
+                "w": 0.69140625,
+                "h": 0.5625,
+                "cx": 0.501953125,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        },
+        {
+          "id": "support-e-undead-lv2",
+          "file": "singles/single-support-e-undead-lv2.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support-e-undead-lv2",
+              "label": "Undead Mages",
+              "variant": "Lv 2",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support-e-undead-lv2.webp",
+              "fit": {
+                "w": 0.77734375,
+                "h": 0.69921875,
+                "cx": 0.501953125,
+                "cy": 0.478515625
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glyphs",
+      "title": "Glyph icons — the five runes, no stone",
+      "kind": "glyphs",
+      "brief": "The five rune glyphs on their own, as UI icons: the unlock card, the campaign map and the shop show a rune without its stone. Bold, flat, one strong silhouette each, readable at 24 px. Three panels are blank on purpose.",
+      "files": {
+        "clean": "sheet-glyphs.png",
+        "key": "sheet-glyphs-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "melee",
+          "label": "Sword",
+          "variant": "glyph icon",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/melee.webp",
+          "fit": {
+            "w": 0.51171875,
+            "h": 0.796875,
+            "cx": 0.513671875,
+            "cy": 0.515625
+          }
+        },
+        {
+          "id": "archer",
+          "label": "Bow",
+          "variant": "glyph icon",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/archer.webp",
+          "fit": {
+            "w": 0.82421875,
+            "h": 0.80078125,
+            "cx": 0.513671875,
+            "cy": 0.513671875
+          }
+        },
+        {
+          "id": "mage",
+          "label": "Orb",
+          "variant": "glyph icon",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/mage.webp",
+          "fit": {
+            "w": 0.74609375,
+            "h": 0.75,
+            "cx": 0.513671875,
+            "cy": 0.515625
+          }
+        },
+        {
+          "id": "defense",
+          "label": "Shield",
+          "variant": "glyph icon",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/defense.webp",
+          "fit": {
+            "w": 0.69921875,
+            "h": 0.78125,
+            "cx": 0.513671875,
+            "cy": 0.515625
+          }
+        },
+        {
+          "id": "support",
+          "label": "Cross",
+          "variant": "glyph icon",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/runes/support.webp",
+          "fit": {
+            "w": 0.78125,
+            "h": 0.78515625,
+            "cx": 0.51171875,
+            "cy": 0.513671875
+          }
+        },
+        {
+          "id": "blank-1",
+          "label": "",
+          "variant": "",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "blank": true
+        },
+        {
+          "id": "blank-2",
+          "label": "",
+          "variant": "",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "blank": true
+        },
+        {
+          "id": "blank-3",
+          "label": "",
+          "variant": "",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "blank": true
+        }
+      ],
+      "singles": [
+        {
+          "id": "melee",
+          "file": "singles/single-melee.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "melee",
+              "label": "Sword",
+              "variant": "glyph icon",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/melee.webp",
+              "fit": {
+                "w": 0.51171875,
+                "h": 0.796875,
+                "cx": 0.513671875,
+                "cy": 0.515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "archer",
+          "file": "singles/single-archer.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "archer",
+              "label": "Bow",
+              "variant": "glyph icon",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/archer.webp",
+              "fit": {
+                "w": 0.82421875,
+                "h": 0.80078125,
+                "cx": 0.513671875,
+                "cy": 0.513671875
+              }
+            }
+          ]
+        },
+        {
+          "id": "mage",
+          "file": "singles/single-mage.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "mage",
+              "label": "Orb",
+              "variant": "glyph icon",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/mage.webp",
+              "fit": {
+                "w": 0.74609375,
+                "h": 0.75,
+                "cx": 0.513671875,
+                "cy": 0.515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "defense",
+          "file": "singles/single-defense.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "defense",
+              "label": "Shield",
+              "variant": "glyph icon",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/defense.webp",
+              "fit": {
+                "w": 0.69921875,
+                "h": 0.78125,
+                "cx": 0.513671875,
+                "cy": 0.515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "support",
+          "file": "singles/single-support.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "support",
+              "label": "Cross",
+              "variant": "glyph icon",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/runes/support.webp",
+              "fit": {
+                "w": 0.78125,
+                "h": 0.78515625,
+                "cx": 0.51171875,
+                "cy": 0.513671875
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiles",
+      "title": "Board tiles — player, enemy, neutral",
+      "kind": "tiles",
+      "brief": "One square floor tile of the arena in each of its three states. The board is a 4×4 grid of these; the owner's tint is the difference between them. Each tile fills its panel edge to edge with square corners — they sit side by side in play.",
+      "files": {
+        "clean": "sheet-tiles.png",
+        "key": "sheet-tiles-key.png"
+      },
+      "cols": 2,
+      "rows": 2,
+      "width": 512,
+      "height": 512,
+      "cells": [
+        {
+          "id": "player",
+          "label": "Player tile",
+          "variant": "teal glow",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/tiles/player.webp",
+          "fill": true,
+          "fit": {
+            "w": 0.9609375,
+            "h": 0.9609375,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "enemy",
+          "label": "Enemy tile",
+          "variant": "red glow",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/tiles/enemy.webp",
+          "fill": true,
+          "fit": {
+            "w": 0.9609375,
+            "h": 0.9609375,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "neutral",
+          "label": "Neutral tile",
+          "variant": "unclaimed",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/tiles/neutral.webp",
+          "fill": true,
+          "fit": {
+            "w": 0.9609375,
+            "h": 0.9609375,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "blank-1",
+          "label": "",
+          "variant": "",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "blank": true
+        }
+      ],
+      "singles": [
+        {
+          "id": "player",
+          "file": "singles/single-player.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "player",
+              "label": "Player tile",
+              "variant": "teal glow",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/tiles/player.webp",
+              "fill": true,
+              "fit": {
+                "w": 0.9609375,
+                "h": 0.9609375,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "enemy",
+          "file": "singles/single-enemy.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "enemy",
+              "label": "Enemy tile",
+              "variant": "red glow",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/tiles/enemy.webp",
+              "fill": true,
+              "fit": {
+                "w": 0.9609375,
+                "h": 0.9609375,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "neutral",
+          "file": "singles/single-neutral.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "neutral",
+              "label": "Neutral tile",
+              "variant": "unclaimed",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/tiles/neutral.webp",
+              "fill": true,
+              "fit": {
+                "w": 0.9609375,
+                "h": 0.9609375,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frame",
+      "title": "The board frame",
+      "kind": "frame",
+      "brief": "The carved stone frame around the 4×4 board: a square RING of weathered sandstone with runic ornament in the corners and a plain repeatable band along the middle of each side. The inside of the ring is EMPTY — the tiles show through it. It is nine-sliced at the outer 12 %, so the corners are the ornament and the sides must stretch.",
+      "files": {
+        "clean": "sheet-frame.png",
+        "key": "sheet-frame-key.png"
+      },
+      "cols": 4,
+      "rows": 4,
+      "width": 1024,
+      "height": 1024,
+      "cells": [
+        {
+          "id": "frame",
+          "label": "Frame",
+          "variant": "nine-sliced ring",
+          "x": 0,
+          "y": 0,
+          "w": 1024,
+          "h": 1024,
+          "target": "images/tiles/frame.webp",
+          "fill": true,
+          "maxEdge": 1024,
+          "fit": {
+            "w": 1,
+            "h": 1,
+            "cx": 0.5,
+            "cy": 0.5
+          },
+          "note": "Written at 1024 px: the frame is the largest thing on screen and is stretched by CSS-style nine-slicing."
+        }
+      ],
+      "singles": [
+        {
+          "id": "frame",
+          "file": "singles/single-frame.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "frame",
+              "label": "Frame",
+              "variant": "nine-sliced ring",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/tiles/frame.webp",
+              "fill": true,
+              "maxEdge": 1024,
+              "fit": {
+                "w": 1,
+                "h": 1,
+                "cx": 0.5,
+                "cy": 0.5
+              },
+              "note": "Written at 1024 px: the frame is the largest thing on screen and is stretched by CSS-style nine-slicing."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "title": "HUD chips — chest, crown, coin, forge, reroll, ribbon",
+      "kind": "ui",
+      "brief": "The HUD's small pictures: the reward chest, the elite crown, the coin, the Rune Forge chip, the reroll stone and the result ribbon. Each is a single object on flat magenta; the ribbon is the one wide panel.",
+      "files": {
+        "clean": "sheet-ui.png",
+        "key": "sheet-ui-key.png"
+      },
+      "cols": 4,
+      "rows": 2,
+      "width": 1024,
+      "height": 512,
+      "cells": [
+        {
+          "id": "chest",
+          "label": "Chest",
+          "variant": "reward",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/ui/chest.webp",
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.8125,
+            "h": 0.78125,
+            "cx": 0.5,
+            "cy": 0.515625
+          }
+        },
+        {
+          "id": "crown",
+          "label": "Crown",
+          "variant": "elite mark",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/ui/crown.webp",
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.96875,
+            "h": 0.984375,
+            "cx": 0.5,
+            "cy": 0.4921875
+          }
+        },
+        {
+          "id": "coin",
+          "label": "Coin",
+          "variant": "currency",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/ui/coin.webp",
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.96875,
+            "h": 1,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "forge",
+          "label": "Forge",
+          "variant": "offline chip",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/ui/forge.webp",
+          "fit": {
+            "w": 0.859375,
+            "h": 0.8984375,
+            "cx": 0.5,
+            "cy": 0.4609375
+          }
+        },
+        {
+          "id": "reroll",
+          "label": "Reroll",
+          "variant": "hand chip",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/ui/reroll.webp",
+          "fit": {
+            "w": 1,
+            "h": 1,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "ribbon",
+          "label": "Ribbon",
+          "variant": "result banner",
+          "x": 256,
+          "y": 256,
+          "w": 768,
+          "h": 256,
+          "target": "images/ui/ribbon.webp",
+          "letterboxed": {
+            "w": 597,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.71484375,
+            "h": 0.890625,
+            "cx": 0.5006510416666666,
+            "cy": 0.5078125
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "chest",
+          "file": "singles/single-chest.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "chest",
+              "label": "Chest",
+              "variant": "reward",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/ui/chest.webp",
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.8125,
+                "h": 0.78125,
+                "cx": 0.5,
+                "cy": 0.515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "crown",
+          "file": "singles/single-crown.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "crown",
+              "label": "Crown",
+              "variant": "elite mark",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/ui/crown.webp",
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.96875,
+                "h": 0.984375,
+                "cx": 0.5,
+                "cy": 0.4921875
+              }
+            }
+          ]
+        },
+        {
+          "id": "coin",
+          "file": "singles/single-coin.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "coin",
+              "label": "Coin",
+              "variant": "currency",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/ui/coin.webp",
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.96875,
+                "h": 1,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge",
+          "file": "singles/single-forge.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "forge",
+              "label": "Forge",
+              "variant": "offline chip",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/ui/forge.webp",
+              "fit": {
+                "w": 0.859375,
+                "h": 0.8984375,
+                "cx": 0.5,
+                "cy": 0.4609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "reroll",
+          "file": "singles/single-reroll.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "reroll",
+              "label": "Reroll",
+              "variant": "hand chip",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/ui/reroll.webp",
+              "fit": {
+                "w": 1,
+                "h": 1,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "ribbon",
+          "file": "singles/single-ribbon.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "ribbon",
+              "label": "Ribbon",
+              "variant": "result banner",
+              "x": 0,
+              "y": 170.5,
+              "w": 512,
+              "h": 171,
+              "target": "images/ui/ribbon.webp",
+              "letterboxed": {
+                "w": 597,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.71484375,
+                "h": 0.890625,
+                "cx": 0.5006510416666666,
+                "cy": 0.5078125
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fx",
+      "title": "Effects — rings, dome, smoke, scorch, flashes, the six Lv 2 laurels",
+      "kind": "fx",
+      "brief": "The arena's effects: three shockwave rings, the shield dome, the absorb flash, the smoke puff, the scorch mark a shattered rune leaves, the archer's muzzle flash, two crests, the mage beam's travelling spark, the archer's arrow, and six gold laurels — one per stone silhouette — the game lays around a level-2 stone. Soft light on flat magenta — every glow must stay TIGHT to its own shape, because a halo over magenta cannot be keyed.",
+      "files": {
+        "clean": "sheet-fx.png",
+        "key": "sheet-fx-key.png"
+      },
+      "cols": 6,
+      "rows": 3,
+      "width": 1536,
+      "height": 768,
+      "cells": [
+        {
+          "id": "ring-heal",
+          "label": "Heal ring",
+          "variant": "effect",
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/ring-heal.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.90625,
+            "h": 0.91015625,
+            "cx": 0.5,
+            "cy": 0.498046875
+          }
+        },
+        {
+          "id": "ring-shock",
+          "label": "Shock ring",
+          "variant": "effect",
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/ring-shock.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.890625,
+            "h": 0.890625,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "ring-heat",
+          "label": "Heat ring",
+          "variant": "effect",
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/ring-heat.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.8828125,
+            "h": 0.8984375,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "shield",
+          "label": "Dome",
+          "variant": "effect",
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/shield.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.93359375,
+            "h": 0.93359375,
+            "cx": 0.501953125,
+            "cy": 0.498046875
+          }
+        },
+        {
+          "id": "guard",
+          "label": "Absorb",
+          "variant": "effect",
+          "x": 1024,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/guard.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 256
+          },
+          "fit": {
+            "w": 0.796875,
+            "h": 0.91015625,
+            "cx": 0.5,
+            "cy": 0.498046875
+          }
+        },
+        {
+          "id": "smoke",
+          "label": "Smoke",
+          "variant": "effect",
+          "x": 1280,
+          "y": 0,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/smoke.webp",
+          "letterboxed": {
+            "w": 192,
+            "h": 192
+          },
+          "fit": {
+            "w": 0.91796875,
+            "h": 0.9140625,
+            "cx": 0.498046875,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "scorch",
+          "label": "Scorch",
+          "variant": "effect",
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/scorch.webp",
+          "letterboxed": {
+            "w": 261,
+            "h": 144
+          },
+          "fit": {
+            "w": 0.95703125,
+            "h": 0.54296875,
+            "cx": 0.501953125,
+            "cy": 0.501953125
+          }
+        },
+        {
+          "id": "muzzle",
+          "label": "Muzzle",
+          "variant": "effect",
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/muzzle.webp",
+          "maxEdge": 128,
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.94140625,
+            "h": 0.953125,
+            "cx": 0.498046875,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "crest-shield",
+          "label": "Crest S",
+          "variant": "effect",
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/crest-shield.webp",
+          "maxEdge": 128,
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.9375,
+            "h": 0.9375,
+            "cx": 0.5,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "crest-guard",
+          "label": "Crest G",
+          "variant": "effect",
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/crest-guard.webp",
+          "maxEdge": 128,
+          "letterboxed": {
+            "w": 128,
+            "h": 128
+          },
+          "fit": {
+            "w": 0.953125,
+            "h": 0.9453125,
+            "cx": 0.5,
+            "cy": 0.49609375
+          }
+        },
+        {
+          "id": "spark",
+          "label": "Spark",
+          "variant": "beam round",
+          "x": 1024,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/rounds/spark.webp",
+          "maxEdge": 128,
+          "fit": {
+            "w": 0.55078125,
+            "h": 0.2578125,
+            "cx": 0.400390625,
+            "cy": 0.5
+          }
+        },
+        {
+          "id": "laurel-pebble",
+          "label": "Laurel · pebble",
+          "variant": "Lv 2 wreath",
+          "x": 1280,
+          "y": 256,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-pebble.webp",
+          "fit": {
+            "w": 0.84375,
+            "h": 0.36328125,
+            "cx": 0.5,
+            "cy": 0.697265625
+          }
+        },
+        {
+          "id": "laurel-shard",
+          "label": "Laurel · shard",
+          "variant": "Lv 2 wreath",
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-shard.webp",
+          "fit": {
+            "w": 0.8359375,
+            "h": 0.41015625,
+            "cx": 0.48828125,
+            "cy": 0.720703125
+          }
+        },
+        {
+          "id": "laurel-oval",
+          "label": "Laurel · oval",
+          "variant": "Lv 2 wreath",
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-oval.webp",
+          "fit": {
+            "w": 0.8515625,
+            "h": 0.34375,
+            "cx": 0.5,
+            "cy": 0.69140625
+          }
+        },
+        {
+          "id": "laurel-hex",
+          "label": "Laurel · hex",
+          "variant": "Lv 2 wreath",
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-hex.webp",
+          "fit": {
+            "w": 0.8046875,
+            "h": 0.3984375,
+            "cx": 0.5,
+            "cy": 0.71484375
+          }
+        },
+        {
+          "id": "laurel-disc",
+          "label": "Laurel · disc",
+          "variant": "Lv 2 wreath",
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-disc.webp",
+          "fit": {
+            "w": 0.8671875,
+            "h": 0.41796875,
+            "cx": 0.5,
+            "cy": 0.728515625
+          }
+        },
+        {
+          "id": "laurel-slab",
+          "label": "Laurel · slab",
+          "variant": "Lv 2 wreath",
+          "x": 1024,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/fx/laurel-slab.webp",
+          "fit": {
+            "w": 0.9140625,
+            "h": 0.3671875,
+            "cx": 0.5,
+            "cy": 0.703125
+          }
+        },
+        {
+          "id": "bolt",
+          "label": "Bolt",
+          "variant": "arrow in flight",
+          "x": 1280,
+          "y": 512,
+          "w": 256,
+          "h": 256,
+          "target": "images/rounds/bolt.webp",
+          "letterboxed": {
+            "w": 256,
+            "h": 64
+          },
+          "fit": {
+            "w": 0.8984375,
+            "h": 0.25,
+            "cx": 0.52734375,
+            "cy": 0.5
+          }
+        }
+      ],
+      "singles": [
+        {
+          "id": "ring-heal",
+          "file": "singles/single-ring-heal.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "ring-heal",
+              "label": "Heal ring",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/ring-heal.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.90625,
+                "h": 0.91015625,
+                "cx": 0.5,
+                "cy": 0.498046875
+              }
+            }
+          ]
+        },
+        {
+          "id": "ring-shock",
+          "file": "singles/single-ring-shock.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "ring-shock",
+              "label": "Shock ring",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/ring-shock.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.890625,
+                "h": 0.890625,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "ring-heat",
+          "file": "singles/single-ring-heat.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "ring-heat",
+              "label": "Heat ring",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/ring-heat.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.8828125,
+                "h": 0.8984375,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "shield",
+          "file": "singles/single-shield.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "shield",
+              "label": "Dome",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/shield.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.93359375,
+                "h": 0.93359375,
+                "cx": 0.501953125,
+                "cy": 0.498046875
+              }
+            }
+          ]
+        },
+        {
+          "id": "guard",
+          "file": "singles/single-guard.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "guard",
+              "label": "Absorb",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/guard.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 256
+              },
+              "fit": {
+                "w": 0.796875,
+                "h": 0.91015625,
+                "cx": 0.5,
+                "cy": 0.498046875
+              }
+            }
+          ]
+        },
+        {
+          "id": "smoke",
+          "file": "singles/single-smoke.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "smoke",
+              "label": "Smoke",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/smoke.webp",
+              "letterboxed": {
+                "w": 192,
+                "h": 192
+              },
+              "fit": {
+                "w": 0.91796875,
+                "h": 0.9140625,
+                "cx": 0.498046875,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "scorch",
+          "file": "singles/single-scorch.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "scorch",
+              "label": "Scorch",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/scorch.webp",
+              "letterboxed": {
+                "w": 261,
+                "h": 144
+              },
+              "fit": {
+                "w": 0.95703125,
+                "h": 0.54296875,
+                "cx": 0.501953125,
+                "cy": 0.501953125
+              }
+            }
+          ]
+        },
+        {
+          "id": "muzzle",
+          "file": "singles/single-muzzle.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "muzzle",
+              "label": "Muzzle",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/muzzle.webp",
+              "maxEdge": 128,
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.94140625,
+                "h": 0.953125,
+                "cx": 0.498046875,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "crest-shield",
+          "file": "singles/single-crest-shield.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "crest-shield",
+              "label": "Crest S",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/crest-shield.webp",
+              "maxEdge": 128,
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.9375,
+                "h": 0.9375,
+                "cx": 0.5,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "crest-guard",
+          "file": "singles/single-crest-guard.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "crest-guard",
+              "label": "Crest G",
+              "variant": "effect",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/crest-guard.webp",
+              "maxEdge": 128,
+              "letterboxed": {
+                "w": 128,
+                "h": 128
+              },
+              "fit": {
+                "w": 0.953125,
+                "h": 0.9453125,
+                "cx": 0.5,
+                "cy": 0.49609375
+              }
+            }
+          ]
+        },
+        {
+          "id": "spark",
+          "file": "singles/single-spark.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "spark",
+              "label": "Spark",
+              "variant": "beam round",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/rounds/spark.webp",
+              "maxEdge": 128,
+              "fit": {
+                "w": 0.55078125,
+                "h": 0.2578125,
+                "cx": 0.400390625,
+                "cy": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-pebble",
+          "file": "singles/single-laurel-pebble.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-pebble",
+              "label": "Laurel · pebble",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-pebble.webp",
+              "fit": {
+                "w": 0.84375,
+                "h": 0.36328125,
+                "cx": 0.5,
+                "cy": 0.697265625
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-shard",
+          "file": "singles/single-laurel-shard.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-shard",
+              "label": "Laurel · shard",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-shard.webp",
+              "fit": {
+                "w": 0.8359375,
+                "h": 0.41015625,
+                "cx": 0.48828125,
+                "cy": 0.720703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-oval",
+          "file": "singles/single-laurel-oval.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-oval",
+              "label": "Laurel · oval",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-oval.webp",
+              "fit": {
+                "w": 0.8515625,
+                "h": 0.34375,
+                "cx": 0.5,
+                "cy": 0.69140625
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-hex",
+          "file": "singles/single-laurel-hex.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-hex",
+              "label": "Laurel · hex",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-hex.webp",
+              "fit": {
+                "w": 0.8046875,
+                "h": 0.3984375,
+                "cx": 0.5,
+                "cy": 0.71484375
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-disc",
+          "file": "singles/single-laurel-disc.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-disc",
+              "label": "Laurel · disc",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-disc.webp",
+              "fit": {
+                "w": 0.8671875,
+                "h": 0.41796875,
+                "cx": 0.5,
+                "cy": 0.728515625
+              }
+            }
+          ]
+        },
+        {
+          "id": "laurel-slab",
+          "file": "singles/single-laurel-slab.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "laurel-slab",
+              "label": "Laurel · slab",
+              "variant": "Lv 2 wreath",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/fx/laurel-slab.webp",
+              "fit": {
+                "w": 0.9140625,
+                "h": 0.3671875,
+                "cx": 0.5,
+                "cy": 0.703125
+              }
+            }
+          ]
+        },
+        {
+          "id": "bolt",
+          "file": "singles/single-bolt.png",
+          "width": 512,
+          "height": 512,
+          "cells": [
+            {
+              "id": "bolt",
+              "label": "Bolt",
+              "variant": "arrow in flight",
+              "x": 0,
+              "y": 0,
+              "w": 512,
+              "h": 512,
+              "target": "images/rounds/bolt.webp",
+              "letterboxed": {
+                "w": 256,
+                "h": 64
+              },
+              "fit": {
+                "w": 0.8984375,
+                "h": 0.25,
+                "cx": 0.52734375,
+                "cy": 0.5
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "walks": [
+    {
+      "id": "bonecap",
+      "kind": "monster",
+      "file": "walk-bonecap.png",
+      "width": 912,
+      "height": 512,
+      "cols": 4,
+      "rows": 2,
+      "frames": 8,
+      "panel": {
+        "w": 228,
+        "h": 256
+      },
+      "fit": {
+        "h": 0.578125,
+        "w": 0.4473684210526316,
+        "bottom": 1,
+        "cx": 0.4934210526315789
+      },
+      "faces": "left",
+      "anchor": "feet",
+      "target": "images/monsters/bonecap.webp"
+    },
+    {
+      "id": "nibbler",
+      "kind": "monster",
+      "file": "walk-nibbler.png",
+      "width": 912,
+      "height": 512,
+      "cols": 4,
+      "rows": 2,
+      "frames": 8,
+      "panel": {
+        "w": 228,
+        "h": 256
+      },
+      "fit": {
+        "h": 0.53515625,
+        "w": 0.4649122807017544,
+        "bottom": 0.875,
+        "cx": 0.48903508771929827
+      },
+      "faces": "left",
+      "anchor": "feet",
+      "target": "images/monsters/nibbler.webp"
+    },
+    {
+      "id": "snaggletusk",
+      "kind": "monster",
+      "file": "walk-snaggletusk.png",
+      "width": 912,
+      "height": 512,
+      "cols": 4,
+      "rows": 2,
+      "frames": 8,
+      "panel": {
+        "w": 228,
+        "h": 256
+      },
+      "fit": {
+        "h": 0.546875,
+        "w": 0.5394736842105263,
+        "bottom": 1,
+        "cx": 0.40789473684210525
+      },
+      "faces": "left",
+      "anchor": "feet",
+      "target": "images/monsters/snaggletusk.webp"
+    },
+    {
+      "id": "marrowknight",
+      "kind": "monster",
+      "file": "walk-marrowknight.png",
+      "width": 912,
+      "height": 512,
+      "cols": 4,
+      "rows": 2,
+      "frames": 8,
+      "panel": {
+        "w": 228,
+        "h": 256
+      },
+      "fit": {
+        "h": 0.6953125,
+        "w": 0.44298245614035087,
+        "bottom": 1,
+        "cx": 0.4956140350877193
+      },
+      "faces": "left",
+      "anchor": "feet",
+      "target": "images/monsters/marrowknight.webp"
+    },
+    {
+      "id": "teal",
+      "kind": "hero",
+      "file": "walk-teal.png",
+      "width": 768,
+      "height": 384,
+      "cols": 4,
+      "rows": 2,
+      "frames": 8,
+      "panel": {
+        "w": 192,
+        "h": 192
+      },
+      "fit": {
+        "h": 0.9270833333333334,
+        "w": 0.5625,
+        "bottom": 1,
+        "cx": 0.4973958333333333
+      },
+      "faces": "right",
+      "anchor": "feet",
+      "target": "images/heroes/teal.webp"
+    }
+  ],
+  "scenery": [
+    {
+      "id": "sky",
+      "file": "bg-sky.png",
+      "width": 1024,
+      "height": 576,
+      "tileable": false,
+      "bg": "opaque",
+      "target": "images/bg/sky.webp"
+    },
+    {
+      "id": "ridge-far",
+      "file": "bg-ridge-far.png",
+      "width": 1024,
+      "height": 256,
+      "tileable": false,
+      "bg": "magenta-sky",
+      "target": "images/bg/ridge-far.webp"
+    },
+    {
+      "id": "ridge-near",
+      "file": "bg-ridge-near.png",
+      "width": 1024,
+      "height": 256,
+      "tileable": false,
+      "bg": "magenta-sky",
+      "target": "images/bg/ridge-near.webp"
+    }
+  ]
+}

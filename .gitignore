@@ -83,3 +83,7 @@ __screenshots__/
 /public/images/props/tinified.zip
 /public/images/rounds/tinified.zip
 /public/images/ui/tinified.zip
+
+# Playwright e2e output
+/test-results
+/playwright-report

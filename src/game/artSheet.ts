@@ -1,770 +1,726 @@
-import { MONSTERS } from '@/game/monsters'
-import { OUTFITS } from '@/game/heroSprites'
-import { MONSTER_FRAME_H } from '@/game/monsterSprites'
-import { HERO_PX } from '@/game/heroSprites'
-import { ART_FOLDERS, type ArtKind } from '@/game/art'
-import { ART_CATALOGUE } from '@/game/artCatalogue'
-import { GATE_FRAME, ROCKET_BOX } from '@/use/useSurvivalArt'
-import { BANNER } from '@/game/uiArt'
+import {
+  FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, SKIN_IDS,
+  type Faction, type Owner, type RuneType, type SkinId
+} from './rules'
+import { ART_CATALOGUE, artTarget, type ArtKind } from './artCatalogue'
+import type { PebbleShape } from './rules'
 
 /**
  * ─── Art sheet manifest ─────────────────────────────────────────────────────
  *
- * glyphyx draws everything procedurally, which is wonderful for payload and
- * useless for one specific job: handing the art to somebody — or something —
- * that paints. There is no folder of PNGs to send. This module describes the
- * REFERENCE SHEETS that bake the whole cast out of the renderer, so the art can
- * leave, be repainted in a dark-fantasy hand, and come back in as drop-ins.
+ * Glyphyx draws itself: every stone, glyph, tile and chip is a few hundred
+ * canvas operations (`arenaPainters.ts`), which is wonderful for payload and
+ * useless for one specific job — handing the art to somebody, or something,
+ * that paints. This module describes the CONTACT SHEETS that bake the whole
+ * cast onto a strict pixel lattice, so the art can leave the renderer, be
+ * repainted in the game's hand-drawn mythical-fantasy style, and come back as
+ * drop-in bitmaps at the paths `spriteFor()` already probes.
  *
- * Two shapes of sheet:
+ * THE LATTICE IS THE CONTRACT.
  *
- *   WALKS   a grid of panels showing one creature through one locomotion
- *           cycle. Each panel is the bake's own frame box scaled up, so a
- *           painted strip drops straight back in with the feet on the same
- *           line and nothing downstream has to be told where they are.
- *   STILLS  one object per image. A still is a one-frame walk to the slicer,
- *           which is what gives every prop, round and effect the same fit
- *           step the creatures get: the return is measured against the
- *           reference and normalised onto it, so a crate painted with a
- *           polite margin still fills its box in play.
+ * Every panel is a whole number of `CELL` px on a side and sits at an exact
+ * multiple of `CELL` from the sheet's origin. No gutters, no padding, no
+ * centring fudge. That is what makes the return trip mechanical: a repainted
+ * sheet is cut with integer arithmetic, and `sheet-index.json` says which
+ * slice belongs in which file. Captions live on a SEPARATE key sheet rendered
+ * from the same manifest — text inside a panel is text an image model will
+ * faithfully repaint as art.
  *
- * THE BOX IS THE CONTRACT. Every still is drawn by the renderer's OWN painter
- * (`useSurvivalArt`) into exactly the rectangle the renderer blits the
- * painting back into. Get the bench and the runtime out of step and every
- * painted part is the wrong size, everywhere, invisibly — so the bench never
- * carries a size of its own; it reads the same constants the painters do.
+ * Every sheet is a standard aspect ratio (1:1, 2:1, 4:3, 16:9) because that is
+ * what an image tool can be told to return. A 5:2 sheet comes back 2:1, the
+ * grid is re-composed, and every rect in the index is wrong.
  *
- * Nothing here imports a canvas. The manifest says WHAT goes on each sheet and
- * WHERE the result belongs; `ArtSheets.vue` knows how to paint it.
+ * PROMPTS ARE GENERATED, NEVER HAND-WRITTEN. One style block, one background
+ * rule, per-panel text only where the panel genuinely differs — so forty
+ * assets brief one art direction. Adding a drawable is adding a manifest line;
+ * its prompt exists the moment `pnpm art:prompts` runs.
+ *
+ * Nothing here imports a canvas, Vue, or `import.meta.env`: the manifest says
+ * WHAT goes in each panel and WHERE the result belongs, `ArtSheets.vue` knows
+ * how to paint it, and `tools/art-prompts.mjs` reads this file under plain Node.
  */
 
-// ─── Walk cycles ────────────────────────────────────────────────────────────
-
-/** Panels per sheet. Eight reads as a walk; sixteen is twice the drift. */
-export const WALK_FRAMES = 8
-
-/** Grid, chosen so the sheet lands on a clean ratio that every tool offers. */
-export const WALK_COLS = 4
-export const WALK_ROWS = WALK_FRAMES / WALK_COLS
-
+/** Lattice unit, px. Every panel is a whole number of these on both axes. */
+export const CELL = 256
+/** Edge of a single-object reference, px. */
+export const SINGLE_SIZE = 512
+/** The slicer's default cap on a written frame, px. A manifest `maxEdge` may only lower it. */
+export const MAX_EDGE = 256
 /**
- * One panel, px. A panel is the bake's own frame box scaled up, so its shape
- * is the frame's: a monster's frame is 156 x 176 and its panel 320 x 360 —
- * 4 x 320 by 2 x 360 is 1280 x 720, exactly 16:9 (the 0.3% the two ratios
- * differ by is far inside what the strip counter tolerates). A survivor's
- * frame is square and its panel 320 x 320, for a 2:1 sheet.
+ * How much of its panel a stone's ink occupies, as a fraction of the panel's
+ * width — the NOMINAL value, used in a prompt when no measured fit exists yet.
+ * The bench measures the real extent off the painter and the index carries it.
  */
-export const WALK_PANEL_W = 320
-export const MONSTER_PANEL_H = 360
-export const HERO_PANEL_H = 320
+export const STONE_SPAN = 0.82
+
+// ─── What a panel holds ─────────────────────────────────────────────────────
+
+export type CellArt =
+  | { kind: 'pebble'; type: RuneType; level: 1 | 2; owner: 'player' | 'enemy'; skin: SkinId; faction?: Faction }
+  | { kind: 'glyph'; type: RuneType; skin: SkinId }
+  | { kind: 'tile'; owner: Owner; faction?: Faction }
+  | { kind: 'frame' }
+  | { kind: 'forge' }
+  | { kind: 'reroll' }
+  | { kind: 'spark' }
+  | { kind: 'laurel'; shape: PebbleShape }
+  | { kind: 'sky' }
+  | { kind: 'bolt' }
+  | { kind: 'ridge'; layer: 'far' | 'near' }
+  /** An existing bitmap under `public/`, letterboxed into the panel. */
+  | { kind: 'bitmap'; src: string }
+  | { kind: 'blank' }
+
+export interface SheetCell {
+  /** Stable identity. Never reused across sheets; the slice's filename stem. */
+  id: string
+  /** Key-sheet caption, roughly twelve characters. */
+  label: string
+  /** Second caption line — the level, the material, the faction. */
+  sub: string
+  /** One sentence saying what this object IS, for the painter. Empty on a blank. */
+  blurb: string
+  /** The colour identity handed to the painter — hue words first, hex as a hint. */
+  colour?: string
+  /** Lattice coordinates and footprint, in cells, from the sheet's top-left. */
+  col: number
+  row: number
+  cw: number
+  ch: number
+  /** Where a repainted slice belongs on disk, relative to `public/`. Absent on a blank. */
+  target?: string
+  /**
+   * The drawing fills its panel edge to edge (a tile, the frame). The slicer
+   * trims such a slice back to its own edges instead of keying a margin, and
+   * the prompt asks for square corners and no air.
+   */
+  fill?: boolean
+  /** Lower cap than `MAX_EDGE` for a thing drawn small in play. */
+  maxEdge?: number
+  /** A native size the slice must be restored to (a non-square bitmap letterboxed into its panel). */
+  letterboxed?: { w: number; h: number }
+  note?: string
+  art: CellArt
+}
+
+export type SheetKind = 'stones' | 'enemyStones' | 'glyphs' | 'tiles' | 'frame' | 'ui' | 'fx'
+
+export interface SheetSpec {
+  id: string
+  /** Base filename, without extension: `sheet-<id>`. */
+  file: string
+  title: string
+  kind: SheetKind
+  /** Lattice width, in cells. Height is derived from the cells. */
+  cols: number
+  /** One paragraph on what this sheet is for — the README and the prompt's WHAT IT IS. */
+  brief: string
+  /** The READ THE PANELS paragraph: which panel is which, when the grid has a meaning. */
+  panels?: string
+  cells: SheetCell[]
+}
+
+/** Lattice height of a sheet, in cells. */
+export const sheetRows = (s: SheetSpec): number => s.cells.reduce((m, c) => Math.max(m, c.row + c.ch), 0)
+/** Pixel size of a clean sheet. */
+export const sheetSize = (s: SheetSpec): { w: number; h: number } => ({ w: s.cols * CELL, h: sheetRows(s) * CELL })
+/** `w:h` reduced, e.g. `2:1`, `4:3`. */
+export const aspectOf = (w: number, h: number): string => {
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+  const g = gcd(w, h)
+  return `${w / g}:${h / g}`
+}
+
+// ─── Words for the painter ──────────────────────────────────────────────────
+
+const RUNE_WORDS: Record<RuneType, { name: string; glyph: string; hue: string }> = {
+  melee: { name: 'Sword', glyph: 'a straight sword point-up: tapered blade, cross-guard, grip, round pommel', hue: 'crimson' },
+  archer: { name: 'Bow', glyph: 'a bow with the string drawn and an arrow nocked, flying to the right', hue: 'emerald' },
+  mage: { name: 'Orb', glyph: 'an arcane orb: a solid core inside a ring, four diagonal sparks', hue: 'amethyst violet' },
+  defense: { name: 'Shield', glyph: 'a heater shield with a cross cut out of its face', hue: 'sapphire blue' },
+  support: { name: 'Cross', glyph: 'a radiant cross, four flared arms and a small burst at the centre', hue: 'topaz gold' },
+  cleave: { name: 'Axe', glyph: 'a broad axe, bit upward: a wide crescent blade with drooping horns on a short haft with a round pommel', hue: 'burnt orange' },
+  roller: { name: 'Boulder', glyph: 'a chipped round boulder mid-roll, two cracks knocked out of it and two short speed bars trailing behind it', hue: 'cold teal' },
+  bombard: { name: 'Mortar', glyph: 'a squat mortar canted up to the right on a heavy base plate, its bore open, one shell already in the air above the muzzle', hue: 'hot magenta' },
+  nuker: { name: 'Warhead', glyph: 'a three-bladed hazard trefoil: a solid round core with three heavy wedge blades spaced evenly around it, a clear ring of empty space between the core and the blades', hue: 'acid yellow-green' }
+}
+
+const SKIN_WORDS: Record<SkinId, { name: string; material: string; shape: string; cut: string }> = {
+  river: {
+    name: 'River',
+    material: 'warm river sandstone, tan and beige, faintly banded',
+    shape: 'an irregular rounded pebble with a couple of chipped facets',
+    cut: 'the glyph is CUT INTO the stone, a dark engraved groove lit from inside by its own colour'
+  },
+  obsidian: {
+    name: 'Obsidian',
+    material: 'black volcanic glass, knapped, with glassy conchoidal chips catching a cold rim light',
+    shape: 'an angular shard, straight-edged, faceted',
+    cut: 'the glyph is a cold neon line drawn on the dark glass'
+  },
+  jade: {
+    name: 'Jade',
+    material: 'polished green jade, translucent at the edges, faint cloudy veins',
+    shape: 'a smooth oval, egg-like, no facets',
+    cut: 'the glyph is INLAID in gold, a thin bevelled gold line set flush into the jade'
+  },
+  amber: {
+    name: 'Amber',
+    material: 'cut amber, honey to orange, with small dark inclusions trapped inside',
+    shape: 'a hexagonal gem with a flat table and bevelled facets',
+    cut: 'the glyph glows from INSIDE the gem, a warm light trapped in the amber'
+  },
+  marble: {
+    name: 'Marble',
+    material: 'white marble with grey veins, softly polished',
+    shape: 'a flat coin-like disc with a rounded edge',
+    cut: 'the glyph is CARVED deep, a shadowed groove with no glow at all'
+  },
+  ember: {
+    name: 'Ember',
+    material: 'a slab of cooled lava, black-brown crust cracked into plates',
+    shape: 'a rounded rectangular slab, thick, cracked',
+    cut: 'the glyph BURNS through the fissures, orange ember light in the cracks'
+  }
+}
+
+const FACTION_WORDS: Record<Faction, { name: string; rock: string; accent: string }> = {
+  skeleton: { name: 'Bone Dummies', rock: 'rust-red sandstone, dusty and dry', accent: 'bleached bone-white' },
+  goblin: { name: 'Goblin Archers', rock: 'rust-red sandstone with a mossy tint in the cracks', accent: 'acid green' },
+  orc: { name: 'Orc Berserkers', rock: 'dark blood-red rock, heavy and rough', accent: 'ember orange' },
+  undead: { name: 'Undead Mages', rock: 'ashen maroon stone with a cold sheen', accent: 'pale violet' }
+}
+
+const muted = (hex: string, hue: string): string => `${hue} (about ${hex}, kept muted and paper-toned, never neon)`
+
+/** The colour line for a player's stone. */
+const stoneColour = (type: RuneType, skin: SkinId): string => {
+  const s = SKINS[skin]
+  const w = SKIN_WORDS[skin]
+  const glow = s.glow ? `its glow around ${s.glow}` : `its glow the rune's own ${RUNE_WORDS[type].hue} (${RUNES[type].color})`
+  return `${w.material}: lit face around ${s.hi}, body ${s.base}, shadow side ${s.lo}, rim light ${s.rim}. `
+    + `Glyph ink ${s.ink}, ${glow}.`
+}
+
+/** The colour line for an enemy's stone: the faction's rock, the rune's glow. */
+const enemyStoneColour = (type: RuneType, faction: Faction): string => {
+  const f = FACTION_WORDS[faction]
+  return `${f.rock}; a thin ${f.accent} accent on the rim (the faction's colour, about ${FACTION_DEFS[faction].color}). `
+    + `Glyph ink near-black, glowing ${muted(RUNES[type].color, RUNE_WORDS[type].hue)}.`
+}
+
+// ─── The sheets ─────────────────────────────────────────────────────────────
+
+const blank = (col: number, row: number, n: number): SheetCell =>
+  ({ id: `blank-${n}`, label: '', sub: '', blurb: '', col, row, cw: 1, ch: 1, art: { kind: 'blank' } })
+
+/** One sheet per rune TYPE: six skins × two levels on a 4×3 grid (4:3). */
+const stoneSheet = (type: RuneType): SheetSpec => {
+  const w = RUNE_WORDS[type]
+  const cells: SheetCell[] = []
+  let i = 0
+  for (const skin of SKIN_IDS) {
+    for (const level of [1, 2] as const) {
+      const id = `${type}-${skin}-lv${level}`
+      cells.push({
+        id,
+        label: SKIN_WORDS[skin].name,
+        sub: `Lv ${level}`,
+        blurb: `the ${w.name} rune as a ${SKIN_WORDS[skin].name} stone at level ${level}: `
+          + `${SKIN_WORDS[skin].shape}, ${SKIN_WORDS[skin].cut}`
+          + (level === 2
+            ? '; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger'
+            : ''),
+        colour: stoneColour(type, skin),
+        col: i % 4, row: Math.floor(i / 4), cw: 1, ch: 1,
+        target: artTarget('rune', id),
+        art: { kind: 'pebble', type, level, owner: 'player', skin }
+      })
+      i++
+    }
+  }
+  return {
+    id: `runes-${type}`,
+    file: `sheet-runes-${type}`,
+    title: `${w.name} stones — the player's six skins`,
+    kind: 'stones',
+    cols: 4,
+    brief: `The player's ${w.name} rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. `
+      + `The glyph is ${w.glyph}, in ${w.hue}; it is the SAME glyph in every panel — the same rune carved into six different materials.`,
+    panels: 'Read the grid two panels at a time: each PAIR of neighbouring panels is one material, first at level 1 then at level 2. '
+      + `Left to right, top to bottom: ${SKIN_IDS.map((s) => SKIN_WORDS[s].name).join(', ')} — each as Lv 1 then Lv 2. `
+      + 'A level-2 stone is the same material and the same glyph, a little larger and heavier, with a gold rim, a small gold crest on its shoulder and a stronger glow.',
+    cells
+  }
+}
+
+/** One sheet per rune TYPE for the enemy: four factions × two levels on a 4×2 grid (2:1). */
+const enemyStoneSheet = (type: RuneType): SheetSpec => {
+  const w = RUNE_WORDS[type]
+  const cells: SheetCell[] = []
+  let i = 0
+  for (const faction of Object.keys(FACTION_DEFS) as Faction[]) {
+    for (const level of [1, 2] as const) {
+      const id = `${type}-e-${faction}-lv${level}`
+      cells.push({
+        id,
+        label: FACTION_WORDS[faction].name,
+        sub: `Lv ${level}`,
+        blurb: `the enemy's ${w.name} rune as a ${FACTION_WORDS[faction].name} stone at level ${level}: `
+          + 'an irregular rounded pebble of the faction\'s own rock, the glyph cut in and glowing'
+          + (level === 2
+            ? '; heavier and slightly larger, a dull-gold rim and a small dull-gold crest on its shoulder, the glyph glowing stronger'
+            : ''),
+        colour: enemyStoneColour(type, faction),
+        col: i % 4, row: Math.floor(i / 4), cw: 1, ch: 1,
+        target: artTarget('rune', id),
+        art: { kind: 'pebble', type, level, owner: 'enemy', skin: 'river', faction }
+      })
+      i++
+    }
+  }
+  return {
+    id: `runes-enemy-${type}`,
+    file: `sheet-runes-enemy-${type}`,
+    title: `${w.name} stones — the four enemy factions`,
+    kind: 'enemyStones',
+    cols: 4,
+    brief: `The enemy's ${w.name} rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells `
+      + `it from their own at a glance; the glyph is ${w.glyph}, in ${w.hue}, the same glyph in every panel.`,
+    panels: 'Each PAIR of neighbouring panels is one faction, first at level 1 then at level 2. '
+      + `Left to right, top to bottom: ${(Object.keys(FACTION_DEFS) as Faction[]).map((f) => FACTION_WORDS[f].name).join(', ')}.`,
+    cells
+  }
+}
+
+const glyphSheet = (): SheetSpec => {
+  // Nine runes tile a THREE-wide grid exactly — three rows of three, a square
+  // sheet. The grid was 4 wide while the roster was eight; keeping it there
+  // would have left three blank panels on the last row, and a blank panel is
+  // the thing these prompts most often lose (an image model fills it in). The
+  // width is chosen to fit the roster, not the other way round.
+  const COLS = 3
+  const cells: SheetCell[] = RUNE_TYPES.map((type, i) => ({
+    id: type,
+    label: RUNE_WORDS[type].name,
+    sub: 'glyph icon',
+    blurb: `the ${RUNE_WORDS[type].name} glyph ALONE, no stone: ${RUNE_WORDS[type].glyph}, one bold flat pictogram`,
+    colour: `ink ${SKINS.river.ink} with a tight ${muted(RUNES[type].color, RUNE_WORDS[type].hue)} glow`,
+    col: i % COLS, row: Math.floor(i / COLS), cw: 1, ch: 1,
+    target: artTarget('rune', type),
+    art: { kind: 'glyph', type, skin: 'river' }
+  }))
+  return {
+    id: 'glyphs',
+    file: 'sheet-glyphs',
+    title: 'Glyph icons — the nine runes, no stone',
+    kind: 'glyphs',
+    cols: COLS,
+    brief: 'The nine rune glyphs on their own, as UI icons: the unlock card, the campaign map and the shop show a rune without its stone. '
+      + 'Bold, flat, one strong silhouette each, readable at 24 px. Every panel carries a glyph — none is blank.',
+    cells
+  }
+}
+
+const tileSheet = (): SheetSpec => ({
+  id: 'tiles',
+  file: 'sheet-tiles',
+  title: 'Board tiles — player, enemy, neutral',
+  kind: 'tiles',
+  cols: 2,
+  brief: 'One square floor tile of the arena in each of its three states. The board is a 4×4 grid of these; the owner\'s tint is the '
+    + 'difference between them. Each tile fills its panel edge to edge with square corners — they sit side by side in play.',
+  panels: 'Top-left: a tile the PLAYER holds (a cool teal-blue glow in its bevel). Top-right: a tile the ENEMY holds (a hot red-magenta glow). '
+    + 'Bottom-left: an unclaimed NEUTRAL tile (plain slate with a faint violet edge light). Bottom-right is blank on purpose.',
+  cells: [
+    {
+      id: 'player', label: 'Player tile', sub: 'teal glow',
+      blurb: 'a square slate floor tile with a bevelled edge and a few faint cracks, its bevel lit teal-blue because the player holds it',
+      colour: 'dark blue-grey slate around #23283a, bevel light teal-blue around #4fd6ff, a violet edge glow around #8a5cff',
+      col: 0, row: 0, cw: 1, ch: 1, target: artTarget('tile', 'player'), fill: true,
+      art: { kind: 'tile', owner: 'player' }
+    },
+    {
+      id: 'enemy', label: 'Enemy tile', sub: 'red glow',
+      blurb: 'the same slate tile, its bevel lit hot red-magenta because the enemy holds it',
+      colour: 'dark blue-grey slate around #23283a, bevel light red around #ff4d5a, a violet edge glow around #8a5cff',
+      col: 1, row: 0, cw: 1, ch: 1, target: artTarget('tile', 'enemy'), fill: true,
+      art: { kind: 'tile', owner: 'enemy' }
+    },
+    {
+      id: 'neutral', label: 'Neutral tile', sub: 'unclaimed',
+      blurb: 'the same slate tile unclaimed: plain, with only the faint violet edge light of the arena grid',
+      colour: 'dark blue-grey slate around #23283a with a faint violet edge glow around #8a5cff',
+      col: 0, row: 1, cw: 1, ch: 1, target: artTarget('tile', 'neutral'), fill: true,
+      art: { kind: 'tile', owner: 'neutral' }
+    },
+    blank(1, 1, 1)
+  ]
+})
+
+const frameSheet = (): SheetSpec => ({
+  id: 'frame',
+  file: 'sheet-frame',
+  title: 'The board frame',
+  kind: 'frame',
+  cols: 4,
+  brief: 'The carved stone frame around the 4×4 board: a square RING of weathered sandstone with runic ornament in the corners and a '
+    + 'plain repeatable band along the middle of each side. The inside of the ring is EMPTY — the tiles show through it. It is '
+    + 'nine-sliced at the outer 12 %, so the corners are the ornament and the sides must stretch.',
+  cells: [{
+    id: 'frame', label: 'Frame', sub: 'nine-sliced ring',
+    blurb: 'a square ring of carved sandstone, ornamented at the four corners, plain along the sides, EMPTY in the middle',
+    colour: 'warm sandstone around #b39b73, lit edge #d9c9a6, shadow #7d6547, faint violet rune light in the corner carvings around #8a5cff',
+    col: 0, row: 0, cw: 4, ch: 4, target: artTarget('tile', 'frame'), fill: true,
+    maxEdge: 1024,
+    note: 'Written at 1024 px: the frame is the largest thing on screen and is stretched by CSS-style nine-slicing.',
+    art: { kind: 'frame' }
+  }]
+})
+
+const bitmap = (id: string, folder: ArtKind, label: string, sub: string, blurb: string, colour: string,
+  col: number, row: number, cw = 1, ch = 1, native?: { w: number; h: number }, maxEdge?: number): SheetCell => ({
+  id, label, sub, blurb, colour, col, row, cw, ch,
+  target: artTarget(folder, id),
+  ...(native ? { letterboxed: native } : {}),
+  ...(maxEdge ? { maxEdge } : {}),
+  art: { kind: 'bitmap', src: artTarget(folder, id) }
+})
+
+const uiSheet = (): SheetSpec => ({
+  id: 'ui',
+  file: 'sheet-ui',
+  title: 'HUD chips — chest, crown, coin, forge, reroll, ribbon',
+  kind: 'ui',
+  cols: 4,
+  brief: 'The HUD\'s small pictures: the reward chest, the elite crown, the coin, the Rune Forge chip, the reroll stone and the result '
+    + 'ribbon. Each is a single object on flat magenta; the ribbon is the one wide panel.',
+  panels: 'Top row: chest, crown, coin, forge. Bottom row: the reroll chip, then the ribbon spanning the last three panels.',
+  cells: [
+    bitmap('chest', 'ui', 'Chest', 'reward', 'a closed wooden treasure chest with iron bands and a gold lock, seen from the front, slightly above',
+      'dark oak around #5a3a1e, iron bands #3a3f4a, gold fittings #e6b84a', 0, 0),
+    bitmap('crown', 'ui', 'Crown', 'elite mark', 'a small gold crown with three points and a red jewel, a badge not a portrait',
+      'gold around #e6b84a with a ruby around #d8283c', 1, 0),
+    bitmap('coin', 'ui', 'Coin', 'currency', 'a single gold coin seen face-on with a rune stamped into it',
+      'gold around #f2c14e, shadow #9a6a12', 2, 0),
+    {
+      id: 'forge', label: 'Forge', sub: 'offline chip',
+      blurb: 'the Rune Forge chip: a small stone anvil with a glowing rune resting on it, a chip-sized emblem',
+      colour: 'dark iron anvil around #3a3f4a on a sandstone base around #b39b73, the rune glowing violet around #8a5cff',
+      col: 3, row: 0, cw: 1, ch: 1, target: artTarget('ui', 'forge'), art: { kind: 'forge' }
+    },
+    {
+      id: 'reroll', label: 'Reroll', sub: 'hand chip',
+      blurb: 'the reroll chip: a small blank river pebble with two curved arrows chasing each other around its face, no text',
+      colour: 'river sandstone around #b39b73, arrows in pale teal around #4fd6ff',
+      col: 0, row: 1, cw: 1, ch: 1, target: artTarget('ui', 'reroll'), art: { kind: 'reroll' }
+    },
+    bitmap('ribbon', 'ui', 'Ribbon', 'result banner', 'a wide heraldic ribbon banner, its ends folded and notched, the middle a plain band (a caption is printed over it in play — leave it EMPTY)',
+      'deep crimson cloth around #a8232f with gold edging around #e6b84a', 1, 1, 3, 1, { w: 597, h: 256 })
+  ]
+})
+
+const fxSheet = (): SheetSpec => {
+  const fx = (id: string, label: string, blurb: string, colour: string, i: number, native?: { w: number; h: number }, maxEdge?: number): SheetCell =>
+    bitmap(id, 'fx', label, 'effect', blurb, colour, i % 6, Math.floor(i / 6), 1, 1, native, maxEdge)
+  const LAUREL_STONE: Record<PebbleShape, string> = {
+    pebble: 'a rounded river pebble', shard: 'an angular knapped shard', oval: 'a wide smooth oval',
+    hex: 'a hexagonal cut gem', disc: 'a round flat disc', slab: 'a rounded rectangular slab'
+  }
+  const laurel = (shape: PebbleShape, i: number): SheetCell => ({
+    id: `laurel-${shape}`, label: `Laurel · ${shape}`, sub: 'Lv 2 wreath',
+    blurb: `the level-2 laurel for ${LAUREL_STONE[shape]}: a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, `
+      + 'OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape (the drawn reference shows exactly where they sit) — '
+      + 'the game lays it around an upgraded rune stone of that shape, so paint the wreath ALONE with nothing inside it and nothing behind it: '
+      + 'no stone, no shield, no medal, no ribbon banner, no glyph',
+    colour: 'polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge',
+    col: i % 6, row: Math.floor(i / 6), cw: 1, ch: 1, target: artTarget('fx', `laurel-${shape}`), art: { kind: 'laurel', shape }
+  })
+  return {
+    id: 'fx',
+    file: 'sheet-fx',
+    title: 'Effects — rings, dome, smoke, scorch, flashes, the six Lv 2 laurels',
+    kind: 'fx',
+    cols: 6,
+    brief: 'The arena\'s effects: three shockwave rings, the shield dome, the absorb flash, the smoke puff, the scorch mark a shattered '
+      + 'rune leaves, the archer\'s muzzle flash, two crests, the mage beam\'s travelling spark, the archer\'s arrow, and six gold laurels — one per '
+      + 'stone silhouette — the game lays around a level-2 stone. Soft light on flat magenta — every glow must stay TIGHT to its own shape, because a halo over '
+      + 'magenta cannot be keyed.',
+    cells: [
+      fx('ring-heal', 'Heal ring', 'a thin expanding ring of soft golden light seen from above, brightest at the rim', 'warm gold around #ffd23f', 0),
+      fx('ring-shock', 'Shock ring', 'a thin expanding ring of white-blue impact light, the capture shockwave', 'cold white-blue around #cfe9ff', 1),
+      fx('ring-heat', 'Heat ring', 'a thicker ring of violet-orange heat with a few sparks, the level-2 orb\'s burst', 'violet core around #b57bff to orange edge around #ff8a3d', 2),
+      fx('shield', 'Dome', 'a translucent hemispherical dome of blue light with faint hexagonal facets', 'sapphire blue around #4aa8ff', 3),
+      fx('guard', 'Absorb', 'a short bright flash where a hit meets a shield: a starburst of blue light', 'sapphire blue around #4aa8ff to white', 4),
+      fx('smoke', 'Smoke', 'a soft round puff of dust, a single cloud, no ground', 'neutral warm grey around #c9bfae', 5, { w: 192, h: 192 }),
+      fx('scorch', 'Scorch', 'a dark scorch mark with cracked edges, the stain a shattered rune leaves on a tile, seen from above', 'near-black soot around #14100c with an ember rim around #ff5a1f', 6, { w: 261, h: 144 }),
+      fx('muzzle', 'Muzzle', 'a small bright flash with three short rays, the archer\'s release', 'pale emerald-white around #b8ffd6', 7, undefined, 128),
+      fx('crest-shield', 'Crest S', 'a small heraldic crest: a shield emblem, one flat badge', 'sapphire blue around #4aa8ff, gold rim', 8, undefined, 128),
+      fx('crest-guard', 'Crest G', 'a small heraldic crest: a guard emblem, one flat badge', 'topaz gold around #ffd23f, dark rim', 9, undefined, 128),
+      {
+        id: 'spark', label: 'Spark', sub: 'beam round',
+        blurb: 'the mage beam\'s travelling spark: a small bright violet star with a short trail, flying to the RIGHT',
+        colour: 'white core, violet around #b57bff, kept tight',
+        col: 4, row: 1, cw: 1, ch: 1, target: artTarget('round', 'spark'), maxEdge: 128, art: { kind: 'spark' }
+      },
+      laurel('pebble', 11), laurel('shard', 12), laurel('oval', 13), laurel('hex', 14), laurel('disc', 15), laurel('slab', 16),
+      {
+        id: 'bolt', label: 'Bolt', sub: 'arrow in flight',
+        blurb: 'the archer\'s arrow in flight, seen from the side and flying to the RIGHT: a straight ash shaft, a broad iron '
+          + 'head at the right end, two emerald fletching vanes at the left end, and a short faint speed streak trailing off '
+          + 'behind the nock — ONE arrow lying flat and level across the panel, not a bundle, not a quiver, not a bow',
+        colour: 'ash shaft around #b1935f, iron head around #8e98a6, emerald vanes around #35e07a, the streak pale mint #b8ffd6',
+        col: 5, row: 2, cw: 1, ch: 1, target: artTarget('round', 'bolt'),
+        // The sprite ships 4:1: the panel is square, the arrow is drawn into
+        // the middle of it, and the slicer trims the padding back off.
+        letterboxed: { w: 256, h: 64 }, art: { kind: 'bolt' }
+      }
+    ]
+  }
+}
+
+export const SHEETS: SheetSpec[] = [
+  ...RUNE_TYPES.map(stoneSheet),
+  ...RUNE_TYPES.map(enemyStoneSheet),
+  glyphSheet(),
+  tileSheet(),
+  frameSheet(),
+  uiSheet(),
+  fxSheet()
+]
+
+// ─── Walk cycles: the strips that already ship as bitmaps ───────────────────
 
 export interface WalkSpec {
-  kind: 'monster' | 'hero'
-  /** The DESIGN or OUTFIT id — `images/<kind>s/<id>.webp` is where it lands. */
+  kind: 'monster' | 'hero' | 'round'
   id: string
   file: string
   target: string
   name: string
-  /** What it is, in the dark-fantasy register: the prompt's `WHAT IT IS`. */
   blurb: string
-  /** The hue identity, as a sentence a painter can follow. */
-  colour: string
-  /** Which way the design is authored. Left-facers are NOT flipped for export:
-   *  the strip has to match the bake it replaces, and the battlefield does its
-   *  own mirroring by travel direction. Survivors are seen from behind. */
-  faces: 'left' | 'right' | 'front' | 'back'
+  colour?: string
+  /** The strip that ships today — the reference is that strip laid out as a grid. */
+  src: string
+  frames: number
   cols: number
   rows: number
-  frames: number
   panelW: number
   panelH: number
   w: number
   h: number
-  /** Output cap for one frame's tall edge, px. The bake's own frame is the
-   *  floor of what is worth shipping; more than twice it is payload. */
-  maxEdge: number
+  faces: 'left' | 'right'
+  anchor: 'feet' | 'centre'
 }
 
-/**
- * The cast, restyled.
- *
- * Every entry keeps its SILHOUETTE — the shape the player has learned to read
- * at 40 px is the whole of the character's identity in play — and pushes the
- * rendering into the grim register: cracked hide, bone, rust, ember light.
- * The bench's taglines ("cute-evil imp") describe the drawing; these describe
- * the painting the drawing is asking for.
- */
-const DARK_CAST: Record<string, { blurb: string; colour: string }> = {
-  grumpling: {
-    blurb: 'A gremlin-imp: a skull-sized head on a runt body, all underbite and needle teeth, torn bat-ears with one drooping lower than the other, oversized clawed feet, a pale sunken belly. It shuffles, permanently unimpressed. Menacing, not cute — a thing that bites ankles.',
-    colour: 'mossy sick green hide going grey at the joints, a bone-pale belly, two small ember-coal eyes.'
-  },
-  bonecap: {
-    blurb: 'Fungal undead: a hunched human skeleton whose skull is swallowed by a great pale toadstool cap with gills underneath, spore-light glowing in the empty sockets and between the ribs, mycelium threading the yellowed bone, one arm longer than the other.',
-    colour: 'bone ivory, a cap of bruised grey-cream with dark spots, the light a poison green.'
-  },
-  snaggletusk: {
-    blurb: 'A boar-beast, side on: low, heavy and forward — a hulking bristled boar with one great cracked tusk and a broken stump where the other was, scarred hide, a ridge of black bristles, small furious eyes, hooves that gouge. Built to hit a wall and keep going.',
-    colour: 'ash-brown hide, black bristles, a dirty ivory tusk, ember eyes.'
-  },
-  wispling: {
-    blurb: 'A lantern ghost: a tattered floating shroud with no body inside it, a cold flame burning where a face should be, two hollow eyes that never blink together, rags trailing that never touch the ground. Sinister, not endearing.',
-    colour: 'a faded grey-teal linen shroud, the flame cold blue-white, nothing warm anywhere on it.'
-  },
-  marrowknight: {
-    blurb: 'An armoured skeleton knight, front on: dented black-iron plate over yellowed bone, a horned great-helm with cold light in the visor slit, a notched greatsword held low, a rotting tabard over the cuirass. It waits rather than lurches — the one that outranks the rest.',
-    colour: 'blackened iron, bone, a tabard in dried-blood red gone brown, the visor light cold blue.'
-  },
-  nibbler: {
-    blurb: 'A bat-imp: mostly ears and mouth — two huge ragged ears, one torn, a gaping needle-toothed maw, small red eyes, leathery wings folded round it like a cloak, hooked feet.',
-    colour: 'dusk-purple hide going black at the ears, wing membrane a bruised plum, ivory teeth, ember-red eyes.'
-  },
-  cinderhound: {
-    blurb: 'A burning hound, side on: all legs and ribs — a starved skeletal dog with embers glowing between its ribs, fire licking off its spine, a long muzzle of black teeth, hide cracked with heat lines, a tail that is a wisp of smoke. The fast one, and it is starving.',
-    colour: 'ash grey and charcoal, the cracks and ribs ember orange, white-hot eyes.'
-  },
-  blorp: {
-    blurb: 'A swamp ooze: a heaving mound of murky slime with a bone and a skull suspended inside it, a wide toothless grin that is not friendly, two mismatched bubble eyes, dripping at the edges.',
-    colour: 'bog green shading to black, a sick yellow-green highlight on the wet crest, the bones inside bone-white.'
-  },
-  thornwick: {
-    blurb: 'A bramble treant: a slow, patient tree-thing made entirely of black thorns and dead wood, a hollow face split into the trunk with a pale witch-light burning inside it, roots for feet, bramble-whips for arms, a crown of bare branches.',
-    colour: 'dead bark black-brown, near-black thorns, the light in the face a pale sick green-white, a few dead leaves in rust.'
-  },
-  rattlejack: {
-    blurb: 'A scrap skeleton: a jittering human skeleton in stolen scraps of armour, a dented iron cooking pot worn as a helm, a rusted cleaver, bones tied together with wire, one socket lit. No plan whatsoever.',
-    colour: 'yellowed bone, rust-brown iron, a tatter of faded red cloth, the lit socket ember-red.'
-  },
-  dustmoth: {
-    blurb: 'A crypt moth, front on, wings spread: a great dusty moth with tattered wing edges and two staring eyespots on the forewings, a furred thorax, dangling hooked legs, feathery antennae. Sinister — the eyespots are watching.',
-    colour: 'dust grey and dead-leaf brown, the eyespots ringed in bone and bruise-purple, a faint cold shimmer on the wing scales.'
-  },
-  skewer: {
-    blurb: 'A wyrmling, side on: a small fast serpentine dragon that is almost entirely the pointy end — a spear-pointed head, a long neck, small ragged bat wings, a whipping tail.',
-    colour: 'slate green scales going black along the spine, a dull bone belly, a hot yellow slit of an eye.'
-  },
-  gloomcrow: {
-    blurb: 'A bone crow, front on, wings out: a large carrion crow with a bare skull for a head, tattered feathers, a lit socket, a stolen gold trinket clutched in its beak.',
-    colour: 'feathers near-black with a cold blue sheen, a bone-white skull, ember-red sockets, the trinket tarnished gold — the only bright thing on it.'
-  }
-}
-
-/** The survivor, three outfits. One drawing; only the cloth changes. */
-const SURVIVOR_BLURB = 'A lone survivor seen from DIRECTLY BEHIND, running away from the viewer up the road: a hooded figure in a ragged coat with the hood up, a battered leather pack with a bedroll lashed across the top, a short black-iron hand-cannon held forward in both hands so only the stock and a hint of barrel show above one shoulder, heavy boots. Head down, leaning into the run, the hood\'s tie-tails streaming behind. The tails are the one part that reads at 16 px — keep them. It RUNS: one leg straight and planted, the other folded up behind with the sole of its boot showing, exactly as each panel of the reference has it.'
-
-/**
- * What each panel of the survivor's sheet IS.
- *
- * Stated per panel because the first returns held one pose for two panels and
- * jumped to the next — the reference of the time had the same near-duplicates
- * (a side-view stride turned round), and a painter copies what it is shown.
- * The order is the bench's own sampling: `paintSurvivorFrame` takes the middle
- * of each panel's slice of the stride, with the legs half a cycle apart and a
- * run's short stance, which puts these eight moments on these eight panels.
- */
-const HERO_PANELS = [
-  'left foot planted well forward, that leg straight; the right leg folding up behind, its boot three quarters of the way to the seat',
-  'left foot planted under the hips; the right boot at the TOP of its swing, folded tight, its SOLE turned to the viewer',
-  'left foot planted behind, pushing off; the right leg unfolding, its boot coming down and forward',
-  'FLIGHT — both feet off the ground: the left boot just leaving the road behind, the right boot about to land in front',
-  'right foot planted well forward, that leg straight; the left leg folding up behind, its boot three quarters of the way to the seat',
-  'right foot planted under the hips; the left boot at the TOP of its swing, folded tight, its SOLE turned to the viewer',
-  'right foot planted behind, pushing off; the left leg unfolding, its boot coming down and forward',
-  'FLIGHT — both feet off the ground: the right boot just leaving the road behind, the left boot about to land in front'
-]
-
-const heroPanelScript = (): string[] => [
-  '',
-  'READ THE PANELS — it is a RUN, and the legs are the whole animation.',
-  'Top row left to right is panels 1 to 4, bottom row 5 to 8. In every panel',
-  'the body, pack, hood, arms and gun are IDENTICAL; only the legs change, and',
-  'they change exactly as the reference draws them:',
-  ...HERO_PANELS.map((p, i) => `· panel ${i + 1}: ${p}.`),
-  '· The legs stay UNDER the hips and never splay out sideways into a V, never',
-  '  cross, never skate. The stride runs INTO the screen, so a foot goes UP',
-  '  (folding behind, sole showing) or DOWN (planted) — not left or right.',
-  '· No two panels are the same pose. Panels 1-4 and 5-8 are the two halves of',
-  '  one stride with the other leg leading.',
-  '· The camera is square behind the back: the pack faces the viewer flat-on,',
-  '  both shoulders show equally, and the face never shows. Do not turn the',
-  '  figure three-quarters on to show the gun.'
-]
-
-const OUTFIT_COLOUR: Record<string, string> = {
-  teal: 'a muted teal wool coat, slate trousers, an oiled brown pack, a bone-cream hood — the coat\'s teal is its identity in the crowd.',
-  amber: 'a tarnished amber-brown leather coat, charcoal trousers, a dark pack, a grey-linen hood — the amber is its identity in the crowd.',
-  violet: 'a dusk-violet cloak-coat, slate trousers, a brown pack, a pale blue-grey hood — the violet is its identity in the crowd.'
-}
-
-const walkOf = (
-  kind: 'monster' | 'hero', id: string, name: string, blurb: string, colour: string,
-  faces: WalkSpec['faces'], panelH: number, frameH: number
-): WalkSpec => ({
-  kind,
-  id,
-  file: `walk-${kind === 'hero' ? 'hero-' : ''}${id}`,
-  target: `${ART_FOLDERS[kind]}/${id}.webp`,
-  name,
-  blurb,
-  colour,
-  faces,
-  cols: WALK_COLS,
-  rows: WALK_ROWS,
-  frames: WALK_FRAMES,
-  panelW: WALK_PANEL_W,
-  panelH,
-  w: WALK_COLS * WALK_PANEL_W,
-  h: WALK_ROWS * panelH,
-  // Twice the bake's frame: a boss is the same design at 2.5x, and past that
-  // the strip is the heaviest thing the game downloads.
-  maxEdge: frameH * 2
+const walk = (kind: WalkSpec['kind'], id: string, name: string, blurb: string, colour: string | undefined,
+  panelW: number, panelH: number, faces: 'left' | 'right', anchor: 'feet' | 'centre'): WalkSpec => ({
+  kind, id, name, blurb, colour,
+  file: `walk-${id}`,
+  target: artTarget(kind, id),
+  src: artTarget(kind, id),
+  frames: 8, cols: 4, rows: 2,
+  panelW, panelH, w: panelW * 4, h: panelH * 2,
+  faces, anchor
 })
 
-export const MONSTER_WALKS: WalkSpec[] = MONSTERS.map((m) => {
-  const dark = DARK_CAST[m.id]
-  return walkOf('monster', m.id, m.name,
-    dark?.blurb ?? m.tagline, dark?.colour ?? '', m.faces, MONSTER_PANEL_H, MONSTER_FRAME_H)
-})
+export const WALKS: WalkSpec[] = [
+  walk('monster', 'bonecap', 'Bone Dummies commander',
+    'a small skeleton in a cracked bone cap, shambling, a training dummy of a warrior', 'bone white around #d9d9e8, cap shadow #6c6c80', 228, 256, 'left', 'feet'),
+  walk('monster', 'nibbler', 'Goblin Archers commander',
+    'a wiry goblin archer with a short bow on its back and a wide grin, scampering', 'goblin green around #8dff5a with a brown leather jerkin', 228, 256, 'left', 'feet'),
+  walk('monster', 'snaggletusk', 'Orc Berserkers commander',
+    'a broad orc with one snagged tusk, a cleaver in hand, stomping', 'orc hide around #ff5a3d muted to brick, iron cleaver', 228, 256, 'left', 'feet'),
+  walk('monster', 'marrowknight', 'Undead Mages commander',
+    'a gaunt undead knight in tattered robes, a violet flame in one hand, gliding', 'ashen robes around #c98cff muted to mauve', 228, 256, 'left', 'feet'),
+  walk('hero', 'teal', 'The player\'s commander',
+    'a young rune-keeper in a teal cloak with a satchel of stones, running', 'teal cloak around #2fb8a8, sandstone satchel', 192, 192, 'right', 'feet'),
+]
 
-export const HERO_WALKS: WalkSpec[] = OUTFITS.map((o) =>
-  walkOf('hero', o.id, `Survivor (${o.id})`, SURVIVOR_BLURB,
-    OUTFIT_COLOUR[o.id] ?? '', 'back', HERO_PANEL_H, HERO_PX))
+// The archer's arrow was here, as an eight-panel flight strip. It is a single
+// still on the fx sheet now (`fx` → `round/bolt`). Two reasons, and both are
+// general: the renderer blits it as ONE image rotated to the heading, so a
+// strip arrived as a ribbon of eight arrows laid along the shot; and an arrow
+// in flight has nothing to animate — the movement is the simulation's, not a
+// cycle's. Asking for eight consistent arrows got eight different ones.
 
-export const WALKS: WalkSpec[] = [...MONSTER_WALKS, ...HERO_WALKS]
+// ─── Scenery: the two ridge bands ───────────────────────────────────────────
 
-// ─── Stills ─────────────────────────────────────────────────────────────────
-
-/** Edge of a square still's reference, px. */
-export const STILL_SIZE = 512
-
-export interface StillSpec {
-  /** Runtime folder — and, for the cast's fixtures, the probe kind. */
-  kind: ArtKind
+export interface SceneryAsset {
   id: string
   file: string
-  /** Path under `public/` the sliced result belongs at. */
   target: string
-  /** Resized copies of the same return, for assets that ship at two sizes. */
-  extra?: { target: string; size: number }[]
   name: string
-  /** The prompt's `WHAT IT IS`. */
   blurb: string
+  /**
+   * What DRAWS the reference. It used to be `src` — the bitmap that already
+   * shipped — which is fine for a restyle and wrong for a re-subject: the two
+   * ridges were the previous game's graveyard silhouettes, and a restyle of a
+   * graveyard is a graveyard. They are painted by the game now (`kind: 'ridge'`),
+   * so the reference carries the rune world the prompt only claims.
+   */
+  art: CellArt
   w: number
   h: number
-  /** Output cap for the tall edge, px. The slicer writes every frame at most
-   *  256 px tall by default; this can only lower that — unless `exact`. */
-  maxEdge: number
+  tileable: boolean
   /**
-   * `maxEdge` is the size, not a cap: the file is read at exactly that size by
-   * something outside the renderer (the PWA manifest reads the logo at 512),
-   * so the slicer's 256 default and even a `--size` do not apply to it.
+   * What the slicer does with the ground the artwork sits on.
+   *
+   * `magenta-sky` — a band: the sky along the TOP edge is keyed out and the
+   * rock runs to the bottom edge (the flood may only seed from the top, or it
+   * eats the range from the base up).
+   * `opaque` — the whole image IS the artwork, edge to edge. Nothing is keyed,
+   * nothing is trimmed, and a solid rectangle is the correct answer rather
+   * than a warning.
    */
-  exact?: true
-  /** How the return is registered onto the reference: by its middle, or by
-   *  its bottom edge (a thing whose ground line must not move). */
-  anchor: 'centre' | 'feet'
-  /**
-   * `false` for a subject the slicer must NOT fit onto the reference.
-   *
-   * The fit measures SOLID pixels, and a drawn effect is mostly glow: the
-   * muzzle flash's solid core is a third of its visible disc, a bolt's is its
-   * dark heart. A painting — opaque strokes, all of it solid — fitted onto
-   * that box comes back a third of the size it was painted at. These are
-   * placed by the prompt's own words instead ("fills the frame", "the head
-   * at 0.7 of the width") and blitted as they arrive.
-   */
-  fit?: false
-  /** What the empty part of the frame must be. */
-  bg: 'magenta' | 'opaque' | 'magenta-sky'
-  /** Must it join to itself across an edge? */
-  tile?: 'x' | 'xy'
-  /** The subject fills its frame edge to edge (a crate, a tile). */
-  fill?: boolean
-  /** Which way it is authored, when the game turns it. */
-  authored?: string
-  /** What the game paints OVER it — and therefore what must be left out. */
-  live?: string
-  /** A glow that must stay inside the outline. */
-  glow?: boolean
-  /** Colourless by contract; the game tints it. */
-  greyscale?: boolean
-  /**
-   * ─── An ANIMATED still ──────────────────────────────────────────────────
-   *
-   * Panels of one loop, when the subject moves under its own power. Absent, or
-   * 1, is an ordinary still.
-   *
-   * A projectile is the case this exists for. A boss's meteor is a rock inside
-   * a fire, and a fire is not a shape — it is a shape changing. Painted as one
-   * panel it comes back beautiful and DEAD, because the renderer's only job
-   * with a still is to translate it down the road; a player watching it called
-   * that exactly what it is: lifeless. The fix is not a live glow drawn around
-   * the painting — that is two fires burning at different rates on one rock —
-   * it is to paint the fire moving, and the only way to ask a painter for that
-   * is to hand them the loop.
-   *
-   * Everything downstream already handles it. The slicer cuts any grid into one
-   * horizontal strip; `spriteStrip.ts` reads the panel count off the returned
-   * file rather than from a declaration here, so a design that will not hold
-   * for eight panels can come back as four with no code change; and
-   * `PaintOpts.cycle` means the drawn fallback and the painted strip play from
-   * the same clock, so the drop-in never changes the animation's speed.
-   *
-   * The grid is the walk's — 4 x 2 — because the walk prompt's panel-count
-   * discipline was expensive to arrive at and an image model that has been
-   * taught "two rows of four" for one sheet should not be asked for a different
-   * shape on the next.
-   */
-  frames?: number
-  cols?: number
-  rows?: number
-  /** What moves between the panels, and what must NOT. The prompt's
-   *  `READ THE PANELS`; only meaningful when `frames > 1`. */
-  cycle?: string
-  /**
-   * What each panel IS, one line per frame.
-   *
-   * The same medicine `HERO_PANELS` is: a painter copies what it is shown, and
-   * shown a grid it will happily paint one picture per ROW and repeat it four
-   * times. The survivor's stride came back that way three times running until
-   * every panel was named, and the roller came back that way twice — a sheet
-   * with one ring arrangement across the top row and a second across the
-   * bottom, which is two states rather than eight steps.
-   *
-   * So a cycle whose motion is MECHANICAL — a measurable displacement per
-   * frame, rather than free-form flicker — names its panels. Fire does not
-   * need this; a turning object does.
-   */
-  panels?: readonly string[]
+  bg: 'magenta-sky' | 'opaque'
 }
 
-/** Panels of one loop for an animated still, and the grid they sit in. */
-export const CYCLE_FRAMES = 8
-export const CYCLE_COLS = 4
-export const CYCLE_ROWS = CYCLE_FRAMES / CYCLE_COLS
-
-/** Frames of a spec's loop — 1 for an ordinary still. */
-export const framesOf = (s: StillSpec): number => s.frames ?? 1
-export const colsOf = (s: StillSpec): number => s.cols ?? 1
-export const rowsOf = (s: StillSpec): number => s.rows ?? 1
-
-/** The animation grid, for a subject whose motion has to be painted in. */
-const CYCLE = { frames: CYCLE_FRAMES, cols: CYCLE_COLS, rows: CYCLE_ROWS } as const
-
-/**
- * The roller's eight steps, as fractions of ONE RING GAP.
- *
- * Generated rather than typed so the arithmetic cannot drift from
- * `CYCLE_FRAMES`, and stated as a measurement because that is the only kind of
- * instruction a painter cannot satisfy with "roughly the same but dirtier".
- * Panel k is the surface displaced by (k−1)/8 of the gap between two rings —
- * an eighth of a quarter-turn each, which is what the game plays back.
- */
-const ROLLER_PANELS: readonly string[] = Array.from({ length: CYCLE_FRAMES }, (_, i) => {
-  const nth = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'][i]
-  if (i === 0) {
-    return 'the starting arrangement — one band lies straight across the ball\'s'
-      + ' widest point (its horizontal middle). Every other panel is measured'
-      + ' from this one'
+export const SCENERY: SceneryAsset[] = [
+  {
+    id: 'sky', file: 'bg-sky', target: artTarget('bg', 'sky'),
+    name: 'The night sky',
+    blurb: 'the night sky over a rune world, seen from the ground: deep indigo shading to near-black at the bottom, a pale full moon '
+      + 'high on the RIGHT with a soft halo, a violet aurora drifting across the upper left, a scatter of small stars, and a faint '
+      + 'violet haze along the bottom where the mountains will stand. No ground, no mountains, no buildings, no birds, no lettering '
+      + 'and NOTHING in the middle of the picture — the game board covers it',
+    w: 1024, h: 576, tileable: false, bg: 'opaque', art: { kind: 'sky' }
+  },
+  {
+    id: 'ridge-far', file: 'bg-ridge-far', target: artTarget('bg', 'ridge-far'),
+    name: 'The far ridge',
+    blurb: 'a distant mountain ridge in silhouette, hazy and blue with moonlight catching its top edge, three tall stone pinnacles '
+      + 'standing above the skyline; the sky above it is empty',
+    w: 1024, h: 256, tileable: false, bg: 'magenta-sky', art: { kind: 'ridge', layer: 'far' }
+  },
+  {
+    id: 'ridge-near', file: 'bg-ridge-near', target: artTarget('bg', 'ridge-near'),
+    name: 'The near ridge',
+    blurb: 'a nearer ridge of broken black rock, its base running along the bottom edge, with five standing rune monoliths on it — '
+      + 'rough megaliths the size of towers, two of them carved with a glowing violet glyph; the sky above it is empty',
+    w: 1024, h: 256, tileable: false, bg: 'magenta-sky', art: { kind: 'ridge', layer: 'near' }
   }
-  const eighths = `${i}/${CYCLE_FRAMES}`
-  const step = `every band has slid DOWN by ${eighths} of the gap between two bands`
-  if (i * 2 === CYCLE_FRAMES) {
-    return `${step} — HALF a gap. This is the panel least like panel 1 and it has`
-      + ' to look it: the ball\'s widest point now falls in BARE IRON, exactly'
-      + ' midway between two bands, where panel 1 had a band sitting on it'
-  }
-  if (i === CYCLE_FRAMES - 1) {
-    return `${step}. One more step of the same size brings the NEXT band onto the`
-      + ' widest point, which is panel 1 again — that is how the loop closes.'
-      + ' This panel is the one just before that'
-  }
-  return `${step} — the ${nth} of eight even steps, so the band that was on the`
-    + ' widest point is now a little below it'
-})
-
-const still = (
-  kind: ArtKind, id: string, name: string, blurb: string,
-  o: Partial<StillSpec> = {}
-): StillSpec => ({
-  kind,
-  id,
-  file: `still-${kind}-${id}`,
-  target: `${ART_FOLDERS[kind]}/${id}.webp`,
-  name,
-  blurb,
-  w: STILL_SIZE,
-  h: STILL_SIZE,
-  maxEdge: 256,
-  anchor: 'centre',
-  bg: 'magenta',
-  ...o
-})
-
-const GATE_BLURB = 'A gate FRAME for a magical doorway, seen straight on: two THIN, tall posts, one at each side of the frame, joined by a thin lintel or arch across the top; the whole MIDDLE IS OPEN — flat magenta — because the game paints the glowing curtain, the flowing chevrons and the number plate inside the opening. The posts stand on the road; leave a little magenta under and over them exactly as the reference does.'
-
-/**
- * How wide the reference draws a gate post, in world units.
- *
- * As wide as the game can tolerate: it grows OUTWARD from the door's edge, and
- * a two-leaf bank's inner posts meet at the divider pillar, which hides 0.25
- * units either side of the shared edge. So 0.25 out plus the drawn post's 0.09
- * in. The painting is registered onto this band; in play the drawn post keeps
- * its own 0.18.
- */
-export const GATE_REF_POST_W = 0.34
-
-/**
- * The gate frame's geometry, as fractions of the panel.
- *
- * The first returns came back with posts a THIRD of the frame wide — a pair
- * of slabs per side, a pillar the width of a tower — and two re-rolls with
- * the width stated as a fraction changed nothing: an image model does not
- * measure. So the reference now draws the posts at the widest the game can
- * take (`GATE_REF_POST_W`), which is what a painter actually copies, and the
- * slicer re-composes whatever comes back onto this band (`tools/slice-sheets`).
- * Derived from `GATE_FRAME` so nothing here can drift from the cut.
- */
-export const GATE_POST = (() => {
-  const { w, h, ppu, cap, refHalfW } = GATE_FRAME
-  const edge = w / 2 - refHalfW * ppu
-  const outer = (edge - (GATE_REF_POST_W - 0.09) * ppu) / w
-  const inner = (edge + 0.09 * ppu) / w
-  return {
-    width: inner - outer,
-    outer,
-    inner,
-    doorway: 1 - 2 * inner,
-    /** Where the nine-slice cuts, as a fraction of the width. */
-    cut: cap / w,
-    /** The posts' foot, as a fraction of the height. */
-    bottom: (h / 2 + (0.75 + 0.12) * ppu) / h,
-    /** How much of the doorway span, from the top, is kept as the lintel. */
-    lintel: 0.4
-  }
-})()
-
-const pct = (v: number): string => `${Math.round(v * 100)}%`
-
-export const STILLS: StillSpec[] = [
-  // ── Props ──
-  still('prop', 'crate-damage', 'Supply crate (damage)',
-    'A supply crate: a square iron-banded strongbox of dark oak planks with riveted black-iron corners and a faint sickly-GREEN painted seal or band on its face. Square and flat-on.',
-    { fill: true, live: 'The game paints a green chevron badge, a glowing rim and an HP number over the middle of the face, so keep the CENTRE plain and readable and put the detail at the edges.' }),
-  still('prop', 'crate-rate', 'Supply crate (rate)',
-    'A supply crate: a square iron-banded strongbox of dark oak planks with riveted black-iron corners and a cold BLUE painted seal or band on its face. Square and flat-on. Its sibling is the same crate banded green, and the two must be tellable apart by the colour of the band alone.',
-    { fill: true, live: 'The game paints a blue bolt badge, a glowing rim and an HP number over the middle of the face, so keep the CENTRE plain and readable and put the detail at the edges.' }),
-  still('prop', 'barricade', 'Barricade block',
-    'A barricade block: a rough wall of mortared dark stone with bone and rusted iron scraps set into it, seen flat-on. Fully opaque, edge to edge.',
-    { fill: true, tile: 'x', bg: 'opaque', live: 'The game paints hazard chevrons, a damage bar and an HP number over it, so keep it mid-tone and quiet — texture, not objects.' }),
-  still('prop', 'boulder-1', 'Boulder (1 of 3)',
-    'An unbreakable boulder: one heavy irregular lump of dark grey rock, squat and wide, cracked, with a lit crown edge upper-left and deep shadow lower-right. NO metal, NO number, NO glow, nothing that could be read as a meter — the absence of a number IS the mechanic. Fills most of the frame.',
-    { fill: true }),
-  still('prop', 'boulder-2', 'Boulder (2 of 3)',
-    'An unbreakable boulder: one heavy irregular lump of dark grey rock, taller than it is wide with a split down one side, cracked, with a lit crown edge upper-left and deep shadow lower-right. NO metal, NO number, NO glow, nothing that could be read as a meter. Fills most of the frame.',
-    { fill: true }),
-  still('prop', 'boulder-3', 'Boulder (3 of 3)',
-    'An unbreakable boulder: one heavy irregular lump of dark grey rock, rounded with a flat top, cracked, with a lit crown edge upper-left and deep shadow lower-right. NO metal, NO number, NO glow, nothing that could be read as a meter. Fills most of the frame.',
-    { fill: true }),
-  still('prop', 'barrel', 'Powder keg',
-    'A powder keg: a dark riveted black-iron drum standing upright, four fifths as wide as it is tall, with two dull dried-blood-red bands and a crude skull-and-fuse stencil on its face. Intact state only. Centred, the drum filling the frame\'s full height.',
-    { live: 'The game paints the damage cracks and the lit strobe over it, so paint it whole and unlit.' }),
-  still('prop', 'pillar', 'Divider pillar',
-    'A divider pillar: a tall iron post with heavy steel caps top and bottom, its body striped in diagonal black and dull-yellow hazard chevrons, scarred and rusted, seen straight on. Upright, filling the frame\'s full height, the caps a little wider than the shaft.',
-    { w: 288, h: 640, maxEdge: 640, fill: true, live: 'NO lamp on top and NO glow — the beacon and the red warning are painted live.' }),
-  still('prop', 'coin', 'Coin',
-    'A coin pickup: a face-on tarnished gold coin with a grim skull or sigil embossed and a worn, notched edge. It must be round and face-on — the game spins it by squashing it sideways. Fills the frame.',
-    { maxEdge: 128, fill: true }),
-  // The weapon puzzle's prize, in its two states. Two paintings rather than
-  // one recoloured: the whole beat rests on a player reading, from the far end
-  // of the road, whether the box is still shut behind its armour or already a
-  // pickup, so the states are allowed to look like different objects. See
-  // `paintWeaponBoxBody`.
-  still('prop', 'weapon-box', 'Weapon case (shut)',
-    'A weapon case, shut and dead: a square armoured strongbox of cold grey gun-steel, flat-on, its face a heavy riveted plate recessed inside a thick bevelled frame, with dark sealed seams and scuffed dull-blue paint. NOTHING glows, nothing is warm — it is inert metal, and that is the read. Square and flat-on, filling the frame.',
-    { fill: true, live: 'The game paints the weapon glyph and a heavy cross-brace over the middle of the face, so keep the CENTRE plain, flat and mid-tone and put the detail — rivets, bevels, scuffs — around the edges.' }),
-  still('prop', 'weapon-box-open', 'Weapon case (open)',
-    'The same square armoured strongbox, now UNSEALED and lit from within: the dark steel is banded and edged in hot brass and worn gold, its seams cracked open with warm amber light spilling out, the recessed face plate glowing a rich lamp-gold. Read as a PRIZE across a whole screen — warm, bright, obviously changed from the cold shut one. Square and flat-on, filling the frame.',
-    { fill: true, live: 'The game paints the weapon glyph in near-black over the middle of the face, plus damage cracks, a pulsing halo and an expanding ring, so keep the CENTRE plain, bright and readable and put the detail around the edges.' }),
-
-  // …and the two things standing between the crowd and it. The armour is one
-  // plate of a pair; the lever is two pieces because half of it swings.
-  still('prop', 'guard-plate', 'Weapon-case armour plate',
-    'A bolted-on armour plate: a slab of riveted grey-blue battleship steel seen flat-on, its face crossed by two rows of heavy dome rivets, scuffed and streaked with rust runs from the rivet heads. Two of these stand EDGE TO EDGE over the case they protect, so the left and right edges are clean vertical panel edges — a plate, not a crate. Square-ish and flat-on, filling the frame.',
-    { fill: true, live: 'The game darkens and reddens the whole plate as it is shot and flashes it white on every hit, so paint it INTACT and evenly lit — no cracks, no holes, no damage of its own.' }),
-  still('prop', 'lever-post', 'Lever housing',
-    'The housing of a road-side lever: a low, wide iron footing bolted flat to the ground, seen straight on — a squat rusted-steel box with a heavy bevelled lid, four corner bolts and a dark slot across its top where the arm comes out. Low and wide, twice as wide as it is tall, filling the frame.',
-    { w: 512, h: 256, fill: true, live: 'The ARM is a separate painting that swings out of the slot, so paint the housing alone — no arm, no handle, nothing standing up out of it.' }),
-  still('prop', 'lever-arm', 'Lever arm',
-    'The arm of a road-side lever, standing straight UP: a stout iron rod with a wrapped grip, rising from the bottom edge of the frame, and at its top an EMPTY round socket — an open iron ring or claw with nothing in it. The socket must be a hole, not a ball: the game lights a glowing orb inside it. Centred, the rod filling the frame\'s full height, the socket at the very top.',
-    { w: 288, h: 512, anchor: 'feet', authored: 'standing UP: the pivot at the bottom edge, the socket at the top. The game swings it over as the lever is pulled', live: 'The knob is painted live INSIDE the socket — red while the lever is live, green once it is pulled — so leave the socket open and unlit.' }),
-  // ── Gates ──
-  // `fit: false` on every gate: the slicer RE-COMPOSES a gate return onto the
-  // reference's post band and stands it on the ground line, which is the
-  // whole registration. Running the fit on top of that was wrong in a way
-  // that showed: painted posts are taller than the drawn ones, so the fit
-  // shrank the frame about its centre and slid both posts into the doorway.
-  still('gate', 'frame-add', 'Gate frame — the door that pays',
-    `${GATE_BLURB} THIS ONE is the door that PAYS: clean cold-iron posts lit with pale cyan runes, a faint cold light on the metal, intact. Cold cyan is its identity — nothing warm on it.`,
-    { w: GATE_FRAME.w, h: GATE_FRAME.h, maxEdge: GATE_FRAME.h, fit: false }),
-  still('gate', 'frame-sub', 'Gate frame — the door that bills',
-    `${GATE_BLURB} THIS ONE is the door that BILLS: scorched iron posts with an amber-brown, sooty, dried-blood cast, dull embers in the cracks, intact but ugly.`,
-    { w: GATE_FRAME.w, h: GATE_FRAME.h, maxEdge: GATE_FRAME.h, fit: false }),
-  still('gate', 'frame-mul', 'Gate frame — the multiplier',
-    `${GATE_BLURB} THIS ONE is the MULTIPLIER: posts of dark violet-black iron with deep purple runes — deep VIOLET, never pink and never magenta, because magenta is the background key and would be cut away with the sky.`,
-    { w: GATE_FRAME.w, h: GATE_FRAME.h, maxEdge: GATE_FRAME.h, fit: false }),
-  still('gate', 'frame-div', 'Gate frame — the trap',
-    `${GATE_BLURB} THIS ONE is the TRAP: rusted red-black iron posts, each still ONE pillar of the reference's width, with the top of the post cracked off jagged and a snapped stub above the break, dirty and scorched — a frame that has already failed somebody. Broken means the TOP is broken; the post itself stays a pillar, not a heap of rubble, not a wall.`,
-    { w: GATE_FRAME.w, h: GATE_FRAME.h, maxEdge: GATE_FRAME.h, fit: false }),
-
-  // ── Rounds ──
-  still('round', 'tracer', 'The crowd\'s round',
-    'The crowd\'s round: a short vertical streak of hot lead — a bright white-gold core with a thin ember-orange glow tail below it. It is one of a hundred on screen, so it is a streak, not an object. The streak spans the full height of the frame and about a quarter of its width, centred.',
-    { maxEdge: 128, fit: false, authored: 'pointing UP: it flies up the screen, so the bright head is at the TOP and the tail trails DOWN', glow: true }),
-  still('round', 'bolt-gunner', 'The gunner\'s round',
-    'The gunner\'s round: a fat slow orb of cold cyan witchfire around a dark iron core, with a streaming tail of fading cyan witchfire behind it. Small in its frame — the tail is longer than the head is wide.',
-    {
-      ...CYCLE, fit: false, glow: true,
-      authored: 'pointing RIGHT: the head sits at 0.7 of the width with the tail trailing off to the LEFT. The game turns it to its heading.',
-      cycle: 'The IRON CORE and the orb around it do not move, change size or change place between panels — they are the same round, and the game measures its kill against that head. What animates is the WITCHFIRE: the tail licks and gutters, its tongues lengthening and shortening and curling off the axis, and loose sparks drift back down it. Panel 8 must lead back into panel 1.'
-    }),
-  still('round', 'bolt-boss', 'The healer\'s bolt',
-    'The healer\'s bolt: a sickly green orb of necrotic light with a pale core and a trail of guttering green flame behind it. Small in its frame.',
-    {
-      ...CYCLE, fit: false, glow: true,
-      authored: 'pointing RIGHT: the head sits at 0.7 of the width with the tail trailing off to the LEFT. The game turns it to its heading.',
-      cycle: 'The ORB and its pale core keep the same size and the same place in every panel — that head is the part that hits. What animates is the necrotic fire around and behind it: the halo breathes in and out, the trail writhes and splits, and flecks of green rot peel off it and fall behind. Panel 8 must lead back into panel 1.'
-    }),
-  still('round', 'roller', 'The rolling boulder',
-    'The rolling boulder: a huge iron-banded stone sphere studded with rusted spikes, dark, with a rim light along its lower edge, seen face-on as it rolls straight at the viewer. The SPHERE is a full circle about three quarters of the frame across, centred — in the reference it spans from 12% to 88% of the width — and the spikes reach out from it into the margin around it, never crossing the frame edge. The sphere is what kills; keep it that size. Its ironwork reads as FOUR evenly spaced bands stacked down its face — flattened ellipses, widest across the middle of the ball and tighter toward its top and bottom edges, studded with rivets. Four bands across the face, evenly spaced, all the way from the top edge to the bottom: not one equator, not a cross, not a cage.',
-    {
-      ...CYCLE, fit: false, panels: ROLLER_PANELS,
-      live: 'Nothing is painted over it any more. The game used to scroll its own bands across the ball to fake the roll; these eight frames ARE the roll, so paint the ironwork and let it turn.',
-      cycle: [
-        'IT ROLLS, TOWARD THE VIEWER — this is the one sheet in the set where the',
-        'object itself moves, and that movement is the whole animation.',
-        '',
-        'THREE returns have now come back without it. The first was the same ball',
-        'copied eight times with sparks added. The second was TWO arrangements,',
-        'one repeated across the top row and the other across the bottom, which',
-        'plays as a thing that snaps between two poses. The third is the one to',
-        'study, because it looked closest and was still not a roll: the bands',
-        'slid down the face as four stripes of the SAME WIDTH, evenly spaced,',
-        'like a pattern scrolling behind a porthole. Nothing narrowed, nothing',
-        'crowded, and the studs never moved at all.',
-        '',
-        'That is the whole difference, so it is worth stating as geometry rather',
-        'than as a feeling. These bands are HOOPS AROUND A SPHERE, not stripes',
-        'on a disc, and a hoop on a sphere does two things a stripe never does:',
-        '',
-        '  · IT NARROWS. A band crossing the widest part of the ball spans',
-        '    almost the full width of it. The same band, three quarters of the',
-        '    way to the top edge, spans barely half that — and as it reaches the',
-        '    edge it shrinks to nothing and is gone. Look at the reference: no',
-        '    two bands in a panel are the same width.',
-        '  · THEY CROWD. Because they are evenly spaced around the BALL and not',
-        '    down the picture, the gaps between them look widest across the',
-        '    middle and squeeze together toward the top and bottom edges. Two',
-        '    bands near the top edge sit almost on top of each other.',
-        '',
-        'Get those two right and the ball turns whether or not anything else is',
-        'perfect. Get them wrong and no amount of sparks will save it.',
-        '',
-        'The ball stays exactly the same size and exactly in the same place. What',
-        'moves is its SURFACE: the bands, their rivets and any scars or pitting',
-        'travel DOWNWARD together across the face — in at the top edge, down over',
-        'the middle, out at the bottom — as if the ball were turning toward you.',
-        'The rivets ride their band, so they spread apart as the band widens over',
-        'the middle and close up again as it narrows toward an edge.',
-        '',
-        'Across the eight panels the surface travels DOWN by exactly ONE BAND',
-        'GAP, in eight even steps of an eighth of a gap each. By panel 8 the',
-        'band that started on the ball\'s widest point has moved almost all the',
-        'way to where the band below it began, so the next step lands the',
-        'following band exactly where the first one started — and that is panel 1',
-        'again. The loop closes with no jump. Do not paint a whole revolution.',
-        '',
-        'The RING OF SPIKES around the outline is the one thing that does NOT',
-        'travel. A ball rolling straight at you keeps its silhouette: the spikes',
-        'stand out from the edge in the same places in all eight panels, exactly',
-        'as the reference draws them. Do not slide them around the rim — that',
-        'reads as a ball spinning on the spot rather than rolling at the viewer.',
-        'The roll is carried entirely by the face.',
-        '',
-        'Under it all, sparks struck off the spikes where they bite the road and',
-        'a low scorch of dust around the base. Those are the only things that may',
-        'vary freely between panels — everything else has to line up.'
-      ].join('\n')
-    }),
-  still('round', 'meteor', 'The boss\'s rock',
-    'The boss\'s falling rock: a jagged black stone wrapped in orange fire, a white-hot core around the stone, and a flame tail streaming UPWARD from it — it falls down the screen. The stone sits in the LOWER part of the frame with the tail reaching the top.',
-    {
-      ...CYCLE, anchor: 'feet', fit: false, glow: true,
-      authored: 'falling: the stone low in the frame, the tail rising to the top edge',
-      cycle: 'The STONE keeps the same size and very nearly the same place in every panel — it may rock a few degrees, no more, because the game moves it down the screen itself. Everything else BURNS: the flame tail whips and forks, its tongues climbing and falling back, the white-hot shell around the stone flares and dims, and embers tear off the tail and stream away above it. This is the panel the whole sheet is for — the fire must be visibly a different fire in every one of the eight. Panel 8 must lead back into panel 1.'
-    }),
-  still('round', 'bomb', 'The bomber\'s charge',
-    'The bomber\'s charge: a black iron bomb with a lit fuse and a tight ember glow around it. Centred, about half the frame across.',
-    {
-      ...CYCLE, fit: false, glow: true,
-      live: 'The spark walking down the fuse is painted live, so no spark.',
-      cycle: 'The IRON BOMB does not move or change size between panels. What animates is the fire: the ember glow around the casing swells and shrinks, and the fuse burns with a flame that licks and flares. It is a fuse burning down, so the fire is a little angrier by panel 8 than at panel 1 — but panel 8 must still lead back into panel 1.'
-    }),
-  still('round', 'grenade', 'The player\'s grenade',
-    'The player\'s grenade: a small iron-grey sphere with a band across its middle, centred, filling most of the frame.',
-    { maxEdge: 128, authored: 'level: it tumbles in flight and the game turns it' }),
-  // The box is `ROCKET_BOX` in units of the shell's radius, at 80 px per
-  // unit: 288 x 512, which is 9:16.
-  still('round', 'rocket', 'The launcher\'s rocket',
-    'The launcher\'s rocket in flight, nose up: a fat black-iron shell with a blunt warhead, a band of rust round its middle, two or three swept fins at its tail, and a hot exhaust plume streaming DOWN from it — a white-gold core inside ember-orange flame that frays into smoke. The SHELL sits in the upper part of the frame with its nose a little below the top edge and is about half the frame\'s width; the PLUME runs from the fins down to the bottom edge and may be as wide as the frame. It is the heaviest thing the player fires, so it must read as iron, not as a spark.',
-    {
-      w: ROCKET_BOX.w * 80, h: ROCKET_BOX.h * 80, maxEdge: 256, fit: false, glow: true,
-      authored: 'pointing UP: it flies up the screen nose first, so the warhead is at the TOP and the plume trails DOWN. The game turns it to its heading',
-      live: 'The blast when it lands is painted live, so no explosion, no smoke ring, just the shell in flight.'
-    }),
-
-  // ── Effects ──
-  still('fx', 'muzzle', 'Muzzle flash',
-    'A muzzle flash: a hot white-gold burst, spiky, TIGHT, with an ember-orange fringe. It is drawn additively over the road, so dark pixels add nothing and the shape has to carry itself in light alone. Centred, filling most of the frame — but every spike stays inside the frame edge, nothing touches it.',
-    { maxEdge: 128, fit: false, glow: true }),
-  still('fx', 'smoke', 'Smoke puff',
-    'A smoke puff: a soft round cloud, densest in the middle, fading to nothing at its edge. Centred, filling the frame.',
-    { maxEdge: 192, fit: false, greyscale: true }),
-  still('fx', 'scorch', 'Scorch mark',
-    'A scorch mark on the road: a soft black-charcoal burn, an ellipse wider than it is tall, darkest in the middle, fading out to nothing at its edge. Charcoal only — no colour, no embers.',
-    { w: 512, h: 282, maxEdge: 144, fit: false }),
-  still('fx', 'ring-shock', 'Shockwave ring',
-    'A shockwave ring: a thin bright white-blue ring, a full circle seen from above, with a hard inner edge and a soft outer glow. TRANSPARENT INSIDE — the ring is stretched flat over the road. The ring itself spans about 89% of the frame, exactly as the reference has it; the glow outside it stays inside the frame edge.',
-    { glow: true }),
-  still('fx', 'ring-heat', 'Slam telegraph ring',
-    'A slam telegraph ring: a thin ember-orange ring, a full circle, hard edge inside, soft heat outside, TRANSPARENT INSIDE. The ring itself spans about 89% of the frame, exactly as the reference has it — it marks the radius the hit lands in, so it must not grow or shrink — and the heat outside it stays inside the frame edge.',
-    { glow: true }),
-  still('fx', 'ring-heal', 'Heal ring',
-    'A heal ring: a thin sickly green ring, a full circle, TRANSPARENT INSIDE. Green is a colour the game uses nowhere else, so it must be unmistakably green. The ring itself spans about 89% of the frame, exactly as the reference has it; any glow outside it stays inside the frame edge.',
-    { glow: true }),
-  still('fx', 'shield', 'Shield dome',
-    'The player\'s shield dome: a translucent cold-blue energy bubble, a full circle seen face-on, with a bright rim, a faint honeycomb texture across the surface and a specular sweep upper-left. The INTERIOR stays mostly transparent — it is stretched over the crowd and the crowd must stay readable through it. The rim spans about 89% of the frame, exactly as the reference has it; its glow outside stays inside the frame edge.',
-    { glow: true }),
-  still('fx', 'guard', 'Boss guard barrier',
-    'The boss\'s guard barrier: a point-up HEXAGON of ember-orange energy, a translucent fill with a hot rim. The hexagon spans about 89% of the frame, exactly as the reference has it; the rim\'s glow outside it stays inside the frame edge.',
-    { glow: true }),
-  still('fx', 'crest-shield', 'Shield crest',
-    'A heater shield crest — flat top, straight shoulders, tapering to a rounded point — in cold blue with a heavy near-black rim, a chief band across the top and a centre rib. Heraldry read at 20 px. Fills the frame.',
-    { maxEdge: 128, fill: true }),
-  still('fx', 'crest-guard', 'Guard crest',
-    'A heater shield crest — flat top, straight shoulders, tapering to a rounded point — in ember-orange and tarnished gold with a heavy dark rim, a chief band across the top and a centre rib: the boss\'s own. Fills the frame.',
-    { maxEdge: 128, fill: true }),
-
-  // ── Backdrop ──
-  //
-  // No road tile. It was painted, and it was worse than the drawing: cobbles
-  // big enough to read at all read as OBJECTS under the crowd, which is the one
-  // thing the ground must never do. The procedural gravel stays.
-  still('bg', 'ridge-far', 'Far ridge',
-    'A far parallax ridge: jagged dead peaks with a broken tower or two and a gallows on the skyline. The SKY above the ridge line is solid magenta; everything below the ridge line is SOLID BLACK silhouette — the game tints it per stage, so no colour, no shading, no lights. The ridge line runs at about 40% down the frame.',
-    { w: 1536, h: 384, maxEdge: 384, tile: 'x', bg: 'magenta-sky' }),
-  still('bg', 'ridge-near', 'Near ridge',
-    'A near parallax ridge, lower and closer than the far one: a dune of ruined walls, leaning grave-posts and bare trees. The SKY above the ridge line is solid magenta; everything below it is SOLID BLACK silhouette — the game tints it per stage, so no colour, no shading, no lights. The ridge line runs at about 40% down the frame.',
-    { w: 1536, h: 384, maxEdge: 384, tile: 'x', bg: 'magenta-sky' }),
-
-  // ── Marks and the logo ──
-  still('ui', 'crown', 'Elite crown',
-    'The elite\'s crown: a small three-pointed crown of tarnished gold with a heavy dark rim, its base flat at the bottom of the frame. Read at 20 px — bold shape, no fine detail. Fills the frame.',
-    { maxEdge: 128, fill: true }),
-  // The banner is nine-sliced by CSS: the outer `BANNER.cap` of the width at
-  // each end is kept at true size and the middle is stretched to the title.
-  // The prompt states the fraction, and the slicer fits the return onto the
-  // reference's plate (it is solid, so the fit is safe), which is what keeps a
-  // painted end piece under the CSS cut.
-  still('ui', 'ribbon', 'Result banner',
-    `The result screen\'s title banner: a long horizontal plate of blackened iron with a swallow-tailed notch cut into each end, bound along its top and bottom edges with a thin line of tarnished gold, a round iron-gold boss beside each notch and a small rivet in each corner. The plate spans the FULL WIDTH and nearly the full height of the frame, exactly as the reference does. All the detail lives in the two END PIECES — the outer ${pct(BANNER.cap)} of the width at each side — because the game keeps those at true size and STRETCHES THE MIDDLE sideways to fit the words: the middle ${pct(1 - 2 * BANNER.cap)} is a plain, flat, dark band with nothing on it but the two gold lines running straight through.`,
-    {
-      // The cap is on the tall edge, the width here; the plate is 40 px tall
-      // on screen and never more than 100 at any DPR.
-      w: BANNER.w, h: BANNER.h, maxEdge: BANNER.h,
-      live: 'The title is printed in white across the middle band, so the middle stays plain, flat and dark — no emblem, no rune, no glint, no lettering.'
-    }),
-  still('ui', 'chest', 'The idle treasure chest',
-    'The HUD\'s treasure chest: a squat iron-banded strongbox of dark oak seen straight on and a little from above, its domed lid raised a crack so a cold gold light leaks from the gap, a skull-faced iron hasp on the front, riveted black-iron bands and corners. A thing you would loot. Bold shape, no fine detail — it is read at 24 px beside the coin badge — and the same silhouette as the reference: a wide lid over a box, the lid overhanging.',
-    { maxEdge: 128 }),
-  // The shop's own mark, and NOT the chest: they sit on screen at the same
-  // time now — the chest fills with time on the wallet column, the forge opens
-  // the upgrade shop from the bottom bar — and two controls that do different
-  // things may not be the same drawing.
-  still('ui', 'forge', 'The upgrade forge',
-    'The upgrade shop button\'s mark: a squat blackened-iron anvil, its horn to the LEFT and its foot splayed, standing under a bold upward chevron of hot molten gold, with two or three sparks flying off it. The anvil\'s face glows orange where the chevron rises off it. Bold shape, no fine detail — it is read at 24 px on a button — and the same layout as the reference: the chevron in the top half, the anvil in the bottom half, both centred and filling the frame.',
-    { maxEdge: 128 }),
-  still('ui', 'skill-grenade', 'The grenade skill',
-    'The grenade skill\'s button icon: a round black-iron bomb with a short fuse curling from its top and a spark on the fuse\'s end — the one the player throws. Bold and simple, read at 24 px on a round button; the same silhouette as the reference, a ball with the fuse to the upper right.',
-    { maxEdge: 128 }),
-  still('ui', 'skill-shield', 'The shield skill',
-    'The shield skill\'s button icon: a heater shield of cold steel with a heavy near-black rim and a raised iron boss, a cold blue witch-light glowing in its centre band — the same cold blue as the dome it raises over the crowd. Bold and simple, read at 24 px on a round button; the same silhouette as the reference.',
-    { maxEdge: 128 }),
-  still('ui', 'logo', 'Title logo',
-    'The game\'s title logo: the single word glyphyx in carved bone-and-black-iron dark-fantasy lettering, cracked and chipped, a faint ember glow at the edges. Spelled exactly S-U-R-V-I-V-A-L-I-S-T, in one line, readable at 192 px. Centred, filling about nine tenths of the width.',
-    {
-      // The file IS the PWA's 512 icon, so 512 is exact rather than a cap the
-      // slicer's 256 default may lower.
-      w: 1024, h: 1024, maxEdge: 512, exact: true,
-      target: 'images/logo/logo_512x512.png',
-      extra: [
-        { target: 'images/logo/logo_192x192.png', size: 192 },
-        { target: 'images/logo/logo_256x256.webp', size: 256 }
-      ]
-    })
 ]
 
-// ─── Prompts ────────────────────────────────────────────────────────────────
+// ─── Singles: one object per generation ─────────────────────────────────────
+//
+// An image model will not hold a lattice while it repaints; it re-composes.
+// A sheet is the cheap route and a single is the sturdy one: one object, one
+// image, nothing to drift. Every targeted panel can be exported as a single.
 
-/**
- * The style lock, in the dark-fantasy register.
- *
- * Written the way the reference project's was: prohibitions from what an
- * image model actually returns beat adjectives about what is wanted. The
- * AVOID list is the cozy-storybook look this cast was drawn in and must leave,
- * the glossy mobile look every model reaches for, and the two ways a "dark"
- * brief goes wrong — photoreal fur and a sepia filter over everything.
- */
+export interface SingleSpec {
+  id: string
+  file: string
+  sheet: string
+  cell: SheetCell
+}
+
+export const SINGLES: SingleSpec[] = SHEETS.flatMap((s) =>
+  s.cells.filter((c) => c.target).map((c) => ({ id: c.id, file: `single-${c.id}`, sheet: s.id, cell: c })))
+
+// ─── Every drawable, for the parity tests and the preload ───────────────────
+
+/** Every `(kind, id)` this manifest gives a target to, with the file it comes from. */
+export const manifestTargets = (): Map<string, { kind: ArtKind; id: string; from: string }> => {
+  const out = new Map<string, { kind: ArtKind; id: string; from: string }>()
+  const kindOf = (target: string): ArtKind => {
+    const folder = target.slice(0, target.lastIndexOf('/'))
+    const hit = (Object.entries(ART_CATALOGUE) as [ArtKind, readonly string[]][])
+      .map(([k]) => k).find((k) => artTarget(k, 'x').startsWith(`${folder}/`))
+    if (!hit) throw new Error(`no art kind owns ${target}`)
+    return hit
+  }
+  const put = (target: string, from: string): void => {
+    const id = target.slice(target.lastIndexOf('/') + 1).replace(/\.webp$/, '')
+    out.set(target, { kind: kindOf(target), id, from })
+  }
+  for (const s of SHEETS) for (const c of s.cells) if (c.target) put(c.target, s.file)
+  for (const w of WALKS) put(w.target, w.file)
+  for (const a of SCENERY) put(a.target, a.file)
+  return out
+}
+
+// ─── The master prompt ──────────────────────────────────────────────────────
+//
+// One style block for the whole game, so a hundred assets brief one art
+// direction. Prohibitions are written from what actually comes back wrong,
+// because a stated negative beats another adjective about what is wanted.
+
 const STYLE_HEAD = [
-  'STYLE — grim painted dark fantasy, like a plate from a gothic illustrated',
-  'bestiary or the key art of a dungeon crawler. Match this in every panel:',
-  '· INK FIRST. Heavy hand-drawn contour lines in near-black ink, jagged and',
-  '  confident, thick on the shadow side and thin on the lit side, with',
-  '  dry-brush breaks. The drawing must look DRAWN — scratchy linework showing',
-  '  through the paint.',
-  '· PAINTED, NOT RENDERED. Flat blocks of gouache-like paint inside the lines',
-  '  with visible brushwork, rough cel-style shadow shapes and a little grain.',
-  '  No airbrush, no smooth 3D shading, no plastic gloss.',
-  '· DESATURATED, LOW-KEY colour: bone, ash grey, dried blood, rust, bruise',
-  '  purple, swamp green, cold slate — with ONE hot accent per subject (ember',
-  '  orange, sickly witch-green, cold soul-blue, tarnished gold). Deep shadows',
-  '  that fall to black.',
-  '· HIGH CONTRAST and cold. The light comes from the UPPER LEFT. Chiaroscuro:',
-  '  most of every form in shadow, one edge picked out.',
-  '· Gothic, grotesque, worn: cracked bone, rusted iron, torn cloth, wet stone,',
-  '  candle-soot. Everything has been through something.',
-  '· Menacing rather than cute — but the SILHOUETTE stays readable at 40 px, so',
-  '  keep the big shapes simple and put the detail inside them.',
+  'STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated',
+  'bestiary or a hand-painted board-game piece. Match this in every panel:',
+  '· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line',
+  '  weight varying like a real pen, a little uneven. The drawing should look',
+  '  DRAWN, with the linework still showing through the paint.',
+  '· PAINTERLY WASHES inside the lines — gouache and watercolour with visible',
+  '  brush texture, softly mottled, a gentle sense of volume from ONE light',
+  '  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.',
+  '· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads',
+  '  at thumbnail size; small detail is suggested with a few confident marks.',
+  '· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly',
+  '  desaturated — with the arcane accents (the glyph glows, the violet grid',
+  '  light) as the ONLY saturated notes. Rich, not candy-bright.',
+  '· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in',
+  '  the grooves. Charming craft rather than slick rendering.',
   '',
   'AVOID — this is exactly how earlier attempts went wrong:',
-  '· NO cute, cozy, storybook, chibi or plush look. No rounded friendly faces,',
-  '  no button eyes, no smiles.',
-  '· NO candy-bright, saturated, neon or pastel colour. If it looks cheerful,',
-  '  it is wrong.',
-  '· NO glossy, plasticky, airbrushed mobile-game rendering. No smooth 3D',
-  '  volume, no bevelled edges, no lens flares, no rim-lit chrome.',
-  '· NO photorealism and no hyper-detailed fur or scales — this is paint, and it',
-  '  is read at thumbnail size.',
-  '· NO warm paper, parchment or sepia wash over the whole image. Warmth is an',
-  '  accent, not a filter, and the ground is not part of the painting.'
+  '· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic',
+  '  edges, no smooth 3D-rendered shading, no lens flares.',
+  '· NO photorealism and no vector-flat icon look either — it is a painting.',
+  '· NO heavy uniform black outlines, no hard cel-shaded banding.',
+  '· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.',
+  '· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,',
+  '  it is wrong; if the GLOW looks vivid, that part is right.'
 ]
 
 const STYLE_TAIL = [
-  '· Keep the subject the same subject and silhouette it already has. This is a',
-  '  restyle, not a redesign.'
+  '· Do not invent content for a panel that is blank in the reference. Leave',
+  '  it blank — flat magenta and nothing else.',
+  '· Keep each object the same subject and silhouette it already has. This is',
+  '  a RESTYLE, not a redesign: the reference decides what is there.'
 ]
 
-/** For a thing that floats in its frame: a creature, a round, an effect. */
+/**
+ * The one clause every stone prompt carries about the wreath.
+ *
+ * The laurel is a LAYER (`fx/laurel`, `arenaPainters.paintLaurel`): the game
+ * lays one painted wreath around every level-2 stone. It used to be words in
+ * the stone prompt instead — "a small gold laurel emblem set into its lower
+ * rim" — a thing no reference panel drew, so each generation designed its own
+ * and the Sword sheet's wreath had nothing to do with the Bow sheet's. Now the
+ * stones must come back WITHOUT one, or the composite lays a wreath on a
+ * wreath.
+ */
+export const NO_LAUREL = '· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal\n'
+  + '  around the stone. The game lays its own gold wreath around a level-2\n'
+  + '  stone afterwards; one painted into the picture ends up under a second.'
+
+/** For things that fill their panel edge to edge: the tiles, the frame. */
+export const STYLE = [
+  ...STYLE_HEAD,
+  '· NO frames, borders, cards, vignettes, matting or paper background inside a',
+  '  panel. The object itself fills the panel edge to edge, corner to corner.',
+  ...STYLE_TAIL
+].join('\n')
+
+/**
+ * The style block for the ONE drawable that is a whole picture rather than an
+ * object on a ground: the sky.
+ *
+ * It has no panels, no neighbours and no key colour, so the shared tail — "a
+ * panel that is blank in the reference … flat magenta and nothing else" —
+ * would contradict the clause three paragraphs above it that forbids magenta
+ * in this file at all. A prompt that contradicts itself is a prompt the
+ * painter resolves on its own.
+ */
+export const STYLE_SCENE = [
+  ...STYLE_HEAD.map((l, i) => (i === 1 ? 'bestiary or a hand-painted board-game board. Match this everywhere in it:' : l)),
+  '· NO frame, border, card, vignette, matting or paper edge: the painting runs',
+  '  off all four sides of the image.',
+  '· Keep the same layout the reference has — the same things in the same',
+  '  places, at the same size. This is a RESTYLE, not a redesign.'
+].join('\n')
+
+/** The same block for artwork that must NOT fill its panel — everything else. */
 export const STYLE_PART = [
   ...STYLE_HEAD,
   '· NO frames, borders, cards, vignettes, matting or paper background behind',
@@ -772,395 +728,474 @@ export const STYLE_PART = [
   ...STYLE_TAIL
 ].join('\n')
 
-/** For a thing that IS its frame: a crate, a tile, a wall. */
-export const STYLE_FILL = [
-  ...STYLE_HEAD,
-  '· NO frames, borders, cards, vignettes, matting or paper background inside',
-  '  the frame. The object itself fills the frame edge to edge, corner to',
-  '  corner, and its outer edge is the frame\'s edge.',
-  ...STYLE_TAIL
-].join('\n')
-
 /**
- * The background clause, stated FIRST.
- *
- * Buried at the bottom under the style it lost every time in the reference
- * project: one return came back on cream parchment, one with the transparency
- * checkerboard painted in as literal pixels, and one with the subject on a
- * card floating in the magenta. Models weight what they read first, and this
- * matters more than any of the styling, because a background that cannot be
+ * The background clause, stated near the top of every prompt and repeated in
+ * the checklist. It matters more than any styling: a background that cannot be
  * removed is welded into the sprite forever.
- *
- * The last bullet is not optional. A "muted, low-key" style brief plus a
- * magenta ground produced DUSTY PINK on three consecutive returns — the model
- * applied the palette instruction to the whole image.
  */
 export const BACKGROUND_RULE = [
   'BACKGROUND — read this before anything else. It matters more than the style.',
   'Fill every pixel that is not the object itself with solid, flat, pure magenta',
   '#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.',
   '· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty',
-  '  pink, not mauve, not a soft or tinted version of it. Only the true colour can',
-  '  be cut away cleanly; a near miss has to be flood-filled instead, and a flood',
-  '  fill eats any pale paint it can reach.',
+  '  pink, not mauve, not a soft or tinted version of it. Only the true colour',
+  '  can be cut away cleanly; a near miss has to be flood-filled instead, and a',
+  '  flood fill eats any pale paint it can reach.',
   '· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD',
   '  and then baked into the artwork as though the squares were paint.',
-  '· NOT white, cream, black, parchment, paper, or any tinted or textured ground.',
-  '· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle of',
-  '  any kind. The magenta must touch the outline of the object on every side.',
+  '· NOT white, cream, parchment, paper, or any tinted or textured ground.',
+  '· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle',
+  '  of any kind. The magenta must touch the outline of the object on every side.',
   '· No drop shadow onto the background, and no vignette.',
   '· The object itself must contain no magenta or hot pink.',
-  '· The dark, desaturated palette above is for the OBJECT. The ground is not',
-  '  part of the painting and is not toned down with it: it stays a vivid,',
-  '  eye-hurting #FF00FF however dark everything else is. Dusty rose, pale pink',
-  '  and mauve are the failure this whole clause is about.'
+  '· The muted, earthy palette above is for the OBJECT. The ground is not part',
+  '  of the painting and is not toned down with it: it stays a vivid,',
+  '  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink',
+  '  and mauve are the failure this whole clause is about.',
+  '· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is',
+  '  measured as part of the object when the return is fitted back onto the',
+  '  reference — a wide aura comes back as a tiny stone inside a huge smear —',
+  '  and it cannot be keyed: soft light over magenta turns pink, not',
+  '  transparent. A glow belongs inside the shape\'s own outline, or within a',
+  '  hair of it.'
 ].join('\n')
 
-const GLOW_RULE = [
-  'KEEP ANY GLOW TIGHT. A halo, aura or bloom spreading out into the background',
-  'is measured as part of the object when the return is fitted back onto the',
-  'reference — a wide aura therefore comes back as a tiny object inside a huge',
-  'smear. It also cannot be keyed: soft light over magenta turns pink rather',
-  'than transparent. Any glow belongs inside the shape\'s own outline, or within',
-  'a hair of it.'
-].join('\n')
+/** A measured content box, as fractions of a panel. The bench records these. */
+export interface Fit { w: number; h: number; cx: number; cy: number }
+export type FitMap = Record<string, Fit>
 
-const facing = (f: WalkSpec['faces']): string =>
-  f === 'front' ? 'the viewer'
-    : f === 'back' ? 'AWAY from the viewer — it is seen from behind'
-      : f.toUpperCase()
+const pct = (v: number): string => `${Math.round(v * 100)}%`
+const ratioWords = (w: number, h: number): string => {
+  const a = aspectOf(w, h)
+  if (a === '1:1') return 'square, 1:1'
+  if (a === '2:1') return 'landscape, twice as wide as it is tall (2:1)'
+  if (a === '4:3') return 'landscape, 4:3'
+  if (a === '16:9') return 'landscape, 16:9'
+  return `landscape, ${a}`
+}
 
-/**
- * A ready-to-paste prompt for one walk cycle.
- *
- * Almost all of this is about ONE failure: an image model handed eight panels
- * of the same character will happily return eight different characters. So the
- * consistency clause is stated before the style, in the same position and for
- * the same reason `BACKGROUND_RULE` is — it is the thing that makes the result
- * usable or useless, and models weight what they read first.
- */
-export const promptForWalk = (w: WalkSpec): string => {
-  const hero = w.kind === 'hero'
-  const IT = hero ? 'survivor' : 'creature'
-  const ITS = hero ? 'survivors' : 'creatures'
-  const CYCLE = hero ? 'RUN CYCLE' : 'WALK CYCLE'
-  const MOMENT = hero
-    ? 'the SAME survivor at a different moment of ONE running stride'
-    : 'the SAME creature at a different moment of one step'
-  const RATIO = w.w * 9 === w.h * 16 ? '16:9' : w.w === w.h * 2 ? '2:1' : `${w.w}:${w.h}`
-  const SHAPE = RATIO === '2:1' ? 'twice as wide as it is tall' : 'landscape, 16:9'
+/** The colour clause for one panel, when the cell carries one. */
+const colourLine = (c: SheetCell): string => (c.colour ? ` Colour identity (keep the HUE, muted and paper-toned): ${c.colour}` : '')
+
+/** The numbered panel list — every panel named, blanks included, so nothing is inferred from pixels. */
+const panelList = (s: SheetSpec): string => {
+  const rows = sheetRows(s)
+  const ordered = [...s.cells].sort((a, b) => a.row - b.row || a.col - b.col)
+  return ordered.map((c, i) => {
+    const where = rows > 1 ? ` (row ${c.row + 1}, column ${c.col + 1}${c.cw > 1 ? ` to ${c.col + c.cw}` : ''})` : ''
+    if (c.art.kind === 'blank') return `${i + 1}.${where} BLANK — leave it flat magenta.`
+    return `${i + 1}.${where} ${c.label}${c.sub ? `, ${c.sub}` : ''}: ${c.blurb}.${colourLine(c)}`
+  }).join('\n')
+}
+
+/** What the sheet's objects are, as a kind: names the noun the checklist counts. */
+const nounsOf = (kind: SheetKind): { it: string; them: string } => {
+  switch (kind) {
+    case 'stones': case 'enemyStones': return { it: 'rune stone', them: 'rune stones' }
+    case 'glyphs': return { it: 'glyph icon', them: 'glyph icons' }
+    case 'tiles': return { it: 'floor tile', them: 'floor tiles' }
+    case 'frame': return { it: 'stone frame', them: 'stone frame' }
+    case 'ui': return { it: 'HUD chip', them: 'HUD chips' }
+    case 'fx': return { it: 'effect', them: 'effects' }
+  }
+}
+
+/** The measured (or nominal) extent of a stone in its panel, for the SIZE clause. */
+const spanOf = (s: SheetSpec, fits?: FitMap): number => {
+  const measured = s.cells.filter((c) => c.target && fits?.[c.id]).map((c) => fits![c.id]!.w)
+  if (measured.length) return Math.max(...measured)
+  return STONE_SPAN
+}
+
+/** A ready-to-paste prompt for one lattice sheet. */
+export const promptForSheet = (s: SheetSpec, fits?: FitMap): string => {
+  const { w, h } = sheetSize(s)
+  const rows = sheetRows(s)
+  const n = s.cells.length
+  const fills = s.kind === 'tiles' || s.kind === 'frame'
+  const nouns = nounsOf(s.kind)
+  const span = spanOf(s, fits)
+  const stones = s.kind === 'stones' || s.kind === 'enemyStones'
+
+  const shape = s.kind === 'frame'
+    ? [
+      'WHAT COMES BACK IS ONE OBJECT: a square RING, the frame around a game board,',
+      `in a single square image ${w} x ${h} pixels. The inside of the ring is empty`,
+      'magenta — the board is drawn there by the game — and the ring reaches all',
+      'four edges of the image. Not a picture of a board. Not a plaque, not a card.'
+    ]
+    : [
+      `WHAT COMES BACK IS A SPRITE SHEET, NOT A PICTURE OF A ${nouns.it.toUpperCase()}.`,
+      `One image, ${w} x ${h} pixels — ${ratioWords(w, h)} — holding ${n} SEPARATE`,
+      `panels laid out ${s.cols} across and ${rows} down, on the same grid as the attached`,
+      'reference, read left to right along each row, top row first.',
+      `· ${n} panels. Not 1, not ${Math.max(1, n - 2)}, not ${n * 2}. Exactly ${rows} row${rows > 1 ? 's' : ''} of ${s.cols} — do not add a row.`,
+      `· ONE big painting of a single ${nouns.it} filling the canvas is the wrong answer`,
+      '  however well it is painted, and so is a re-composed grid.'
+    ]
+
+  const not = fills
+    ? [
+      'WHAT IT IS NOT — read this before the subject.',
+      '· Draw ONLY what the reference shows in each panel. No board, no other',
+      '  tiles, no stones standing on it, no hands, no scenery, no text.',
+      '· The reference settles every argument about what belongs.'
+    ]
+    : [
+      'WHAT IT IS NOT — read this before the subject.',
+      `· Each panel holds ONE ${nouns.it} and nothing else: no board, no tile under`,
+      '  it, no hand, no table, no ground, no cast shadow on the ground, no',
+      '  scenery, no text, no numbers, no labels.',
+      ...(stones ? [NO_LAUREL] : []),
+      '· The reference settles every argument about what belongs. If it is not in',
+      '  the reference panel, it is not in the picture.'
+    ]
+
+  const view = stones || s.kind === 'glyphs' || s.kind === 'tiles' || s.kind === 'frame'
+    ? [
+      'THE VIEW — seen from straight above, flat, the way a game token lies on a',
+      'table. No three-quarter view, no perspective, no tilt, no foreshortening.',
+      'The light comes from the top-left; the shadow side is lower-right.'
+    ]
+    : [
+      'THE VIEW — flat, square on, the way an emblem or a badge is drawn. No',
+      'perspective, no vanishing point, no tilt.'
+    ]
+
+  const consistency = stones
+    ? [
+      'ONE GLYPH.',
+      `All ${n} panels carry the SAME glyph — ${RUNE_WORDS[(s.cells[0]!.art as { type: RuneType }).type].glyph} —`,
+      'identical in shape, proportion and orientation in every panel. It is one',
+      'rune cut into different stones, not a set of similar runes. Only the STONE',
+      'changes between panels, exactly as the reference shows it.',
+      '· A pair of panels is one material at two levels: same stone, same cut,',
+      '  the level-2 one a little larger and heavier, with its gold rim and the',
+      '  small gold crest on its shoulder — and NOTHING else added.',
+      '· Do not re-scale a stone from the reference. Do not move it in its panel.'
+    ]
+    : s.kind === 'tiles'
+      ? [
+        'ONE TILE.',
+        'The three tiles are the SAME slate tile with a different edge light. Same',
+        'bevel, same cracks, same stone, same size. Only the glow colour changes.'
+      ]
+      : [
+        'ONE HAND.',
+        `Every ${nouns.it} on this sheet is painted by the same hand at the same`,
+        'scale of detail, in the same light, so they read as one set.'
+      ]
+
+  const layout = fills
+    ? [
+      'LAYOUT — the grid is a cutting guide, and it is cut blindly.',
+      `Each panel is exactly 1/${s.cols} of the width and 1/${rows} of the height.`,
+      `Each ${nouns.it} fills its panel EDGE TO EDGE, corner to corner, with SQUARE`,
+      'corners and NO margin: in play these sit side by side, and a polite',
+      'border shows as a seam around every one of them.',
+      'Do NOT draw the panel edges as lines: the tiles meet, nothing marks the join.'
+    ]
+    : [
+      'LAYOUT — the grid is a cutting guide, and it is cut blindly.',
+      `Each panel is exactly 1/${s.cols} of the width and 1/${rows} of the height.`,
+      `The ${nouns.it} is CENTRED in its panel and does not fill it: it floats`,
+      'clear of all four panel edges with flat magenta around it, exactly as the',
+      'reference has it. Never let anything cross into a neighbouring panel.',
+      '',
+      'SIZE — measure it against the PANEL, not against the paper. In the',
+      `reference the widest ${nouns.it} spans about ${pct(span)} of its panel's width`,
+      `and never touches the edges. If yours reaches the panel edge it is too big;`,
+      'if it is under half the panel it is too small. Bigger is not clearer here.',
+      '',
+      'WHERE it sits is not a composition choice: the exact centre of a panel is',
+      'where the game places it. Do not re-centre it on its own outline, do not',
+      'tidy the arrangement, do not even out the spacing.',
+      'Do not add, drop, merge or reorder panels.',
+      'Do NOT draw the panel edges: no boxes, borders, gutters, guides or numbers,',
+      'in any colour, magenta included.'
+    ]
+
+  const checklist = [
+    'BEFORE YOU CALL IT FINISHED, count and check:',
+    ...(s.kind === 'frame'
+      ? ['· One square ring reaching all four edges, empty magenta inside it.']
+      : [`· ${s.cols} panels across, ${rows} down, ${n} in all${s.cells.some((c) => c.art.kind === 'blank') ? `, ${s.cells.filter((c) => c.art.kind === 'blank').length} of them blank` : ''}.`]),
+    `· The canvas is ${ratioWords(w, h)}.`,
+    ...(fills
+      ? ['· Every tile reaches all four edges of its panel with square corners.']
+      : [`· No ${nouns.it} is anywhere near filling its panel, and none touches an edge.`,
+        `· Every panel holds one ${nouns.it}, at the size the reference has it, centred.`]),
+    ...(stones ? ['· The glyph is the same shape in every panel.'] : []),
+    '· No text, numbers or labels anywhere.',
+    '· Every pixel that is not the object itself is flat, vivid #FF00FF — hold it',
+    '  against a pure magenta swatch, not against your memory of one.'
+  ]
 
   return [
-    `# ${w.id} — ${w.name}  (${w.target})`,
+    `# ${s.title}  (${s.file}.png)`,
     '',
-    'WHAT COMES BACK IS A SPRITE SHEET, NOT A PORTRAIT.',
-    `Repaint a ${CYCLE}. The attached sheet is ${w.cols} columns x ${w.rows} rows`,
-    `= EXACTLY ${w.frames} panels, read left to right along the top row and then the`,
-    `bottom row. Every panel is ${MOMENT}.`,
+    ...shape,
     '',
-    `· ${w.frames} panels. Not 1, not ${w.cols}, not ${w.frames + 4}, not ${w.frames * 2},`
-    + ` not ${w.frames * 3}. Exactly ${w.rows} rows of ${w.cols} — do not add a row.`,
-    '· ONE big painting of the character filling the canvas is the wrong answer',
-    '  however well it is painted, and so is a square canvas.',
-    `· The panels are TALLER than the ${IT} on purpose. A low, wide ${IT} leaves`,
-    '  empty magenta above itself in every panel, and that space is NOT room for',
-    `  another row: ${w.rows} rows of ${w.cols}, with air above each ${IT}, is the whole`,
-    `  sheet. A ${w.rows * 2}-row return cannot be cut — that is what came back last time.`,
+    ...not,
     '',
-    'ONE CHARACTER — read this before anything else.',
-    `All ${w.frames} panels must show the same individual:`,
-    'identical colours, identical clothing and gear, identical proportions,',
-    'identical silhouette, identical markings, identical number of limbs and',
-    'horns. Only the POSE changes, and it changes exactly as the reference',
-    'shows — same limb positions, same body lean, same head angle.',
-    `· ONE colour scheme in every panel. A ${IT} that is grey in one panel and`,
-    `  brown in another is not one ${IT} animated, it is several ${ITS} side by`,
-    '  side, and the result is unusable.',
-    '· Do not redesign it. Do not add or remove parts between panels.',
-    '· Do not turn it to face a different direction in any panel.',
-    `· Do not re-scale it: the ${IT} must be the same size in every panel, and the`,
-    '  same size it is in the reference. Do not move it around inside its panel.',
-    `· It faces ${facing(w.faces)} in the reference. Keep that direction in all`
-    + ` ${w.frames} panels.`,
-    ...(hero ? heroPanelScript() : []),
+    `WHAT IT IS: ${s.brief}`,
+    ...(s.panels ? ['', `READ THE PANELS: ${s.panels}`] : []),
     '',
-    `WHAT IT IS: ${w.name} — ${w.blurb}`,
-    ...(w.colour
-      ? ['', 'Colour identity (keep the HUE — this is how the player tells it from the',
-        `rest of the cast — but grim, desaturated and low-key, never vivid): ${w.colour}`]
+    'WHAT EACH PANEL IS, in reading order:',
+    panelList(s),
+    '',
+    ...view,
+    '',
+    ...consistency,
+    '',
+    fills ? STYLE : STYLE_PART,
+    '',
+    ...layout,
+    '',
+    BACKGROUND_RULE,
+    '',
+    ...checklist,
+    '',
+    `OUTPUT: one image, ${w} x ${h} pixels (${aspectOf(w, h)}, ${w === h ? 'square' : 'landscape'}). If your`,
+    `tool has an aspect-ratio control, set it to ${aspectOf(w, h)} — a different ratio crushes the`,
+    'grid and cannot be cut. PNG, not JPEG. No labels, captions, numbers or watermarks.'
+  ].join('\n')
+}
+
+/** A ready-to-paste prompt for one single-object reference. */
+export const promptForSingle = (t: SingleSpec, fits?: FitMap): string => {
+  const c = t.cell
+  const sheet = SHEETS.find((s) => s.id === t.sheet)!
+  const fills = !!c.fill
+  const span = fits?.[c.id]?.w ?? STONE_SPAN
+  const nouns = nounsOf(sheet.kind)
+  return [
+    `# ${c.label}${c.sub ? ` — ${c.sub}` : ''}  (${t.file}.png → ${c.target})`,
+    '',
+    `Repaint ONE ${nouns.it}, in a single square image ${SINGLE_SIZE} x ${SINGLE_SIZE} pixels.`,
+    'The attached reference is exactly what to paint, at exactly the size and',
+    'position it is drawn at. Match both.',
+    '',
+    `WHAT IT IS: ${c.blurb}.${colourLine(c)}`,
+    ...(sheet.kind === 'stones' || sheet.kind === 'enemyStones'
+      ? ['', `THE GLYPH is ${RUNE_WORDS[(c.art as { type: RuneType }).type].glyph}. Keep its shape exactly.`,
+        '', 'WHAT IT IS NOT:', NO_LAUREL]
       : []),
+    '',
+    'THE VIEW — seen from straight above, flat, no perspective, no tilt. Light',
+    'from the top-left.',
+    '',
+    fills ? STYLE : STYLE_PART,
+    '',
+    ...(fills
+      ? ['It fills the image EDGE TO EDGE with square corners and no margin.']
+      : [
+        'SIZE AND PLACEMENT — this is the part that goes wrong.',
+        `Do not enlarge it to fill the frame. In the reference it spans about ${pct(span)}`,
+        'of the image\'s width, centred, with flat magenta on every side. Keep it the',
+        'same fraction of the frame, in the same place. Bigger is not clearer here.'
+      ]),
+    '',
+    BACKGROUND_RULE,
+    '',
+    `OUTPUT: one image, exactly ${SINGLE_SIZE} x ${SINGLE_SIZE} pixels (square, 1:1). PNG. No labels,`,
+    'captions or watermarks.'
+  ].join('\n')
+}
+
+/** A ready-to-paste prompt for one walk-cycle strip (a restyle of the strip that ships). */
+export const promptForWalk = (w: WalkSpec): string => {
+  const creature = w.kind !== 'round'
+  const IT = creature ? 'character' : 'arrow'
+  const MOMENT = creature
+    ? `the SAME ${IT} at a different moment of one ${w.kind === 'hero' ? 'running stride' : 'walking step'}`
+    : 'the same arrow at a different moment of one flight'
+  return [
+    `# ${w.name}  (${w.file}.png → ${w.target})`,
+    '',
+    `WHAT COMES BACK IS A SPRITE SHEET, NOT A PORTRAIT. One image, ${w.w} x ${w.h} pixels`,
+    `— ${ratioWords(w.w, w.h)} — holding ${w.frames} SEPARATE panels, ${w.cols} across and ${w.rows} down,`,
+    'on the same grid as the attached reference, read left to right along the top',
+    `row and then the bottom row. Every panel is ${MOMENT}.`,
+    `· ${w.frames} panels. Not ${w.frames + 4}, not ${w.frames * 2}. Exactly ${w.rows} rows of ${w.cols} — do not add a row.`,
+    '',
+    `ONE ${IT.toUpperCase()} — read this before anything else.`,
+    `All ${w.frames} panels must show the same ${creature ? 'individual' : 'arrow'}: identical colours,`,
+    `identical ${creature ? 'clothing and gear' : 'shaft, head and fletching'}, identical proportions, identical silhouette.`,
+    'Only the POSE changes, and it changes exactly as the reference shows —',
+    `${creature ? 'same limb positions, same body lean, same head angle' : 'same tilt, same streak length'}, panel for panel.`,
+    `· ONE colour scheme in every panel. A ${IT} that is one colour in one panel and`,
+    `  another in the next is not one ${IT} animated, it is several side by side,`,
+    '  and the result is unusable.',
+    '· Do not redesign it. Do not add or remove parts between panels.',
+    `· It faces ${w.faces.toUpperCase()} in the reference. Keep that direction in all ${w.frames} panels.`,
+    '· Do not re-scale it: the same size in every panel, and the same size as the',
+    '  reference. Do not move it around inside its panel.',
+    '',
+    `WHAT IT IS: ${w.name} — ${w.blurb}.`,
+    ...(w.colour ? ['', `Colour identity (keep the HUE, muted and paper-toned): ${w.colour}.`] : []),
+    '',
+    'THIS IS A RESTYLE of the reference strip into the style below, not a new',
+    'design: keep the silhouette, the gear and the gait the reference has.',
     '',
     STYLE_PART,
     '',
     'LAYOUT — the grid is a cutting guide, and it is cut blindly.',
-    `Each panel is exactly 1/${w.cols} of the width and 1/${w.rows} of the height.`,
-    `A ${IT} does NOT fill its panel — it is centred in it, at the size the`,
-    'reference draws it, with clear magenta all round.',
-    'Never let a limb, tail, weapon or shadow cross into a neighbouring panel.',
-    'Do not add, drop, merge or reorder panels.',
-    'Do NOT draw the panel edges. No boxes, borders, gutters, guides, rules or',
-    'numbers — in ANY colour, magenta included. The magenta is the empty space the',
-    `${ITS} sit in, not a grid to draw with: the space BETWEEN two panels is the`,
-    `same flat background as the space around each ${IT}, and nothing marks the`,
-    'join. The panels are found by measuring, so a drawn line is not a help, it is',
-    'a mark that ends up welded into the sprite.',
+    `Each panel is exactly 1/${w.cols} of the width and 1/${w.rows} of the height. The ${IT}`,
+    'does NOT fill its panel — it is centred, at the size the reference draws it,',
+    'with clear magenta all round. Never let a limb, weapon, streak or shadow',
+    'cross into a neighbouring panel. Do not add, drop, merge or reorder panels.',
+    'Do NOT draw the panel edges: no boxes, borders, gutters, guides or numbers,',
+    'in any colour, magenta included. The panels are found by measuring.',
     '',
     BACKGROUND_RULE,
     '',
-    'The feet land on the same line in every panel — the same height from the',
-    'bottom of the panel as in the reference. If the feet drift up or down',
-    `between panels the ${IT} bobs when it ${hero ? 'runs' : 'walks'}.`,
-    '· The reference draws a soft contact shadow under the feet. Keep one, the',
-    '  same size in every panel, and keep it tight to the feet.',
+    w.anchor === 'feet'
+      ? 'The feet land on the same line in every panel — the same height from the\n'
+        + 'bottom of the panel as in the reference. If the feet drift up or down\n'
+        + `between panels the ${IT} bobs as it moves.`
+      : 'It has no feet: keep it centred on the middle of its panel, exactly as the\n'
+        + 'reference has it, in every panel.',
     '',
     'BEFORE YOU CALL IT FINISHED, count and check:',
-    `· ${w.cols} panels across, ${w.rows} down, ${w.frames} in all — and empty magenta`,
-    `  above every ${IT}, with no extra row squeezed into it.`,
-    `· The canvas is ${SHAPE}.`,
-    `· Every panel holds the same ${IT}, at the same size, in the same colours,`,
-    `  facing ${facing(w.faces)}.`,
-    '· Every pixel that is not the character is flat, vivid #FF00FF — hold it',
-    '  against a pure magenta swatch, not against your memory of one.',
+    `· ${w.cols} panels across, ${w.rows} down, ${w.frames} in all.`,
+    `· The canvas is ${ratioWords(w.w, w.h)}.`,
+    `· Every panel holds the same ${IT}, at the same size, in the same colours, facing ${w.faces.toUpperCase()}.`,
+    '· Every pixel that is not the subject is flat, vivid #FF00FF.',
     '',
-    `OUTPUT: one image, ${w.w} x ${w.h} pixels (${RATIO}, landscape). If your tool has`,
-    `an aspect-ratio control, set it to ${RATIO} — a square return crushes the grid`,
-    'and cannot be cut. No labels, captions, numbers or watermarks.'
+    `OUTPUT: one image, ${w.w} x ${w.h} pixels (${aspectOf(w.w, w.h)}). If your tool has an`,
+    'aspect-ratio control, set it to match. PNG. No labels or watermarks.'
   ].join('\n')
 }
 
-/** The SHEET's pixels — a still is one panel, a cycle is its whole grid. */
-export const sheetW = (s: StillSpec): number => s.w * colsOf(s)
-export const sheetH = (s: StillSpec): number => s.h * rowsOf(s)
-
-const ratioOf = (w: number, h: number): string =>
-  w === h ? 'square (1:1)'
-    : w * 9 === h * 21 ? 'landscape, 21:9'
-      : w * 9 === h * 16 ? 'landscape, 16:9'
-        : w === h * 2 ? 'landscape, 2:1'
-          : w * 16 === h * 9 ? 'portrait, 9:16'
-            : w > h ? `landscape, ${(w / h).toFixed(2)}:1`
-              : `portrait, 1:${(h / w).toFixed(2)}`
-
-const shapeOf = (s: StillSpec): string => ratioOf(sheetW(s), sheetH(s))
-
-/** A ready-to-paste prompt for one still. No grid clause — there is no grid. */
 /**
- * The panel-count block for an ANIMATED still.
+ * A ready-to-paste prompt for one backdrop layer.
  *
- * Lifted, deliberately, from `promptForWalk` — the same counting, the same
- * refusals, the same "do not add a row". That discipline was arrived at the
- * expensive way (returns came back as one panel, as a doubled grid, as a
- * contact sheet with captions) and an image model that has been taught one
- * sheet shape for the cast should not be handed a different one for a rock.
- *
- * The one thing it says that a walk's does not: WHAT IS ALLOWED TO MOVE. A
- * creature's whole body moves through a stride, but a projectile is a solid
- * object inside an effect, and only the effect may change. A meteor whose stone
- * grows, shrinks or wanders between panels is a rock that pulses when it falls
- * — and the head of a round is what the game measures its kill against, so a
- * head that moves in the art is a hitbox that lies.
+ * Two shapes, and the difference is the whole prompt: a keyed BAND has a
+ * magenta sky that is cut away in play, while the sky itself is the one
+ * drawable in the game with no background at all — it IS the background, so
+ * the magenta contract is not just unnecessary there, it would be welded into
+ * the largest bitmap on screen.
  */
-const cyclePrompt = (s: StillSpec): string[] => {
-  const n = framesOf(s)
-  const cols = colsOf(s)
-  const rows = rowsOf(s)
-  return [
+export const promptForScenery = (a: SceneryAsset): string => (a.bg === 'opaque'
+  ? [
+    `# ${a.name}  (${a.file}.png → ${a.target})`,
     '',
-    `READ THE PANELS. This is not one picture — it is ${n} frames of ONE LOOP.`,
-    `The attached sheet is ${cols} columns x ${rows} rows = EXACTLY ${n} panels, read left`,
-    'to right along the top row and then the row below.',
+    `Repaint ONE full-bleed backdrop, a single image ${a.w} x ${a.h} pixels`,
+    `(${aspectOf(a.w, a.h)}). The attached reference is exactly what to paint.`,
     '',
-    `· ${n} panels. Not 1, not ${cols}, not ${n + 4}, not ${n * 2}. Exactly ${rows} rows of`,
-    `  ${cols} — do not add a row, do not append the cycle again underneath.`,
-    '· Repaint EVERY panel. A sheet where one panel is painted and the rest are',
-    '  copies of it is the failure this whole sheet exists to avoid.',
-    `· THE ${rows} ROWS ARE NOT ${rows} STATES. The top row is panels 1-${cols} and the row`,
-    `  below is ${cols + 1}-${n}, of ONE continuous march. A sheet with one arrangement`,
-    `  repeated across the top row and a second repeated across the bottom is`,
-    '  what came back last time — it is two pictures, not eight, and it plays as',
-    '  a thing that snaps between two poses.',
-    `· All ${n} panels are DIFFERENT from each other, and each differs from the one`,
-    '  beside it by the SAME small step. Even spacing is the animation; a sheet',
-    '  that holds still and then jumps reads as dropped frames.',
-    '· Each panel is exactly 1/' + String(cols) + ' of the width and 1/' + String(rows) + ' of the height,',
-    '  on an exact grid with no gutters. The cut is done by arithmetic.',
+    `WHAT IT IS: ${a.blurb}.`,
     '',
-    `WHAT MOVES: ${s.cycle ?? 'the effect around the subject, and only that.'}`,
-    ...(s.panels && s.panels.length === n
-      ? ['',
-        'PANEL BY PANEL — measure each one against panel 1, not against its',
-        'neighbour, or the error accumulates and the loop will not close:',
-        ...s.panels.map((line, i) => `· panel ${i + 1}: ${line}.`)]
-      : []),
+    'IT FILLS THE IMAGE, edge to edge, corner to corner. There is NO background',
+    'behind it and NO magenta anywhere in this one: it is itself the background',
+    'the whole game is drawn on top of. No frame, no border, no vignette, no',
+    'card, no matting, no rounded corners, no letterboxing.',
     '',
-    'IT MUST LOOP. The game plays these end to end, forever, several times a',
-    `second: after panel ${n} it goes straight back to panel 1. So panel ${n} has to`,
-    'flow into panel 1 as smoothly as panel 1 flows into panel 2. Do not build a',
-    'sequence that starts small and ends big — that pops once per loop, and at',
-    'this speed a pop reads as a dropped frame.',
+    'KEEP THE MIDDLE QUIET AND DARK. The board, its violet glow and a vignette',
+    'are drawn over the centre of this image; anything detailed or bright there',
+    'is noise under a grid of stones. The interest belongs in the top third.',
     '',
-    'The SUBJECT keeps the same size, the same colours and the same place in the',
-    'panel throughout — it is one object seen at eight moments, not eight',
-    'objects. Only what is written under WHAT MOVES may change.',
+    'Stay in the reference\'s own range of darkness: this is a night sky, not a',
+    'daylight one, and every colour in it is deep. Nothing in it may be as',
+    'bright or as saturated as a rune stone, or the board stops reading first.',
     '',
-    'EVERY PANEL IS ITS OWN PICTURE. Flame, sparks and glow stay inside the',
-    'panel they belong to — nothing reaches across a panel edge into its',
-    'neighbour, and the magenta between panels stays flat magenta. The sheet is',
-    'cut on an exact grid, so anything that crosses a boundary is sliced in half',
-    'and arrives in the game as a stray smear on the frame next door.'
+    STYLE_SCENE,
+    '',
+    `OUTPUT: one image, ${a.w} x ${a.h} pixels (${aspectOf(a.w, a.h)}). If your tool has an`,
+    'aspect-ratio control, set it to match. PNG. No labels, captions or',
+    'watermarks.'
   ]
+  : [
+    `# ${a.name}  (${a.file}.png → ${a.target})`,
+    '',
+    `Repaint ONE landscape band, a single image ${a.w} x ${a.h} pixels — four times as`,
+    'wide as it is tall (4:1). The attached reference is exactly what to paint.',
+    '',
+    `WHAT IT IS: ${a.blurb}.`,
+    '',
+    'This band sits BEHIND the game board as a horizon. Its base runs along the',
+    'bottom edge of the image — the last row of pixels is rock, not background —',
+    'and everything above the ridge line is EMPTY: flat magenta sky, keyed out in',
+    'play. Paint no sky, no clouds, no moon, no sun, no stars, no birds: the sky',
+    'is a separate painting that goes behind this one.',
+    '',
+    STYLE_PART,
+    '',
+    BACKGROUND_RULE,
+    '',
+    `OUTPUT: one image, ${a.w} x ${a.h} pixels (4:1, a wide band). If your tool has an`,
+    'aspect-ratio control, set it as close to 4:1 as it goes and keep the ridge',
+    'base on the bottom edge. PNG. No labels or watermarks.'
+  ]).join('\n')
+
+// ─── The prompt documents ───────────────────────────────────────────────────
+//
+// Generated from the manifest — never hand-edited. The bench writes these on
+// export (with the measured fits folded in) and `pnpm art:prompts` writes the
+// same files headlessly from this module, so a new manifest line has a prompt
+// before anyone opens a browser. Deterministic: no timestamps, so a re-run
+// with no manifest change is a no-op in git.
+
+const GENERATED = 'Generated from `src/game/artSheet.ts` — do not hand-edit; run `pnpm art:prompts` (or export from `/#/art-sheets`) instead.'
+
+const COPY_HINT = 'Every prompt below is one fenced block. Open this file in a markdown preview and\n'
+  + 'use the block\'s copy button — one click takes the whole prompt to the clipboard,\n'
+  + 'ready to paste at the image model. The heading above a block says which file to\n'
+  + 'attach with it and where the return lands; it is NOT part of the prompt.'
+
+/** A fence longer than any backtick run inside `body`, so nothing can close it early. */
+const fenceFor = (body: string): string => {
+  let longest = 0
+  for (const run of body.match(/`+/g) ?? []) longest = Math.max(longest, run.length)
+  return '`'.repeat(Math.max(3, longest + 1))
 }
 
-export const promptForStill = (s: StillSpec): string => {
-  const fill = !!s.fill
-  const sky = s.bg === 'magenta-sky'
-  const opaque = s.bg === 'opaque'
-  const cycle = framesOf(s) > 1
-  return [
-    `# ${s.id} — ${s.name}  (${s.target})`,
-    '',
-    cycle
-      ? `Repaint an ${framesOf(s)}-frame ANIMATION LOOP of one game sprite, as a single`
-        + `
-${shapeOf(s)} sheet of ${colsOf(s)} x ${rowsOf(s)} panels.`
-      : `Paint ONE game sprite in a single ${shapeOf(s)} image.`,
-    'The attached reference is exactly what to paint, at exactly the size and',
-    'position it is drawn at. Match both.',
-    '',
-    `WHAT IT IS: ${s.blurb}`,
-    ...(cycle ? cyclePrompt(s) : []),
-    ...(s.live ? ['', `LEAVE OUT WHAT THE GAME PAINTS LIVE. ${s.live}`] : []),
-    ...(s.kind === 'gate'
-      ? ['',
-        'THE POSTS — measure them against the FRAME, not against your idea of a gate.',
-        `In the reference each post is a pillar ${pct(GATE_POST.width)} of the frame wide, its outer`,
-        `face ${pct(GATE_POST.outer)} in from the frame's edge and its inner face ${pct(GATE_POST.inner)} in.`,
-        'That is as wide as a post can be. Paint it EXACTLY that wide — the width the',
-        'reference draws it, not wider, not a pair, not a wall. The DOORWAY between',
-        `the two inner faces is ${pct(GATE_POST.doorway)} of the width and it is EMPTY from the lintel`,
-        'to the ground: nothing stands in it, nothing leans into it, no rubble, no',
-        'floor, no shadow.',
-        '· Exactly TWO posts: one at the left edge, one at the right. Not a pair per',
-        '  side, not a slab beside a pillar, not a wall.',
-        '· A post wider than the reference is squeezed thinner by the slicer until it',
-        '  fits — the painting survives, squashed. The last three returns had posts',
-        '  three times the reference width, and every one of them came back as a',
-        '  squeezed sliver.',
-        '· Bulk goes UP — a taller cap, a finial, a heavier lintel — never sideways.',
-        '· The lintel or arch across the top is thin and can be stretched; nothing',
-        '  else spans the doorway. Anything painted below the lintel between the',
-        '  posts is thrown away.']
-      : []),
-    ...(s.authored
-      ? cycle
-        // A cycle sheet is asked for motion by definition, so the "at rest"
-        // clause would contradict `WHAT MOVES` two paragraphs above it. What
-        // survives is the ORIENTATION, which the game still turns.
-        ? ['', `ORIENTATION, in every panel: ${s.authored}. No motion blur and no speed`,
-          'lines — the movement is in the difference between the panels, and the',
-          'game turns and travels the sprite itself.']
-        : ['', `DRAW IT AT REST, ${s.authored}. Do not add motion blur, speed lines or`,
-          'a second copy of it: the game turns and moves it out of this one picture.']
-      : []),
-    ...(s.greyscale
-      ? ['', 'GREYSCALE ONLY. Paint it in white through grey with alpha — no colour',
-        'at all. The game tints it per emitter (dust, soot, blood), and any colour',
-        'painted in here fights every one of those tints.']
-      : []),
-    ...(s.glow ? ['', GLOW_RULE] : []),
-    '',
-    fill ? STYLE_FILL : STYLE_PART,
-    '',
-    cycle
-      ? 'SIZE AND PLACEMENT (this is per PANEL) — this is the part that goes wrong.'
-      : 'SIZE AND PLACEMENT — this is the part that goes wrong.',
-    fill
-      ? 'The subject fills its frame edge to edge, exactly as the reference does.\nDo not shrink it onto a card or leave a polite margin.'
-      : 'Do not enlarge it to fill the frame. The reference leaves air around the\nsubject and that air is not waste — it is where the things drawn live around\nit go. Keep the subject the same fraction of the frame that the reference\nhas it, in the same place.',
-    ...(s.anchor === 'feet'
-      ? ['· Its bottom edge must land at the same height from the bottom of the',
-        '  frame as the reference has it — the game registers the return by it.']
-      : []),
-    '· Do not rotate it or change the viewing angle.',
-    '· No cast shadow on the ground. The game draws its own.',
-    '',
-    opaque
-      ? 'BACKGROUND: none. This image is FULLY OPAQUE from edge to edge — no\ntransparency, no checkerboard, no magenta anywhere.'
-      : sky
-        ? [
-          'BACKGROUND — read this before anything else.',
-          'Everything ABOVE the ridge line is sky, and it must be solid, flat, pure',
-          'magenta #FF00FF — a green-screen colour, keyed out automatically. NOT',
-          'transparent: transparency gets exported as a grey-and-white CHECKERBOARD',
-          'and then baked in as though the squares were paint. NOT white, NOT pale',
-          'blue, NOT a gradient or haze. BELOW the ridge line the artwork is fully',
-          'opaque black, right down to the bottom edge — do not fade it out.'
-        ].join('\n')
-        : BACKGROUND_RULE,
-    ...(s.tile === 'x'
-      ? ['', 'SEAMLESSLY TILEABLE, HORIZONTALLY. This image is repeated end to end, so',
-        'the right edge must join the left edge with no visible seam, no matching',
-        'feature straddling the join, and no vignette or fade at either side. It',
-        'does NOT need to tile vertically.']
-      : s.tile === 'xy'
-        ? ['', 'SEAMLESSLY TILEABLE ON BOTH AXES. This image is repeated across the road',
-          'in every direction, so the right edge must join the left and the bottom',
-          'edge must join the top with no visible seam, no feature straddling a join,',
-          'and no vignette or fade anywhere. Keep it even: one bright stone in the',
-          'middle becomes a polka-dot pattern across the whole road.']
-        : []),
-    ...(s.kind === 'gate'
-      ? ['',
-        'BEFORE YOU CALL IT FINISHED, count and check:',
-        `· Two posts, one per side, each ${pct(GATE_POST.width)} of the frame wide — the width the`,
-        `  reference draws them — with the doorway ${pct(GATE_POST.doorway)} of the width between them.`,
-        '· The doorway between them is empty magenta from the lintel down to the',
-        '  ground.',
-        '· No shadow on the ground, no ground at all — the posts stand on magenta.']
-      : []),
-    ...(cycle
-      ? ['',
-        'BEFORE YOU CALL IT FINISHED, count and check:',
-        `· ${colsOf(s)} panels across, ${rowsOf(s)} down, ${framesOf(s)} in all — no extra row.`,
-        `· No two of the ${framesOf(s)} panels are identical. In particular the ${colsOf(s)} panels of a`,
-        '  row are 4 different moments, not one moment repeated across the row.',
-        '· Every panel holds the same object at the same size, in the same place,',
-        '  in the same colours.',
-        `· Panel ${framesOf(s)} leads back into panel 1.`,
-        '· Every pixel that is not the sprite is flat, vivid #FF00FF.']
-      : []),
-    '',
-    'OUTPUT — read this twice, it is where every previous attempt failed:',
-    `· ONE image, exactly ${sheetW(s)} x ${sheetH(s)} pixels — ${shapeOf(s)}.`,
-    '  If your tool has an aspect-ratio control, set it to match. Returns have',
-    '  come back at the tool\'s default ratio before, which overrides this line —',
-    '  the setting wins, so change the setting.',
-    cycle
-      ? `· ONE object, painted ${framesOf(s)} times as ${framesOf(s)} moments of one loop. Not `
-        + 'variants,\n  not a comparison, not a turnaround, not a before-and-after pair.'
-      : '· ONE object. Not two, not a comparison, not variants side by side, not a\n  before-and-after pair.',
-    '· No frame, border, card, label, caption, arrow, annotation or drop shadow.'
-  ].join('\n')
+/**
+ * One block as the preview wants it: the `# Name  (file.png → target)` line the
+ * builders put first becomes a markdown heading OUTSIDE the fence — so the
+ * document keeps an outline and the attach/target pair stays readable — and the
+ * prompt itself goes inside a fenced block, which is what earns the
+ * copy-to-clipboard button. Copying is then one click per generation instead of
+ * a drag-select through 80 lines that either eats the first line or takes the
+ * next block's heading with it.
+ */
+const block = (text: string): string => {
+  const cut = text.indexOf('\n')
+  const heading = (cut < 0 ? text : text.slice(0, cut)).replace(/^#+\s*/, '')
+  const body = (cut < 0 ? '' : text.slice(cut + 1)).replace(/^\n+/, '')
+  const fence = fenceFor(body)
+  return [`## ${heading}`, '', `${fence}text`, body, fence].join('\n')
 }
 
-// ─── Consistency with the runtime catalogue ─────────────────────────────────
+const doc = (title: string, intro: string[], blocks: string[]): string =>
+  [`# ${title}`, '', GENERATED, '', ...intro, '', COPY_HINT, '', blocks.map(block).join('\n\n---\n\n'), ''].join('\n')
 
-/** Every still id the manifest paints for a kind, in manifest order. */
-export const stillIds = (kind: ArtKind): string[] =>
-  STILLS.filter((s) => s.kind === kind).map((s) => s.id)
-
-
-/** Ids the runtime probes that the manifest does not paint, and vice versa. */
-export const catalogueDrift = (): { unpainted: string[]; unprobed: string[] } => {
-  const unpainted: string[] = []
-  const unprobed: string[] = []
-  for (const [kind, ids] of Object.entries(ART_CATALOGUE)) {
-    const painted = new Set(stillIds(kind as ArtKind))
-    for (const id of ids) if (!painted.has(id)) unpainted.push(`${kind}/${id}`)
-    for (const id of painted) {
-      // The logo is painted but never probed; see `artCatalogue`.
-      if (!ids.includes(id) && !(kind === 'ui' && id === 'logo')) unprobed.push(`${kind}/${id}`)
-    }
+/** Every prompt document, keyed by filename under `art-sheets/`. */
+export const promptDocs = (fits?: FitMap): Record<string, string> => {
+  const stones = SHEETS.filter((s) => s.kind === 'stones' || s.kind === 'enemyStones' || s.kind === 'glyphs')
+  const board = SHEETS.filter((s) => !stones.includes(s))
+  return {
+    'PROMPTS-RUNES.md': doc('Rune prompts — the stones and the glyph icons', [
+      'One sheet per generation. Attach `art-sheets/<sheet>.png` (the CLEAN sheet, not the',
+      '`-key` one) and paste the block below it. Every panel is named, because a whole-sheet',
+      'pass that infers subjects from pixels turns a bow into a harp.',
+      '',
+      'Drop the return in `art-sheets/painted/` under the same name, then `pnpm art:slice`.'
+    ], stones.map((s) => promptForSheet(s, fits))),
+    'PROMPTS-BOARD.md': doc('Board prompts — tiles, frame, HUD chips, effects', [
+      'One sheet per generation. The tile sheet and the frame FILL their panels edge to edge;',
+      'everything else floats on flat magenta. Attach the clean sheet, paste the block.'
+    ], board.map((s) => promptForSheet(s, fits))),
+    'PROMPTS-CAST.md': doc('Cast prompts — walk cycles and the horizon', [
+      'These restyle bitmaps that already ship. Attach `art-sheets/walk-<id>.png` or',
+      '`bg-<id>.png` and paste the block beside it. A walk sheet is a grid of panels showing',
+      'ONE character through ONE cycle, and the whole job is that it comes back as one',
+      'character and not eight.'
+    ], [...WALKS.map(promptForWalk), ...SCENERY.map(promptForScenery)]),
+    'PROMPTS-SINGLES.md': doc('Single-object prompts — one object per generation', [
+      'The sturdy route. An image model will not hold a lattice while it repaints; a single',
+      'has no lattice to lose. Export the singles from the bench (tick "singles"), attach',
+      '`art-sheets/singles/single-<id>.png`, paste the block. Slower, never mis-cut.'
+    ], SINGLES.map((t) => promptForSingle(t, fits)))
   }
-  return { unpainted, unprobed }
 }

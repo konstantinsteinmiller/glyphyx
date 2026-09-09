@@ -35,16 +35,16 @@ import { isGamepix } from '@/use/useUser'
 import { isDebug } from '@/use/useMatch'
 import { isPlatformPaused, isVisibilityHidden, pauseGame, resumeGame } from '@/use/useGamePause'
 import { setPlatformAudioMuted } from '@/use/useGamePauseAudio'
-import { getState } from '@/use/useTowerState'
-import { BEST_STAGE_KEY, RUNS_KEY } from '@/keys'
+import { getState } from '@/use/useGlyphyxState'
+import { BEST_NODE_KEY, MATCHES_KEY } from '@/keys'
 
 // Score / level are read straight out of the persisted state blob rather than
 // from the simulation composable. GamePix's plugin is dynamically imported on
 // the GamePix build only, and pulling the whole sim (renderer deps included)
 // into that chunk to read two integers would be a real download cost for every
 // GamePix player. `getState` reads the reactive blob, so these stay live.
-const gamesPlayedTotal = computed(() => Number(getState(RUNS_KEY, 0)) || 0)
-const maxStageReached = computed(() => Number(getState(BEST_STAGE_KEY, 0)) || 0)
+const gamesPlayedTotal = computed(() => Number(getState(MATCHES_KEY, 0)) || 0)
+const maxStageReached = computed(() => Number(getState(BEST_NODE_KEY, 0)) || 0)
 
 declare global {
   interface Window {

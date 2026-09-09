@@ -1,219 +1,107 @@
 // ─── Game-state field catalogue ─────────────────────────────────────────────
 //
-// Field names INSIDE the single `tower_state` blob (see `useTowerState.ts`).
+// Field names INSIDE the single `glyphyx_state` blob (see `useGlyphyxState.ts`).
 // These are NOT separate localStorage keys — they are properties of the one
 // persisted object — but they are still a contract with the player base:
 // renaming any of them strands existing players' progress on the old field.
 // Treat them as load-bearing constants.
 //
-// Everything is `ts_`-prefixed so `SaveMergePolicy.isPayloadKey` can allowlist
+// Everything is `gx_`-prefixed so `SaveMergePolicy.isPayloadKey` can allowlist
 // the whole surface with a single prefix.
 
 // ─── Meta progression ───────────────────────────────────────────────────────
 
-/** Meta currency, banked at the end of every stage and spent on upgrades. */
-export const COINS_KEY = 'ts_coins'
+/** Meta currency (gold coins), earned by conquest and the forge, spent on skins. */
+export const COINS_KEY = 'gx_coins'
 /** Lifetime coins earned — never decremented by spending. */
-export const TOTAL_COINS_KEY = 'ts_total_coins'
-/** Permanent upgrade levels: `{ squad, power, rate, scavenge }`. */
-export const UPGRADES_KEY = 'ts_upgrades'
-/** Deepest stage ever cleared — the headline progress number. */
-export const BEST_STAGE_KEY = 'ts_best_stage'
-/** Largest squad ever assembled in one run. */
-export const BEST_SQUAD_KEY = 'ts_best_squad'
-/** Lifetime runs started. */
-export const RUNS_KEY = 'ts_runs'
-/** Lifetime foes destroyed. */
-export const TOTAL_KILLS_KEY = 'ts_total_kills'
-
-// ─── The resumable run ──────────────────────────────────────────────────────
-
+export const TOTAL_COINS_KEY = 'gx_total_coins'
 /**
- * The stage the player is currently on.
- *
- * A stage is short (~40 s) and its layout is regenerated deterministically from
- * this number alone, so there is nothing else to store: a reload — or opening
- * the game on another device after a cloud sync — drops the player at the START
- * of the stage they were running, never back at stage 1.
+ * The campaign node the player is on, as a GLOBAL 1-based index
+ * (chapter 1 = nodes 1–8, chapter 2 = 9–16, …). A node's setup is regenerated
+ * deterministically from this number alone, so a reload — or opening the game
+ * on another device after a cloud sync — drops the player at the node they were
+ * playing, never back at 1-1.
  */
-export const STAGE_KEY = 'ts_stage'
+export const NODE_KEY = 'gx_node'
+/** Highest node ever cleared — the headline progress number and the leaderboard score. */
+export const BEST_NODE_KEY = 'gx_best_node'
+/** Lifetime matches finished (wins + losses). */
+export const MATCHES_KEY = 'gx_matches'
+/** Lifetime wins. */
+export const WINS_KEY = 'gx_wins'
+/** Current consecutive-win streak — drives the flame aura and the gold multiplier. */
+export const STREAK_KEY = 'gx_streak'
+/** Best streak ever — the leaderboard's second column. */
+export const BEST_STREAK_KEY = 'gx_best_streak'
+/** Highest number of enemy runes shattered in one resolution, ever. */
+export const BEST_COMBO_KEY = 'gx_best_combo'
+/** Rune types the player has unlocked, as an array of `RuneType`. */
+export const UNLOCKED_RUNES_KEY = 'gx_unlocked_runes'
+/** Pebble skins owned, as an array of `SkinId`. */
+export const SKINS_OWNED_KEY = 'gx_skins_owned'
+/** The equipped pebble skin. */
+export const SKIN_KEY = 'gx_skin'
 
-/**
- * Stages the player has already lost on, as `{ [stage]: failCount }`.
- *
- * Drives the one-shot difficulty relief (`RETRY_HP_RELIEF`): every enemy on a
- * stage you have died to before has 20 % less health. It is deliberately
- * persisted rather than session-only — being stuck is a cross-session problem,
- * and a player who closes the app in frustration is exactly the one the relief
- * exists for.
- */
-export const FAILED_STAGES_KEY = 'ts_failed_stages'
+// ─── Adaptive difficulty ────────────────────────────────────────────────────
 
-/**
- * The autobalancer's handicap: how many stages the player has cleared in a row.
- *
- * Every clear makes the next stage a little harder; a single loss resets it to
- * zero. It is the difference between a game that gets easier the better you
- * get at it and one that keeps pace with you — and because it resets on a loss,
- * it can never be the reason a player is stuck.
- */
-export const CHALLENGE_KEY = 'ts_challenge'
+/** Losses per node, as `{ [nodeId]: count }`. Cleared for a node the moment it is won. */
+export const FAILED_NODES_KEY = 'gx_failed_nodes'
+/** Consecutive losses overall. A win zeroes it. */
+export const LOSS_STREAK_KEY = 'gx_loss_streak'
 
-/**
- * Consecutive stage wins the player finished WITHOUT claiming the `×3` reward.
- *
- * Persisted because it is a curve, not a session mood: the pressure to take the
- * reward has to survive the tab being closed, or the whole mechanism resets
- * itself every time somebody comes back tomorrow. Reset to 0 by a single claim,
- * and only ever incremented when the offer was genuinely available — see
- * `rewardDeclineFactor`.
- */
-export const REWARD_DECLINE_KEY = 'ts_reward_declines'
+// ─── The offline rune forge ─────────────────────────────────────────────────
+
+/** Epoch ms of the last forge claim. 0/absent = never claimed (a first-time
+ *  player finds a forge that is already partly filled — see `useRuneForge`). */
+export const FORGE_AT_KEY = 'gx_forge_at'
 
 // ─── Onboarding / one-shot UI nudges ────────────────────────────────────────
 
-/** First-run onboarding consumed flag — retires the control hints for good. */
-export const ONBOARDED_KEY = 'ts_onboarded'
-/**
- * The very first thing a new player ever sees: the controls lightbox, held in
- * front of stage 1 until they have actually steered the squad for a second.
- *
- * Its own key rather than a reuse of `ONBOARDED_KEY`, and the reason is what
- * each one means. `ONBOARDED_KEY` retires the running control PRIMERS after a
- * cleared stage; this retires a one-time gate that ran before the game did.
- * Folding them together would show the lightbox again to every existing player
- * whose save predates it — a gate in front of stage 1 for someone on stage 20.
- */
-export const TUTORIAL_KEY = 'ts_tutorial_seen'
-/** One-time "you can afford an upgrade" spotlight on the shop button. */
-export const SHOP_SPOTLIGHT_KEY = 'ts_shop_spotlight_seen'
+/** The player has placed their first rune ever — retires the ghost hand. */
+export const TUTORIAL_KEY = 'gx_tutorial_seen'
+/** The player has aimed a rune with a swipe at least once — retires the aim hint. */
+export const AIMED_KEY = 'gx_aimed'
+/** How many result screens the player has seen — drives the first-few-screens pointers. */
+export const RESULTS_SEEN_KEY = 'gx_results_seen'
+/** The textless goal intro (eight tiles → crown) has played once, on the first real conquest match. */
+export const GOAL_SEEN_KEY = 'gx_goal_seen'
+/** Placements per rune type, as `{ [type]: count }` — retires each rune's tooltip after a few uses. */
+export const RUNE_USES_KEY = 'gx_rune_uses'
+/** Power runes owned (armed for the next match), as `{ [type]: count }`. Bought with coins or a rewarded ad. */
+export const POWER_RUNES_KEY = 'gx_power_runes'
 
 /**
- * How many result screens the player has seen — death and stage-clear alike.
- *
- * Drives the one-off pointer at the upgrade button: a 500-player Poki fit test
- * had 64 % of sessions ending inside two minutes, and the shop is the thing that
- * makes the next run different from the last one. A player who never notices it
- * is playing the same losing run over and over. Shown on the first few screens
- * only — after that it is nagging.
+ * Permanent rune RANKS, as `{ [type]: 0..MAX_RUNE_RANK }`. Each rank is worth
+ * `RANK_HP_PER_RANK` maximum hit points on the player's runes of that type,
+ * and is bought with coins, one rewarded video, or the rotating free gift.
+ * The single biggest coin sink in the game, so it is also the field a lost
+ * save hurts most — it rides the cloud blob like everything else.
  */
-export const RESULTS_SEEN_KEY = 'ts_results_seen'
-
+export const RUNE_RANKS_KEY = 'gx_rune_ranks'
 /**
- * When each active skill next comes off cooldown, as absolute epoch ms.
- *
- * Absolute timestamps, and stored in the save blob, because the cooldown is
- * meant to run ACROSS runs: a player who could reset a thirty-second clock by
- * dying and retrying would have no reason not to, and the skill would stop
- * being a decision about when to spend it.
+ * The `freeRankWindow()` index whose free upgrade has already been taken.
+ * One gift per 20-minute window: storing the WINDOW rather than a count is
+ * what makes the offer un-farmable by reloading, and self-clearing when the
+ * clock rolls on.
  */
-export const SKILL_READY_KEY = 'ts_skill_ready'
-/**
- * One-time "the boss shielded and your fire stopped working" primer.
- *
- * Deliberately NOT covered by `ONBOARDED_KEY`. Onboarding retires after the
- * first cleared stage, which is fine for the primers that teach the controls —
- * but the boss guard is a rule that arrived after players already had saves,
- * and every one of them is `onboarded`. Without its own flag the mechanic most
- * likely to read as a bug is the one mechanic nobody is ever told about.
- */
-export const GUARD_HINT_KEY = 'ts_guard_hint_seen'
-
-/**
- * The lever-puzzle primer has been shown.
- *
- * Its own flag for exactly the reason the guard hint has one: the weapon puzzle
- * arrives on stage 4, by which time all but the slowest players are `onboarded`
- * and the ordinary hint ladder has switched itself off. It is also the one beat
- * in the game with no consequence for ignoring it — nothing kills you, nothing
- * blocks you, the prize simply goes past — so a player who never works out what
- * the posts at the rails are for will never be told by the road itself.
- *
- * Shown once, ever, and then never again: a bonus that nags is a bonus the
- * player learns to resent.
- */
-export const LEVER_HINT_KEY = 'ts_lever_hint_seen'
-
-// ─── The idle treasure chest ────────────────────────────────────────────────
-//
-// The HUD chest fills on WALL-CLOCK time, not on play time, which is the whole
-// point of it: it is the reason to come back tomorrow. Both fields therefore
-// live inside the `ts_` blob and ride the cloud save with everything else —
-// a chest whose clock is per-device hands a player on two devices two
-// allowances a day, and one that resets on a cache clear pays out again
-// immediately. See `useTreasureChest.ts`.
-
-/** Epoch ms of the last claim. Absolute, so it survives a reload the way the
- *  skill cooldowns do; 0/absent means "never claimed", which the composable
- *  reads as a chest that is already waiting for a first-time player. */
-export const CHEST_KEY = 'ts_chest_at'
-/**
- * The day's payout ledger, as `{ day: 'YYYY-MM-DD', coins: n }`.
- *
- * The DAY is stored with the total because the cap is per calendar day in the
- * PLAYER's timezone: without the date a returning player's stale total would
- * count against today, and with a UTC date the allowance would roll over at
- * 02:00 in Berlin. A ledger whose `day` is not today reads as zero.
- */
-export const CHEST_DAY_KEY = 'ts_chest_day'
+export const FREE_RANK_KEY = 'gx_free_rank_window'
 
 // ─── Leaderboard identity + posting bookkeeping ─────────────────────────────
-//
-// All six live inside the same `ts_` blob as everything else, so they ride the
-// cloud save with the rest of the player's progress. That is the point: an id
-// that does not survive a device change hands the same player a second row on
-// the board, and a board row nobody can reclaim is the one kind of progress
-// loss that cannot be repaired from the client.
 
-/**
- * The player's stable leaderboard id — the primary key of their row.
- *
- * Mirrored to a standalone `glyphyx_uid` localStorage entry OUTSIDE this
- * prefix (see `usePlayerIdentity.ts`), because a hydrate from an older cloud
- * blob can hand the game a save with no id in it and the game would mint a
- * second one.
- */
-export const PLAYER_ID_KEY = 'ts_player_id'
-/** A name the player chose for themselves. Highest precedence, never
- *  overwritten by a platform SDK or by the generated fallback. */
-export const PLAYER_NAME_KEY = 'ts_player_name'
-/**
- * The last display name a platform SDK handed us, REMEMBERED.
- *
- * Without it an offline session — or a portal that only exposes a name to
- * signed-in players — flips the board row back to a generated name and the
- * player's friends stop finding them.
- */
-export const SDK_NAME_KEY = 'ts_sdk_name'
-/** The generated `Runner418302`-style fallback, minted once and kept. Re-rolling
- *  it every session would relabel the row on every visit. */
-export const ANON_NAME_KEY = 'ts_anon_name'
-/**
- * The name the board row is currently labelled with, as far as we know.
- *
- * Compared against the resolved name after every run: when they differ the
- * client re-posts the SAME score purely to relabel the row. Without this the
- * only way a rename ever reaches the board is a new personal record.
- */
-export const POSTED_NAME_KEY = 'ts_posted_name'
-/**
- * The highest stage already sent to the leaderboard.
- *
- * The whole quota design rests on this: the client writes ONLY when the player
- * beats it. A board that is posted to at the end of every run costs one write
- * per ~40 s of play per player, which is the difference between a free tier and
- * a bill.
- */
-export const SUBMITTED_STAGE_KEY = 'ts_submitted_stage'
+export const PLAYER_ID_KEY = 'gx_player_id'
+export const PLAYER_NAME_KEY = 'gx_player_name'
+export const SDK_NAME_KEY = 'gx_sdk_name'
+export const ANON_NAME_KEY = 'gx_anon_name'
+export const POSTED_NAME_KEY = 'gx_posted_name'
+/** The highest node already sent to the leaderboard — the client writes ONLY when it is beaten. */
+export const SUBMITTED_NODE_KEY = 'gx_submitted_node'
 
 // ─── User settings ──────────────────────────────────────────────────────────
 
-export const SOUND_KEY = 'ts_user_sound_volume'
-export const MUSIC_KEY = 'ts_user_music_volume'
-export const LANGUAGE_KEY = 'ts_user_language'
-export const DIFFICULTY_KEY = 'ts_user_difficulty'
-export const MUSIC_TRACK_KEY = 'ts_user_music_track'
-/** Mobile-only hard audio mute (boolean). On phones the OS volume rocker owns
- *  the device level and the Web Audio gain has no effect, so the on-screen mute
- *  is a silence toggle instead: suspend all audio + block new music/SFX. */
-export const MOBILE_MUTE_KEY = 'ts_mobile_mute'
+export const SOUND_KEY = 'gx_user_sound_volume'
+export const MUSIC_KEY = 'gx_user_music_volume'
+export const LANGUAGE_KEY = 'gx_user_language'
+export const DIFFICULTY_KEY = 'gx_user_difficulty'
+export const MUSIC_TRACK_KEY = 'gx_user_music_track'
+/** Mobile-only hard audio mute (boolean). */
+export const MOBILE_MUTE_KEY = 'gx_mobile_mute'

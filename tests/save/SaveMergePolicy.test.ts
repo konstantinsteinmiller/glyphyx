@@ -33,58 +33,57 @@ describe('SaveMergePolicy.computeMeta', () => {
   })
 
   it('counts bestStage * 500', () => {
-    const meta = computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: '7' }))
+    const meta = computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: '7' }))
     expect(meta.progressScore).toBe(7 * 500)
     expect(meta.maxStage).toBe(7)
   })
 
   it('floors bestStage at 0 for negative / garbage values', () => {
-    expect(computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: '0' })).progressScore).toBe(0)
-    expect(computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: '-3' })).progressScore).toBe(0)
-    expect(computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: 'abc' })).progressScore).toBe(0)
+    expect(computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: '0' })).progressScore).toBe(0)
+    expect(computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: '-3' })).progressScore).toBe(0)
+    expect(computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: 'abc' })).progressScore).toBe(0)
   })
 
-  it('counts every upgrade level at 150 each', () => {
+  it('counts every unlocked rune at 150 each', () => {
     const meta = computeMeta(reader({
-      [SAVE_KEYS.BEST_STAGE]: '1',
-      [SAVE_KEYS.UPGRADES]: upgradesJson({ power: 3, rate: 2, squad: 5 })
+      [SAVE_KEYS.BEST_NODE]: '1',
+      [SAVE_KEYS.UNLOCKED_RUNES]: JSON.stringify(['melee', 'archer', 'mage'])
     }))
-    // 1*500 + 10 levels * 150
-    expect(meta.progressScore).toBe(500 + 1500)
+    // 1*500 + 3 runes * 150
+    expect(meta.progressScore).toBe(500 + 450)
   })
 
-  it('counts runs at 10 each so two equal-stage saves still break their tie', () => {
-    const a = computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: '4', [SAVE_KEYS.RUNS]: '12' }))
-    const b = computeMeta(reader({ [SAVE_KEYS.BEST_STAGE]: '4', [SAVE_KEYS.RUNS]: '3' }))
+  it('counts matches at 10 each so two equal-node saves still break their tie', () => {
+    const a = computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: '4', [SAVE_KEYS.MATCHES]: '12' }))
+    const b = computeMeta(reader({ [SAVE_KEYS.BEST_NODE]: '4', [SAVE_KEYS.MATCHES]: '3' }))
     expect(a.progressScore).toBe(2000 + 120)
     expect(b.progressScore).toBe(2000 + 30)
     expect(a.progressScore).toBeGreaterThan(b.progressScore)
   })
 
-  it('ignores negative / non-numeric upgrade values defensively', () => {
+  it('ignores a roster that is not an array', () => {
     const meta = computeMeta(reader({
-      [SAVE_KEYS.UPGRADES]: upgradesJson({
-        power: -2, rate: 'broken', squad: 4, scavenge: NaN, extra: 3
-      })
+      [SAVE_KEYS.BEST_NODE]: '2',
+      [SAVE_KEYS.UNLOCKED_RUNES]: JSON.stringify({ melee: true })
     }))
-    // Only `squad: 4` and `extra: 3` count → 7 * 150
-    expect(meta.progressScore).toBe(1050)
+    // An object where an array should be counts as no unlocks at all.
+    expect(meta.progressScore).toBe(1000)
   })
 
   it('combines every term per the formula', () => {
     const meta = computeMeta(reader({
-      [SAVE_KEYS.BEST_STAGE]: '12',
-      [SAVE_KEYS.RUNS]: '20',
-      [SAVE_KEYS.UPGRADES]: upgradesJson({ power: 5, rate: 5 })
+      [SAVE_KEYS.BEST_NODE]: '12',
+      [SAVE_KEYS.MATCHES]: '20',
+      [SAVE_KEYS.UNLOCKED_RUNES]: JSON.stringify(['melee', 'archer', 'mage', 'defense', 'support'])
     }))
-    expect(meta.progressScore).toBe(6000 + 1500 + 200)
+    expect(meta.progressScore).toBe(6000 + 750 + 200)
     expect(meta.maxStage).toBe(12)
   })
 
-  it('survives malformed JSON in the upgrades key', () => {
+  it('survives malformed JSON in the roster key', () => {
     const meta = computeMeta(reader({
-      [SAVE_KEYS.BEST_STAGE]: '3',
-      [SAVE_KEYS.UPGRADES]: '{not json'
+      [SAVE_KEYS.BEST_NODE]: '3',
+      [SAVE_KEYS.UNLOCKED_RUNES]: '{not json'
     }))
     expect(meta.progressScore).toBe(3 * 500)
   })

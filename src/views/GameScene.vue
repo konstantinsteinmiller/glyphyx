@@ -2,76 +2,57 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import {
-  stage, phase, squadCount, damage, runFireRate, progress01, bossHp01, bestStage,
-  eliteAlive, eliteHp01, challenge, declines,
-  startStage, advanceStage, retryStage, step, steerTo, steerBy, steerOnly, runSummary,
-  attackIncoming,
-  isChargingGate, getCrates, getGates, getDividers, getBoss, getLevers, anchor, crowdRadius,
-  throwGrenade, raiseShield, shieldActive as isShieldUp,
-  activeWeapon, puzzlePulled, puzzleTotal, puzzleWeapon
-} from '@/use/useSurvivalGame'
-import {
-  drawScene, setViewport, screenToWorldX, screenDeltaToWorld, invalidateArt, worldToScreenX, getScale
-} from '@/use/useSurvivalArt'
-import { renderScaleTier, resetVfx } from '@/use/useVfx'
-import { warmAudio, playFx } from '@/use/useGameAudio'
-import { CROWD_MAX_R, CROWD_SCREEN_Y, DECLINE_MAX, LANE_HALF, UNIT_R } from '@/game/survival'
-
-import { getState, setState } from '@/use/useTowerState'
-import { flushSaveNow } from '@/use/useSaveStatus'
-import {
-  GUARD_HINT_KEY, LEVER_HINT_KEY, ONBOARDED_KEY, RESULTS_SEEN_KEY, REWARD_DECLINE_KEY,
-  SHOP_SPOTLIGHT_KEY, TUTORIAL_KEY
-} from '@/keys'
-import useTowerEconomy from '@/use/useTowerEconomy'
-import { affordableCount, grantUpgrade } from '@/use/useUpgrades'
-import useSounds, { useMusic } from '@/use/useSound'
+import useBattle, { type BattleEvent, type MatchSummary } from '@/use/useBattle'
+import useCampaign from '@/use/useCampaign'
+import useEconomy from '@/use/useEconomy'
+import useStreak from '@/use/useStreak'
+import useSkins from '@/use/useSkins'
+import { activeSkin } from '@/use/useSkins'
+import { createArenaRenderer } from '@/use/useArenaArt'
+import { attachArenaInput } from '@/use/useArenaInput'
+import { __winMatchNow, setDragMetrics } from '@/use/useBattle'
+import { renderScaleTier } from '@/use/useVfx'
+import { playFx } from '@/use/useGameAudio'
+import { useMusic } from '@/use/useSound'
 import { useScreenshake } from '@/use/useScreenshake'
-import { newTutorialClock, tickTutorial } from '@/use/useTutorialGate'
 import { frameStart, frameEnd, phaseStart, phaseEnd } from '@/use/usePerfProbe'
-import StageBanner from '@/components/game/StageBanner.vue'
-import IncomingWarning from '@/components/game/IncomingWarning.vue'
-import WeaponTag from '@/components/game/WeaponTag.vue'
-import type { GameIconName } from '@/components/icons/iconNames'
 import { isGamePaused, isAdShowing, isVisibilityHidden, isPlatformPaused } from '@/use/useGamePause'
-import { spawnCoinExplosion } from '@/use/useCoinExplosion'
-import { isInterstitialReady, showMidgameAd } from '@/use/useAds'
 import {
-  canShowInterstitial, markInterstitialShown, adInFlight, canOfferReward, claimReward, isRewardGated
+  showPacedInterstitial, adInFlight, canOfferReward, claimReward
 } from '@/use/useAdGate'
 import { signalGameplayLoaded, triggerHappytime } from '@/use/useCrazyGames'
 import { syncGameplayLifecycle, isGameplayLive } from '@/use/useGameplayLifecycle'
 import { isAnyModalOpen } from '@/use/useModalState'
 import { isMobileLandscape, isShortViewport } from '@/use/useUser'
-import { mobileCheck } from '@/utils/function'
 import { playFirstStartInterstitial } from '@/use/useFirstStartInterstitial'
-import {
-  OUTSIDE_BOARD, boardSize, leaderboardEnabled, leaderboardFailed, playerTotal, rankFor, reportRun
-} from '@/use/useLeaderboard'
+import { leaderboardEnabled } from '@/use/useLeaderboard'
+import { getState, setState } from '@/use/useGlyphyxState'
+import { AIMED_KEY, GOAL_SEEN_KEY, RESULTS_SEEN_KEY, TUTORIAL_KEY } from '@/keys'
+import { spawnCoinExplosion } from '@/use/useCoinExplosion'
+import { tooltipWantedFor } from '@/use/useRuneUses'
+import { CHEST_AUTO_CONTINUE_MS, REWARD_MULTIPLIER, type NodeConfig, type RuneType, chestIsGift, LESSON_HANDOVER_MS } from '@/game/rules'
 
-import RunHud from '@/components/game/RunHud.vue'
+import StreakFlame from '@/components/game/StreakFlame.vue'
+import RuneForge from '@/components/game/RuneForge.vue'
+import StageBadge from '@/components/game/StageBadge.vue'
+import EnemyBadge from '@/components/game/EnemyBadge.vue'
 import ControlHint, { type HintId } from '@/components/game/ControlHint.vue'
-import TutorialOverlay from '@/components/game/TutorialOverlay.vue'
-import SteerHint from '@/components/game/SteerHint.vue'
-import SkillBar from '@/components/game/SkillBar.vue'
-import {
-  skillReady, startCooldown, tickSkills, grenadeMultiplier, shieldDuration,
-  type SkillId
-} from '@/use/useSkills'
+import RuneTooltip from '@/components/game/RuneTooltip.vue'
+import TurnBanner from '@/components/game/TurnBanner.vue'
+import ChestOverlay from '@/components/game/ChestOverlay.vue'
+import NextUnlockTeaser from '@/components/game/NextUnlockTeaser.vue'
 import RewardAdIcon from '@/components/atoms/RewardAdIcon.vue'
 import FHudButton from '@/components/atoms/FHudButton.vue'
-import FHudBadge from '@/components/atoms/FHudBadge.vue'
 import FMuteButton from '@/components/atoms/FMuteButton.vue'
 import FReward from '@/components/atoms/FReward.vue'
 import FButton from '@/components/atoms/FButton.vue'
 import CoinBadge from '@/components/organisms/CoinBadge.vue'
-import TreasureChest from '@/components/organisms/TreasureChest.vue'
 import OptionsModal from '@/components/organisms/OptionsModal.vue'
-import UpgradeModal from '@/components/organisms/UpgradeModal.vue'
+import RankBadge from '@/components/atoms/RankBadge.vue'
+import ShopButton from '@/components/organisms/ShopButton.vue'
+import GoalIntro from '@/components/game/GoalIntro.vue'
 import LeaderboardModal from '@/components/organisms/LeaderboardModal.vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
-import GameIcon from '@/components/icons/GameIcon.vue'
 
 /**
  * ─── The scene ──────────────────────────────────────────────────────────────
@@ -79,21 +60,26 @@ import GameIcon from '@/components/icons/GameIcon.vue'
  * One canvas, one RAF loop, one thin HUD. The scene owns three things and
  * delegates everything else:
  *
- *   INPUT     — pointer → a world-space steer target. Tap moves, drag steers.
- *   THE LOOP  — the pause gate, the fixed order (`step` then `drawScene`).
- *   THE FLOW  — stage clear / wipe → ad → result screen → next stage.
+ *   INPUT     — `useArenaInput` turns pointer events into the battle's drag
+ *               protocol; the scene only mounts and unmounts it.
+ *   THE LOOP  — the pause gate, the fixed order (`battle.tick` then
+ *               `renderer.draw`), the measured HUD insets the board fits into.
+ *   THE FLOW  — match end → ad → the chest on a screen of its own (when the
+ *               node was cleared for the first time) → result screen (title,
+ *               rank, coins, the ×3, actions) → next node / play again.
  *
  * The ad ORDERING in `presentResult` is deliberate and is the thing most likely
  * to be broken by a well-meaning simplification: the interstitial is requested
- * and AWAITED before the result overlay is revealed. Showing the overlay first
+ * and AWAITED before the first overlay — chest or result — is revealed. Showing the overlay first
  * lets the victory jingle play for a beat and then get guillotined by the ad —
  * which is exactly what portal QA rejects builds for.
  */
 
-const { t } = useI18n()
-const { coins, addCoins } = useTowerEconomy()
+const { t, locale } = useI18n()
+const battle = useBattle()
+const { currentNode, nodeConfigFor, bestNode } = useCampaign()
+const { addCoins } = useEconomy()
 const { startBattleMusic, stopBattleMusic } = useMusic()
-const { playSound } = useSounds()
 const { shakeStyle } = useScreenshake()
 
 // ─── Canvas + render loop ───────────────────────────────────────────────────
@@ -101,68 +87,86 @@ const { shakeStyle } = useScreenshake()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const topBarRef = ref<HTMLElement | null>(null)
 const bottomBarRef = ref<HTMLElement | null>(null)
-let ctx: CanvasRenderingContext2D | null = null
+let renderer: ReturnType<typeof createArenaRenderer> | null = null
+let detachInput: (() => void) | null = null
 let rafId = 0
 let lastT = 0
 let cssW = 0
 let cssH = 0
 let dpr = 1
-let hintPollAccum = 0
 
-/** HUD insets, measured rather than guessed, so the camera never frames the
- *  crowd underneath the bottom row on a short phone. */
-const measureInsets = (): { top: number; bottom: number } => ({
-  top: (topBarRef.value?.getBoundingClientRect().height ?? 0) + 8,
-  bottom: (bottomBarRef.value?.getBoundingClientRect().height ?? 0) + 8
+/** HUD insets, measured rather than guessed, so the board never sits under the
+ *  top bar or the hand under the bottom row on a short phone. */
+/**
+ * A landscape PHONE: wider than tall and short. The one layout where vertical
+ * space is the whole problem, so the bottom bar stops being an inset — its
+ * buttons live in the corners, and a board that is bounded by the height sits
+ * in the middle of the width, clear of both corners. Measured live rather than
+ * from `isMobileLandscape`, which is gated on a UA sniff and would leave a
+ * narrow desktop window with the phone's board size.
+ */
+const isLandscapeCompact = (): boolean =>
+  typeof window !== 'undefined' && window.innerWidth > window.innerHeight && window.innerHeight <= 480
+
+const measureInsets = (): { top: number; bottom: number; left: number; right: number } => ({
+  top: (topBarRef.value?.getBoundingClientRect().height ?? 0) + (isLandscapeCompact() ? 2 : 6),
+  bottom: isLandscapeCompact() ? 0 : (bottomBarRef.value?.getBoundingClientRect().height ?? 0) + 4,
+  left: 0,
+  right: 0
 })
 
+// ─── Overlay state ──────────────────────────────────────────────────────────
+//
+// Declared up here, ahead of the render loop and the pause watcher that read
+// them: the watcher runs IMMEDIATELY inside setup, and a `const` below it is
+// still in its temporal dead zone at that moment — the scene threw
+// "Cannot access 'showResult' before initialization" on its first mount.
+const showResult = ref(false)
+/** The chest's own screen, shown BEFORE the result when a node was first cleared. */
+const showChest = ref(false)
+/** Either post-match screen is up: the clock stops, the HUD locks, no hint shows. */
+const overlayUp = computed(() => showChest.value || showResult.value || showGoalIntro.value)
+const showOptions = ref(false)
+/** The shop (power runes + skins) lives behind its own HUD button; the result screen opens its skins tab. */
+const shopRef = ref<InstanceType<typeof ShopButton> | null>(null)
 /**
- * Hand the measured HUD to the camera, and the camera's own geometry to the
- * controls that have to dodge the crowd.
- *
- * One function because the two are the same measurement: the bottom strip is
- * both what the camera must not frame the crowd underneath AND what the skill
- * row sits on top of, and reading it twice at different moments is how the two
- * end up disagreeing by a few pixels on a phone that just rotated.
+ * The goal, shown once without a word: on the first REAL conquest match a
+ * mini board lights eight tiles up to a crown. Persisted so it never replays.
  */
-const applyViewport = (): void => {
-  const insets = measureInsets()
-  setViewport(cssW, cssH, insets.top, insets.bottom)
-  hudBottomPx.value = insets.bottom
-  // The deepest a survivor is ever drawn: the anchor row, plus a full-size
-  // crowd's radius, plus one body. Sized off the MAXIMUM rather than the live
-  // radius on purpose — a control that slid up the screen as the squad grew
-  // would be a moving target, and the whole point of the placement is that the
-  // player can reach for it without looking.
-  squadFloorPx.value = cssH * CROWD_SCREEN_Y + (CROWD_MAX_R + UNIT_R) * getScale()
+const goalSeen = ref(getState<boolean>(GOAL_SEEN_KEY, false) === true)
+const showGoalIntro = ref(false)
+const onGoalIntroDone = (): void => {
+  goalSeen.value = true
+  setState(GOAL_SEEN_KEY, true)
+}
+const showLeaderboard = ref(false)
+
+/**
+ * How much room the strip under the top bar has before the board begins —
+ * where the control pill and the rune card live. Measured with the insets,
+ * so on a short phone the scene knows when only one of the two can fit.
+ */
+const stripRoomPx = ref(Infinity)
+
+const applyInsets = (): void => {
+  if (!renderer || cssW === 0) return
+  renderer.resize(cssW, cssH, dpr, measureInsets())
+  const topBottom = topBarRef.value?.getBoundingClientRect().bottom ?? 0
+  stripRoomPx.value = renderer.layout().board.y - topBottom
 }
 
 const resize = (): void => {
   const canvas = canvasRef.value
-  if (!canvas) return
-  // Clamp DPR by QUALITY TIER, not to a constant.
-  //
-  // Fill cost scales with the square of this number, and it is the single
-  // biggest lever the renderer has on a slow phone: a 2.6x device rendering at
-  // 2x is pushing 2.7x the pixels of one rendering at 1.25x, every frame,
-  // forever. The tier is already driven by a rolling FPS average, so a device
-  // that cannot hold 40 fps says so within a second and gets the cheaper canvas.
-  //
-  // 2 stays the ceiling for healthy devices — past that the cost doubles again
-  // for no perceptible gain on a phone.
-  //
-  // `min` is the only rung that goes BELOW the device's own pixel grid: the
-  // canvas is rendered at 0.8 CSS px and the compositor scales it back up, for
-  // 36 % fewer pixels than even a DPR-1 canvas. It is visibly softer, and on a
-  // device that is otherwise showing this game at 10 fps that is the right side
-  // of the trade — a soft 30 fps reads as a game, a crisp 10 fps does not.
+  if (!canvas || !renderer) return
+  // Clamp DPR by QUALITY TIER, not to a constant: fill cost scales with the
+  // square of this number, and it is the single biggest lever on a slow phone.
+  // `min` renders BELOW the device's own pixel grid on purpose — a soft 30 fps
+  // reads as a game, a crisp 10 fps does not.
   const dprCap = renderScaleTier.value === 'min'
     ? 0.8
     : renderScaleTier.value === 'low'
       ? 1.25
       : renderScaleTier.value === 'medium' ? 1.5 : 2
-  // `Math.min` against the device ratio would let a DPR-1 laptop keep a full-res
-  // canvas at `min`, which is exactly the device the tier is trying to help.
   dpr = renderScaleTier.value === 'min'
     ? Math.min(window.devicePixelRatio || 1, 1) * dprCap
     : Math.min(window.devicePixelRatio || 1, dprCap)
@@ -172,729 +176,384 @@ const resize = (): void => {
   canvas.height = Math.round(cssH * dpr)
   canvas.style.width = `${cssW}px`
   canvas.style.height = `${cssH}px`
-  ctx = canvas.getContext('2d')
-  ctx?.setTransform(dpr, 0, 0, dpr, 0, 0)
-  applyViewport()
-  // Half the road, in CSS pixels — measured through the renderer's own
-  // projection rather than guessed at as a percentage of the viewport, so the
-  // steer hint sits between the same rails the crowd does on every aspect ratio.
-  laneHalfPx.value = Math.max(40, worldToScreenX(LANE_HALF) - worldToScreenX(0))
-  // The lane tile is baked at the current scale, so a resize invalidates it.
-  invalidateArt()
+  applyInsets()
 }
 
-const loop = (t: number): void => {
+const loop = (now: number): void => {
   rafId = requestAnimationFrame(loop)
-  // Performance probe. No-ops unless `?perfprobe=1` — see `usePerfProbe`.
-  frameStart(t)
-  const dt = lastT ? Math.min(t - lastT, 120) : 16
-  lastT = t
+  frameStart(now)
+  const dt = lastT ? Math.min(now - lastT, 120) : 16
+  lastT = now
 
   // The pause gate covers ads, hidden tabs, platform SDK pauses and open
   // modals. The RENDER loop keeps running (so the frame under an ad isn't a
-  // frozen artefact) but the simulation clock does not advance.
-  if (!isGamePaused.value && !showResult.value) {
+  // frozen artefact) but the match clock does not advance.
+  if (!isGamePaused.value && !overlayUp.value) {
     phaseStart('step')
-    step(dt)
-    driveKeyboardSteering(dt)
-    // After `step`, because it reads the anchor the step just moved.
-    driveTutorial(dt)
-    // Poll the world for the hint chooser at ~5 Hz — see `hintTick`.
-    hintPollAccum += dt
-    if (hintPollAccum >= 200) {
-      hintPollAccum = 0
-      hintTick.value++
-      // The skill cooldowns are wall-clock, so nothing would otherwise tell Vue
-      // a button had come back. Ridden on the existing 5 Hz poll rather than a
-      // timer of their own — a second-resolution countdown does not need 60 Hz.
-      tickSkills()
-      shieldLive.value = isShieldUp()
-    }
+    battle.tick(now, dt)
     phaseEnd('step')
   }
 
   phaseStart('draw')
-  if (ctx) drawScene(ctx, cssW, cssH, dt, dpr)
+  renderer?.draw(battle.view, dt, now)
   phaseEnd('draw')
   frameEnd()
 }
 
-// ─── Active skills ──────────────────────────────────────────────────────────
-//
-// The scene owns the WIRING; `useSkills` owns the clock and `useSurvivalGame`
-// owns what the skills actually do. The cooldown is only ever started when the
-// skill did something — a grenade thrown at an empty road returns false and
-// keeps its charge, because a button that eats thirty seconds for nothing is a
-// button players stop trusting.
-const shieldLive = ref(false)
-
-const onUseSkill = (id: SkillId): void => {
-  if (!skillReady(id)) return
-  if (isGamePaused.value || showResult.value) return
-
-  if (id === 'grenade') {
-    if (!throwGrenade(grenadeMultiplier.value)) return
-    startCooldown('grenade')
-    return
-  }
-
-  const seconds = shieldDuration.value
-  if (seconds <= 0) return
-  raiseShield(seconds)
-  shieldLive.value = true
-  startCooldown('shield')
-}
-
-// ─── Input ──────────────────────────────────────────────────────────────────
-//
-// One pointer, two behaviours, chosen by how far the finger has travelled:
-//
-//   TAP  (< slop)  → the crowd's target snaps to the tapped column. This is the
-//                    control the hint teaches, and the one that works when the
-//                    player is holding the phone one-handed and stabbing at it.
-//   DRAG (≥ slop)  → relative steering with a small gain, so crossing the lane
-//                    is a thumb-sized sweep instead of a full-screen one, and
-//                    the crowd never teleports out from under the finger.
-//
-// Both are live on POINTER MOVE, not on release: a runner that only responds
-// when you lift your finger feels broken.
-
-const TAP_SLOP_PX = 12
-let pointerDown = false
-let downX = 0
-let lastX = 0
-let dragging = false
-
-/**
- * Has the player actually done anything to this game yet?
- *
- * Set by the first input that could plausibly move the squad — a press, a mouse
- * moving over the road, an arrow key — and never cleared. It is the difference
- * between "the game has been on screen for twelve seconds" and "the player has
- * been playing for twelve seconds", and until this is true those are not the
- * same claim.
- *
- * Deliberately platform-neutral. The case that forced it is Poki's playtest
- * recording consent, which puts a yes/no dialog over the game at load: the
- * dialog lives outside the iframe, so the game sees no input at all while the
- * player reads it, and the tutorial's bail-out timer would spend itself against
- * a screen nobody was looking at. But nothing about that is specific to Poki —
- * an interstitial, a permissions prompt, a portal's own chrome or a tab opened
- * in the background all produce exactly the same thing, on every platform.
- */
-const sawFirstInput = ref(false)
-
-/** Every path that could have moved the squad funnels through here. */
-const noteFirstInput = (): void => {
-  if (!sawFirstInput.value) sawFirstInput.value = true
-}
-
-const onPointerDown = (e: PointerEvent): void => {
-  // In a portal iframe the frame does not hold keyboard focus on load, and the
-  // `preventDefault` below cancels the implicit focus transfer a click would
-  // otherwise cause — so claim focus explicitly, or the arrow keys never arrive.
-  try { window.focus() } catch { /* a cross-origin parent may refuse */ }
-  e.preventDefault()
-  noteFirstInput()
-  if (showResult.value) return
-
-  pointerDown = true
-  dragging = false
-  downX = lastX = e.clientX
-  try { canvasRef.value?.setPointerCapture(e.pointerId) } catch { /* ignore */ }
-  // Snap immediately: the tap IS the move.
-  steerTo(screenToWorldX(e.clientX))
-  markHintDone('move')
-}
-
-const onPointerMove = (e: PointerEvent): void => {
-  if (!pointerDown) {
-    // Desktop: hovering with no button held also steers. It reads as "the crowd
-    // follows the mouse", which is what every player of this genre expects, and
-    // it costs one branch.
-    if (e.pointerType === 'mouse' && !showResult.value) {
-      // Only while the cursor is over the ROAD.
-      //
-      // Hover-steering used to follow the mouse anywhere on the page, which
-      // made the skill buttons unusable with a mouse: they live off to the
-      // right, so reaching for one dragged the whole squad into the right rail
-      // on the way. Steering is a statement about a position on the road, and
-      // the margins either side of the road are not positions on it — so out
-      // there the crowd simply holds its last column.
-      //
-      // Pushing PAST the rail still pins the crowd to it, because the last
-      // in-road column the cursor crossed was the rail itself.
-      const wx = screenToWorldX(e.clientX)
-      if (Math.abs(wx) <= LANE_HALF + 0.75) {
-        // Hovering over the road IS playing, on a desktop — the crowd is already
-        // following the cursor, so the player has had the lesson.
-        noteFirstInput()
-        steerTo(wx)
-      }
-    }
-    return
-  }
-  if (!dragging && Math.abs(e.clientX - downX) > TAP_SLOP_PX) dragging = true
-  if (dragging) {
-    // 1.35× gain — see DRAG_GAIN's note in `game/survival.ts`.
-    steerBy(screenDeltaToWorld(e.clientX - lastX) * 1.35)
-  } else {
-    steerTo(screenToWorldX(e.clientX))
-  }
-  lastX = e.clientX
-}
-
-const onPointerUp = (e: PointerEvent): void => {
-  // A completed drag is the gesture the hint exists to teach. Retire it here
-  // rather than on `pointerdown`, so a player who taps once without dragging —
-  // the exact person this is for — still gets to see it.
-  //
-  // Only once the hint is actually up, though. On a first run the tutorial
-  // lightbox is dismissed BY dragging, and counting that drag would retire the
-  // hint before it had been shown — which would have left it visible to
-  // returning players only, i.e. everyone except the people it is for.
-  if (dragging && steerHintArmed.value) retireSteerHint()
-  pointerDown = false
-  dragging = false
-  try { canvasRef.value?.releasePointerCapture(e.pointerId) } catch { /* ignore */ }
-}
-
-// Keyboard fallback, for desktop players and for accessibility.
-const keys = new Set<string>()
-const driveKeyboardSteering = (dtMs: number): void => {
-  let dir = 0
-  if (keys.has('ArrowLeft') || keys.has('KeyA')) dir -= 1
-  if (keys.has('ArrowRight') || keys.has('KeyD')) dir += 1
-  if (dir === 0) return
-  steerBy(dir * (dtMs / 1000) * LANE_HALF * 2.2)
-  markHintDone('move')
-}
-
-const onKeyDown = (e: KeyboardEvent): void => {
-  const tgt = e.target
-  if (tgt instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(tgt.tagName)) return
-  if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) {
-    e.preventDefault()
-    noteFirstInput()
-    keys.add(e.code)
-  }
-  if (e.code === 'Escape') {
-    showOptions.value = false
-    showUpgrades.value = false
-    showLeaderboard.value = false
-  }
-}
-const onKeyUp = (e: KeyboardEvent): void => { keys.delete(e.code) }
-
-// ─── The onboarding lightbox (one-shot, first run only) ─────────────────────
-//
-// Held in front of stage 1 until the player has actually steered the squad for
-// a second of moving time. Not a dialog and not a pause: the road is frozen
-// (`steerOnly`) while the crowd still answers the thumb, so the lesson is
-// performed rather than read. See `TutorialOverlay.vue`.
-
-// The clock, its two deadlines and the rule that the bail-out only counts time
-// the player was actually present for, all live in `useTutorialGate`.
-
-// ─── The steer hint (touch only, opening seconds) ───────────────────────────
-//
-// Mobile players were reported as struggling with a control that has exactly
-// one axis — which is the whole reason: there is no button to find, so a player
-// who does not think to DRAG watches a game that looks like it plays itself.
-// The written primer answers a question they never ask, and the first-run
-// lightbox only ever shows once.
-//
-// Five seconds of a finger sweeping between the rails, and then it retires. It
-// also retires the moment the player steers for real: nagging someone who has
-// already worked it out is its own kind of failure, and this hint's whole job
-// is to be unnecessary.
-const STEER_HINT_MS = 5000
-
-const laneHalfPx = ref(0)
-/**
- * The lowest pixel a survivor can ever be drawn at, and the top of the bottom
- * HUD strip. Between them is the one band of screen the crowd never occupies,
- * which is where the skill buttons go — see `SkillBar.vue`.
- *
- * Measured through the renderer's own projection and the HUD's own box rather
- * than assumed as a percentage, for the same reason `laneHalfPx` is: a control
- * placed against the crowd has to move with the camera on every aspect ratio.
- */
-const squadFloorPx = ref(0)
-const hudBottomPx = ref(0)
-const steerHintDone = ref(false)
-const steerHintArmed = ref(false)
-let steerHintTimer: number | null = null
-
-/** Touch-ish device. A mouse player has a cursor that already steers on hover. */
-const isTouchDevice = mobileCheck()
-  || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0)
-
-const showSteerHint = computed(() =>
-  isTouchDevice
-  && steerHintArmed.value
-  && !steerHintDone.value
-  && isLiveGameplay.value
+// Every reason the planning clock must stop, in one place. `isAnyModalOpen`
+// already ORs into `isGamePaused` through the app pause, but naming it keeps
+// the intent readable.
+watch(
+  () => isGamePaused.value || overlayUp.value || isAnyModalOpen.value,
+  (paused) => battle.setPaused(paused),
+  { immediate: true }
 )
 
-const retireSteerHint = (): void => {
-  if (steerHintTimer !== null) {
-    clearTimeout(steerHintTimer)
-    steerHintTimer = null
-  }
-  steerHintDone.value = true
+// `renderScaleTier` picks the DPR cap above, so committing it has to re-size
+// the canvas — otherwise the cheaper setting only lands on the next orientation
+// change. It fires at most three times a session by construction.
+watch(renderScaleTier, () => resize())
+
+// A new stone means new pebble sprites.
+watch(activeSkin, () => renderer?.invalidate())
+
+// ─── The renderer's words ───────────────────────────────────────────────────
+
+const applyLabels = (): void => {
+  battle.setLabels({
+    level: (n) => t('canvas.level', { n }),
+    combo: (n) => t('canvas.combo', { n }),
+    clash: t('canvas.clash'),
+    victory: t('canvas.victory'),
+    defeat: t('canvas.defeat'),
+    reveal: t('canvas.reveal'),
+    suddenDeath: t('canvas.suddenDeath'),
+    turn: (n) => t('canvas.turn', { n }),
+    you: t('canvas.you'),
+    foe: t('canvas.foe'),
+    reroll: t('canvas.reroll'),
+    lastTurn: t('canvas.lastTurn')
+  })
 }
+watch(locale, applyLabels)
 
-const tutorialSeen = ref(getState<boolean>(TUTORIAL_KEY, false) === true)
-/**
- * The overlay is up. Set in `boot`, once the squad it teaches exists.
- *
- * Distinct from `tutorialPending` because there is a gap between mount and
- * `boot` finishing its first `await` — and in that gap the running control
- * primer would otherwise flash "Tap to move" at a player who is about to be
- * shown a whole lightbox saying the same thing.
- */
-const tutorialActive = ref(false)
-/** A tutorial is owed and has not run yet. True from the first frame. */
-const tutorialPending = ref(!tutorialSeen.value)
-const tutorialProgress = ref(0)
-let tutorialClock = newTutorialClock(0)
+// ─── HUD data ───────────────────────────────────────────────────────────────
 
-/**
- * @param completed did the player actually perform the gesture, or did the
- *   bail-out fire? Only a completed tutorial is remembered. A player whose
- *   input never arrived has been taught nothing, and burning the flag on them
- *   would mean the one device that needs the primer is the one device that
- *   never gets it twice.
- */
-const finishTutorial = (completed: boolean): void => {
-  if (!tutorialActive.value) return
-  tutorialActive.value = false
-  tutorialPending.value = false
-  steerOnly.value = false
-  // Flushed at once: this is a hard checkpoint in the same sense a cleared
-  // stage is. A player who sees the lightbox, learns the control and then
-  // closes the tab must not be taught it again.
-  if (completed && !tutorialSeen.value) {
-    tutorialSeen.value = true
-    setState(TUTORIAL_KEY, true)
-    void flushSaveNow()
-  }
-  // The running primer this replaces has already done its job.
-  markHintDone('move')
-}
+/** The node on screen: the running match's, or the one the save points at. */
+const nodeCfg = computed<NodeConfig>(() => battle.node.value ?? nodeConfigFor(currentNode.value))
+const chapter = computed(() => nodeCfg.value.chapter)
+const nodeIndex = computed(() => nodeCfg.value.index)
+const enemies = computed(() => nodeCfg.value.enemies)
+const leadFactionName = computed(() => {
+  const lead = enemies.value[0]
+  return lead ? t(`factions.${lead.faction}`) : ''
+})
 
-/** Drives the movement clock. Called from the render loop, after `step`. */
-const driveTutorial = (dtMs: number): void => {
-  if (!tutorialActive.value) return
-  const { progress, outcome } = tickTutorial(
-    tutorialClock, dtMs, sawFirstInput.value, anchor().x
-  )
-  tutorialProgress.value = progress
-  if (outcome !== null) finishTutorial(outcome === 'moved')
+const coinBadgeRef = ref<InstanceType<typeof CoinBadge> | null>(null)
+const coinBadgeEl = computed<HTMLElement | null>(() => coinBadgeRef.value?.rootEl ?? null)
+
+// ─── The stage banner ───────────────────────────────────────────────────────
+
+const BANNER_MS = 1600
+const bannerShown = ref(false)
+const bannerSudden = ref(false)
+let bannerTimer: number | null = null
+
+const flashBanner = (sudden: boolean): void => {
+  if (bannerTimer !== null) clearTimeout(bannerTimer)
+  bannerSudden.value = sudden
+  bannerShown.value = true
+  bannerTimer = window.setTimeout(() => { bannerShown.value = false }, BANNER_MS)
 }
 
 // ─── Control hints ──────────────────────────────────────────────────────────
 //
 // One at a time, chosen by what the player most needs to know RIGHT NOW, each
-// retiring permanently the first time the thing it describes happens. After the
-// first cleared stage the whole system switches off for good, on every device
-// the save reaches.
+// retiring the moment the thing it names has happened. The ghost hand (drawn
+// on the canvas by the battle) is the first voice; this pill is the second.
 
-const hintsDone = ref<Set<HintId>>(new Set())
-const onboarded = ref(getState<boolean>(ONBOARDED_KEY, false) === true)
-
-const markHintDone = (id: HintId): void => {
-  if (hintsDone.value.has(id)) return
-  const next = new Set(hintsDone.value)
-  next.add(id)
-  hintsDone.value = next
-}
+const placedOnce = ref(getState<boolean>(TUTORIAL_KEY, false) === true)
+const aimedOnce = ref(getState<boolean>(AIMED_KEY, false) === true)
+/** The player has committed on THIS node — retires the node's own lesson. */
+const placedThisNode = ref(false)
+const conquestHintDone = ref(false)
+const siegeHintDone = ref(false)
 
 /**
- * Bumped by the render loop on a ~5 Hz cadence.
- *
- * The hint chooser has to look at the WORLD (is a trap gate ahead? is the crowd
- * drifting onto a pillar?) and the world lives in plain non-reactive arrays by
- * design. Polling five times a second is two array scans over a handful of live
- * entities — far cheaper than making the hot collections reactive to serve one
- * pill of text.
+ * The re-aim window (`LOCK_WINDOW_MS` after a placement) is explained the
+ * first few times it opens and never again — a session counter, because a
+ * player who has seen it three times has either used it or does not need it.
  */
-const hintTick = ref(0)
-
-/** What the lane is about to ask the player, right now. */
-const laneWarning = computed<HintId | null>(() => {
-  void hintTick.value
-  const a = anchor()
-  // A pillar the crowd is currently lined up to hit. This is the one hint that
-  // is a live warning rather than a lesson, so it outranks everything else.
-  for (const d of getDividers()) {
-    const ahead = d.y - a.y
-    if (ahead < 0.5 || ahead > 9) continue
-    if (Math.abs(a.x - d.x) < crowdRadius() + 0.4) return 'divider'
-  }
-  for (const g of getGates()) {
-    if (g.used) continue
-    const ahead = g.y - a.y
-    if (ahead < 0 || ahead > 12) continue
-    if (g.op === 'div') return 'trap'
-  }
-  for (const c of getCrates()) {
-    const ahead = c.y - a.y
-    if (ahead < 0 || ahead > 12) continue
-    return c.kind === 'rate' ? 'rate' : 'crate'
-  }
-  return null
+const CORRECT_HINT_WINDOWS = 3
+const lockWindowsSeen = ref(0)
+watch(() => battle.lockOpen.value, (open) => {
+  if (open) lockWindowsSeen.value += 1
 })
+
+/**
+ * The rune in the player's hand, explained — while it is still new to them.
+ *
+ * `activeRune` is whatever is being dragged or is selected for a tap; the
+ * card retires per rune once it has been placed `RUNE_TOOLTIP_USES` times
+ * (`useRuneUses`), and never shows under an overlay or a modal.
+ */
+const tooltipRune = computed<RuneType | null>(() => {
+  const type = battle.activeRune.value
+  if (!type || overlayUp.value || isAnyModalOpen.value) return null
+  return tooltipWantedFor[type].value ? type : null
+})
+
+/**
+ * The strip above the board holds the pill AND the card only when it is tall
+ * enough for both (a pill, a two-row card and their gaps need about this
+ * much). On a short phone there is no strip to speak of — the tiles begin
+ * right under the top bar — so the card takes the STAGE BADGE's slot in the
+ * top bar for as long as it shows: the stage number is the one thing nobody
+ * needs mid-drag, and the slot is the one place that covers neither a tile
+ * nor the hand nor another control.
+ */
+const STRIP_BOTH_PX = 80
+const tightStrip = computed(() => stripRoomPx.value < STRIP_BOTH_PX)
+/** The card is up and the strip cannot hold it: it stands in for the stage badge. */
+const tipInStage = computed(() => tooltipRune.value !== null && tightStrip.value)
+/**
+ * The same rule for the PILL. On the shortest phones (375×667 and under) the
+ * strip is 18–30 px — less than a pill — so a pill left there sits on the top
+ * row of tiles. Below this much room the pill borrows the stage slot too (the
+ * card outranks it when both want the slot). Landscape keeps the pill in its
+ * own column beside the board, which never competes with the tiles.
+ */
+const STRIP_PILL_PX = 40
+const pillFits = computed(() => isMobileLandscape.value || stripRoomPx.value >= STRIP_PILL_PX)
+const hintInStage = computed(() => !pillFits.value && !tipInStage.value && activeHint.value !== null)
 
 const activeHint = computed<HintId | null>(() => {
-  if (showResult.value || isAnyModalOpen.value) return null
-  // The lightbox is already saying this, larger and with a picture of the
-  // gesture. `pending` rather than `active` so the pill never flashes in the
-  // gap between mount and the overlay going up.
-  if (tutorialPending.value) return null
-  // The shield outranks onboarding itself — see `GUARD_HINT_KEY`. It is the one
-  // moment the game deliberately stops responding to the only verb the player
-  // has, so "my bullets do nothing" needs a word attached to it exactly once,
-  // whenever the player first meets it, onboarded or not.
-  if (bossGuarding.value && !guardHintSeen.value) return 'guard'
-  // The lever primer, on the same footing as the guard one and for the same
-  // reason: it arrives on stage 4, long after the onboarding ladder below has
-  // switched itself off, and a bonus nobody explains is a bonus nobody takes.
-  // Only while there is still something to shoot — a hint pointing at a puzzle
-  // the crowd has already run past teaches the wrong thing.
-  if (leverHintDue.value) return 'lever'
-  if (onboarded.value) return null
-  if (!hintsDone.value.has('move')) return 'move'
-  if (phase.value === 'boss') return hintsDone.value.has('boss') ? null : 'boss'
-  // Teach whatever is actually coming, once each. A hint for something the
-  // player cannot currently see is noise they will scroll past.
-  const warn = laneWarning.value
-  if (warn && !hintsDone.value.has(warn)) return warn
-  if (!hintsDone.value.has('gate')) return 'gate'
+  if (overlayUp.value || isAnyModalOpen.value || !battle.matchActive.value) return null
+  // The window is the one second after a placement, and the only moment the
+  // re-aim hint is true — so it outranks everything else while it is open.
+  if (battle.lockOpen.value) return lockWindowsSeen.value <= CORRECT_HINT_WINDOWS ? 'correct' : null
+  if (battle.phase.value !== 'planning') return null
+  // A pebble was selected by a tap: the next tap places it.
+  if (battle.selectedHand.value >= 0) return 'tap'
+  if (battle.isAiming.value && !aimedOnce.value) return 'aim'
+  if (!placedOnce.value) return 'drag'
+  const node = battle.node.value
+  if (!node || placedThisNode.value) return null
+  // Each rune's lesson names the rune, once per node, until the player has
+  // placed on it.
+  switch (node.tutorial) {
+    case 'archer': return 'archer'
+    case 'stack': return 'stack'
+    case 'mage': return 'mage'
+    case 'defense': return 'defense'
+    case 'support': return 'support'
+    case 'cleave': return 'cleave'
+    case 'roller': return 'roller'
+    case 'bombard': return 'bombard'
+    default: break
+  }
+  if (node.mode === 'siege' && !siegeHintDone.value) return 'siege'
+  if (node.objective === 'conquest' && !conquestHintDone.value) return 'conquest'
   return null
 })
 
-// A hint retires the moment its lesson has landed: the trap and pillar warnings
-// stop the first time the player is clear of them, the crate hints when the
-// matching stat actually moves.
-watch(laneWarning, (warn, before) => {
-  if (!before || warn) return
-  // …except the two crate lessons, which retire ONLY when the matching stat
-  // actually moves (below).
-  //
-  // Passing a crate is not learning what a crate is. A player who reads "boxes
-  // are obstacles" and steers around the first one would otherwise have the
-  // lesson marked as taught by the very act of avoiding it, and never be told
-  // again — which is exactly the misconception the hint exists to correct.
-  if (before === 'crate' || before === 'rate') return
-  markHintDone(before)
-})
-
-// The gate hint retires itself the moment the player actually holds fire on a
-// gate — which is the behaviour it was asking for.
-watch(isChargingGate, (charging) => { if (charging) markHintDone('gate') })
-watch(damage, (now, before) => { if (now > before) markHintDone('crate') })
-watch(runFireRate, (now, before) => { if (now > before) markHintDone('rate') })
-watch(phase, (p) => { if (p === 'boss') markHintDone('boss') })
-
-/**
- * The lever primer, shown exactly once in a player's life.
- *
- * Gated on a lever actually being ON SCREEN and still unpulled, so the words
- * arrive while the thing they describe is visible — the whole failure mode this
- * hint exists to prevent is a player reading "shoot the levers" and having no
- * idea what a lever looks like. Retired by `leverHintSeen` the moment the first
- * one goes over, which is the behaviour it was asking for.
- */
-const leverHintSeen = ref(getState<boolean>(LEVER_HINT_KEY, false) === true)
-const leverHintDue = computed(() => {
-  void hintTick.value
-  if (leverHintSeen.value || puzzleWeapon.value === null) return false
-  if (puzzlePulled.value > 0) return false
-  const a = anchor()
-  return getLevers().some((lv) => !lv.pulled && lv.y - a.y > 0 && lv.y - a.y < 13)
-})
-// Persisted on the first pull rather than on the first sighting: a player who
-// saw the pill and did nothing has not learned it yet, and the road will offer
-// them another puzzle next stage.
-watch(puzzlePulled, (n) => {
-  if (n <= 0 || leverHintSeen.value) return
-  leverHintSeen.value = true
-  markHintDone('lever')
-  setState(LEVER_HINT_KEY, true)
-})
-
-/** True while the boss is planted behind its phase shield. Polled at the same
- *  5 Hz as the lane warnings — a shield lasts a full second, so 200 ms is
- *  plenty and it costs nothing on the frames in between. */
-const bossGuarding = computed(() => {
-  void hintTick.value
-  return (getBoss()?.guard ?? 0) > 0
-})
-
-/**
- * Is something big about to land?
- *
- * True from the moment an attack has picked its ground until it lands — the
- * boss once it has aimed, and any elite inside its own wind-up. Polled on the
- * same 5 Hz clock as the lane warnings, which is ample: the shortest telegraph
- * in the game is the elite's 0.3 s and the boss's is a full second, so the badge
- * is up for at least one and usually five of these ticks.
- *
- * Deliberately covers BOTH attackers. The in-world tells differ — a falling
- * rock, a winding blade — but "am I about to be hit" is one question, and
- * answering it in two different places would defeat the point of having a fixed
- * place to look.
- */
-const attackWarning = computed(() => {
-  void hintTick.value
-  return attackIncoming()
-})
-// Retire it the moment the shield drops: the lesson has landed by then, and the
-// swing that follows is the part the player needs to be looking at. Persisted,
-// because a primer that reappears every boss is nagging rather than teaching.
-const guardHintSeen = ref(getState<boolean>(GUARD_HINT_KEY, false) === true)
-watch(bossGuarding, (now, before) => {
-  if (!before || now || guardHintSeen.value) return
-  guardHintSeen.value = true
-  setState(GUARD_HINT_KEY, true)
-})
+const onPlaced = (): void => {
+  placedOnce.value = true
+  placedThisNode.value = true
+  if (getState<boolean>(AIMED_KEY, false) === true) aimedOnce.value = true
+  const node = battle.node.value
+  if (node?.mode === 'siege') siegeHintDone.value = true
+  if (node?.objective === 'conquest') conquestHintDone.value = true
+}
 
 // ─── Result flow ────────────────────────────────────────────────────────────
 
-/**
- * The result screen's short-viewport tier — a landscape phone, or any embed
- * under 500px tall.
- *
- * It exists because the two BUTTON rows cannot be sized in CSS from here: their
- * metrics arrive as inline custom properties from `FButton`, which a stylesheet
- * rule cannot outrank. Everything else on this screen is sized in `vmin` and
- * needs no flag at all.
- */
+/** Short-viewport tier — a landscape phone, or any embed under 500px tall. */
 const resultCompact = computed(() => isMobileLandscape.value || isShortViewport.value)
 
-const showResult = ref(false)
-const showOptions = ref(false)
-const showUpgrades = ref(false)
-const showLeaderboard = ref(false)
-const summary = ref(runSummary())
-
-/**
- * The player's global rank, for the result screen.
- *
- * A STRING because the cell is prose, not a number: `#42` when it is known,
- * `#100+` once the player is past the last published row, `…` while the request
- * is still out, and empty — which hides the whole cell — when there is nothing
- * honest to say. The `#` is built here rather than in the template because `#{}`
- * is Pug interpolation and a literal `#` in front of a mustache is a parse
- * error, not a hash sign.
- */
-const resultRank = computed<string>(() => {
-  if (!leaderboardEnabled) return ''
-  const rank = rankFor(bestStage.value)
-  if (rank === OUTSIDE_BOARD) return `#${boardSize.value}+`
-  if (rank > 0) return `#${rank}`
-  // Nothing known yet. The ellipsis holds the cell's place so the stats row does
-  // not jump sideways when the rank lands a beat later — but only until the
-  // endpoint has actually failed, after which the cell goes away and stays away
-  // rather than showing a permanent "loading" to a player with no connection.
-  return leaderboardFailed.value ? '' : '…'
-})
-
+const summary = ref<MatchSummary | null>(null)
+/** The chest has been tapped: its loot is on screen and a tap continues. */
+const chestOpened = ref(false)
+const chestOverlayRef = ref<InstanceType<typeof ChestOverlay> | null>(null)
 const rewardCoinRef = ref<HTMLElement | null>(null)
-const coinBadgeRef = ref<InstanceType<typeof CoinBadge> | null>(null)
-const coinBadgeEl = computed<HTMLElement | null>(() => coinBadgeRef.value?.rootEl ?? null)
 
-const RESULT_AD_DELAY_MS = 500
-const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+const won = computed(() => summary.value?.result.won === true)
 
 /**
- * Show an interstitial, if one is due.
+ * "#N of M" — the player's standing on the board, when the board knows it.
  *
- * Two gates: the provider must actually have inventory, and the cooldown in
- * `useAdGate` must have elapsed. Every interstitial in the game goes through
- * here, so the pacing rule lives in exactly one place.
+ * The score is the best node ever cleared, so the line is about the campaign
+ * rather than this one match, and it reads the same after a defeat. Hidden,
+ * not "#?", whenever there is nothing to say: no board on this build, nothing
+ * cleared yet, or no population count.
+ */
+const RESULT_AD_DELAY_MS = 500
+
+/**
+ * Show an interstitial, if one is due. The pacing rule (121 s between ads, a
+ * no-fill refunds the gap) lives in `useAdGate.showPacedInterstitial`; this is
+ * the match-end placement, delayed a beat so the verdict lands first.
  */
 const maybeShowInterstitial = async (): Promise<void> => {
-  if (!isInterstitialReady.value) return
-  if (!canShowInterstitial()) return
-  markInterstitialShown()
-  await wait(RESULT_AD_DELAY_MS)
-  await showMidgameAd()
+  await showPacedInterstitial({ delayMs: RESULT_AD_DELAY_MS })
 }
 
 /**
- * ─── The opening stages hand over without stopping ──────────────────────────
- *
- * Clearing a stage used to mean, always: music down, overlay up, statistics, a
- * button. That is the right shape for a player deciding what to buy. It is the
- * wrong shape at twenty-five seconds, where it reads as an ENDING to somebody
- * who has not decided anything yet — and measured on Poki, half the testers left
- * at exactly that screen, having just beaten the tutorial boss.
- *
- * The arithmetic underneath is the real problem. Stages run 24-48 s, so Poki's
- * three-minute gate needs five cleared stages, which is five of those screens.
- * Even at a generous 87 % continue rate per screen that is 0.87^5 — half the
- * players gone before the gate, purely to structure.
- *
- * So the first stages do not stop. Coins bank, the gift lands, the road keeps
- * moving, and `StageBanner` rides over the next stage's opening — which is
- * fifteen units of empty road by design, so the handover costs no gameplay. The
- * first real result screen arrives around ninety seconds, by which point the
- * player has met a boss, been handed a skill, and has coins worth spending.
- *
- * The shop is not skipped, only deferred: it is on the HUD throughout, and every
- * stage from `CONTINUOUS_THROUGH_STAGE` on presents normally.
+ * How many result screens the player has seen, ever. Persisted so the one-shot
+ * pointers of the first few screens never come back for a returning player.
  */
-const CONTINUOUS_THROUGH_STAGE = 2
+const resultsSeen = ref(Number(getState(RESULTS_SEEN_KEY, 0)) || 0)
 
-/** How long the handover banner sits over the new stage's opening. */
-const BANNER_MS = 1700
-
-const bannerStage = ref(0)
-const bannerUnlock = ref<{ icon: GameIconName; label: string } | null>(null)
-const bannerShown = ref(false)
+// A tutorial node's RESULT screen (the no-chest replay path) hands over on its
+// own after the same wait the chest step gives the loot. The chest step itself
+// keeps its own clock (`ChestOverlay`): the loot stays until the player taps or
+// `CHEST_AUTO_CONTINUE_MS` has passed, and its `continue` drives `onNext`.
+const AUTO_ADVANCE_MS = CHEST_AUTO_CONTINUE_MS
+let autoAdvanceTimer: number | null = null
+const cancelAutoAdvance = (): void => {
+  if (autoAdvanceTimer !== null) clearTimeout(autoAdvanceTimer)
+  autoAdvanceTimer = null
+}
+const scheduleAutoAdvance = (): void => {
+  cancelAutoAdvance()
+  autoAdvanceTimer = window.setTimeout(() => {
+    autoAdvanceTimer = null
+    if (overlayUp.value && won.value) onNext()
+  }, AUTO_ADVANCE_MS)
+}
+/**
+ * A lesson cleared for coins alone: no chest, no result screen — the coins
+ * fly into the wallet and the next lesson begins after one beat. The same
+ * timer as the auto-advance, so either cancels the other.
+ */
+const scheduleHandover = (): void => {
+  cancelAutoAdvance()
+  autoAdvanceTimer = window.setTimeout(() => {
+    autoAdvanceTimer = null
+    if (won.value && !overlayUp.value) onNext()
+  }, LESSON_HANDOVER_MS)
+}
+/** The chest's coins when the chest itself was skipped (coins alone are no ceremony). */
+const chestCoinsShown = computed(() => {
+  const c = summary.value?.chest
+  return c && !chestIsGift(c) ? c.coins : 0
+})
 
 /**
- * The stage-1 gift.
- *
- * A player who has just beaten the tutorial boss has earned something they can
- * SEE, and "here is a button you did not have" is a far better reason to start
- * stage 2 than a coin total. The shield is the natural pick: it is the game's
- * other active skill, it is otherwise hidden behind a shop the player has not
- * opened yet, and handing over level 1 leaves the remaining nine for the shop to
- * sell. Returns what to announce, or `null` if they already had it.
+ * A match ended. The interstitial first, then the FIRST overlay: the chest on
+ * its own screen when the node was cleared for the first time, the result
+ * screen otherwise. The result follows the chest from `onChestContinue`.
  */
-const grantStageGift = (clearedStage: number): { icon: GameIconName; label: string } | null => {
-  if (clearedStage !== 1) return null
-  if (!grantUpgrade('shield', 1)) return null
-  return { icon: 'shield', label: t('skills.shield') }
-}
-
-/** A cleared stage that hands straight over to the next one. */
-const flowToNextStage = async (): Promise<void> => {
-  summary.value = runSummary()
-  triggerHappytime()
-
-  // Everything `presentResult` banks, minus the screen. The music is
-  // deliberately NOT stopped and not restarted: it has been playing since the
-  // run began and the player never left the run.
-  void bankCoins()
-  void reportRun(bestStage.value, summary.value.peakSquad)
-  if (!onboarded.value) {
-    onboarded.value = true
-    setState(ONBOARDED_KEY, true)
-  }
-
-  const gift = grantStageGift(summary.value.stage)
-
-  resetVfx()
-  invalidateArt()
-  advanceStage()
-
-  bannerStage.value = stage.value
-  bannerUnlock.value = gift
-  bannerShown.value = true
-  window.setTimeout(() => { bannerShown.value = false }, BANNER_MS)
-}
-
-/** Stage cleared or squad wiped — the end of a run, either way. */
-const presentResult = async (): Promise<void> => {
-  summary.value = runSummary()
-  stopBattleMusic()
-  if (summary.value.cleared) triggerHappytime()
+const presentResult = async (s: MatchSummary): Promise<void> => {
+  summary.value = s
+  chestOpened.value = false
+  if (s.result.won) triggerHappytime()
 
   // Ad FIRST, overlay second. See the header note.
   await maybeShowInterstitial()
 
+  // The ceremony is for a GIFT — a new rune, a new skin. Coins alone were
+  // banked the moment the node was cleared; they show on the result screen.
+  if (s.chest && chestIsGift(s.chest)) {
+    showChest.value = true
+    playFx('chestPop')
+    return
+  }
+  // A lesson with nothing but coins moves straight on: the coins fly into the
+  // wallet and the next lesson starts after one beat.
+  if (s.node.tutorial && s.result.won) {
+    const total = s.coins + (s.chest?.coins ?? 0)
+    if (total > 0 && canvasRef.value && coinBadgeEl.value) {
+      spawnCoinExplosion({ sourceEl: canvasRef.value, targetEl: coinBadgeEl.value, count: Math.min(40, 12 + Math.round(total / 5)) })
+      playFx('countUp', 0.5)
+    }
+    scheduleHandover()
+    return
+  }
+  await openResultOverlay()
+}
+
+/** The result screen proper: the title, the rank, the coins, the ×3, the actions. */
+const openResultOverlay = async (): Promise<void> => {
+  const s = summary.value
+  if (!s) return
   rewardClaimed.value = false
   rewardWasOffered.value = canOfferReward.value
-  // Counted BEFORE the screen goes up, so the hint below reads the number that
-  // includes this screen: it shows on the 1st, 2nd and 3rd, then stops.
   resultsSeen.value += 1
   setState(RESULTS_SEEN_KEY, resultsSeen.value)
+  showChest.value = false
   showResult.value = true
-  void bankCoins()
+  playFx('uiOpen')
 
-  // Fire-and-forget, and it MUST stay that way. The board is a decoration on a
-  // game that works without it, so the result screen is already up before the
-  // request leaves — awaiting it would put a captive-portal wifi login page
-  // between the player and their coins for the full 6 s timeout. `reportRun`
-  // swallows every failure and only writes when the player beat their own
-  // posted best, so the usual cost of this line is nothing at all.
-  //
-  // `force` because the run is OVER. Mid-run clears are throttled — a climb
-  // used to post once per stage — but the score a player finished on is the one
-  // the board must end up with, so this call skips the gap.
-  void reportRun(bestStage.value, summary.value.peakSquad, { force: true })
-
-  // The first cleared stage is the end of onboarding: the player has seen every
-  // primer that matters and a returning player must never be taught again.
-  if (!onboarded.value) {
-    onboarded.value = true
-    setState(ONBOARDED_KEY, true)
+  // The match's own coins fly into the wallet as the screen lands.
+  await nextTick()
+  const shown = s.coins + chestCoinsShown.value
+  if (shown > 0) {
+    const el = rewardCoinRef.value
+    if (el && coinBadgeEl.value) {
+      spawnCoinExplosion({
+        sourceEl: el,
+        targetEl: coinBadgeEl.value,
+        count: Math.min(40, 12 + Math.round(shown / 6))
+      })
+    }
+    playFx('countUp', 0.5)
   }
+  if (s.node.tutorial) scheduleAutoAdvance()
+}
+
+const onChestOpen = (): void => {
+  const s = summary.value
+  if (!s?.chest || chestOpened.value) return
+  chestOpened.value = true
+  playFx('chestOpen')
+  if (s.chest.unlockRune || s.chest.unlockSkin) window.setTimeout(() => playFx('unlock'), 260)
+  const el = chestOverlayRef.value?.chestEl() ?? null
+  if (el && coinBadgeEl.value && s.chest.coins > 0) {
+    spawnCoinExplosion({
+      sourceEl: el,
+      targetEl: coinBadgeEl.value,
+      count: Math.min(50, 14 + Math.round(s.chest.coins / 4))
+    })
+  }
+  // Nothing is scheduled here on purpose: the loot STAYS until the overlay's
+  // own clock or the player's tap says `continue` — a tutorial node then hands
+  // over from `onChestContinue` with no result screen between the lessons.
+}
+
+/** The tap after the loot: the result screen — or, on a tutorial node, the next stage. */
+const onChestContinue = (): void => {
+  const s = summary.value
+  if (!s || adInFlight.value) return
+  if (s.node.tutorial && won.value) {
+    onNext()
+    return
+  }
+  void openResultOverlay()
 }
 
 // ─── The ×3, which is the game's income ─────────────────────────────────────
 //
-// Offered on EVERY result screen, win or lose, because a run that ended badly
-// is exactly the run whose coins the player most wants back — and because a
-// placement that only appears on a win teaches the player to stop watching
-// after their first defeat.
-//
-// The multiplier is 3, not 2, on purpose: this is the primary source of income
-// rather than a bonus on top of one. A stage's own payout keeps the shop moving
-// slowly; the tripled payout keeps it moving at the pace the difficulty curve is
-// priced against. Declining is a real choice with a real cost — see
-// `rewardDeclineFactor` — and claiming once pays that cost off in full.
+// Offered on EVERY result screen, win or lose, because a match that ended badly
+// is exactly the match whose coins the player most wants back.
 
-const REWARD_MULTIPLIER = 3
-
-/** Already claimed on THIS result screen — the button is one-shot per run. */
+/** Already claimed on THIS result screen — the button is one-shot per match. */
 const rewardClaimed = ref(false)
-/** Was the offer genuinely available while this screen was up? Only then does
- *  walking away count as a decline. */
+/** Was the offer genuinely available while this screen was up? */
 const rewardWasOffered = ref(false)
 
-/** Extra coins the ×3 would pay on top of what was already banked. */
-const rewardBonus = computed(() => summary.value.coins * (REWARD_MULTIPLIER - 1))
+const rewardBonus = computed(() => (summary.value?.coins ?? 0) * (REWARD_MULTIPLIER - 1))
 
 const showRewardButton = computed(() =>
-  showResult.value && !rewardClaimed.value && summary.value.coins > 0 && canOfferReward.value
+  showResult.value && !rewardClaimed.value && (summary.value?.coins ?? 0) > 0 && canOfferReward.value
 )
-
-/**
- * Record that the player left a result screen without taking the offer.
- *
- * Silent, on purpose. An earlier pass put a line on the result screen warning
- * that skipping makes the next stage harder; it was removed because it turns an
- * offer into a threat. The lean is meant to be FELT — the road gets heavier and
- * the player works out that the ×3 buys upgrades that keep pace — not sold. A
- * game that tells you it will punish you for not watching an ad has stopped
- * offering you something.
- */
-const recordDecline = (): void => {
-  if (rewardClaimed.value || !rewardWasOffered.value) return
-  // Only a WIN leans the curve. Losing already costs the player the stage, and
-  // stacking a difficulty increase on top of a defeat is how a losing streak
-  // becomes a quit.
-  if (!summary.value.cleared) return
-  const next = Math.min(DECLINE_MAX, declines.value + 1)
-  declines.value = next
-  setState(REWARD_DECLINE_KEY, next)
-}
 
 const onClaimReward = async (): Promise<void> => {
   if (rewardClaimed.value || adInFlight.value) return
+  cancelAutoAdvance()
   const granted = await claimReward(() => {
     rewardClaimed.value = true
     addCoins(rewardBonus.value)
-    // One claim buys back the whole lean.
-    declines.value = 0
-    setState(REWARD_DECLINE_KEY, 0)
-    void flushSaveNow()
   })
   if (!granted) return
   await nextTick()
@@ -909,158 +568,97 @@ const onClaimReward = async (): Promise<void> => {
   playFx('countUp', 0.85)
 }
 
-// Inventory can land a beat after the screen does — a player who saw the button
-// at any point during the screen was genuinely offered the reward.
 watch(canOfferReward, (can) => {
   if (can && showResult.value) rewardWasOffered.value = true
 })
 
-const bankCoins = async (): Promise<void> => {
-  const total = summary.value.coins
-  if (total <= 0) return
-  addCoins(total)
-  await nextTick()
-  const el = rewardCoinRef.value
-  if (el && coinBadgeEl.value) {
-    spawnCoinExplosion({
-      sourceEl: el,
-      targetEl: coinBadgeEl.value,
-      count: Math.min(40, 12 + Math.round(total / 6))
-    })
-  }
-  playFx('countUp', 0.5)
-}
-
-watch(phase, (p, prev) => {
-  if (p === 'clear' && prev !== p) {
-    // A wipe always presents: the player has a decision to make there (retry,
-    // and the x3 on the coins they just lost). A clear this early has none.
-    void (runSummary().stage <= CONTINUOUS_THROUGH_STAGE ? flowToNextStage() : presentResult())
-    return
-  }
-  if (p === 'wipe' && prev !== p) void presentResult()
-})
-
-const beginStage = (next: boolean): void => {
-  // Leaving the result screen IS the decline. Counted here rather than on a
-  // dedicated "no thanks" button because there isn't one — the player declines
-  // by pressing on, which is the only honest place to read the intent.
-  recordDecline()
-  showResult.value = false
-  resetVfx()
-  invalidateArt()
-  if (next) advanceStage()
-  else retryStage()
-  startBattleMusic()
-  // `isLiveGameplay` flips true here and `syncGameplayLifecycle` sends the
-  // matching `gameplayStart` on the full release. Nothing to do by hand: the
-  // one computed owns every start and stop, which is what stops the redundant
-  // pairs the SDK complains about.
-}
-
-const onNext = (): void => {
+const onNext = async (): Promise<void> => {
   if (adInFlight.value) return
-  beginStage(true)
+  cancelAutoAdvance()
+  // The second natural break: a new node from the result screen. A no-op
+  // inside the 121 s gap, so it only ever fires when the player lingered.
+  await showPacedInterstitial()
+  showChest.value = false
+  showResult.value = false
+  playFx('reset')
+  battle.nextNode()
 }
 
 const onRetry = (): void => {
   if (adInFlight.value) return
-  beginStage(false)
+  cancelAutoAdvance()
+  showChest.value = false
+  showResult.value = false
+  playFx('reset')
+  battle.retryNode()
 }
 
-/**
- * "Upgrade" from the result screen.
- *
- * Deliberately NOT behind an ad, and deliberately not a dead end: closing the
- * shop drops the player straight into the next run, because the only reason
- * they opened it was to change what that run feels like.
- */
-const onUpgradeFromResult = (): void => {
+/** Skins from the result screen — not behind an ad, and not a dead end. */
+const onSkinsFromResult = (): void => {
   if (adInFlight.value) return
-  showUpgrades.value = true
+  cancelAutoAdvance()
+  shopRef.value?.open('skins')
 }
 
-watch(showUpgrades, (open, wasOpen) => {
-  if (!open && wasOpen && showResult.value) {
-    // The result screen is still up behind the shop — leave it there so the
-    // player chooses their own moment to run again.
-    playSound('modal-open', 0.04)
-  }
-})
+// ─── Battle events ──────────────────────────────────────────────────────────
 
-// ─── Shop spotlight (one-shot) ──────────────────────────────────────────────
+let offEvents: (() => void) | null = null
 
-/**
- * How many result screens this player has seen, ever — deaths and clears alike.
- *
- * The upgrade button is a glyph in a row of glyphs, and a player who does not
- * work out that it leads to a shop just replays the same run until they stop
- * playing. The Poki fit test read like that: 64 % of sessions ended inside two
- * minutes. So the first three result screens point at it explicitly, and then
- * never again — a permanent arrow is nagging, and it would sit on top of the
- * one control that ends the screen.
- */
-const resultsSeen = ref(Number(getState(RESULTS_SEEN_KEY, 0)) || 0)
-const showUpgradeHint = computed(() => showResult.value && resultsSeen.value <= 3)
-
-const shopSpotlightSeen = ref(getState<boolean>(SHOP_SPOTLIGHT_KEY, false) === true)
-const affordable = computed(() => affordableCount(coins.value))
-const showShopSpotlight = computed(() =>
-  !shopSpotlightSeen.value && affordable.value > 0 && !showResult.value
-)
-
-const openUpgrades = (): void => {
-  showUpgrades.value = true
-  if (!shopSpotlightSeen.value) {
-    shopSpotlightSeen.value = true
-    setState(SHOP_SPOTLIGHT_KEY, true)
+const onBattleEvent = (e: BattleEvent): void => {
+  switch (e.kind) {
+    case 'matchStart':
+      placedThisNode.value = false
+      flashBanner(false)
+      // The first match whose goal is the eight tiles: show what that means.
+      if (e.node.objective === 'conquest' && !e.node.tutorial && !goalSeen.value) showGoalIntro.value = true
+      break
+    case 'placed':
+      onPlaced()
+      break
+    case 'suddenDeath':
+      flashBanner(true)
+      break
+    case 'matchEnd':
+      void presentResult(e.summary)
+      break
+    default:
+      break
   }
 }
 
 // ─── Portal gameplay lifecycle ──────────────────────────────────────────────
 //
 // The scene only reports whether play is live; `useGameplayLifecycle` decides
-// which events that becomes per platform, because WHICH events to send is a
-// platform contract and not a view concern. CrazyGames gets gameplayStart/Stop;
-// Poki gets the same pair through a guard that keeps consecutive events at
-// least 120 ms apart (its SDK disables monetization after 10 pairs closer than
-// 50 ms — see `pokiPlugin.ts`).
-// The scene wires the reactive inputs; `isGameplayLive` holds the rule, next
-// to the platform contracts it answers to — and where it can be asserted
-// without mounting a canvas.
+// which events that becomes per platform.
 const isLiveGameplay = computed(() => isGameplayLive({
-  phase: phase.value,
-  showResult: showResult.value,
+  matchActive: battle.matchActive.value,
+  showResult: overlayUp.value,
   anyModalOpen: isAnyModalOpen.value,
   adShowing: isAdShowing.value,
   visibilityHidden: isVisibilityHidden.value,
   platformPaused: isPlatformPaused.value,
-  tutorialActive: tutorialActive.value
+  tutorialActive: false
 }))
 watch(isLiveGameplay, syncGameplayLifecycle, { immediate: true })
 
-// The hint's clock starts when the road does — not at mount, which on a first
-// run is behind the tutorial lightbox, and not at boot, which is behind the
-// splash. Five seconds of gameplay is what was asked for, so it is five seconds
-// of gameplay that it counts.
-watch(isLiveGameplay, (live) => {
-  if (!live || steerHintArmed.value || steerHintDone.value) return
-  steerHintArmed.value = true
-  steerHintTimer = window.setTimeout(retireSteerHint, STEER_HINT_MS)
-})
+// ─── Keyboard ───────────────────────────────────────────────────────────────
+
+const onKeyDown = (e: KeyboardEvent): void => {
+  if (e.code === 'Escape') {
+    showOptions.value = false
+    showLeaderboard.value = false
+  }
+}
 
 // ─── Boot ───────────────────────────────────────────────────────────────────
 
 let booting = false
 
 /**
- * Enter the game.
- *
- * `startStage()` with no argument resumes the stage the save says the player is
- * on — the visible half of the hydration guarantee. If the cloud read had
- * silently failed, the player would land on stage 1, which is exactly the
- * "treated as a fresh user" bug the save layer's boot-sanity guard exists to
- * prevent.
+ * Enter the game. `startNode()` with no argument resumes the node the save says
+ * the player is on — the visible half of the hydration guarantee. If the cloud
+ * read had silently failed, the player would land on 1-1, which is exactly the
+ * "treated as a fresh user" bug the save layer's boot-sanity guard prevents.
  */
 const boot = async (): Promise<void> => {
   if (booting) return
@@ -1069,23 +667,12 @@ const boot = async (): Promise<void> => {
     // Moderation-mandated first-play interstitial on the networks that require
     // it; a no-op fast path everywhere else. Before the music starts, by design.
     await playFirstStartInterstitial()
-    startStage()
-    // The lightbox goes up BEFORE the first frame of the first stage a new
-    // player ever sees, and holds the road until they have steered. Ordered
-    // after `startStage` because the squad it teaches them to move is spawned
-    // there — and because `startStage` is what a resuming player calls too, the
-    // saved flag is the only thing standing between them and a tutorial they
-    // finished months ago.
-    if (tutorialPending.value) {
-      tutorialActive.value = true
-      steerOnly.value = true
-      tutorialClock = newTutorialClock(anchor().x)
-      tutorialProgress.value = 0
-    }
+    applyLabels()
+    battle.startNode()
     await nextTick()
     resize()
     startBattleMusic()
-    // Loading is genuinely finished here: the stage exists, the canvas is
+    // Loading is genuinely finished here: the board exists, the canvas is
     // sized, and the first frame is about to draw.
     signalGameplayLoaded()
   } finally {
@@ -1093,55 +680,68 @@ const boot = async (): Promise<void> => {
   }
 }
 
-// `renderScaleTier` picks the DPR cap above, so committing it has to re-size the
-// canvas — otherwise the cheaper setting only lands on the next orientation
-// change, which on a phone mid-run is never.
-//
-// It fires AT MOST THREE TIMES a session by construction: `renderScaleTier` is
-// a downgrade-only ratchet across four tiers, and each step past the first needs
-// the live tier to have held for four seconds. An earlier version watched the
-// live `quality` tier instead and cost 27 fps on a throttled phone — a resize
-// re-bakes every cached piece of art, ~700 ms there, and the tier legitimately
-// moves several times a session.
-watch(renderScaleTier, () => resize())
-
 const onOrientationChange = (): void => { setTimeout(resize, 250) }
-
 let insetTimer = 0
 
 onMounted(() => {
+  const canvas = canvasRef.value
+  if (canvas) {
+    renderer = createArenaRenderer(canvas)
+    // The layout owns the swipe length; the composable's aim / un-freeze
+    // distances are derived from it, so the two never disagree about what a
+    // swipe is on this screen size.
+    detachInput = attachArenaInput(canvas, renderer, battle, { setDragMetrics })
+  }
+  offEvents = battle.onEvent(onBattleEvent)
   void boot()
   window.addEventListener('resize', resize)
   window.addEventListener('orientationchange', onOrientationChange)
   window.addEventListener('keydown', onKeyDown)
-  window.addEventListener('keyup', onKeyUp)
   rafId = requestAnimationFrame(loop)
 
-  // Warm the synthesis path on an idle slot so the first burst of a session
-  // doesn't pay a buffer fill mid-frame.
-  const idle = (window as any).requestIdleCallback as ((cb: () => void, o?: any) => number) | undefined
-  if (typeof idle === 'function') idle(warmAudio, { timeout: 2500 })
-  else setTimeout(warmAudio, 400)
-
-  // The HUD's height changes with its content (a wrapped stage label, a shop
-  // badge appearing). Re-measuring on a 1 s cadence is two `getBoundingClientRect`
-  // reads — cheaper and far more robust than observing a handful of elements.
+  // The HUD's height changes with its content (a streak chip appearing, a
+  // wrapped faction name). Re-measuring on a 1 s cadence is two
+  // `getBoundingClientRect` reads — cheaper than observing a handful of elements.
   insetTimer = window.setInterval(() => {
     if (cssW === 0) return
-    applyViewport()
+    applyInsets()
   }, 1000)
+
+  // Dev seam for the browser tests: the battle, the campaign, the wallet and
+  // the renderer's live layout (tile / hand rects for synthetic pointer runs).
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    ;(window as unknown as Record<string, unknown>).__glyphyx = {
+      battle,
+      campaign: useCampaign(),
+      economy: useEconomy(),
+      streak: useStreak(),
+      skins: useSkins(),
+      overlays: { showChest, showResult },
+      /** End the match as a win right now — the chest/result flow follows as after a real verdict. */
+      winNow: __winMatchNow,
+      /** The measured room between the top bar and the tiles (px) — where the pill and the rune card live. */
+      stripRoom: stripRoomPx,
+      layout: () => renderer?.layout() ?? null
+    }
+  }
 })
 
 onUnmounted(() => {
   cancelAnimationFrame(rafId)
+  cancelAutoAdvance()
+  if (bannerTimer !== null) clearTimeout(bannerTimer)
   window.removeEventListener('resize', resize)
   window.removeEventListener('orientationchange', onOrientationChange)
   window.removeEventListener('keydown', onKeyDown)
-  window.removeEventListener('keyup', onKeyUp)
   clearInterval(insetTimer)
+  offEvents?.()
+  offEvents = null
+  detachInput?.()
+  detachInput = null
+  renderer?.dispose()
+  renderer = null
   stopBattleMusic()
 })
-
 </script>
 
 <template lang="pug">
@@ -1149,10 +749,6 @@ onUnmounted(() => {
     canvas.scene__canvas(
       ref="canvasRef"
       :style="shakeStyle"
-      @pointerdown="onPointerDown"
-      @pointermove="onPointerMove"
-      @pointerup="onPointerUp"
-      @pointercancel="onPointerUp"
       @contextmenu.prevent
     )
 
@@ -1160,81 +756,58 @@ onUnmounted(() => {
     //- Non-interactive by default; individual controls opt back in.
     div.scene__hud
       div.scene__top(ref="topBarRef")
-        div.scene__top-main
-          RunHud(
-            :stage="stage"
-            :best="bestStage"
-            :progress="progress01"
-            :squad="squadCount"
-            :damage="damage"
-            :fire-rate="runFireRate"
-            :phase="phase"
-            :boss-hp="bossHp01"
-            :elite="eliteAlive"
-            :elite-hp="eliteHp01"
-            :challenge="challenge"
-          )
-        //- The wallet column: what the player has, and the one thing on the
-        //- HUD that hands them more of it for free. The chest sits UNDER the
-        //- badge because that is where its coins fly to — the payout is a
-        //- three-inch journey the eye can follow, not a number that changes.
-        //-
-        //- Hidden with the result screen, like every other run readout: the
-        //- overlay owns the screen, and a chest that becomes claimable behind
-        //- a modal is a tap the player cannot make.
-        div.scene__wallet
+        //- The player's column: the streak flame, the wallet, and under it
+        //- the forge whose coins fly INTO the wallet.
+        div.scene__player
+          StreakFlame
           CoinBadge(ref="coinBadgeRef")
-          TreasureChest(v-if="!showResult" :target-el="coinBadgeEl")
+          RuneForge(:target-el="coinBadgeEl")
 
-      //- Control primer, centred under the top bar — except the guard primer,
-      //- which drops to mid-screen so it doesn't sit on the boss's shield.
-      div.scene__hint(:class="{ 'scene__hint--low': activeHint === 'guard' }")
-        ControlHint(:hint="activeHint")
+        div.scene__stage
+          //- On a short phone the rune card borrows this slot while it shows
+          //- (see `tipInStage`); the badge is back the moment it goes.
+          RuneTooltip.scene__tooltip.is-in-stage(v-if="tipInStage" :type="tooltipRune")
+          ControlHint.is-in-stage(v-else-if="hintInStage" :hint="activeHint")
+          StageBadge(
+            v-else
+            :chapter="chapter"
+            :node="nodeIndex"
+            :player-tiles="battle.playerTiles.value"
+            :enemy-tiles="battle.enemyTiles.value"
+            :locked="overlayUp || adInFlight"
+          )
 
-      //- First-run controls lightbox. Sits inside the HUD layer, which is
-      //- already `pointer-events: none`, so the gesture it is teaching reaches
-      //- the canvas underneath it.
-      TutorialOverlay(v-if="tutorialActive" :progress="tutorialProgress")
+        div.scene__enemy
+          EnemyBadge(
+            :enemies="enemies"
+            :turn="battle.turn.value"
+            :turn-limit="battle.turnLimit.value"
+            :sudden-death="battle.suddenDeath.value"
+          )
 
-      //- Touch-only, and only for the opening seconds — see `showSteerHint`.
-      IncomingWarning(:show="attackWarning")
+      //- Control primer, centred under the top bar — and under it the card
+      //- for the rune in hand, while that rune is still new to the player.
+      //- Both live in a strip the board never uses (a column beside it on
+      //- wide screens), so neither can cover a tile or the hand.
+      div.scene__hint
+        ControlHint(v-if="pillFits" :hint="activeHint")
+        RuneTooltip.scene__tooltip(v-if="!tightStrip" :type="tooltipRune")
 
-      //- The lever puzzle, then the weapon it pays out. Hidden behind the
-      //- result screen for the same reason every other run readout is: the
-      //- stage is over and the overlay owns the screen.
-      WeaponTag(
-        v-if="!showResult"
-        :puzzle="puzzleWeapon"
-        :pulled="puzzlePulled"
-        :total="puzzleTotal"
-        :active="activeWeapon"
-      )
-
-      StageBanner(
+      TurnBanner(
         :show="bannerShown"
-        :stage="bannerStage"
-        :unlock="bannerUnlock"
-      )
-      SteerHint(:lane-half-px="laneHalfPx" :show="showSteerHint")
-
-      //- Centred under the squad, in the strip between the crowd and the bottom
-      //- bar — and back out at the right edge when a viewport has no such strip.
-      //- See `SkillBar.vue` for the whole argument.
-      SkillBar(
-        v-if="!showResult"
-        :shield-live="shieldLive"
-        :lane-half-px="laneHalfPx"
-        :squad-floor-px="squadFloorPx"
-        :hud-bottom-px="hudBottomPx"
-        @use="onUseSkill"
+        :chapter="chapter"
+        :node="nodeIndex"
+        :mode="nodeCfg.mode"
+        :foe="leadFactionName"
+        :sudden-death="bannerSudden"
       )
 
-      //- ── Bottom bar ────────────────────────────────────────────────────
+      //- ── Bottom bar: the corners only — the canvas owns the hand between. ──
       div.scene__bottom(ref="bottomBarRef")
         div.scene__meta
           FMuteButton
-          //- Gone entirely — not disabled — on a build with no endpoint. A
-          //- button that opens an empty board is worse than no button.
+          //- Gone entirely on a build with no endpoint: a button that opens an
+          //- empty board is worse than no button.
           FHudButton(
             v-if="leaderboardEnabled"
             tone="slate"
@@ -1249,91 +822,53 @@ onUnmounted(() => {
             @click="showOptions = true"
           )
 
-        div.scene__shop
-          span.scene__spotlight(v-if="showShopSpotlight") {{ t('upgrades.spotlight') }}
-          //- The forge — the same mark the result screen's upgrade button
-          //- wears, because both open the same modal and the second must not
-          //- have to be learned all over again. It was the chest until the
-          //- chest became the idle reward above; two controls that do
-          //- different things may not be one drawing. `ArtIcon` shows the
-          //- painting if the pipeline has made one, the canvas drawing from
-          //- `uiArt.paintForge` otherwise, and the flat glyph under both.
-          FHudButton(
-            tone="green"
-            icon="anvil"
-            art="forge"
-            :attention="showShopSpotlight"
-            :aria-label="t('upgrades.title')"
-            @click="openUpgrades"
-          )
-            template(#badge)
-              FHudBadge(v-if="affordable > 0" tone="red") {{ affordable }}
+        div.scene__skins
+          ShopButton(ref="shopRef")
+
+    //- ── The goal, once: eight tiles → a crown ─────────────────────────────
+    GoalIntro(v-model="showGoalIntro" @done="onGoalIntroDone")
+
+    //- ── The chest: the reward on a screen of its own ───────────────────────
+    //- Before the result overlay in the tree, so the result paints OVER it
+    //- during the crossfade between the two.
+    ChestOverlay(
+      ref="chestOverlayRef"
+      v-model="showChest"
+      :reward="summary ? summary.chest : null"
+      :opened="chestOpened"
+      @open="onChestOpen"
+      @continue="onChestContinue"
+    )
 
     //- ── Result screen ─────────────────────────────────────────────────────
-    FReward(
-      v-model="showResult"
-      :show-continue="false"
-    )
+    FReward(v-model="showResult" :show-continue="false")
       template(#ribbon)
-        span.scene__ribbon {{ summary.cleared ? t('result.stageClear') : t('result.wipedOut') }}
+        span.scene__ribbon {{ won ? t('result.victory') : t('result.defeat') }}
 
-      div.result
+      div.result(v-if="summary" :class="{ 'is-compact': resultCompact }")
         div.result__headline
-          //- ON A WIN THIS LOOKS FORWARD, and on a loss it looks back.
-          //-
-          //- The screen used to headline the stage just finished either way,
-          //- which is a summary — the shape of an ending. Half of Poki's testers
-          //- left at this screen having just WON, so the win path now names the
-          //- thing that has not happened yet. The stage they cleared is already
-          //- on the ribbon above; repeating it bought nothing.
-          span.result__stage(v-if="summary.cleared") {{ t('result.upNext', { n: summary.stage + 1 }) }}
-          span.result__stage(v-else) {{ t('result.reachedStage', { n: summary.stage }) }}
+          //- A conquest reads differently from the losing side: "eight tiles
+          //- conquered" on a defeat says nothing about WHO conquered them.
+          span.result__reason {{ t(`result.reasons.${summary.result.reason === 'conquest' && !summary.result.won ? 'conquestLost' : summary.result.reason}`) }}
           span.result__record(v-if="summary.isRecord") {{ t('result.newRecord') }}
-          //- Only ever shown AFTER the run. Telling a player mid-stage that the
-          //- game went easy on them takes the win away from them.
-          span.result__relief(v-else-if="summary.relieved") {{ t('result.rallied') }}
+          //- Where the campaign stands on the board — a pill, not a sentence,
+          //- and absent entirely when there is nothing honest to say.
+          RankBadge.result__rank(:score="bestNode")
 
-        //- ── Three chips on ONE line ───────────────────────────────────────
-        //-
-        //- This was three stacked blocks — a two-cell stats row with the words
-        //- "Biggest squad" and "Kills" under the numbers, then a full-width
-        //- leaderboard plaque with the board NAMED on it. Together they cost
-        //- three rows and about a third of a landscape phone, and the German
-        //- caption ("GRÖSSTER TRUPP") was the widest thing on the screen.
-        //-
-        //- The glyphs carry it instead: a crowd, a skull and a trophy, which is
-        //- the same vocabulary the HUD strip already uses during the run — the
-        //- squad chip is literally the same glyph the player watched all stage.
-        //- The gold on the rank chip is what still says "this one is about other
-        //- people, not about your run"; the captions survive as screen-reader
-        //- text, which is the only place they were ever load-bearing.
-        //-
-        //- The rank chip disappears when the rank is unknown: an empty plaque is
-        //- a question the screen cannot answer.
-        div.result__chips
-          div.result__chip.is-squad
-            GameIcon.result__chip-icon(name="squad")
-            span.sr-only {{ t('result.peakSquad') }}
-            span.result__chip-value {{ summary.peakSquad }}
-          div.result__chip.is-kills
-            GameIcon.result__chip-icon(name="skull")
-            span.sr-only {{ t('result.kills') }}
-            span.result__chip-value {{ summary.kills }}
-          div.result__chip.is-rank(v-if="resultRank")
-            GameIcon.result__chip-icon(name="trophy")
-            span.sr-only {{ t('leaderboard.title') }}
-            span.result__chip-value {{ resultRank }}
-            //- Only once the player count has landed. Before that there is no
-            //- "of N" to print, and the word that used to hold the slot is now
-            //- said by the trophy.
-            span.result__chip-of(v-if="playerTotal > 0") {{ t('result.rankOf', { n: playerTotal }) }}
-
-        div.result__coins(ref="rewardCoinRef")
-          IconCoin(class="result__coin-icon")
+        .result__coins(ref="rewardCoinRef")
+          IconCoin.result__coin-icon
           span.result__coin-value +{{ summary.coins }}
+          span.result__streak(v-if="summary.streakMultiplier > 1") {{ t('result.streakBonus', { n: summary.streakMultiplier }) }}
+          span.result__chest-coins(v-if="chestCoinsShown > 0") {{ t('result.chestCoins', { n: chestCoinsShown }) }}
+
+        //- The reason to press the button below: the stage that pays the next
+        //- rune, and the stone it pays. On the way to the actions, not after
+        //- them — and after a LOSS as much as a win, because a loss is exactly
+        //- when a player needs a reason to try the stage again.
+        NextUnlockTeaser.result__teaser(:compact="resultCompact")
 
         //- The ×3, above the actions and visually louder than either of them:
-        //- it is the primary income of the game, not a footnote on the way out.
+        //- it is the primary income of the game, not a footnote.
         FButton.result__reward(
           v-if="showRewardButton"
           :size="resultCompact ? 'sm' : 'md'"
@@ -1341,66 +876,39 @@ onUnmounted(() => {
           :is-disabled="adInFlight"
           @click="onClaimReward"
         )
-          //- The film frame is the ad signal and comes first, exactly as it does
-          //- on every other rewarded button on every portal we ship to.
           RewardAdIcon.result__reward-icon
           span.result__reward-mult {{ t('result.tripleCoins') }}
           IconCoin.result__reward-coin
           span.result__reward-bonus {{ t('result.tripleBonus', { n: rewardBonus }) }}
 
-        //- Claimed: the button is replaced rather than merely disabled, so the
-        //- screen never shows a dead control the player already used.
         div.result__claimed(v-else-if="rewardClaimed")
-          IconCoin(class="result__claimed-icon")
+          IconCoin.result__claimed-icon
           span {{ t('result.tripleClaimed') }}
 
-        //- ── Two glyphs where two captions used to be ──────────────────────
-        //-
-        //- "Nächstes Level" and "Upgrade" side by side were the widest row on
-        //- the screen and the first thing to wrap — a caption's width swings 2-3x
-        //- across the 21 locales this game ships, so the row had to be laid out
-        //- for the worst of them and was wrong in all the others. Two glyphs are
-        //- width-invariant: one layout, correct in every language.
-        //-
-        //- Both actions are conventional (a cart, and a skip/replay), both sit in
-        //- a cluster, and a wrong tap costs one tap to undo — which is the whole
-        //- test for whether a caption may become a glyph. The rewarded button
-        //- above keeps its words for the opposite reason: it carries a number.
-        //-
-        //- Forward action LAST and 25% larger, because once the captions are gone
-        //- the row is visually uniform and the one button that ends the screen
-        //- needs another way to be found. `emphasis` grows the real layout box,
-        //- so the row still gutters correctly around it.
-        div.result__actions(:class="{ 'result__actions--hinted': showUpgradeHint }")
-          //- The upgrade button wears a pointer on the first three result
-          //- screens only. It is a glyph in a row of glyphs, and it is the one
-          //- that makes the next run different from the last.
-          div.result__shop(:class="{ 'result__shop--hinted': showUpgradeHint }")
-            Transition(name="shop-tip")
-              div.result__shop-tip(v-if="showUpgradeHint") {{ t('result.upgradeHint') }}
-            FButton(
-              icon-only
-              icon="anvil"
-              art="forge"
-              :size="resultCompact ? 'sm' : 'md'"
-              type="secondary"
-              :is-disabled="adInFlight"
-              :aria-label="t('result.upgrade')"
-              @click="onUpgradeFromResult"
-            )
+        //- Two glyphs: the skin shop, and the one that ends the screen —
+        //- forward action LAST and 25 % larger.
+        div.result__actions
           FButton(
             icon-only
-            :icon="summary.cleared ? 'skip-forward' : 'replay'"
+            icon="gem"
+            :size="resultCompact ? 'sm' : 'md'"
+            type="secondary"
+            :is-disabled="adInFlight"
+            :aria-label="t('result.skins')"
+            @click="onSkinsFromResult"
+          )
+          FButton(
+            icon-only
+            :icon="won ? 'skip-forward' : 'replay'"
             :size="resultCompact ? 'sm' : 'md'"
             type="success"
             :emphasis="1.25"
             :is-disabled="adInFlight"
-            :aria-label="summary.cleared ? t('result.nextStage') : t('result.tryAgain')"
-            @click="summary.cleared ? onNext() : onRetry()"
+            :aria-label="won ? t('result.nextStage') : t('result.playAgain')"
+            @click="won ? onNext() : onRetry()"
           )
 
     OptionsModal(:is-open="showOptions" @close="showOptions = false")
-    UpgradeModal(v-model="showUpgrades")
     LeaderboardModal(v-if="leaderboardEnabled" v-model="showLeaderboard")
 </template>
 
@@ -1429,50 +937,77 @@ onUnmounted(() => {
   flex-direction: column
 
 // ─── Top bar ────────────────────────────────────────────────────────────────
+//
+// Three columns with the stage badge TRULY centred: `1fr auto 1fr` keeps the
+// centre column on the screen's axis however wide the two sides are.
 
 .scene__top
-  display: flex
+  display: grid
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr)
   align-items: flex-start
   gap: clamp(0.3rem, 2vw, 0.75rem)
   padding: calc(clamp(0.3rem, 1.6vw, 0.6rem) + env(safe-area-inset-top, 0px)) calc(clamp(0.35rem, 2vw, 0.7rem) + env(safe-area-inset-right, 0px)) 0 calc(clamp(0.35rem, 2vw, 0.7rem) + env(safe-area-inset-left, 0px))
 
-.scene__top-main
-  flex: 1 1 auto
-  min-width: 0
-
-// The chest hangs under the badge and is CENTRED on it rather than flushed to
-// the screen edge: its payout chip is wider than the chest itself and centred
-// on it, so a right-aligned chest would hang that chip over the safe-area
-// inset on a notched phone.
-.scene__wallet
-  flex: 0 0 auto
+.scene__player
   display: flex
   flex-direction: column
-  align-items: center
-  gap: clamp(0.35rem, 1.8vw, 0.6rem)
+  align-items: flex-start
+  gap: clamp(0.3rem, 1.6vw, 0.55rem)
+  min-width: 0
   pointer-events: auto
+
+.scene__stage
+  display: flex
+  justify-content: center
+
+// The card in the stage badge's slot: bounded by the column the grid gives it
+// (the two side columns keep their chips), wrapping its sentence as needed.
+// The pill in the stage slot: shrunk to the slot's width, one line if it can.
+.scene__stage :deep(.control-hint.is-in-stage)
+  max-width: 100%
+  min-height: 0
+  padding: 0.2rem 0.55rem
+  font-size: 0.9em
+
+.scene__tooltip.is-in-stage
+  max-width: min(46vw, 15rem)
+  margin-top: 0.1rem
+
+.scene__enemy
+  display: flex
+  justify-content: flex-end
+  min-width: 0
 
 .scene__hint
   display: flex
+  flex-direction: column
+  align-items: center
   justify-content: center
-  margin-top: clamp(0.35rem, 2vw, 0.7rem)
+  gap: clamp(0.2rem, 1.2vw, 0.5rem)
+  margin-top: clamp(0.2rem, 1.4vw, 0.6rem)
   padding-inline: 0.5rem
 
-// The guard primer is the one hint that fires while the boss is on screen, and
-// the boss's barrier — with its shield crest — is drawn exactly where this row
-// normally sits, so the toast landed on top of the crest at the single moment
-// both most need to be read.
-//
-// `margin-top: auto` against the `.scene__bottom` auto margin below splits the
-// free space evenly, parking the hint mid-screen: under the barrier, above the
-// crowd. Deliberately not a `vh` offset — the barrier's screen position moves
-// with the camera and the viewport, and a fixed nudge would only be correct on
-// the aspect ratio it was measured on. Doubled class so it also outranks the
-// landscape-phone `.scene__hint` override further down this file.
-.scene__hint.scene__hint--low
-  margin-top: auto
+// On a wide screen the free real estate is the column LEFT of the board (the
+// hand stands to its right): the rune card goes there, vertically centred,
+// where it can never touch a tile. A narrow desktop window keeps it in the
+// strip above the board like a phone does.
+@media (min-aspect-ratio: 5/4) and (min-width: 56rem) and (min-height: 30.01rem)
+  .scene__tooltip
+    position: absolute
+    left: calc(0.75rem + env(safe-area-inset-left, 0px))
+    top: 50%
+    translate: 0 -50%
+    width: min(26vw, 17rem)
+    max-width: min(26vw, 17rem)
+    flex-direction: column
+    align-items: flex-start
+    z-index: 3
 
 // ─── Bottom bar ─────────────────────────────────────────────────────────────
+//
+// Corners only. The hand of pebbles is drawn on the canvas BETWEEN these two
+// groups, so the bar itself is transparent to the pointer and only the button
+// groups opt back in.
 
 .scene__bottom
   margin-top: auto
@@ -1481,6 +1016,7 @@ onUnmounted(() => {
   justify-content: space-between
   gap: clamp(0.3rem, 2vw, 0.7rem)
   padding: 0 calc(clamp(0.35rem, 2vw, 0.7rem) + env(safe-area-inset-right, 0px)) calc(clamp(0.4rem, 2.4vw, 0.8rem) + env(safe-area-inset-bottom, 0px)) calc(clamp(0.35rem, 2vw, 0.7rem) + env(safe-area-inset-left, 0px))
+  pointer-events: none
 
 .scene__meta
   display: flex
@@ -1488,48 +1024,13 @@ onUnmounted(() => {
   gap: clamp(0.2rem, 1.2vw, 0.4rem)
   pointer-events: auto
 
-.scene__shop
-  position: relative
+.scene__skins
   display: flex
   align-items: center
   pointer-events: auto
 
-// The "you can afford an upgrade" chip.
-//
-// It shipped at `clamp(0.5rem, 2.2vw, 0.68rem)` — eight pixels on a 320 px
-// phone, which is smaller than the badge counter beside it and unreadable in
-// portrait. It is a call to action for the one screen in the game that spends
-// the currency, so it is now sized like one: a 0.8rem floor, real padding, and
-// a shadow that lifts it off the road behind it.
-.scene__spotlight
-  position: absolute
-  right: 100%
-  margin-right: 0.5rem
-  padding: 0.3em 0.7em
-  border: 2px solid #0f1a30
-  border-radius: 0.6rem
-  background-image: linear-gradient(to bottom, #ffcd00, #f7a000)
-  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 205, 0, 0.35)
-  color: #fff
-  font-weight: 900
-  text-transform: uppercase
-  white-space: nowrap
-  letter-spacing: 0.02em
-  font-size: clamp(0.8rem, 4.2vw, 1.05rem)
-  text-shadow: 2px 2px 0 #000
-  animation: spotlight-pulse 1.2s ease-in-out infinite
-
-@keyframes spotlight-pulse
-  0%, 100%
-    opacity: 1
-  50%
-    opacity: 0.6
-
 // ─── Result screen ──────────────────────────────────────────────────────────
 
-// The ribbon caption is TYPED BY THE RIBBON, not by this screen: `FReward`
-// sizes it against the banner art's own width so it can never outgrow the
-// parchment. All this class does now is mark the slot content.
 .scene__ribbon
   display: block
 
@@ -1537,16 +1038,10 @@ onUnmounted(() => {
   display: flex
   flex-direction: column
   align-items: center
-  // Gaps measured in vh as well as vw: the axis this screen runs out of is the
-  // vertical one, and a gap ladder keyed only on width stays fat on a short
-  // landscape phone — which is exactly where it must not.
   gap: clamp(0.3rem, 1.6vh, 0.85rem)
   width: 100%
   max-width: 26rem
-  // Room for the 3px depth plate under the bottom button row. A transformed
-  // descendant counts toward its ancestor's SCROLLABLE overflow, so without
-  // this the overlay's scroll container found itself 3px short of its own
-  // content and grew a scrollbar around a screen that fits perfectly.
+  // Room for the 3px depth plate under the bottom button row.
   padding-bottom: 3px
 
 .result__headline
@@ -1555,20 +1050,15 @@ onUnmounted(() => {
   align-items: center
   gap: 0.15rem
 
-// ─── Everything on this screen is typed in `vmin` ───────────────────────────
-//
-// `vw` was wrong here in one specific, common case: a landscape phone is ~667px
-// WIDE and 375px tall, so every `vw` term picked its maximum on the axis that
-// had room to spare while the axis that did not was the one deciding whether
-// the screen fitted. `vmin` keys the type to the short axis, which is the axis
-// this screen actually runs out of, in both orientations.
-.result__stage
-  color: #fff
+// Everything on this screen is typed in `vmin`: the axis it runs out of is the
+// short one, in both orientations.
+.result__reason
+  color: #cfe6ff
   font-weight: 900
   text-transform: uppercase
   text-align: center
-  font-size: clamp(1rem, 5vmin, 1.9rem)
-  text-shadow: 3px 3px 0 #000
+  font-size: clamp(0.72rem, 3.4vmin, 1.05rem)
+  text-shadow: 2px 2px 0 #000
 
 .result__record
   color: #ffd93c
@@ -1578,88 +1068,55 @@ onUnmounted(() => {
   text-shadow: 2px 2px 0 #000
   animation: spotlight-pulse 1.1s ease-in-out infinite
 
-.result__relief
-  color: #8fd6ff
-  font-weight: 900
-  text-transform: uppercase
-  font-size: clamp(0.55rem, 2.6vmin, 0.8rem)
-  text-shadow: 2px 2px 0 #000
-
-// ─── The stat chips ─────────────────────────────────────────────────────────
-//
-// Deliberately the same pill the run HUD wears — dark plate, hairline black
-// rule, glyph then number — so the numbers the player watched climb during the
-// stage are recognisably the same numbers when the stage ends.
-.result__chips
-  display: flex
-  flex-wrap: wrap
-  align-items: center
-  justify-content: center
-  gap: clamp(0.3rem, 1.6vmin, 0.55rem)
-
-.result__chip
-  display: inline-flex
-  align-items: baseline
-  gap: 0.3em
-  padding: clamp(0.15rem, 0.9vmin, 0.3rem) clamp(0.4rem, 2vmin, 0.7rem)
-  border: 2px solid rgba(0, 0, 0, 0.55)
-  border-radius: 999px
-  background-color: rgba(10, 16, 30, 0.72)
-
-  &.is-squad
-    color: #8fd6ff
-  &.is-kills
-    color: #ff9a8f
-  // Gold, and a gold rule, because a placing is the one number on this screen
-  // that is not about the run — it is about the other players.
-  &.is-rank
-    color: #ffd93c
-    border-color: rgba(255, 217, 60, 0.45)
-    background-color: rgba(255, 217, 60, 0.1)
-
-// Nested rather than written flat, and that is load-bearing: `GameIcon`'s own
-// scoped rule is `.game-icon[data-v-…]` — one class plus one attribute, exactly
-// the same specificity a flat `.result__chip-icon[data-v-…]` would have. On a tie the
-// winner is whichever stylesheet the bundler happened to emit last. Nesting
-// adds the ancestor class and settles it.
-.result__chip .result__chip-icon
-  // `align-self` rather than `align-items: center` on the row: the numbers set
-  // the baseline, and a glyph hung off it sits where a capital letter would.
-  align-self: center
-  flex: 0 0 auto
-  width: clamp(0.85rem, 4vmin, 1.2rem)
-  height: clamp(0.85rem, 4vmin, 1.2rem)
-
-.result__chip-value
-  color: #fff
-  font-weight: 900
-  font-size: clamp(0.85rem, 4.2vmin, 1.3rem)
-  line-height: 1
-  text-shadow: 2px 2px 0 #000
-
-.result__chip-of
-  color: #b9cbe8
-  text-transform: uppercase
-  font-size: clamp(0.5rem, 2.4vmin, 0.7rem)
+// The standing on the board. Placement only: the pill itself is RankBadge's,
+// and a second set of borders and colours here would fight it — a parent's
+// scoped styles still reach a child component's ROOT element.
+.result__rank
+  margin-top: 0.15rem
 
 .result__coins
   display: flex
   align-items: center
   gap: 0.4rem
 
+.result__coin-icon
+  width: clamp(1.2rem, 5vmin, 1.8rem)
+  height: clamp(1.2rem, 5vmin, 1.8rem)
+  object-fit: contain
+
+.result__coin-value
+  color: #ffd93c
+  font-weight: 900
+  font-size: clamp(1.1rem, 5vmin, 2rem)
+  line-height: 1.1
+  text-shadow: 3px 3px 0 #000
+
+.result__streak
+  padding: 0.1em 0.5em
+  border: 2px solid rgba(255, 154, 74, 0.6)
+  border-radius: 999px
+  background-color: rgba(30, 12, 6, 0.78)
+  color: #ffb347
+  font-weight: 900
+  text-transform: uppercase
+  font-size: clamp(0.55rem, 2.6vmin, 0.8rem)
+  text-shadow: 1px 1px 0 #000
+
+.result__chest-coins
+  color: #ffd93c
+  font-weight: 900
+  font-size: clamp(0.62rem, 2.6vw, 0.85rem)
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.85)
+
+// The carrot sits in the column's own gap and shrinks to its content, so it
+// never widens the screen or steals height from the buttons under it.
+.result__teaser
+  max-width: 100%
+
 // ─── The ×3 ──────────────────────────────────────────────────────────────────
-//
-// Deliberately the loudest control on the screen: it is where the game's money
-// comes from, and a primary action that looks like a secondary one gets read as
-// optional. The breathe is slow enough not to nag.
 .result__reward
   animation: reward-breathe 2.6s ease-in-out infinite
 
-  // FButton drops slot content into a `display: block` span, so the icon and
-  // the label were stacking on their own baselines instead of sitting on one
-  // line. Laid out here rather than by changing FButton: every other button in
-  // the game passes plain text, and widening the shared component to serve one
-  // caller is how a design system stops being one.
   :deep(.f-button__text)
     display: inline-flex
     align-items: center
@@ -1670,7 +1127,7 @@ onUnmounted(() => {
   flex: 0 0 auto
   width: 1.15em
   height: 1.15em
-  color: #fff8d0
+  object-fit: contain
 
 .result__reward-mult,
 .result__reward-bonus
@@ -1688,7 +1145,7 @@ onUnmounted(() => {
 .result__claimed-icon
   width: clamp(1rem, 4.6vmin, 1.4rem)
   height: clamp(1rem, 4.6vmin, 1.4rem)
-  color: #ffd93c
+  object-fit: contain
 
 @keyframes reward-breathe
   0%, 100%
@@ -1696,105 +1153,14 @@ onUnmounted(() => {
   50%
     scale: 1.045
 
-.result__coin-icon
-  width: clamp(1.2rem, 5vmin, 1.8rem)
-  height: clamp(1.2rem, 5vmin, 1.8rem)
-  color: #ffd93c
-
-.result__coin-value
-  color: #ffd93c
-  font-weight: 900
-  font-size: clamp(1.1rem, 5vmin, 2rem)
-  line-height: 1.1
-  text-shadow: 3px 3px 0 #000
-
-// ─── The upgrade pointer (first three result screens) ───────────────────────
-//
-// A label above the shop glyph plus a ring around it. Both are `pointer-events:
-// none` so the hint can never eat the tap it is asking for, and the label is
-// absolutely positioned so adding it does not move the action row — the row is
-// laid out for a 320 px phone and has no slack.
-.result__shop
-  position: relative
-  display: flex
-  align-items: center
-  justify-content: center
-
-.result__shop-tip
-  // ABOVE the button. Below it looked tempting — there is dead space under the
-  // row — but the result panel clips its own overflow, so the bubble was cut in
-  // half. Above it would collide with the rewarded ×3 button, which carries a
-  // number and must stay legible, so the ROW reserves space for it instead
-  // (`.result__actions--hinted`). The reservation is only paid while the hint
-  // is up, so the normal screen keeps its layout exactly as it was.
-  position: absolute
-  bottom: calc(100% + 0.45rem)
-  left: 50%
-  transform: translateX(-50%)
-  z-index: 2
-  pointer-events: none
-  white-space: nowrap
-  padding: 0.22rem 0.6rem
-  border-radius: 999px
-  border: 2px solid rgba(255, 255, 255, 0.22)
-  background-color: rgba(8, 14, 28, 0.9)
-  color: #ffd93c
-  font-weight: 900
-  font-size: clamp(0.58rem, 2.6vw, 0.8rem)
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.85)
-  animation: shop-tip-bob 1.5s ease-in-out infinite
-
-  // The tail, pointing down at the button.
-  &::after
-    content: ''
-    position: absolute
-    top: 100%
-    left: 50%
-    transform: translateX(-50%)
-    border: 0.32rem solid transparent
-    border-top-color: rgba(255, 255, 255, 0.22)
-
-.result__shop--hinted
-  // A ring on the button itself: the label says what, this says which.
-  &::before
-    content: ''
-    position: absolute
-    inset: -0.3rem
-    border-radius: 1rem
-    border: 2px solid rgba(255, 217, 60, 0.8)
-    pointer-events: none
-    animation: shop-ring-pulse 1.5s ease-in-out infinite
-
-@keyframes shop-tip-bob
+@keyframes spotlight-pulse
   0%, 100%
-    transform: translateX(-50%) translateY(0)
-  50%
-    transform: translateX(-50%) translateY(-0.22rem)
-
-@keyframes shop-ring-pulse
-  0%, 100%
-    opacity: 0.45
-    transform: scale(1)
-  50%
     opacity: 1
-    transform: scale(1.06)
-
-.shop-tip-enter-active, .shop-tip-leave-active
-  transition: opacity 0.25s ease
-
-.shop-tip-enter-from, .shop-tip-leave-to
-  opacity: 0
-
-// Only while the pointer is up: enough headroom for the bubble to sit between
-// the rewarded button and the action row without touching either.
-.result__actions--hinted
-  margin-top: clamp(1.3rem, 5vmin, 1.9rem)
+  50%
+    opacity: 0.6
 
 .result__actions
   display: flex
-  // No `flex-wrap`. Two square glyph buttons cannot outgrow a 320px phone, so
-  // wrapping can only ever be a symptom now — and a wrapped action row is the
-  // exact failure this pass exists to remove.
   align-items: center
   justify-content: center
   gap: clamp(0.5rem, 3vmin, 1rem)
@@ -1802,26 +1168,53 @@ onUnmounted(() => {
 
 // ─── Landscape phone ────────────────────────────────────────────────────────
 //
-// Vertical space is the scarce resource: the lane needs the middle band, so the
-// HUD's two bars get tighter rather than the canvas getting shorter.
+// Vertical space is the scarce resource: the board needs the middle band, so
+// the HUD's two bars get tighter rather than the canvas getting shorter.
 @media (orientation: landscape) and (max-height: 30rem)
+  .scene__top
+    padding-top: calc(0.2rem + env(safe-area-inset-top, 0px))
+    gap: 0.3rem
+
+  .scene__player
+    flex-direction: row
+    align-items: flex-start
+    gap: 0.35rem
+
+  // The primer leaves the flow: on a landscape phone the free real estate is
+  // the column LEFT of the board, not a row above it — a row above is the one
+  // thing that shrinks the board. Pinned there, vertically centred, wrapping.
   .scene__hint
-    margin-top: clamp(0.2rem, 1vw, 0.4rem)
+    position: absolute
+    left: calc(0.5rem + env(safe-area-inset-left, 0px))
+    top: 50%
+    translate: 0 -50%
+    width: min(30vw, 15rem)
+    margin-top: 0
+    padding-inline: 0
+    align-items: flex-start
+    justify-content: center
+    gap: 0.35rem
+    z-index: 3
+
+  // The card stacks under the pill inside that column: a landscape phone has
+  // no second column to spare.
+  .scene__tooltip
+    position: static
+    translate: none
+    width: auto
+    max-width: 100%
+
+  .scene__bottom
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom, 0px))
 
 // ─── Short viewport: the result screen gives up its ornament ────────────────
-//
-// Everything that is decoration rather than information gets smaller or leaves.
-// The stage line and the coin total stay full size: they are the two things the
-// player actually came to this screen to read.
 @media (max-height: 34rem)
   .result
     gap: clamp(0.25rem, 1.2vh, 0.5rem)
 
-  .result__record, .result__relief
+  .result__record
     font-size: clamp(0.55rem, 2.4vmin, 0.72rem)
 
   .result__reward
-    // The breathe is a 4.5% scale on a control that is now one row above the
-    // action buttons. On a short screen that is close enough to touch them.
     animation: none
 </style>

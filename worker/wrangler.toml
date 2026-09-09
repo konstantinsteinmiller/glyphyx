@@ -1,12 +1,13 @@
 name = "glyphyx-leaderboard"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
+account_id = "7c5ee6a28676c02440e38e4f3e7bbb15"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "glyphyx-leaderboard"
 # Replace with the id `wrangler d1 create glyphyx-leaderboard` prints.
-database_id = "a7845c12-395d-4d6a-9cac-b44a056cf4eb"
+database_id = "181fa898-bc73-438d-9ee3-8c3ac614678f"
 
 [vars]
 # Empty = allow any origin. Every portal build serves the game from a different
