@@ -4,6 +4,7 @@ import {
   domeSprite, glintSprite, glowSprite, glyphShardSprite, hash01, hexRgb, hexSprite, mix, moteSprite, paintArrow,
   paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave, paintCleaveArc,
   paintClashFlash, paintCrossBurst,
+  paintAimRefused, paintAimRegion,
   paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing, paintPopText, paintRing,
   paintNukeFlash, paintNukeWave,
   paintShellArc, paintShellBurst, paintShieldDome, paintShockwave, paintSlash, qualityMul, rgba, ringSprite,
@@ -15,7 +16,9 @@ import {
 import {
   TIER_CAPACITY, __clearSpriteRegistry, __setQualityTier, clearParticles, particleCount, registeredSpriteCount
 } from '@/use/useVfx'
-import { RUNE_TYPES } from '@/game/rules'
+import {
+  RUNE_TYPES, aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, type Dir, type RuneType
+} from '@/game/rules'
 
 /**
  * jsdom has no rasteriser. The effects are exercised against a RECORDING
@@ -212,7 +215,22 @@ describe('the painters', () => {
     ['capture', (c, t) => paintCaptureWave(c, t, rect, SIZE, '#4aa8ff')],
     ['pop text', (c, t) => paintPopText(c, t, 50, 50, SIZE, { text: '×3', color: '#ffd24a' })],
     ['aura', (c, t) => paintAuraLink(c, t, { x: 50, y: 50 }, cells, SIZE, '#4aa8ff')],
-    ['landing', (c, t) => paintLanding(c, t, 50, 50, SIZE, '#ffffff')]
+    ['landing', (c, t) => paintLanding(c, t, 50, 50, SIZE, '#ffffff')],
+    // The aim compass. `t` drives the lit wedge growing in from its own edge,
+    // so t = 0 is the degenerate flat-against-the-edge case a painter is most
+    // likely to divide by.
+    ['aim region (triangle, lit)', (c, t) => paintAimRegion(c, rect, 'melee', 'up', SIZE, { color: '#ff3b4a', lit: true, grow: t })],
+    ['aim region (triangle, unlit)', (c) => paintAimRegion(c, rect, 'melee', 'left', SIZE, { color: '#ff3b4a' })],
+    ['aim region (quadrant, lit)', (c, t) => paintAimRegion(c, rect, 'mage', 'ur', SIZE, { color: '#b57bff', lit: true, grow: t })],
+    ['aim region (quadrant, unlit)', (c) => paintAimRegion(c, rect, 'mage', 'dl', SIZE, { color: '#b57bff' })],
+    ['aim region (whole tile)', (c, t) => paintAimRegion(c, rect, 'defense', 'omni', SIZE, { color: '#4aa8ff', lit: true, grow: t })],
+    ['aim region (held, unchosen)', (c) => paintAimRegion(c, rect, 'melee', 'up', SIZE, { color: '#ff3b4a', held: true })],
+    // The touch variant: a heavier rim, because it is the one cue a fingertip
+    // does not cover.
+    ['aim region (touch rim)', (c, t) => paintAimRegion(c, rect, 'melee', 'up', SIZE, { color: '#ff3b4a', lit: true, grow: t, rim: 1.7 })],
+    ['aim region (rim 0)', (c, t) => paintAimRegion(c, rect, 'mage', 'ur', SIZE, { color: '#b57bff', lit: true, grow: t, rim: 0 })],
+    ['aim region (invisible)', (c, t) => paintAimRegion(c, rect, 'melee', 'up', SIZE, { color: '#ff3b4a', lit: true, grow: t, alpha: 0 })],
+    ['aim refused', (c, t) => paintAimRefused(c, rect, SIZE, '#ff3b4a', 1 - t)]
   ]
 
   for (const [name, paint] of painters) {
@@ -250,6 +268,173 @@ describe('the painters', () => {
     paintGlow(ctx, 5, 5, 10, '#ff3b4a', 1)
     expect(ctx.__calls().get('drawImage')).toBe(1)
     expect(ctx.__calls().get('createRadialGradient') ?? 0).toBe(0)
+  })
+})
+
+describe('the aim compass', () => {
+  /**
+   * The painters above are checked for balance and blur; this one is checked
+   * for GEOMETRY, so it needs a context that remembers where the pen went.
+   */
+  const pathCtx = () => {
+    const pts: [number, number][] = []
+    const widths: number[] = []
+    let fills = 0
+    let strokes = 0
+    let width = 0
+    const ctx = new Proxy({} as Record<string, unknown>, {
+      get(_t, key: string) {
+        if (key === '__pts') return () => pts
+        if (key === '__fills') return () => fills
+        if (key === '__strokes') return () => strokes
+        if (key === '__widths') return () => widths
+        if (key === 'moveTo' || key === 'lineTo') {
+          return (x: number, y: number) => { pts.push([x, y]) }
+        }
+        if (key === 'fill') return () => { fills++ }
+        if (key === 'stroke') return () => { strokes++; widths.push(width) }
+        return () => {}
+      },
+      set(_t, key: string, v: unknown) {
+        if (key === 'lineWidth') width = v as number
+        return true
+      }
+    }) as unknown as CanvasRenderingContext2D & {
+      __pts: () => [number, number][]
+      __fills: () => number
+      __strokes: () => number
+      __widths: () => number[]
+    }
+    return ctx
+  }
+
+  const R = { x: 100, y: 200, w: 80, h: 80 }
+  /** Back from canvas space into the tile's own 0..1 space. */
+  const unit = ([x, y]: [number, number]): [number, number] => [(x - R.x) / R.w, (y - R.y) / R.h]
+
+  it('draws each region where the pointer would actually pick it', () => {
+    // The drawn shape and the hit test come from the same geometry, and this is
+    // what proves they have not drifted: every vertex of a region's polygon, and
+    // its centre of mass, must belong to the facing it claims to draw.
+    for (const type of RUNE_TYPES) {
+      if (aimRegionShape(type) === 'whole') continue
+      for (const dir of aimRegions(type)) {
+        const ctx = pathCtx()
+        paintAimRegion(ctx, R, type, dir, SIZE, { color: '#ffffff' })
+        const pts = ctx.__pts().map(unit)
+        expect(pts.length, `${type}/${dir}`).toBeGreaterThanOrEqual(3)
+        let sx = 0
+        let sy = 0
+        for (const [ux, uy] of pts) { sx += ux; sy += uy }
+        expect(dirFromCellPoint(type, sx / pts.length, sy / pts.length), `${type}/${dir} centre`).toBe(dir)
+      }
+    }
+  })
+
+  it('grows the lit region inward from its own edge to the tile centre', () => {
+    // The point of the control: the wedge arrives from the side you are aiming
+    // at. At grow 0 it is flat against that edge, at 1 it has reached the middle.
+    const inner = (type: RuneType, dir: Dir, grow: number): [number, number] => {
+      const ctx = pathCtx()
+      paintAimRegion(ctx, R, type, dir, SIZE, { color: '#ffffff', lit: true, grow })
+      // The fill path is drawn first (the edge highlight repeats two of its
+      // points afterwards). The vertex that TRAVELS is whichever one is nearest
+      // the tile's middle — the apex of a triangle, the inner corner of a
+      // quadrant — so read that rather than a fixed index.
+      const poly = ctx.__pts().slice(0, aimRegionPolygon(type, dir).length).map(unit)
+      const d2 = ([x, y]: [number, number]): number => (x - 0.5) ** 2 + (y - 0.5) ** 2
+      return poly.reduce((a, b) => (d2(b) < d2(a) ? b : a))
+    }
+    // A cardinal triangle: the apex starts on the top edge and ends at (0.5, 0.5).
+    expect(inner('melee', 'up', 0)).toEqual([0.5, 0])
+    expect(inner('melee', 'up', 1)).toEqual([0.5, 0.5])
+    expect(inner('melee', 'left', 0)).toEqual([0, 0.5])
+    expect(inner('melee', 'left', 1)).toEqual([0.5, 0.5])
+    // …and it travels monotonically, so the growth reads as one movement.
+    let last = -1
+    for (const g of [0, 0.25, 0.5, 0.75, 1]) {
+      const [, uy] = inner('melee', 'up', g)
+      expect(uy).toBeGreaterThan(last)
+      last = uy
+    }
+    // A quadrant scales about its own corner instead: (0,0) for `ul`.
+    expect(inner('mage', 'ul', 0)).toEqual([0, 0])
+    expect(inner('mage', 'ul', 1)).toEqual([0.5, 0.5])
+  })
+
+  it('fills only the lit region, so a tile can never show two answers', () => {
+    const lit = pathCtx()
+    paintAimRegion(lit, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1 })
+    expect(lit.__fills()).toBe(1)
+    // …and the lit one alone gets the white outer edge, so it is the only
+    // region on the tile stroked twice.
+    expect(lit.__strokes()).toBe(2)
+    const dim = pathCtx()
+    paintAimRegion(dim, R, 'melee', 'up', SIZE, { color: '#ffffff' })
+    expect(dim.__fills()).toBe(0)
+    expect(dim.__strokes()).toBe(1)
+  })
+
+  it('shows a HELD facing softly — filled, but never as the chosen one', () => {
+    // The dead-zone state: the rune would face this way, but the player has not
+    // picked it. It must read between the outline and the lit wedge, and it
+    // must not wear the lit wedge's white edge.
+    const held = pathCtx()
+    paintAimRegion(held, R, 'melee', 'up', SIZE, { color: '#ffffff', held: true })
+    expect(held.__fills()).toBe(1)
+    expect(held.__strokes()).toBe(1)
+    // It is drawn at FULL size: nothing is travelling toward an unmade choice.
+    const lit0 = pathCtx()
+    paintAimRegion(lit0, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 0 })
+    expect(held.__pts().slice(0, 3)).not.toEqual(lit0.__pts().slice(0, 3))
+    const full = pathCtx()
+    paintAimRegion(full, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1 })
+    expect(held.__pts().slice(0, 3)).toEqual(full.__pts().slice(0, 3))
+  })
+
+  it('keeps the lit region identifiable under a fingertip', () => {
+    // Touch covers the middle of the tile, so the chosen region has to be
+    // recognisable from its RIM: same fill, same two strokes, and a white outer
+    // edge drawn heavier than the cursor's.
+    const cursor = pathCtx()
+    paintAimRegion(cursor, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1 })
+    const finger = pathCtx()
+    paintAimRegion(finger, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1, rim: 1.7 })
+
+    expect(finger.__fills()).toBe(1)
+    expect(finger.__strokes()).toBe(2)
+    // The region itself is in exactly the same place — only its edge is louder.
+    expect(finger.__pts()).toEqual(cursor.__pts())
+    const rimWidth = (c: ReturnType<typeof pathCtx>): number => c.__widths()[c.__widths().length - 1]!
+    expect(rimWidth(finger)).toBeGreaterThan(rimWidth(cursor))
+
+    // …and it still reads as lit rather than as one of the offered regions.
+    const offered = pathCtx()
+    paintAimRegion(offered, R, 'melee', 'up', SIZE, { color: '#ffffff', rim: 1.7 })
+    expect(offered.__fills()).toBe(0)
+    expect(offered.__strokes()).toBe(1)
+  })
+
+  it('lit beats held when both are asked for, so the tile has one answer', () => {
+    const both = pathCtx()
+    paintAimRegion(both, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, held: true, grow: 1 })
+    expect(both.__strokes()).toBe(2)
+  })
+
+  it('a refused tile is a cross, not a set of choices', () => {
+    const ctx = pathCtx()
+    paintAimRefused(ctx, R, SIZE, '#ff3b4a')
+    // Two strokes of two points each — an X — and no region polygon at all.
+    expect(ctx.__pts()).toHaveLength(4)
+    expect(ctx.__strokes()).toBe(1)
+  })
+
+  it('draws nothing at all when it is fully transparent', () => {
+    const ctx = pathCtx()
+    paintAimRegion(ctx, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1, alpha: 0 })
+    paintAimRefused(ctx, R, SIZE, '#ff3b4a', 0)
+    expect(ctx.__pts()).toHaveLength(0)
+    expect(ctx.__fills()).toBe(0)
   })
 })
 

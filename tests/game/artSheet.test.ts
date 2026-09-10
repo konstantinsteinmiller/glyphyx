@@ -5,10 +5,17 @@ import {
   NO_LAUREL
 } from '@/game/artSheet'
 import { ART_CATALOGUE, allArtIds, artTarget } from '@/game/artCatalogue'
-import { RUNE_TYPES, SKIN_IDS, FACTION_DEFS } from '@/game/rules'
+import { RUNE_TYPES, SKINS, SKIN_IDS, FACTION_DEFS } from '@/game/rules'
 
-/** The aspect ratios an image tool can actually be told to return. */
-const STANDARD = new Set(['1:1', '2:1', '4:3', '16:9'])
+/**
+ * The aspect ratios an image tool can actually be told to return.
+ *
+ * `5:2` is the glyph sheet's, and it is here for a reason worth keeping: ten
+ * runes tile no tidy ratio, and of the two rules in tension — "no blank
+ * panels" and "a pretty aspect" — the blank is the one that ruins a sheet. Two
+ * rows of five is 1280 × 512, which any tool takes.
+ */
+const STANDARD = new Set(['1:1', '2:1', '4:3', '16:9', '5:2'])
 
 describe('the manifest and the catalogue agree, both ways', () => {
   it('every catalogue id has exactly one manifest target, and every target is a catalogue id', () => {
@@ -128,17 +135,20 @@ describe('the lattice is the contract', () => {
   })
 
   it('the glyph sheet is one square panel per rune, with no blanks to lose', () => {
-    // The grid is sized to the ROSTER, not the other way round: nine runes tile
-    // three across exactly. A blank panel is the thing these prompts most often
-    // lose — an image model fills it in — so the sheet that could most easily
-    // grow one is pinned to have none, and to stay square.
+    // The grid is sized to the ROSTER, not the other way round — 4 across at
+    // eight runes, 3 at nine, 5 at ten. A blank panel is the thing these
+    // prompts most often lose (an image model fills it in), so the sheet that
+    // could most easily grow one is pinned to have NONE: the panels have to
+    // come out exactly even, whatever that does to the ratio.
     const g = SHEETS.find((s) => s.id === 'glyphs')!
     expect(g.cells).toHaveLength(RUNE_TYPES.length)
     expect(g.cells.map((c) => c.id)).toEqual([...RUNE_TYPES])
     expect(g.cells.some((c) => c.art.kind === 'blank')).toBe(false)
     expect(g.cols * sheetRows(g)).toBe(RUNE_TYPES.length)
+    // Every panel is square even when the sheet is not.
+    for (const c of g.cells) expect([c.cw, c.ch]).toEqual([1, 1])
     const { w, h } = sheetSize(g)
-    expect(aspectOf(w, h)).toBe('1:1')
+    expect(STANDARD.has(aspectOf(w, h)), `glyphs is ${aspectOf(w, h)}`).toBe(true)
   })
 
   it('a cell that fills its panel is a tile or the frame, and a fill cell never carries a fit-normalised shape', () => {
@@ -266,17 +276,25 @@ describe('the prompts are generated, complete and deterministic', () => {
     }
   })
 
-  it('the laurel is a drawable of its own — one per stone silhouette — on the fx sheet and in the catalogue', () => {
-    for (const shape of ['pebble', 'shard', 'oval', 'hex', 'disc', 'slab'] as const) {
-      const cell = SHEETS.flatMap((s) => s.cells).find((c) => c.id === `laurel-${shape}`)
-      expect(cell?.target).toBe(artTarget('fx', `laurel-${shape}`))
-      expect(cell?.art.kind).toBe('laurel')
-      expect(ART_CATALOGUE.fx).toContain(`laurel-${shape}`)
+  it('the laurel is a drawable of its own — one per RUNE — on its own sheet and in the catalogue', () => {
+    // Derived from the ROSTER, not listed: the wreath hugs the stone's own
+    // silhouette, and the silhouette belongs to the RUNE, so the set of
+    // wreaths is the roster. A hand-written list here is how the game came to
+    // ask for a wreath shaped like a pebble after the default skin changed.
+    const sheet = SHEETS.find((s) => s.id === 'laurels')!
+    expect(sheet.cells).toHaveLength(RUNE_TYPES.length)
+    for (const type of RUNE_TYPES) {
+      const cell = sheet.cells.find((c) => c.id === `laurel-${type}`)
+      expect(cell?.target, type).toBe(artTarget('fx', `laurel-${type}`))
+      expect(cell?.art.kind, type).toBe('laurel')
+      expect(ART_CATALOGUE.fx, type).toContain(`laurel-${type}`)
     }
-    const cell = SHEETS.flatMap((s) => s.cells).find((c) => c.id === 'laurel-pebble')
+    // No wreath is keyed by a SKIN any more: nine skins × ten runes would be
+    // ninety paintings of a difference nobody can see.
+    for (const id of SKIN_IDS) expect(ART_CATALOGUE.fx).not.toContain(`laurel-${id}`)
     // Its own prompt has to say the wreath comes back EMPTY, or it arrives
     // wrapped round a stone that the game will then draw its own stone behind.
-    const p = promptForSheet(SHEETS.find((s) => s.cells.some((c) => c.id === 'laurel-pebble'))!)
+    const p = promptForSheet(sheet)
     expect(p).toContain('no stone')
   })
 

@@ -3,7 +3,8 @@ import {
   AIM_LAND_MS, AIM_STROKE_PX, AIM_STROKE_WINDOW_MS, AIM_UNLOCK_TILES, BETWEEN_TURNS_MS, GRID,
   LESSON_REAIM_HOLD_MS, LOCK_WINDOW_MS, LOCK_WINDOW_TAP_MS, LOSS_COINS_FRACTION, PLANNING_MAX_MS, PLANNING_MS,
   RESET_MS, RESOLVE_MS, REVEAL_MS, RUNES, RUNE_TYPES,
-  TURN_LIMIT, WIN_COINS_BASE, WIN_COINS_PER_KILL, WIN_COINS_PER_TILE, defaultDir, dirsFor, snapDir,
+  TURN_LIMIT, WIN_COINS_BASE, WIN_COINS_PER_KILL, WIN_COINS_PER_TILE, defaultDir, dirFromCellPoint, dirsFor,
+  isAimChosen, snapDir,
   streakMultiplier,
   type BoardState, type Cell, type ChestReward, type Dir, type MatchPhase, type MatchResult, type MatchState,
   type Move, type NodeConfig, type RuneType, type Tile
@@ -62,6 +63,23 @@ import { rankTable } from '@/use/useRuneRanks'
  * a re-target: the pebble follows again. Release locks the placement — and
  * opens a `LOCK_WINDOW_MS` window in which pressing anywhere and flicking
  * re-aims the rune just placed. The reveal begins when that window closes.
+ *
+ * ── And on a MOUSE, the tile is its own compass ──
+ *
+ * A precise pointer does not need any of that. Each tile is carved into one
+ * region per facing the rune has (`rules.dirFromCellPoint`: triangles for a
+ * cardinal rune, quadrants for the orb), the region under the cursor IS the
+ * facing, and the renderer lights it before the click. Because the player has
+ * already seen the answer, an aimed precise placement skips the correction
+ * window entirely and goes straight to the reveal — a second saved every turn.
+ *
+ * Near the middle of a tile nothing is chosen (`AIM_CENTRE_DEAD_ZONE`): the
+ * centre is just where you click a tile, so the facing holds whatever it was
+ * and the window comes back. That is what lets a player pre-aim with an arrow
+ * key and then click the tile without losing the key they pressed.
+ *
+ * Touch is untouched by all of this — a finger covers the very regions it
+ * would be choosing between, so it keeps the strokes and the window.
  *
  * Two more ways in, for hands that do not want to drag:
  *
@@ -200,18 +218,6 @@ const cellFraction = (cell: Cell, x: number, y: number): { fx: number; fy: numbe
   if (!metrics.tileCenter || !(metrics.tilePx > 0)) return null
   const c = metrics.tileCenter(cell)
   return { fx: (x - c.x) / metrics.tilePx + 0.5, fy: (y - c.y) / metrics.tilePx + 0.5 }
-}
-
-/** The aim region the point stands in for `type` on `cell`, or `null` when unknown. */
-const regionAt = (type: RuneType, cell: Cell, x: number, y: number): Dir | null => {
-  const f = cellFraction(cell, x, y)
-  return f ? dirFromCellPoint(type, f.fx, f.fy) : null
-}
-
-/** True while the point is inside `cell` itself, not merely near it. */
-const insideCell = (cell: Cell, x: number, y: number): boolean => {
-  const f = cellFraction(cell, x, y)
-  return f !== null && f.fx >= 0 && f.fx <= 1 && f.fy >= 0 && f.fy <= 1
 }
 
 // ─── The view ───────────────────────────────────────────────────────────────
@@ -453,6 +459,7 @@ const syncActiveRune = (): void => {
 
 const clearDrag = (): void => {
   view.drag = null
+  view.hover = null
   isDragging.value = false
   isAiming.value = false
   lastValidCell = null
@@ -467,6 +474,8 @@ const clearDrag = (): void => {
 /** Tap-to-place: nothing is selected any more (and no key facing waits for it). */
 const clearSelection = (): void => {
   keyDir = null
+  // The compass belongs to the pebble in hand, and there is no longer one.
+  if (!view.drag) view.hover = null
   if (view.selected !== -1) {
     view.selected = -1
     selectedHand.value = -1
@@ -707,7 +716,9 @@ const startNode = (id?: number): void => {
   // over a finished board must not change runes that are already standing.
   const fresh = createMatch(config, unlockedRunes.value, seed, now, armedBoons(), rankTable())
   state = beginPlanning(fresh, difficulty(), handicapFor(fresh, relief))
-  view.skin = activeSkin.value
+  // A node may pin its own material (1-1 is cut from obsidian); otherwise the
+  // player's choice wins.
+  view.skin = config.skin ?? activeSkin.value
   view.streak = streak.value
   view.ageMs = 0
   view.resetting = false
@@ -759,6 +770,47 @@ const beginDrag = (index: number, x: number, y: number, precise = false): boolea
 }
 
 const isValidKind = (k: PlacementKind | null): k is 'empty' | 'stack' => k === 'empty' || k === 'stack'
+
+/**
+ * The tile's compass under the pointer — what the renderer draws so the player
+ * sees every facing on offer BEFORE committing to one.
+ *
+ * It exists only while a pebble is in hand, so it is cleared by `clearDrag` and
+ * `clearSelection`, which between them cover every way a pebble leaves it
+ * (a commit, a cancel, a new turn, a reveal). A compass left standing over a
+ * resolving board is a bug the renderer cannot defend itself against.
+ */
+const setHoverState = (type: RuneType, cell: Cell, dir: Dir, chosen: boolean, precise: boolean): void => {
+  if (!state) { view.hover = null; return }
+  view.hover = {
+    cell: { col: cell.col, row: cell.row },
+    kind: placementKindFor(state, type, cell),
+    dir,
+    chosen,
+    type,
+    precise
+  }
+}
+
+/**
+ * The facing a pebble with no region under it would be placed with: whatever a
+ * key chose for it, else the default. `placeSelected` and `setHover` BOTH read
+ * this, so what the compass promises inside the dead zone is exactly what a
+ * click there delivers.
+ */
+const heldFacing = (type: RuneType): Dir =>
+  keyDir !== null && dirsFor(type).includes(keyDir) ? keyDir : defaultDir(type, 'player')
+
+/** Mirror a drag's own tile and region into the compass. */
+const syncHoverFromDrag = (drag: DragState): void => {
+  const cell = drag.over
+  if (drag.mode !== 'place' || !cell || !isValidKind(drag.kind)) { view.hover = null; return }
+  // `drag.dir`, never `drag.region`: for a precise pointer that has chosen they
+  // are the same (the region aimed it), and otherwise the region is merely
+  // where the pointer is, not what the rune will do. `chosen` is exactly
+  // "a region was picked", which is what `drag.region` records.
+  setHoverState(drag.type, cell, drag.dir, drag.region !== null, drag.precise)
+}
 
 /** The finger has been inside a valid tile long enough: the pebble stays, the strokes aim. */
 const land = (drag: DragState): void => {
@@ -846,6 +898,62 @@ const recogniseStroke = (drag: DragState): void => {
   if (dir !== drag.dir) applyAim(drag, dir)
 }
 
+/**
+ * ─── Position aims a MOUSE; strokes still aim a finger ──────────────────────
+ *
+ * PRECEDENCE, stated once. `drag.region` — which of the tile's regions the
+ * pointer stands in — is recorded for every pointer, because it is simply a
+ * fact about where the pointer is and the renderer draws from it. But it only
+ * AIMS the pebble for a PRECISE pointer, and then only while that pointer is
+ * inside the tile; the moment it leaves, strokes take over again.
+ *
+ * The `precise` half is not a detail, it is the whole reconciliation. A mouse
+ * has a visible cursor and no finger in the way, so position is strictly better
+ * than a stroke: it is absolute, it needs no threshold, and it shows its answer
+ * before the click. A FINGER covers the very regions it would be choosing
+ * between, and the flick — including the small flick from a tile's edge that
+ * `tests/use/battle.test.ts` pins as a real player complaint — is the gesture
+ * that works when you cannot see under your own thumb. Letting position aim a
+ * finger would silently delete that gesture: every one of those stroke tests
+ * fails, which is how this was caught.
+ *
+ * So touch behaves exactly as it did before this feature existed, and
+ * `beginCorrection` (a press that can land anywhere on the canvas, with no tile
+ * under it) is untouched for both.
+ *
+ * Returns true when POSITION OWNS this move — that is, whenever the pointer is
+ * inside the tile — so the caller leaves the stroke buffer alone. Note that
+ * includes the dead zone, where position's answer is "hold what you have":
+ * letting a stroke run there would flip the facing on the very wobble the dead
+ * zone exists to absorb.
+ */
+const aimFromPosition = (drag: DragState, cell: Cell, x: number, y: number): boolean => {
+  // This function OWNS `drag.region` — including clearing it — so that "the
+  // pointer has not chosen a region" and "it chose one that did not aim the
+  // pebble" stay two different answers. Collapsing them lost the finger's
+  // region, which the renderer still wants.
+  const f = cellFraction(cell, x, y)
+  const inside = f !== null && f.fx >= 0 && f.fx <= 1 && f.fy >= 0 && f.fy <= 1
+  // Outside the tile there is no position to read: the strokes have it.
+  if (!f || !inside) { drag.region = null; return false }
+  // Inside, the pointer is answering with its position, so nothing it did on
+  // the way here counts as a swipe — a stroke left in the buffer would fire the
+  // moment it crossed the edge.
+  clearStrokes()
+  // NAMING a region and CHOOSING one are different acts. `dirFromCellPoint` is
+  // total — the renderer needs an answer for every pixel — but within
+  // `AIM_CENTRE_DEAD_ZONE` of the middle the player has not chosen anything:
+  // the centre is simply where you click a tile. So the facing HOLDS there,
+  // which is what lets a pre-aimed arrow key survive a click in the middle
+  // instead of being silently overwritten by the default.
+  if (!isAimChosen(f.fx, f.fy)) { drag.region = null; return true }
+  const dir = dirFromCellPoint(drag.type, f.fx, f.fy)
+  if (!dirsFor(drag.type).includes(dir)) { drag.region = null; return true }
+  drag.region = dir
+  if (dir !== drag.dir) applyAim(drag, dir)
+  return true
+}
+
 const updateDrag = (x: number, y: number, over: Cell | null): void => {
   const drag = view.drag
   if (!drag || !state) return
@@ -861,9 +969,11 @@ const updateDrag = (x: number, y: number, over: Cell | null): void => {
   }
 
   if (drag.aiming) {
-    // Landed. Strokes aim; only a real departure — most of a tile from the
-    // tile's centre — re-targets, so a flick may cross into the neighbour and
-    // the pebble stays where it was put.
+    // Landed. Position aims while the pointer is still on the stone's tile;
+    // otherwise strokes aim, and only a real departure — most of a tile from
+    // the tile's centre — re-targets, so a flick may cross into the neighbour
+    // and the pebble stays where it was put.
+    if (drag.over && aimFromPosition(drag, drag.over, x, y)) return
     const far = Math.hypot(x - landRefX, y - landRefY) > AIM_UNLOCK_TILES * metrics.tilePx
     if (!far) {
       pushStroke(dx, dy)
@@ -886,6 +996,14 @@ const updateDrag = (x: number, y: number, over: Cell | null): void => {
       lastValidEnterY = y
     }
   }
+
+  // Still travelling: the tile under the pointer aims the pebble as soon as it
+  // is over one that will take it, so the facing is already right when the
+  // pointer stops. Waiting for `AIM_LAND_MS` first would mean the pebble spent
+  // its whole journey pointing the wrong way.
+  if (over && isValidKind(drag.kind)) aimFromPosition(drag, over, x, y)
+  else drag.region = null
+  syncHoverFromDrag(drag)
 }
 
 const setAim = (dir: Dir): void => {
@@ -901,7 +1019,12 @@ const setAim = (dir: Dir): void => {
  * the view could not see — in which case the pebble goes back and the turn
  * stays open rather than half-committing.
  */
-const commitMove = (type: RuneType, cell: Cell, dir: Dir, source: 'drag' | 'tap'): boolean => {
+/**
+ * `aimed`: the placement was pointed somewhere DELIBERATELY, by a pointer
+ * precise enough to have shown the player the answer first — a mouse standing
+ * in one of the tile's aim regions. See the window rule at the end.
+ */
+const commitMove = (type: RuneType, cell: Cell, dir: Dir, source: 'drag' | 'tap', aimed = false): boolean => {
   if (!state) return false
   const move: Move = { side: 'player', faction: null, type, col: cell.col, row: cell.row, dir }
   const boonBefore = state.boons[type]
@@ -933,7 +1056,10 @@ const commitMove = (type: RuneType, cell: Cell, dir: Dir, source: 'drag' | 'tap'
   // plays the landing again, quieter, when the pebble slams down at reveal.
   playFx('place', 1)
   emit({ kind: 'placed' })
-  // A shield or a totem has no facing to correct: straight to the reveal.
+  // A shield or a totem has no facing to correct: straight to the reveal. (It
+  // is also the reason an `omni` rune needs no `aimed` exception below — this
+  // line has always skipped its window, for every input, and the correction
+  // window was never an undo for it either.)
   if (RUNES[type].aim === 'omni') { enterReveal(state); return true }
   // Everything else sits on its tile, face up, for one more second — longer
   // after a tap, which has not aimed it at all.
@@ -944,6 +1070,26 @@ const commitMove = (type: RuneType, cell: Cell, dir: Dir, source: 'drag' | 'tap'
   const script = state.config.ghost
   const want = script?.reaim
   const held = firstPlacement && want !== undefined && want !== dir && dirsFor(type).includes(want)
+
+  /**
+   * ─── When the correction window is worth a second of the player's time ────
+   *
+   * It exists to undo a facing the player could not see before committing. A
+   * MOUSE standing in one of the tile's aim regions could: the compass was
+   * drawn under the cursor, lit, before the click. So an aimed precise
+   * placement goes straight to the reveal and the game runs a second faster
+   * every single turn.
+   *
+   * It is KEPT for a finger (which covers the tile it is choosing on), for a
+   * tap that named no direction, and for a pebble released without ever
+   * entering a region — none of those saw the answer first.
+   *
+   * And it is kept, always, on a node whose ghost teaches the re-aim: 1-1's
+   * whole lesson IS this window, and a lesson must not evaporate because the
+   * player happens to be on a desktop.
+   */
+  const lessonNeedsWindow = firstPlacement && want !== undefined
+  if (aimed && !lessonNeedsWindow) { enterReveal(state); return true }
   view.lock = { cell: { col: cell.col, row: cell.row }, type, dir, leftMs: windowMs, totalMs: windowMs, source, held }
   lockOpen.value = true
   holdMs = 0
@@ -988,14 +1134,43 @@ const selectHand = (index: number): boolean => {
  * Tap-to-place, step two: the selected pebble goes onto `cell` with the
  * facing a key chose for it, else its default — and gets the longer window.
  */
-const placeSelected = (cell: Cell): boolean => {
+const placeSelected = (cell: Cell, dir?: Dir): boolean => {
   if (handBusy()) return false
   const index = view.selected
   const type = index >= 0 ? state!.hand[index] : undefined
   if (!type) return false
   if (!isValidKind(placementKindFor(state!, type, cell))) return false
-  const dir = keyDir !== null && dirsFor(type).includes(keyDir) ? keyDir : defaultDir(type, 'player')
-  return commitMove(type, cell, dir, 'tap')
+  // A `dir` is the region the pointer CLICKED in — only a precise pointer has
+  // one, and only after `setHover` has been drawing that region under the
+  // cursor. Both halves are required: the skip is earned by the player having
+  // SEEN the facing, not merely by the caller naming one.
+  const named = dir !== undefined && dirsFor(type).includes(dir)
+  const hover = view.hover
+  const aimed = named && hover !== null && hover.precise
+    && hover.cell.col === cell.col && hover.cell.row === cell.row
+  const facing = named ? dir! : heldFacing(type)
+  return commitMove(type, cell, facing, 'tap', aimed)
+}
+
+/**
+ * The pointer moved over the board with a pebble in hand. Maintains the tile's
+ * compass (`view.hover`) that the renderer draws; `null` clears it.
+ *
+ * Only a precise pointer calls this — a finger covers the regions it would be
+ * choosing between, so drawing them under it would be showing the player their
+ * own thumb.
+ */
+const setHover = (cell: Cell | null, fx = 0.5, fy = 0.5): void => {
+  if (!state || view.phase !== 'planning' || view.resetting) { view.hover = null; return }
+  const drag = view.drag
+  const type = drag && drag.mode === 'place' ? drag.type
+    : view.selected >= 0 ? state.hand[view.selected] : undefined
+  if (!cell || !type) { view.hover = null; return }
+  // Inside the dead zone nothing has been picked, so the compass promises the
+  // facing the pebble is ALREADY carrying — the same one a click there commits.
+  const chosen = isAimChosen(fx, fy)
+  const held = drag && drag.mode === 'place' ? drag.dir : heldFacing(type)
+  setHoverState(type, cell, chosen ? dirFromCellPoint(type, fx, fy) : held, chosen, true)
 }
 
 /**
@@ -1041,7 +1216,11 @@ const beginCorrection = (x: number, y: number): boolean => {
   if (lock.leftMs <= 0) return false
   const drag: DragState = {
     mode: 'correct', handIndex: -1, type: lock.type, x, y,
-    over: { col: lock.cell.col, row: lock.cell.row }, kind: null, aiming: true, dir: lock.dir, anchor: { x, y }
+    over: { col: lock.cell.col, row: lock.cell.row }, kind: null, aiming: true, dir: lock.dir, anchor: { x, y },
+    // A correction is a STROKE, always: the press can land anywhere on the
+    // canvas, not inside the stone's own tile, so there is no region to read
+    // and nothing for a precise pointer to have seen in advance.
+    region: null, precise: false
   }
   view.drag = drag
   isDragging.value = true
@@ -1063,16 +1242,22 @@ const endDrag = (commit: boolean): void => {
   }
   if (!commit || view.phase !== 'planning' || hasPlaced.value) { clearDrag(); return }
 
+  // Aimed by POSITION on a precise pointer: the player saw the facing lit under
+  // the cursor before they let go, so there is nothing to correct afterwards.
+  const aimed = drag.precise && drag.region !== null
   // The pebble has landed on a tile and the strokes are its facing.
   if (drag.aiming && drag.over && isValidKind(drag.kind)) {
-    commitMove(drag.type, drag.over, drag.dir, 'drag')
+    commitMove(drag.type, drag.over, drag.dir, 'drag', aimed)
     return
   }
-  // Released over a valid tile before landing: no stroke, so the facing a key
-  // chose on the way — else the default (toward the enemy).
+  // Released over a valid tile before landing: the region under the pointer if
+  // there is one, else the facing a key chose on the way, else the default
+  // (toward the enemy).
   if (drag.over && isValidKind(drag.kind)) {
-    const dir = keyDir !== null && dirsFor(drag.type).includes(keyDir) ? keyDir : defaultDir(drag.type, 'player')
-    commitMove(drag.type, drag.over, dir, 'drag')
+    const dir = drag.region !== null ? drag.region
+      : keyDir !== null && dirsFor(drag.type).includes(keyDir) ? keyDir
+        : defaultDir(drag.type, 'player')
+    commitMove(drag.type, drag.over, dir, 'drag', aimed)
     return
   }
   // A fast flick THROUGH a tile and off the board — the GDD's "touch release +
@@ -1209,11 +1394,13 @@ const setPaused = (paused: boolean): void => {
 }
 
 // A skin bought mid-match repaints the pebbles at once.
-watch(activeSkin, (skin) => { view.skin = skin })
+// Changing the equipped material repaints the board — unless THIS node pins
+// one of its own, in which case the player's choice waits for the next node.
+watch(activeSkin, (skin) => { if (!state?.config.skin) view.skin = skin })
 
 export const battle: Battle = {
   view,
-  beginDrag, updateDrag, setAim, endDrag, beginCorrection, selectHand, placeSelected, aimKey, reroll, tick,
+  beginDrag, updateDrag, setAim, endDrag, beginCorrection, selectHand, placeSelected, setHover, aimKey, reroll, tick,
   phase, turn, turnLimit, suddenDeath, playerTiles, enemyTiles, rerollsLeft, timerLeftMs, timerPaused,
   result, node, matchActive, hasPlaced, isDragging, isAiming, lockOpen, selectedHand, activeRune, ghostActive, lastSummary,
   startNode, retryNode, nextNode, setLabels, onEvent, setPaused

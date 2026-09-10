@@ -60,11 +60,19 @@ export const version: string = APP_VERSION
 export { SOUND_KEY, MUSIC_KEY, LANGUAGE_KEY, DIFFICULTY_KEY, MUSIC_TRACK_KEY }
 
 // Background-music track id → audio filename (under public/audio/music/).
-export type MusicTrack = 'trance' | 'cozy'
-export const MUSIC_TRACK_FILES: Record<MusicTrack, string> = {
+/**
+ * `emberlight` is the game's own track and the default. It has no file: it is
+ * played note by note by `useMusicEngine` from the score in `@/game/music`,
+ * which is why it is missing from the table below and why the two inherited
+ * `.ogg` loops are still here — a player who prefers one can have it.
+ */
+export type MusicTrack = 'emberlight' | 'trance' | 'cozy'
+export const MUSIC_TRACK_FILES: Partial<Record<MusicTrack, string>> = {
   trance: 'trance.ogg',
   cozy: 'bg-cozy.ogg'
 }
+/** True for the track nobody downloads. */
+export const isProceduralTrack = (t: MusicTrack): boolean => t === 'emberlight'
 
 const readNumber = (key: string, fallback: number): number => {
   const v = getState<unknown>(key)
@@ -91,7 +99,7 @@ const userLanguage: Ref<string> = ref(readString(LANGUAGE_KEY, 'en'))
 // Hard +25%) via `difficultyFactor()` below, read by the wave director.
 const userDifficulty: Ref<Difficulties> = ref(readString<Difficulties>(DIFFICULTY_KEY, DIFFICULTY.MEDIUM))
 // Background-music track — defaults to 'trance' (Trance Tunnel).
-const userMusicTrack: Ref<MusicTrack> = ref(readString<MusicTrack>(MUSIC_TRACK_KEY, 'trance'))
+const userMusicTrack: Ref<MusicTrack> = ref(readString<MusicTrack>(MUSIC_TRACK_KEY, 'emberlight'))
 
 // Re-read on hydrate-success bump. Module init reads these synchronously
 // from localStorage, but on cloud-only builds (CrazyGames) the blob is

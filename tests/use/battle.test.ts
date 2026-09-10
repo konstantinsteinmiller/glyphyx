@@ -25,6 +25,12 @@ let lastState: typeof import('@/use/useGlyphyxState') | null = null
 interface LoadOptions {
   /** Replace the adaptive rule for this test. */
   handicap?: (input: import('@/game/rules').HandicapInput) => import('@/game/rules').Handicap
+  /**
+   * Rewrite the node the campaign hands back, so a test can drive a node SHAPE
+   * the rules support but no shipped node uses today — see `REAIM_LESSON`.
+   * Everything else about the node stays real.
+   */
+  patchNode?: (cfg: import('@/game/rules').NodeConfig) => import('@/game/rules').NodeConfig
 }
 
 const load = async (blob: Record<string, unknown> = {}, opts: LoadOptions = {}) => {
@@ -32,6 +38,15 @@ const load = async (blob: Record<string, unknown> = {}, opts: LoadOptions = {}) 
   vi.resetModules()
   localStorage.clear()
   localStorage.setItem('glyphyx_state', JSON.stringify(blob))
+  if (opts.patchNode) {
+    // `useCampaign` builds every node through this one function, so patching it
+    // reaches `nodeConfigFor` — and the battle — without mocking a composable.
+    const actual = await vi.importActual<typeof import('@/game/campaign')>('@/game/campaign')
+    vi.doMock('@/game/campaign', () => ({
+      ...actual,
+      nodeConfig: (id: number, difficulty: 'easy' | 'medium' | 'hard') => opts.patchNode!(actual.nodeConfig(id, difficulty))
+    }))
+  }
   const reportMatch = vi.fn(async () => {})
   vi.doMock('@/use/useLeaderboard', () => ({ reportMatch, rankFor: () => 0, leaderboardEnabled: false }))
   const computeHandicap = vi.fn(opts.handicap ?? (() => ({ ...NO_HANDICAP })))
@@ -71,6 +86,23 @@ const placeAt = (battle: BattleModule['battle'], index: number, cell: { col: num
   if (battle.lockOpen.value) advance(battle, LOCK_WINDOW_MS + 20)
 }
 
+/**
+ * ─── A lesson that drills the correction ────────────────────────────────────
+ *
+ * 1-1 used to drop the sword facing nothing and then hold the correction
+ * window open until the player pressed the stone and flicked it left. It does
+ * not any more: where you release inside a tile IS the facing, so the drop and
+ * the aim are one gesture and the lesson is over when the pebble lands.
+ *
+ * The held window itself is still a rule — `GhostSpec.reaim` arms it, and any
+ * lesson that wants to teach the correction can ask for it again. No shipped
+ * node does today, so the tests that cover it build one: 1-1 with `reaim` put
+ * back on its ghost and nothing else touched.
+ */
+const REAIM_LESSON: LoadOptions = {
+  patchNode: (cfg) => (cfg.id === 1 && cfg.ghost ? { ...cfg, ghost: { ...cfg.ghost, reaim: 'left' } } : cfg)
+}
+
 /** The metrics an 85 px tile hands over, with the board's origin at (0, 0). */
 const TILE = 85
 const tileMetrics = () => ({
@@ -93,10 +125,12 @@ describe('starting a node', () => {
     expect(battle.turn.value).toBe(1)
     expect(battle.view.hand).toEqual(['melee', 'melee', 'melee'])
     expect(battle.rerollsLeft.value).toBe(2)
-    // The ghost hand teaches the drag AND the re-aim, on the node's own script;
-    // the clock waits for it.
+    // The ghost hand shows the ONE gesture the game is played with — the sword
+    // carried to (1,2) and released on the side facing the skeleton — and the
+    // clock waits for it. No re-aim: the drop is the aim.
     expect(battle.ghostActive.value).toBe(true)
-    expect(battle.view.ghost).toEqual({ handIndex: 0, to: { col: 1, row: 2 }, dir: 'left', mode: 'place', reaim: 'left' })
+    expect(battle.view.ghost).toEqual({ handIndex: 0, to: { col: 1, row: 2 }, dir: 'left', mode: 'place' })
+    expect(battle.view.ghost!.reaim).toBeUndefined()
     expect(battle.timerPaused.value).toBe(true)
     expect(battle.lockOpen.value).toBe(false)
     expect(battle.selectedHand.value).toBe(-1)
@@ -174,7 +208,10 @@ describe('the drag protocol', () => {
     expect(drag.aiming).toBe(true)
   })
 
-  it('a twelve-pixel flick is a facing', async () => {
+  it('inside a tile there is no distance threshold at all — the position IS the facing', async () => {
+    // This used to pin the twelve-pixel stroke threshold. Inside a tile there
+    // is no longer a threshold to pin: the pointer's position answers directly,
+    // so the only thing that decides the facing is which region it stands in.
     const { battle, mod } = await load(normalBlob())
     mod.setDragMetrics(tileMetrics())
     battle.startNode(NORMAL)
@@ -183,21 +220,21 @@ describe('the drag protocol', () => {
     expect(drag.type).toBe('melee')
     battle.updateDrag(127, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
+    // The centre chooses nothing, so the pebble still faces the way it arrived.
     expect(drag.dir).toBe('up')
-    // Eight pixels: not yet.
-    battle.updateDrag(119, 212, { col: 1, row: 2 })
-    expect(drag.dir).toBe('up')
-    // Fourteen: left.
-    battle.updateDrag(113, 212, { col: 1, row: 2 })
+    // A few pixels toward the left edge is already left — no minimum travel.
+    battle.updateDrag(100, 212, { col: 1, row: 2 })
     expect(drag.dir).toBe('left')
-    expect(drag.anchor).toEqual({ x: 127, y: 212 })
     battle.endDrag(true)
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
   })
 
-  it('entering a tile at its edge and staying there, a small flick still turns the rune', async () => {
+  it('entering a tile at its edge, every facing is reachable without leaving it', async () => {
     // The complaint this pins: "if I enter a grid spot on one edge and stay
-    // there with my mouse, it is really hard to change the attack vector".
+    // there, it is really hard to change the attack vector". Position aiming
+    // answers it directly — the facing IS the edge the pointer is nearest, so
+    // reaching another one is a slide across the same tile rather than a flick
+    // that has to clear a distance threshold.
     const { battle, mod } = await load(normalBlob())
     mod.setDragMetrics(tileMetrics())
     battle.startNode(NORMAL)
@@ -207,24 +244,43 @@ describe('the drag protocol', () => {
     battle.updateDrag(168, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
     expect(drag.aiming).toBe(true)
-    // A flick OUTWARD crosses into (2,2) at once; the input reports that tile.
-    battle.updateDrag(176, 212, { col: 2, row: 2 })
-    battle.updateDrag(183, 212, { col: 2, row: 2 })
     expect(drag.dir).toBe('right')
-    expect(drag.over).toEqual({ col: 1, row: 2 })
-    // …and back the other way, still without leaving.
-    battle.updateDrag(175, 212, { col: 2, row: 2 })
-    battle.updateDrag(168, 212, { col: 1, row: 2 })
+    // Every other facing, from the same landed tile, by sliding across it.
+    battle.updateDrag(92, 212, { col: 1, row: 2 })
     expect(drag.dir).toBe('left')
-    // Up, down: every facing from the same spot.
-    battle.updateDrag(168, 198, { col: 1, row: 2 })
+    battle.updateDrag(127, 178, { col: 1, row: 2 })
     expect(drag.dir).toBe('up')
-    battle.updateDrag(168, 213, { col: 1, row: 2 })
+    battle.updateDrag(127, 247, { col: 1, row: 2 })
     expect(drag.dir).toBe('down')
+    // …and the stone never moved off the tile it was put on.
     expect(drag.over).toEqual({ col: 1, row: 2 })
   })
 
-  it('a flick back inside the window is the opposite facing, not less of the first', async () => {
+  it('a flick OUT past the edge still aims, for a thumb that cannot see the tile', async () => {
+    // Position aims while the pointer is inside the tile; the stroke path is
+    // what answers once it leaves, and it is still the only aim a finger has
+    // when it has slid off the stone it is placing.
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    battle.beginDrag(0, 100, 600)
+    const drag = battle.view.drag!
+    battle.updateDrag(168, 212, { col: 1, row: 2 })
+    advance(battle, AIM_LAND_MS + 10)
+    expect(drag.dir).toBe('right')
+    // Out of the tile to the right: a stroke, not a position.
+    battle.updateDrag(176, 212, { col: 2, row: 2 })
+    battle.updateDrag(183, 212, { col: 2, row: 2 })
+    expect(drag.region).toBeNull()
+    expect(drag.dir).toBe('right')
+    expect(drag.over).toEqual({ col: 1, row: 2 })
+  })
+
+  it('a small wobble never flips the facing; crossing to the far side does', async () => {
+    // The old failure mode this guards was jitter reading as a stroke. Position
+    // aiming cannot jitter at all: the answer depends only on where the pointer
+    // IS, and near the middle nothing is chosen, so a hand shaking over the
+    // centre holds its facing instead of flickering between two.
     const { battle, mod } = await load(normalBlob())
     mod.setDragMetrics(tileMetrics())
     battle.startNode(NORMAL)
@@ -232,17 +288,18 @@ describe('the drag protocol', () => {
     const drag = battle.view.drag!
     battle.updateDrag(127, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
-    battle.updateDrag(127, 190, { col: 1, row: 2 })
+    battle.updateDrag(127, 185, { col: 1, row: 2 })
     expect(drag.dir).toBe('up')
-    // Six pixels back is jitter…
-    battle.updateDrag(127, 196, { col: 1, row: 2 })
-    expect(drag.dir).toBe('up')
-    // …thirteen is a stroke.
+    // Back toward the middle: inside the dead zone, so the facing holds.
     battle.updateDrag(127, 203, { col: 1, row: 2 })
+    expect(drag.region).toBeNull()
+    expect(drag.dir).toBe('up')
+    // Across to the far half: now it is a different choice.
+    battle.updateDrag(127, 245, { col: 1, row: 2 })
     expect(drag.dir).toBe('down')
   })
 
-  it('a diagonal rune snaps a flick to its diagonals', async () => {
+  it('a diagonal rune reads its tile as four quadrants, not four triangles', async () => {
     // 1-4 is the orb lesson: its hand is guaranteed to hold a mage.
     const { battle, mod } = await load({ gx_best_node: 3, gx_node: 4, gx_tutorial_seen: true })
     mod.setDragMetrics(tileMetrics())
@@ -255,9 +312,14 @@ describe('the drag protocol', () => {
     expect(drag.dir).toBe('ur')
     battle.updateDrag(127, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
-    battle.updateDrag(117, 222, { col: 1, row: 2 })
+    // The orb's tile is cut into quadrants, so the lower-left one is `dl`.
+    battle.updateDrag(105, 235, { col: 1, row: 2 })
     expect(drag.dir).toBe('dl')
+    // Back through the middle: nothing chosen there, so it holds…
     battle.updateDrag(127, 212, { col: 1, row: 2 })
+    expect(drag.dir).toBe('dl')
+    // …and the upper-right quadrant is `ur`.
+    battle.updateDrag(150, 188, { col: 1, row: 2 })
     expect(drag.dir).toBe('ur')
   })
 
@@ -377,8 +439,51 @@ describe('the drag protocol', () => {
     expect(battle.view.playerMove).toMatchObject({ type: 'melee', col: 1, row: 2, dir: 'up' })
   })
 
-  it('locks the placement and opens the correction window; on 1-1 the window is HELD until the re-aim the ghost shows', async () => {
+  it('locks the placement and opens an ordinary correction window — on 1-1 too, the lesson ended at the drop', async () => {
     const { battle, events, state } = await load()
+    battle.startNode(1)
+    battle.beginDrag(0, 100, 600)
+    battle.updateDrag(120, 420, { col: 1, row: 2 })
+    advance(battle, AIM_LAND_MS + 40)
+    battle.endDrag(true)
+    // Locked: the pebble is on its tile facing forward, the window is open, the reveal waits.
+    expect(battle.hasPlaced.value).toBe(true)
+    expect(battle.lockOpen.value).toBe(true)
+    expect(battle.phase.value).toBe('planning')
+    expect(battle.view.lock).toEqual({
+      cell: { col: 1, row: 2 }, type: 'melee', dir: 'up', leftMs: LOCK_WINDOW_MS, totalMs: LOCK_WINDOW_MS, source: 'drag', held: false
+    })
+    expect(battle.view.playerMove).toMatchObject({ side: 'player', type: 'melee', col: 1, row: 2, dir: 'up' })
+    expect(battle.view.hand).toHaveLength(2)
+    expect(battle.activeRune.value).toBeNull()
+    expect(events[events.length - 1]).toBe('placed')
+    // The ghost hand goes with the drop — nothing is demonstrated on a placed stone.
+    expect(battle.ghostActive.value).toBe(false)
+    expect(battle.view.ghost).toBeNull()
+    // No second drag, no reroll, no selection this turn.
+    expect(battle.beginDrag(0, 100, 600)).toBe(false)
+    expect(battle.selectHand(0)).toBe(false)
+    // The window is a correction, not a lesson: it drains on its own, and a
+    // correction inside it turns the rune.
+    advance(battle, 300)
+    expect(battle.view.lock!.leftMs).toBeLessThan(LOCK_WINDOW_MS)
+    expect(battle.aimKey('left')).toBe(true)
+    expect(battle.view.lock).toMatchObject({ dir: 'left', held: false })
+    // The correction did not buy any more time — the ring runs out where it was.
+    advance(battle, battle.view.lock!.leftMs + 20)
+    expect(battle.phase.value).toBe('reveal')
+    expect(battle.lockOpen.value).toBe(false)
+    expect(battle.view.lock).toBeNull()
+    expect(battle.view.reveal?.player).toMatchObject({ side: 'player', type: 'melee', col: 1, row: 2, dir: 'left' })
+    expect(events.slice(-2)).toEqual(['placed', 'reveal'])
+    // The first placement ever is remembered — the ghost never comes back.
+    expect(state.getState('gx_tutorial_seen')).toBe(true)
+    // …and the correction was a real aim.
+    expect(state.getState('gx_aimed', false)).toBe(true)
+  })
+
+  it('a lesson whose ghost carries a re-aim HOLDS the window until the player performs it', async () => {
+    const { battle, events, state } = await load({}, REAIM_LESSON)
     battle.startNode(1)
     battle.beginDrag(0, 100, 600)
     battle.updateDrag(120, 420, { col: 1, row: 2 })
@@ -430,7 +535,7 @@ describe('the drag protocol', () => {
   })
 
   it('the held window gives up after LESSON_REAIM_HOLD_MS and the rune goes as it faces', async () => {
-    const { battle } = await load()
+    const { battle } = await load({}, REAIM_LESSON)
     battle.startNode(1)
     battle.beginDrag(0, 100, 600)
     battle.updateDrag(120, 420, { col: 1, row: 2 })
@@ -446,15 +551,14 @@ describe('the drag protocol', () => {
   })
 
   it('a placement already facing the way the ghost shows is the lesson learned: no hold', async () => {
-    const { battle, mod } = await load()
+    const { battle, mod } = await load({}, REAIM_LESSON)
     mod.setDragMetrics(tileMetrics())
     battle.startNode(1)
     battle.beginDrag(0, 100, 600)
     battle.updateDrag(127, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
-    // A flick left while still holding.
-    battle.updateDrag(120, 212, { col: 1, row: 2 })
-    battle.updateDrag(113, 212, { col: 1, row: 2 })
+    // Slid to the tile's left region while still holding.
+    battle.updateDrag(95, 212, { col: 1, row: 2 })
     expect(battle.view.drag!.dir).toBe('left')
     battle.endDrag(true)
     expect(battle.view.lock).toMatchObject({ dir: 'left', held: false, leftMs: LOCK_WINDOW_MS })
@@ -464,7 +568,7 @@ describe('the drag protocol', () => {
   })
 
   it('an external pause freezes a held window\'s patience too', async () => {
-    const { battle } = await load()
+    const { battle } = await load({}, REAIM_LESSON)
     battle.startNode(1)
     battle.beginDrag(0, 100, 600)
     battle.updateDrag(120, 420, { col: 1, row: 2 })
@@ -480,7 +584,7 @@ describe('the drag protocol', () => {
   })
 
   it('only the first placement of a lesson is held', async () => {
-    const { battle } = await load()
+    const { battle } = await load({}, REAIM_LESSON)
     battle.startNode(1)
     // Turn 1: the sword faces up at nothing; the hold expires and the turn resolves.
     placeAt(battle, 0, { col: 1, row: 2 })
@@ -650,14 +754,19 @@ describe('the correction window', () => {
 
 describe('the turn clock', () => {
   it('runs through reveal and resolution and wins 1-1 in one turn', async () => {
-    const { battle, events, campaign, economy, streak, reportMatch, state } = await load()
+    const { battle, events, campaign, economy, streak, reportMatch, state, mod } = await load()
+    mod.setDragMetrics(tileMetrics())
     battle.startNode(1)
-    // The sword lands facing up at nothing; the lesson holds the window until
-    // it is turned toward the skeleton on the left.
-    placeAt(battle, 0, { col: 1, row: 2 })
-    expect(battle.view.lock).toMatchObject({ dir: 'up', held: true })
-    expect(battle.aimKey('left')).toBe(true)
-    advance(battle, 450)
+    // The lesson's own gesture: the sword is carried onto (1,2) and released on
+    // the LEFT side of it, so it lands already facing the skeleton on (0,2).
+    battle.beginDrag(0, 100, 600)
+    battle.updateDrag(127, 212, { col: 1, row: 2 })
+    advance(battle, AIM_LAND_MS + 10)
+    battle.updateDrag(95, 212, { col: 1, row: 2 })
+    expect(battle.view.drag!.dir).toBe('left')
+    battle.endDrag(true)
+    expect(battle.view.lock).toMatchObject({ dir: 'left', held: false })
+    advance(battle, LOCK_WINDOW_MS + 20)
     expect(battle.phase.value).toBe('reveal')
 
     advance(battle, REVEAL_MS + 20)
@@ -1021,7 +1130,10 @@ describe('aiming by key', () => {
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
   })
 
-  it('a stroke after a key wins, as strokes always do', async () => {
+  it('moving into a region after a key wins, as the later aim always does', async () => {
+    // A key pre-aims; sliding into a region afterwards is a deliberate second
+    // answer and takes precedence, exactly as a stroke used to. (Stopping in
+    // the dead zone does NOT — that case is pinned separately.)
     const { battle, mod } = await load(normalBlob({ gx_unlocked_runes: ['melee'] }))
     mod.setDragMetrics(tileMetrics())
     battle.startNode(NORMAL)
@@ -1029,8 +1141,10 @@ describe('aiming by key', () => {
     battle.aimKey('right')
     battle.updateDrag(127, 212, { col: 1, row: 2 })
     advance(battle, AIM_LAND_MS + 10)
-    battle.updateDrag(127, 205, { col: 1, row: 2 })
-    battle.updateDrag(127, 198, { col: 1, row: 2 })
+    // The centre chose nothing, so the key still stands…
+    expect(battle.view.drag!.dir).toBe('right')
+    // …until the pointer moves into the top region.
+    battle.updateDrag(127, 180, { col: 1, row: 2 })
     expect(battle.view.drag!.dir).toBe('up')
     battle.endDrag(true)
     expect(battle.view.playerMove).toMatchObject({ dir: 'up' })
@@ -1123,5 +1237,238 @@ describe('bookkeeping', () => {
     expect(battle.activeRune.value).toBe(battle.view.hand[1])
     battle.selectHand(-1)
     expect(battle.activeRune.value).toBeNull()
+  })
+})
+
+/**
+ * ─── Aiming by position: the tile's own compass ─────────────────────────────
+ *
+ * A precise pointer (a mouse) aims by WHERE it stands inside the tile, and an
+ * aimed precise placement needs no correction window afterwards — the player
+ * saw the facing lit under the cursor before they clicked. A finger keeps the
+ * old stroke gesture and the old window, because it covers the very regions it
+ * would be choosing between.
+ *
+ * Cell (1,2) with TILE = 85 spans x 85..170, y 170..255, centred (127.5, 212.5).
+ */
+describe('aiming by position', () => {
+  /** A precise drag of the sword, ready to be moved over cell (1,2). */
+  const swordDrag = async () => {
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    const slot = battle.view.hand.indexOf('melee')
+    expect(slot).toBeGreaterThanOrEqual(0)
+    battle.beginDrag(slot, 100, 600, true)
+    return { battle, drag: battle.view.drag as NonNullable<typeof battle.view.drag> }
+  }
+
+  it('reads each of the four triangles of a cardinal rune', async () => {
+    const { battle, drag } = await swordDrag()
+    for (const [x, y, dir] of [
+      [127.5, 180, 'up'], [163, 212.5, 'right'], [127.5, 245, 'down'], [92, 212.5, 'left']
+    ] as const) {
+      battle.updateDrag(x, y, { col: 1, row: 2 })
+      expect(drag.region, `${x},${y}`).toBe(dir)
+      expect(drag.dir, `${x},${y}`).toBe(dir)
+    }
+  })
+
+  it('reads the four quadrants of a diagonal rune, and differs from a sword on the SAME point', async () => {
+    const { battle, mod } = await load({ gx_best_node: 3, gx_node: 4, gx_tutorial_seen: true })
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(4)
+    const slot = battle.view.hand.indexOf('mage')
+    battle.beginDrag(slot, 100, 600, true)
+    const drag = battle.view.drag as NonNullable<typeof battle.view.drag>
+    for (const [x, y, dir] of [
+      [110, 195, 'ul'], [145, 195, 'ur'], [145, 230, 'dr'], [110, 230, 'dl']
+    ] as const) {
+      battle.updateDrag(x, y, { col: 1, row: 2 })
+      expect(drag.region, `${x},${y}`).toBe(dir)
+    }
+    // The orb's tile is cut on the midlines, the sword's on the diagonals, so
+    // one point in the upper-left names two different facings.
+    battle.updateDrag(100, 195, { col: 1, row: 2 })
+    expect(drag.region).toBe('ul')
+    const sword = await swordDrag()
+    sword.battle.updateDrag(100, 195, { col: 1, row: 2 })
+    expect(sword.drag.region).toBe('left')
+  })
+
+  it('a precise aimed placement skips the correction window and goes straight to reveal', async () => {
+    const { battle, drag } = await swordDrag()
+    battle.updateDrag(92, 212.5, { col: 1, row: 2 })
+    expect(drag.dir).toBe('left')
+    battle.endDrag(true)
+    // No second of nothing: the facing was visible before the click.
+    expect(battle.lockOpen.value).toBe(false)
+    expect(battle.view.lock).toBeNull()
+    expect(battle.phase.value).toBe('reveal')
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
+  })
+
+  it('the centre of a tile is NOT a choice: the facing holds and the window stays', async () => {
+    // The middle is simply where you click a tile, so nothing is picked there.
+    // The case that decides it: a player pre-aims with a key and then clicks
+    // the tile centre. If the centre counted as a choice it would silently
+    // overwrite their key with the default AND skip the correction window that
+    // was the only way to fix it.
+    const { battle, drag } = await swordDrag()
+    battle.aimKey('right')
+    expect(drag.dir).toBe('right')
+    battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
+    expect(drag.region).toBeNull()
+    expect(drag.dir).toBe('right')
+    battle.endDrag(true)
+    expect(battle.lockOpen.value).toBe(true)
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'right' })
+  })
+
+  it('crossing the dead zone changes nothing, then choosing again does', async () => {
+    // Not a flicker: the absence of one. The facing simply holds while the
+    // pointer is near the middle.
+    const { battle, drag } = await swordDrag()
+    battle.updateDrag(92, 212.5, { col: 1, row: 2 })
+    expect(drag.dir).toBe('left')
+    battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
+    expect(drag.region).toBeNull()
+    expect(drag.dir).toBe('left')
+    battle.updateDrag(163, 212.5, { col: 1, row: 2 })
+    expect(drag.region).toBe('right')
+    expect(drag.dir).toBe('right')
+  })
+
+  it('the compass promises the held facing inside the dead zone, and says nothing was chosen', async () => {
+    // Whatever `hover.dir` reports is what a click delivers — the renderer
+    // draws its "nothing picked yet" state off `chosen`, so the two must agree.
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    battle.selectHand(battle.view.hand.indexOf('melee'))
+    battle.aimKey('left')
+    battle.setHover({ col: 1, row: 2 }, 0.5, 0.5)
+    expect(battle.view.hover).toMatchObject({ chosen: false, dir: 'left' })
+    // …and a click in the middle keeps both the facing and the window.
+    expect(battle.placeSelected({ col: 1, row: 2 })).toBe(true)
+    expect(battle.view.playerMove).toMatchObject({ dir: 'left' })
+    expect(battle.lockOpen.value).toBe(true)
+  })
+
+  it('a FINGER aims by position too — and still keeps its correction window', async () => {
+    // Mobile gets the easier aiming: a thumb sliding toward the edge it wants
+    // beats a flick with a distance threshold in it. What it does NOT lose is
+    // the second chance, because a fingertip covers the middle of the very tile
+    // it is choosing on. That is the only thing `precise` gates now.
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    const slot = battle.view.hand.indexOf('melee')
+    battle.beginDrag(slot, 100, 600)
+    const drag = battle.view.drag as NonNullable<typeof battle.view.drag>
+    expect(drag.precise).toBe(false)
+    battle.updateDrag(92, 212.5, { col: 1, row: 2 })
+    advance(battle, AIM_LAND_MS + 10)
+    expect(drag.region).toBe('left')
+    expect(drag.dir).toBe('left')
+    battle.endDrag(true)
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
+    // The window is the safety net touch keeps.
+    expect(battle.lockOpen.value).toBe(true)
+    expect(battle.view.lock?.source).toBe('drag')
+    expect(battle.view.lock?.totalMs).toBe(LOCK_WINDOW_MS)
+  })
+
+  it('1-1 keeps its held re-aim window even for a precise pointer', async () => {
+    // The lesson IS the correction window. It must not evaporate because the
+    // player happens to be on a desktop.
+    const { battle, mod } = await load()
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(1)
+    battle.beginDrag(0, 100, 600, true)
+    battle.updateDrag(127.5, 180, { col: 1, row: 2 })
+    expect((battle.view.drag as NonNullable<typeof battle.view.drag>).region).toBe('up')
+    battle.endDrag(true)
+    expect(battle.lockOpen.value).toBe(true)
+    expect(battle.view.lock?.held).toBe(true)
+    expect(battle.ghostActive.value).toBe(true)
+  })
+
+  it('a tap that named no direction still gets the long window', async () => {
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    battle.selectHand(0)
+    expect(battle.placeSelected({ col: 1, row: 2 })).toBe(true)
+    expect(battle.lockOpen.value).toBe(true)
+    expect(battle.view.lock?.totalMs).toBe(LOCK_WINDOW_TAP_MS)
+  })
+
+  it('a click INSIDE a region places aimed and skips the window; without a hover it does not', async () => {
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    battle.selectHand(battle.view.hand.indexOf('melee'))
+    // The cursor was over that region first — that is what the player saw.
+    battle.setHover({ col: 1, row: 2 }, 0.5, 0.95)
+    expect(battle.view.hover).toMatchObject({ cell: { col: 1, row: 2 }, dir: 'down', precise: true })
+    expect(battle.placeSelected({ col: 1, row: 2 }, 'down')).toBe(true)
+    expect(battle.lockOpen.value).toBe(false)
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'down' })
+
+    // A named direction with NO hover behind it is not an aimed placement: the
+    // skip is earned by the player having seen the facing, not by the caller.
+    const b2 = await load(normalBlob())
+    b2.mod.setDragMetrics(tileMetrics())
+    b2.battle.startNode(NORMAL)
+    b2.battle.selectHand(b2.battle.view.hand.indexOf('melee'))
+    expect(b2.battle.placeSelected({ col: 1, row: 2 }, 'down')).toBe(true)
+    expect(b2.battle.lockOpen.value).toBe(true)
+  })
+
+  it('the compass appears with a pebble in hand and is cleared by every way of letting go', async () => {
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    expect(battle.view.hover).toBeNull()
+    // Nothing in hand: no compass, whatever the pointer does.
+    battle.setHover({ col: 1, row: 2 }, 0.5, 0.1)
+    expect(battle.view.hover).toBeNull()
+
+    battle.selectHand(0)
+    battle.setHover({ col: 1, row: 2 }, 0.5, 0.1)
+    expect(battle.view.hover).toMatchObject({ cell: { col: 1, row: 2 }, type: battle.view.hand[0], precise: true })
+    // Off the board.
+    battle.setHover(null)
+    expect(battle.view.hover).toBeNull()
+    // Letting the selection go.
+    battle.setHover({ col: 1, row: 2 }, 0.5, 0.1)
+    battle.selectHand(-1)
+    expect(battle.view.hover).toBeNull()
+
+    // A drag keeps its own compass, and committing clears it.
+    battle.beginDrag(battle.view.hand.indexOf('melee'), 100, 600, true)
+    battle.updateDrag(127.5, 180, { col: 1, row: 2 })
+    expect(battle.view.hover).toMatchObject({ cell: { col: 1, row: 2 }, dir: 'up' })
+    battle.endDrag(true)
+    expect(battle.view.hover).toBeNull()
+  })
+
+  it('a tile the pebble cannot take offers no compass and no region', async () => {
+    // 1-2 stands enemy runes on the board, so there is a tile to refuse.
+    const { battle, mod } = await load({ gx_best_node: 1, gx_node: 2, gx_tutorial_seen: true })
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(2)
+    const slot = battle.view.hand.indexOf('archer')
+    expect(slot).toBeGreaterThanOrEqual(0)
+    battle.beginDrag(slot, 100, 600, true)
+    const held = battle.view.board.tiles.find((t) => t.runeId !== null && t.owner === 'enemy')
+    expect(held).toBeDefined()
+    const cell = { col: held!.col, row: held!.row }
+    // Well off the centre, so the dead zone is not what is answering.
+    battle.updateDrag(cell.col * TILE + TILE * 0.5, cell.row * TILE + TILE * 0.08, cell)
+    expect(battle.view.drag!.kind).toBe('invalid')
+    expect(battle.view.hover).toBeNull()
+    expect(battle.view.drag!.region).toBeNull()
   })
 })

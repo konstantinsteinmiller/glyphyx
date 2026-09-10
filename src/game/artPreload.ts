@@ -1,5 +1,5 @@
 import {
-  FACTION_DEFS, RUNE_TYPES, SKIN_IDS, SKINS, STARTING_RUNES, STARTING_SKIN,
+  FACTION_DEFS, RUNE_TYPES, SKIN_IDS, STARTING_RUNES, STARTING_SKIN,
   type Faction, type NodeConfig, type RuneType, type SkinId
 } from './rules'
 import { ART_CATALOGUE, allArtIds, enemyStoneIds, playerStoneIds } from './artCatalogue'
@@ -126,7 +126,11 @@ export const factionStoneWants = (faction: Faction): ArtWant[] =>
  */
 const FIRST_FX: ArtWant[] = [
   ['fx', 'ring-heal'], ['fx', 'ring-shock'], ['fx', 'shield'], ['fx', 'guard'], ['fx', 'smoke'], ['fx', 'scorch'], ['fx', 'muzzle'],
-  ['fx', 'laurel-pebble'],
+  // The wreath of the rune every player starts with. It is keyed by the RUNE,
+  // not by the skin — the wreath hugs the rune's own silhouette — and it is
+  // derived rather than written out, because it was written out once as
+  // `laurel-pebble` and quietly became a request for a wreath no stone wears.
+  ...STARTING_RUNES.map((t): ArtWant => ['fx', `laurel-${t}`]),
   ['round', 'bolt']
 ]
 
@@ -140,10 +144,18 @@ export const criticalArtWants = (config: NodeConfig | null): ArtWant[] => uniq([
   ['bg', 'sky'], ['bg', 'ridge-far'], ['bg', 'ridge-near'],
   ['tile', 'player'], ['tile', 'enemy'], ['tile', 'neutral'], ['tile', 'frame'],
   ['ui', 'chest'], ['ui', 'ribbon'], ['ui', 'coin'], ['ui', 'forge'], ['ui', 'reroll'],
+  // The two conquest plaques are on screen from turn 1. They are the one piece
+  // of `ui` art the DOM consumes rather than the canvas — a CSS
+  // `background-image` on `ConquestCounters` — so the preloader does not gate
+  // them, it warms the cache so the plate is painted rather than blank on the
+  // first frame the counters appear.
+  ['ui', 'counter-you'], ['ui', 'counter-foe'],
   ['hero', 'teal'],
   ...factionsOf(config).map((f): ArtWant => ['monster', FACTION_DEFS[f].avatar]),
   ...skinStoneWants(resumeSkin(), resumeRunes()),
-  ['fx', `laurel-${SKINS[resumeSkin()].shape}`],
+  // One wreath per rune the save has unlocked: any of them can come out of the
+  // hand at Lv 2 on the first turn back.
+  ...resumeRunes().map((t): ArtWant => ['fx', `laurel-${t}`]),
   ...FIRST_FX
 ])
 

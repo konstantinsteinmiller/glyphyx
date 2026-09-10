@@ -18,7 +18,8 @@ export default {
       'cleave': 'Fells all three tiles ahead at once, from the very first turn.',
       'roller': 'Ploughs through two survivors before it stops, from the very first turn.',
       'bombard': 'Shells the far rank and the tile between, from the very first turn.',
-      'nuker': 'Lands at Lv 3, tough enough to hold the board it just cleared, from the very first turn.'
+      'nuker': 'Lands at Lv 3, tough enough to hold the board it just cleared, from the very first turn.',
+      'crown': 'Lands at Lv 3 — takes even a stacked rune, from the very first turn.'
     },
     'watchAd': 'Watch ad',
     'armed': 'Armed ×{n}',
@@ -57,8 +58,8 @@ export default {
 
   // ─── HUD ──────────────────────────────────────────────────────────────────
   'hud': {
-    // `{c}` chapter, `{n}` node inside it — "Stage 1-3".
-    'stage': 'Stage {c}-{n}',
+    // `{c}` chapter, `{n}` node inside it — "Level 1-3".
+    'stage': 'Level {c}-{n}',
     'conquest': 'Conquest',
     // `{n}` tiles held of `{total}` needed — "5 / 8".
     'tiles': '{n} / {total}',
@@ -94,7 +95,8 @@ export default {
       'cleave': 'Axe',
       'roller': 'Boulder',
       'bombard': 'Mortar',
-      'nuker': 'Nuker'
+      'nuker': 'Nuker',
+      'crown': 'Crown'
     },
     'descriptions': {
       'melee': 'Strikes the tile it faces. Lv 2 knocks the target back.',
@@ -105,7 +107,8 @@ export default {
       'cleave': 'Cuts the three tiles ahead — the one it faces and both beside it.',
       'roller': 'Rolls until a rune survives it, friends included. Lv 2 rolls one further.',
       'bombard': 'Shells three tiles, three ranks ahead, over any wall. Lv 2 also hits halfway.',
-      'nuker': 'Detonates where it lands: every Lv 1 rune on the board dies, yours too. Lv 2 stacks live.'
+      'nuker': 'Detonates where it lands: every Lv 1 rune on the board dies, yours too. Lv 2 stacks live.',
+      'crown': 'Takes the rune it faces and is spent doing it — it fights for you at once. Lv 2 takes stacks.'
     }
   },
 
@@ -117,8 +120,8 @@ export default {
       'desktop': 'Drag a rune onto the board'
     },
     'aim': {
-      'touch': 'Swipe to aim, release to lock',
-      'desktop': 'Drag to aim, or press an arrow key / WASD, then release'
+      'touch': 'Let go on the edge it should face',
+      'desktop': 'Move to the edge it should face, then click'
     },
     'archer': {
       'touch': 'Bows skip a tile and hit the next',
@@ -171,6 +174,10 @@ export default {
     'nuker': {
       'touch': 'The nuker destroys every Lv 1 rune — including yours',
       'desktop': 'The nuker destroys every Lv 1 rune — including yours'
+    },
+    'crown': {
+      'touch': 'The crown takes the rune it faces — it fights for you now',
+      'desktop': 'The crown takes the rune it faces — it fights for you now'
     }
   },
 
@@ -207,7 +214,7 @@ export default {
     'defeat': 'Defeat',
     'turns': 'Turns',
     'playAgain': 'Play again',
-    'nextStage': 'Next stage',
+    'nextStage': 'Next level',
     'newRecord': 'New record!',
     'streakBonus': 'Streak ×{n}',
     // Renders as `[film] 3× [coin] (+123)`.
@@ -249,8 +256,8 @@ export default {
     'reward': 'Reward',
     'play': 'Play',
     'replay': 'Replay',
-    'nextUnlock': 'Win Stage {c}-{n} for',
-    'nextUnlockAria': 'Win Stage {c}-{n} to unlock {rune}'
+    'nextUnlock': 'Win Level {c}-{n} for',
+    'nextUnlockAria': 'Win Level {c}-{n} to unlock {rune}'
   },
 
   // ─── Rune skins (the coin sink) ───────────────────────────────────────────
@@ -266,7 +273,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Amber',
       'marble': 'Marble',
-      'ember': 'Ember'
+      'ember': 'Ember',
+      'sapphire': 'Sapphire',
+      'ruby': 'Ruby',
+      'diamond': 'Diamond'
     },
     'tagline': 'Every rune you place wears it.',
     'needMore': '{n} more coins',
@@ -276,7 +286,10 @@ export default {
       'jade': 'Polished green jade, the glyph inlaid in gold.',
       'amber': 'A faceted amber gem, glowing from the inside.',
       'marble': 'White marble, carved deep and shadowed.',
-      'ember': 'A slab of cooled lava, the glyph burning through the cracks.'
+      'ember': 'A slab of cooled lava, the glyph burning through the cracks.',
+      'sapphire': 'Deep blue sapphire, step cut, a white star held under the table.',
+      'ruby': 'A domed ruby cabochon, the glyph burning red beneath it.',
+      'diamond': 'Brilliant-cut diamond, the glyph split into a spectrum.'
     }
   },
 
@@ -295,7 +308,12 @@ export default {
     'freeIn': 'New gift in {t}',
     'freeTaken': 'Come back for the next one',
     'nukerUnlock': 'Unlock the Nuker',
-    'nukerLocked': 'Or win it at Stage 4-1'
+    'nukerLocked': 'Or win it at Level 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Keep winning to find out',
+    'mysteryAria': 'A rune you have not unlocked yet',
+    'nextUp': 'Next up',
+    'winsAt': 'Win it at Level {c}-{n}'
   },
 
   // ─── The offline rune forge ───────────────────────────────────────────────
@@ -313,7 +331,7 @@ export default {
     'title': 'Leaderboard',
     'rank': '#',
     'player': 'Player',
-    'stage': 'Stage',
+    'stage': 'Level',
     'streak': 'Streak',
     'empty': 'No matches posted yet. Be the first.',
     'failed': "Couldn't reach the leaderboard.",
@@ -334,6 +352,7 @@ export default {
     'music': 'Music',
     'musicTrack': 'Music Track',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Quiet Stone',
       'trance': 'Rune Pulse'
     },

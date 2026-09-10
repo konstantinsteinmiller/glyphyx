@@ -70,6 +70,9 @@ const difficultyHint = computed(() => t('options.difficultyHints.' + userDifficu
 
 // Background-music track picker — Trance Tunnel (default) vs Cozy Harmony.
 const musicTrackList = computed(() => [
+  // The game's own track, first because it is the default: nobody downloads it,
+  // it is played from a score (`@/game/music`).
+  { value: 'emberlight', label: t('options.musicTracks.emberlight') },
   { value: 'trance', label: t('options.musicTracks.trance') },
   { value: 'cozy', label: t('options.musicTracks.cozy') }
 ])

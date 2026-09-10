@@ -9,7 +9,8 @@ export default {
       'cleave': 'İlk turdan itibaren öndeki üç kareyi bir vuruşta devirir.',
       'roller': 'İlk turdan itibaren durmadan önce iki direneni ezer.',
       'bombard': 'İlk turdan itibaren uzak sırayı ve aradaki kareyi bombalar.',
-      'nuker': 'Sv 3 iner ve az önce süpürdüğü tahtayı tutar, ilk turdan itibaren.'
+      'nuker': 'Sv 3 iner ve az önce süpürdüğü tahtayı tutar, ilk turdan itibaren.',
+      'crown': 'Sv 3’te iner — daha ilk turda yığılmış bir runu bile alır.'
     },
     'watchAd': 'Reklam izle',
     'armed': 'Kuşanıldı ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': 'Bölüm {c}-{n}',
+    'stage': 'Seviye {c}-{n}',
     'conquest': 'Fetih',
     'tiles': '{n} / {total}',
     'turn': 'Tur {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Balta',
       'roller': 'Kaya',
       'bombard': 'Havan',
-      'nuker': 'Yıkıcı'
+      'nuker': 'Yıkıcı',
+      'crown': 'Taç'
     },
     'descriptions': {
       'melee': 'Baktığı kareye vurur. Sv 2 hedefi geri iter.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Öndeki üç kareyi biçer: karşısı ve iki yanı.',
       'roller': 'Bir rün dayanana dek yuvarlanır, dostlar dahil. Sv 2 bir kare daha gider.',
       'bombard': 'Üç sıra ötedeki üç kareyi duvar aşırı bombalar. Sv 2 ortayı da vurur.',
-      'nuker': 'Düştüğü yerde patlar: tahtadaki her Sv 1 rün ölür, seninkiler de. Sv 2 dayanır.'
+      'nuker': 'Düştüğü yerde patlar: tahtadaki her Sv 1 rün ölür, seninkiler de. Sv 2 dayanır.',
+      'crown': 'Baktığı runu alır ve bunu yaparken tükenir; o run hemen senin için savaşır. Sv 2 yığınları da alır.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Bir rünü tahtaya sürükle'
     },
     'aim': {
-      'touch': 'Nişan almak için kaydır, sabitlemek için bırak',
-      'desktop': 'Nişan almak için sürükle ya da ok tuşları / WASD kullan, bırakınca sabitlenir'
+      'touch': 'Bakması gereken kenarda bırak',
+      'desktop': 'Bakması gereken kenara götür, sonra tıkla'
     },
     'archer': {
       'touch': 'Yaylar bir kare atlar ve sonrakine vurur',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Yıkıcı her Sv 1 rünü yok eder — seninkiler dahil',
       'desktop': 'Yıkıcı her Sv 1 rünü yok eder — seninkiler dahil'
+    },
+    'crown': {
+      'touch': 'Taç baktığı runu alır — artık senin için savaşıyor',
+      'desktop': 'Taç baktığı runu alır — artık senin için savaşıyor'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': 'Yenilgi',
     'turns': 'Turlar',
     'playAgain': 'Tekrar oyna',
-    'nextStage': 'Sonraki bölüm',
+    'nextStage': 'Sonraki seviye',
     'newRecord': 'Yeni rekor!',
     'streakBonus': 'Seri ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': 'Ödül',
     'play': 'Oyna',
     'replay': 'Tekrar',
-    'nextUnlock': 'Bölüm {c}-{n} kazanınca:',
-    'nextUnlockAria': '{rune} kilidini açmak için Bölüm {c}-{n} kazan'
+    'nextUnlock': 'Seviye {c}-{n} kazanınca:',
+    'nextUnlockAria': '{rune} kilidini açmak için Seviye {c}-{n} kazan'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': 'Yeşim',
       'amber': 'Kehribar',
       'marble': 'Mermer',
-      'ember': 'Kor'
+      'ember': 'Kor',
+      'sapphire': 'Safir',
+      'ruby': 'Yakut',
+      'diamond': 'Elmas'
     },
     'tagline': 'Koyduğun her rün bunu taşır.',
     'needMore': '{n} altın daha gerek',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Cilalı yeşil yeşim, glif altınla kakılmış.',
       'amber': 'İçten parlayan faset kesim bir kehribar.',
       'marble': 'Beyaz mermer, derin oyulmuş ve gölgeli.',
-      'ember': 'Soğumuş bir lav levhası, glif çatlaklardan yanıyor.'
+      'ember': 'Soğumuş bir lav levhası, glif çatlaklardan yanıyor.',
+      'sapphire': 'Koyu mavi safir, basamak kesim; tablasının altında beyaz bir yıldız.',
+      'ruby': 'Kubbeli bir yakut kaboşon, altında glif kızıl kızıl yanar.',
+      'diamond': 'Pırlanta kesim elmas; glifi tayfa ayırır.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Yeni hediye {t} sonra',
     'freeTaken': 'Bir sonraki için geri gel',
     'nukerUnlock': 'Yıkıcıyı aç',
-    'nukerLocked': 'Ya da Bölüm 4-1’i kazan'
+    'nukerLocked': 'Ya da Seviye 4-1’i kazan',
+    'mystery': '???',
+    'mysteryHint': 'Kazanmaya devam',
+    'mysteryAria': 'Henüz açmadığın bir rün',
+    'nextUp': 'Sıradaki',
+    'winsAt': 'Seviye {c}-{n} ile kazan'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'Liderlik tablosu',
     'rank': '#',
     'player': 'Oyuncu',
-    'stage': 'Bölüm',
+    'stage': 'Seviye',
     'streak': 'Seri',
     'empty': 'Henüz maç yok. İlk sen ol.',
     'failed': 'Liderlik tablosuna ulaşılamadı.',
@@ -304,6 +322,7 @@ export default {
     'music': 'Müzik',
     'musicTrack': 'Müzik parçası',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Sessiz Taş',
       'trance': 'Rün Nabzı'
     },

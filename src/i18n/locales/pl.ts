@@ -9,7 +9,8 @@ export default {
       'cleave': 'Ścina trzy pola przed sobą naraz, już od pierwszej tury.',
       'roller': 'Miażdży dwóch ocalałych, zanim stanie, już od pierwszej tury.',
       'bombard': 'Ostrzeliwuje daleki rząd i pole pośrodku, już od pierwszej tury.',
-      'nuker': 'Ląduje na Poz. 3 i utrzyma planszę, którą właśnie oczyścił, już od pierwszej tury.'
+      'nuker': 'Ląduje na Poz. 3 i utrzyma planszę, którą właśnie oczyścił, już od pierwszej tury.',
+      'crown': 'Ląduje na poz. 3 — od pierwszej tury zabiera nawet spiętrzoną runę.'
     },
     'watchAd': 'Obejrzyj reklamę',
     'armed': 'Uzbrojona ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': 'Etap {c}-{n}',
+    'stage': 'Poziom {c}-{n}',
     'conquest': 'Podbój',
     'tiles': '{n} / {total}',
     'turn': 'Tura {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Topór',
       'roller': 'Głaz',
       'bombard': 'Moździerz',
-      'nuker': 'Niszczyciel'
+      'nuker': 'Niszczyciel',
+      'crown': 'Korona'
     },
     'descriptions': {
       'melee': 'Uderza pole przed sobą. Poz. 2 odpycha cel.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Tnie trzy pola przed sobą: to naprzeciw i oba obok.',
       'roller': 'Toczy się, aż runa wytrzyma, także własna. Poz. 2 toczy się o jedną dalej.',
       'bombard': 'Ostrzeliwuje trzy pola trzy rzędy dalej, ponad murem. Poz. 2 trafia też w połowie.',
-      'nuker': 'Wybucha tam, gdzie spadnie: każda runa Poz. 1 na planszy ginie, twoja też. Poz. 2 przetrwa.'
+      'nuker': 'Wybucha tam, gdzie spadnie: każda runa Poz. 1 na planszy ginie, twoja też. Poz. 2 przetrwa.',
+      'crown': 'Zabiera runę, na którą patrzy, i zużywa się przy tym — od razu walczy za ciebie. Poz. 2 zabiera stosy.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Przeciągnij runę na planszę'
     },
     'aim': {
-      'touch': 'Przesuń, by wycelować, puść, by zatwierdzić',
-      'desktop': 'Przeciągnij lub użyj strzałek / WASD, aby wycelować, puść, aby zatwierdzić'
+      'touch': 'Puść przy krawędzi, w którą ma patrzeć',
+      'desktop': 'Najedź na krawędź, w którą ma patrzeć, i kliknij'
     },
     'archer': {
       'touch': 'Łuki pomijają jedno pole i trafiają następne',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Niszczyciel niszczy każdą runę Poz. 1 — także twoją',
       'desktop': 'Niszczyciel niszczy każdą runę Poz. 1 — także twoją'
+    },
+    'crown': {
+      'touch': 'Korona zabiera runę, na którą patrzy — teraz walczy za ciebie',
+      'desktop': 'Korona zabiera runę, na którą patrzy — teraz walczy za ciebie'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': 'Porażka',
     'turns': 'Tury',
     'playAgain': 'Zagraj ponownie',
-    'nextStage': 'Następny etap',
+    'nextStage': 'Następny poziom',
     'newRecord': 'Nowy rekord!',
     'streakBonus': 'Seria ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': 'Nagroda',
     'play': 'Graj',
     'replay': 'Powtórz',
-    'nextUnlock': 'Wygraj Etap {c}-{n} i zdobądź:',
-    'nextUnlockAria': 'Wygraj Etap {c}-{n}, aby odblokować {rune}'
+    'nextUnlock': 'Wygraj Poziom {c}-{n} i zdobądź:',
+    'nextUnlockAria': 'Wygraj Poziom {c}-{n}, aby odblokować {rune}'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jadeit',
       'amber': 'Bursztyn',
       'marble': 'Marmur',
-      'ember': 'Żar'
+      'ember': 'Żar',
+      'sapphire': 'Szafir',
+      'ruby': 'Rubin',
+      'diamond': 'Diament'
     },
     'tagline': 'Każda runa, którą kładziesz, nosi go.',
     'needMore': 'Brakuje {n} monet',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Polerowany zielony nefryt, glif inkrustowany złotem.',
       'amber': 'Fasetowany bursztyn, który świeci od środka.',
       'marble': 'Biały marmur, głęboko rzeźbiony i zacieniony.',
-      'ember': 'Płyta zastygłej lawy, glif płonie w szczelinach.'
+      'ember': 'Płyta zastygłej lawy, glif płonie w szczelinach.',
+      'sapphire': 'Głęboko niebieski szafir w szlifie schodkowym, biała gwiazda pod taflą.',
+      'ruby': 'Kopulasty kaboszon rubinowy, glif płonie pod nim na czerwono.',
+      'diamond': 'Diament w szlifie brylantowym, glif rozszczepiony na widmo.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Nowy prezent za {t}',
     'freeTaken': 'Wróć po następny',
     'nukerUnlock': 'Odblokuj Niszczyciela',
-    'nukerLocked': 'Albo wygraj Etap 4-1'
+    'nukerLocked': 'Albo wygraj Poziom 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Wygrywaj dalej',
+    'mysteryAria': 'Runa, której jeszcze nie odblokowałeś',
+    'nextUp': 'Następna',
+    'winsAt': 'Zdobądź ją na Poziomie {c}-{n}'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'Ranking',
     'rank': '#',
     'player': 'Gracz',
-    'stage': 'Etap',
+    'stage': 'Poziom',
     'streak': 'Seria',
     'empty': 'Brak zgłoszonych meczów. Bądź pierwszy.',
     'failed': 'Nie udało się połączyć z rankingiem.',
@@ -304,6 +322,7 @@ export default {
     'music': 'Muzyka',
     'musicTrack': 'Utwór',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Cichy kamień',
       'trance': 'Puls run'
     },

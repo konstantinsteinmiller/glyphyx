@@ -53,7 +53,7 @@ start), so there is nothing to re-plan.
 
 > **Half of this shipped (2026-09-09).** The RUNE half is built: the campaign
 > now hands out three more runes (axe 2-1, boulder 2-5, mortar 3-1) and
-> `NextUnlockTeaser` advertises the next one — stone, name and "Win Stage 2-1
+> `NextUnlockTeaser` advertises the next one — stone, name and "Win Level 2-1
 > for" — on the result screen and above the campaign map, off the
 > `nextRuneUnlock` selector in `useCampaign`. Still open: the same treatment
 > for the SKIN milestones (nodes 4 and 8 of each chapter), the "2 stages to go"
@@ -82,6 +82,32 @@ farmed by reloading. A rank can also be bought with one rewarded video.
 (come back after a coffee), not a day-shaped one — if the D1 lift shows up but
 D7 does not, the next thing to try is a second, slower gift on a daily window
 rather than shortening this one.
+
+### 3c. The mystery ladder — **SHIPPED 2026-09-09**
+**Moves:** APT, D1, pick-up · **Effort:** done · **Risk:** low
+
+The rank tab listed all nine runes, four of which a new player cannot touch for
+hours. That is a crowded screen whose majority is noise. It now shows three
+kinds of card: the runes you OWN, then exactly ONE silhouette — the rune the
+campaign hands over next, named, with the stage that gives it — then question
+marks for everything after.
+
+*Why this shape rather than hiding them or silhouetting them all:* a fully
+hidden item cannot be wanted specifically, and a fully revealed list is a chore.
+One concrete next goal plus a visible COUNT of unknowns behind it is the shape
+that pulls in both directions — the next rune is a target the player can picture
+(and has already been teased on the result screen by `nextRuneUnlock`, so the
+two surfaces reinforce each other), and the question marks say "there is more"
+without spending the reveal.
+
+*Deliberately NOT applied to the skins panel.* Every skin is purchasable with
+coins at any moment, so a mystery card there would hide a thing the player could
+buy right now — it would suppress the exact intent the shop exists for. Mystery
+is for campaign-gated content only. Do not re-litigate this without a test.
+
+*Watch:* whether the question-mark cards read as "coming soon" or as "broken".
+If session recordings show players tapping them expecting something, give them a
+one-shot toast pointing at the campaign map rather than making them buyable.
 
 ### 4. Daily first-win double gold
 **Moves:** D1 · **Effort:** 2 h · **Risk:** low

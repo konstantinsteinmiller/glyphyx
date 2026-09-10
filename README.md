@@ -3,9 +3,10 @@
 A mobile-first 2D **tactical rune battler**. Drag one glowing stone rune onto a
 4×4 board, swipe the direction it faces, and watch both sides fire at once:
 swords strike the tile ahead, bows skip one and hit the next, arcane orbs cut
-diagonals, shields absorb, crosses heal — and a nuker levels everything on the
-board that has not been stacked, your own runes included. Stack two matching runes into a
-Level 2 stone, shatter the enemy's into rubble, and hold eight tiles to win —
+diagonals, shields absorb, crosses heal, a nuker levels everything on the board
+that has not been stacked — your own runes included — and a crown takes the
+enemy stone it faces and turns it on its own side. Stack two matching runes into
+a Level 2 stone, shatter the enemy's into rubble, and hold eight tiles to win —
 in about ninety seconds a match.
 
 Built with Vue 3 + TypeScript + Pug + Tailwind + Canvas 2D, shipping to
@@ -36,16 +37,27 @@ pnpm art:slice    # cut painted returns in art-sheets/painted/ into public/image
   are one-rune lessons that cannot be lost (drag, the bow's skip, stacking, the
   orb's diagonal, the shield wall, the healing cross), each scripted for the
   ghost hand and each paying a chest that unlocks the next rune.
-* **Aiming that forgives.** A 12 px flick sets a facing, another flick changes
-  it, and for one second after a placement locks you can press anywhere and
-  flick, tap one of the chevrons around the stone, or press an arrow key / WASD
-  to re-aim it. No drag needed either: tap a pebble, tap a tile. The very first
-  lesson teaches the correction with the ghost hand — the sword is dropped
-  facing nothing and turned toward the skeleton. The shield is a wall: it stops
-  beams and intercepts arrows, and stands through four hits.
+* **Every tile is a compass.** It carves into one region per facing the rune
+  actually has — triangles cut by the diagonals for a sword, corner quadrants for
+  the orb, one whole tile for a shield — and the pointer's POSITION picks the
+  facing, cursor or thumb alike. Move to the top of a tile and the sword faces
+  up; that region lights and grows in from the edge you are aiming at, with every
+  other option drawn beside it. The middle of a tile is a small dead zone that
+  chooses nothing, so a pre-aimed arrow key survives a click in the centre and an
+  absent-minded drop still gets its second chance.
+  Because a cursor never covers the tile it is choosing on, an aimed click skips
+  the correction window entirely and the turn resolves at once. A fingertip does
+  cover it, so touch draws the same compass with its marks leaned outward and
+  keeps the window: a 12 px flick still re-aims, the chevrons around the stone
+  still turn it, and an arrow key / WASD still works. No drag needed either: tap
+  a pebble, tap a tile. The very first lesson still teaches the correction with
+  the ghost hand — the sword is dropped facing nothing and turned toward the
+  skeleton — and keeps its window on every device.
+  The shield is a wall: it stops beams and intercepts arrows, and stands through
+  four hits.
 * **Stack to Lv 8.** Drop a matching rune on your own stone again and again;
-  every pebble adds its body, the crest counts up, the gold laurel hugs whatever
-  silhouette the skin cuts, and a Lv 8 sword swings for sixteen. A shop sells power runes — the first placement of a type lands at
+  every pebble adds its body, the crest counts up, the gold laurel hugs the rune's own
+  silhouette, and a Lv 8 sword swings for sixteen. A shop sells power runes — the first placement of a type lands at
   Lv 3 — for coins or one rewarded video, and skins can be earned by video too.
 * **The goal, shown not told.** The conquest rail carries a crown at eight, and
   the first real duel opens with a two-second wordless intro: eight tiles light
@@ -72,10 +84,14 @@ pnpm art:slice    # cut painted returns in art-sheets/painted/ into public/image
   to the SDK cloud store as one object. Hydration is verified in a real browser
   (`tests/e2e/hydrate.spec.ts`) and against a fake CrazyGames `sdk.data`
   (`tests/save/GlyphyxStateCloudHydrate.test.ts`).
-* **Synthesised combat audio.** Forty cues — the stone thud, the arrow twang,
-  the beam hum, the shatter, the golden merge — are generated per event with
-  pitch and envelope jitter; a handful of samples carry the fanfares. See
-  [`sound-todo.md`](./sound-todo.md).
+* **Synthesised audio, music included.** Forty cues — the stone thud, the arrow
+  twang, the beam hum, the shatter, the golden merge — are generated per event
+  with pitch and envelope jitter, every one of them tuned to a degree of the
+  game's key and sharing one convolution room with a compressor and a soft clip
+  across the sum. The default music track, **"Emberlight"**, is a written score
+  played live by the same engine: sixty seconds of D minor for piano, violin,
+  cello and hand percussion that loops with no seam, because nothing restarts.
+  See [`sound-todo.md`](./sound-todo.md).
 * **21 languages**, key parity enforced by a test.
 * **Retention engine.** Win streaks light a flame aura and multiply gold up to
   ×3; the Rune Forge pays coins for time away (8 h cap); coins buy pebble
@@ -97,7 +113,8 @@ pnpm art:slice    # cut painted returns in art-sheets/painted/ into public/image
 | **Siege** | 1v3 stages start you in the centre 2×2, surrounded by Orc Berserkers (swords), Goblin Archers (bows) and Undead Mages (orbs) who place round-robin and all fire every turn. Break out to eight, or still hold the biggest share when the last turn ends. |
 | **Streak** | Every consecutive win climbs the multiplier — ×1, ×1.5, ×2, ×2.5, ×3 — and the flame around the board grows with it. One loss resets it. |
 | **Forge** | Coins accrue while the tab is closed, up to eight hours. Tap the anvil to collect. |
-| **Spend** | Six skins change the stone itself — river sandstone, knapped obsidian, jade with gold inlay, an amber gem, a marble disc, a cracked lava slab — each with its own silhouette and glyph cut, previewed in the shop with the same painter that draws the field. Rune unlocks and bigger chests come from the campaign map. |
+| **Open** | A chest that holds a rune or a skin gets a screen of its own. Tap it: the lid flies, a shockwave leaves the box, light-and-dark rays turn up behind, confetti falls in front, and the prize climbs out of the chest onto its own plane while the chest shrinks away. The whole thing is sized to the short axis of the window, so it fits a 320-px phone and a landscape one without a scrollbar — a reward you have to scroll to see is a reward you may never see. |
+| **Spend** | Nine skins change the stone itself — and a skin no longer changes its SHAPE. Every rune type owns an outline of its own (a shield is blocky and points down, a bow is a slim spindle, an axe is a bit with two horns), so a stone says which rune it is twice over: in its glyph and in its silhouette. A skin decides how that outline is WORKED — four carved and bordered (river sandstone, a worn jade pendant, a faceted amber gem, a heavy marble tablet), two raw (knapped obsidian, a cracked lava slab) and three cut gems (a step-cut sapphire, a domed ruby cabochon, a brilliant-cut diamond) — plus its own glyph cut, previewed in the shop with the same painter that draws the field. Rune unlocks and bigger chests come from the campaign map. |
 | **Rank** | Every rune carries a permanent rank, 0 to 5, each worth one more maximum hit point — the same number for every rune, so no rune can pull ahead of another. 70 → 560 coins a step, or one rewarded video. And one rank, on one rune, is **free** at any moment: another rune is drawn every twenty minutes, off the clock, so it keeps turning while the game is shut. |
 
 Full player-facing copy lives in [`description.md`](./description.md); the
@@ -223,6 +240,18 @@ baked boards.
   motion with a live painted-vs-drawn toggle (`?art=on|off`). The loop is in
   [`art-sheets/README.md`](./art-sheets/README.md); the drop-in ids in
   [`art-todo.md`](./art-todo.md).
+* **Image compression** — `pnpm art:compress` runs `scripts/compress-images.mjs`
+  over `public/images` and replaces every png/jpg/webp with the smallest encode
+  that still clears a measured quality floor (SSIM ≥ 0.98, PSNR ≥ 36 dB and an
+  alpha-edge check, all scored over the sprite's content box composited on
+  grey). Originals are kept in `public-backup/` — outside `public/`, because
+  Vite copies that folder verbatim into every portal zip. Dry-run first
+  (`pnpm art:compress --dry-run`), and re-run with `--force` to recompress from
+  the backups rather than stacking a second generation loss. `pnpm
+  compress-folder <dir>` does any other tree, `pnpm compress-bench <files>`
+  re-derives the settings, `pnpm compress-restore <dir> --commit <sha>` pulls
+  pre-compression originals back out of git. Use `pnpm`, never `npm run` — npm
+  swallows the `--flags`.
 * `window.__glyphyx` (dev builds and `localStorage.cheat`) exposes the battle,
   campaign, wallet, skins, the overlay flags, `winNow()` and `stripRoom` for
   scripted runs.

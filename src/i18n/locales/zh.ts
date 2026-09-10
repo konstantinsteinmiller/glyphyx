@@ -9,7 +9,8 @@ export default {
       'cleave': '从第一回合起一击放倒前方三格。',
       'roller': '从第一回合起碾过两个幸存者才停下。',
       'bombard': '从第一回合起轰击远排与中间那格。',
-      'nuker': '以 3 级落地，守住刚被清空的棋盘，从第一回合起。'
+      'nuker': '以 3 级落地，守住刚被清空的棋盘，从第一回合起。',
+      'crown': '以 3 级登场 —— 从第一回合起，连叠起来的符文也能夺走。'
     },
     'watchAd': '观看广告',
     'armed': '已装备 ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': '斧',
       'roller': '巨石',
       'bombard': '迫击炮',
-      'nuker': '核爆符'
+      'nuker': '核爆符',
+      'crown': '王冠'
     },
     'descriptions': {
       'melee': '攻击正前方的格子。2 级可击退目标。',
@@ -89,7 +91,8 @@ export default {
       'cleave': '劈砍前方三格：正对的一格与两侧。',
       'roller': '一路滚动，直到有符文挡住，友军也会被撞。2 级可多滚一格。',
       'bombard': '越过阻挡轰击前方三排的三格。2 级还会打中中间。',
-      'nuker': '落地即引爆：场上所有 1 级符文尽毁，你的也不例外。2 级才扛得住。'
+      'nuker': '落地即引爆：场上所有 1 级符文尽毁，你的也不例外。2 级才扛得住。',
+      'crown': '夺走正面的符文，自己随之耗尽 —— 那枚符文立刻为你而战。2 级连叠加的也能夺走。'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': '把符石拖到棋盘上'
     },
     'aim': {
-      'touch': '滑动瞄准，松手锁定',
-      'desktop': '拖动或按方向键 / WASD 瞄准，松开即锁定'
+      'touch': '在要朝向的一边松手',
+      'desktop': '移到要朝向的一边，然后点击'
     },
     'archer': {
       'touch': '长弓跳过一格，命中下一格',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': '核爆符抹去所有 1 级符文 — 包括你的',
       'desktop': '核爆符抹去所有 1 级符文 — 包括你的'
+    },
+    'crown': {
+      'touch': '王冠夺走正面的符文 —— 现在它为你而战',
+      'desktop': '王冠夺走正面的符文 —— 现在它为你而战'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': '翡翠',
       'amber': '琥珀',
       'marble': '大理石',
-      'ember': '余烬'
+      'ember': '余烬',
+      'sapphire': '蓝宝石',
+      'ruby': '红宝石',
+      'diamond': '钻石'
     },
     'tagline': '你放下的每枚符文都是这副模样。',
     'needMore': '还差 {n} 金币',
@@ -250,7 +260,10 @@ export default {
       'jade': '抛光的翠玉，符文以金镶嵌。',
       'amber': '切面琥珀宝石，由内发光。',
       'marble': '白色大理石，深刻带影。',
-      'ember': '冷却的熔岩板，符文在裂缝中燃烧。'
+      'ember': '冷却的熔岩板，符文在裂缝中燃烧。',
+      'sapphire': '深蓝阶梯切工蓝宝石，台面下藏着一颗白星。',
+      'ruby': '圆凸弧面红宝石，符文在其下灼灼燃红。',
+      'diamond': '明亮式切工钻石，符文散作一道光谱。'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': '{t} 后有新礼物',
     'freeTaken': '下次再来领',
     'nukerUnlock': '解锁核爆符',
-    'nukerLocked': '或通关关卡 4-1'
+    'nukerLocked': '或通关关卡 4-1',
+    'mystery': '？？？',
+    'mysteryHint': '继续获胜即可揭晓',
+    'mysteryAria': '尚未解锁的符文',
+    'nextUp': '下一个',
+    'winsAt': '通关关卡 {c}-{n} 获得'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': '音乐',
     'musicTrack': '音乐曲目',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': '静石',
       'trance': '符文脉动'
     },

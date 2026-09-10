@@ -9,7 +9,8 @@ export default {
       'cleave': 'Fauche les trois cases devant d’un coup, dès le premier tour.',
       'roller': 'Écrase deux survivants avant de s’arrêter, dès le premier tour.',
       'bombard': 'Pilonne le rang lointain et la case entre les deux, dès le premier tour.',
-      'nuker': 'Arrive au Niv 3 et tient le plateau qu’elle vient de vider, dès le premier tour.'
+      'nuker': 'Arrive au Niv 3 et tient le plateau qu’elle vient de vider, dès le premier tour.',
+      'crown': 'Arrive au niv. 3 : elle prend même une rune empilée, dès le premier tour.'
     },
     'watchAd': 'Regarder une pub',
     'armed': 'Armée ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Hache',
       'roller': 'Rocher',
       'bombard': 'Mortier',
-      'nuker': 'Détonateur'
+      'nuker': 'Détonateur',
+      'crown': 'Couronne'
     },
     'descriptions': {
       'melee': 'Frappe la case en face. Niv 2 repousse la cible.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Fend les trois cases devant : celle en face et les deux voisines.',
       'roller': 'Roule jusqu’à ce qu’une rune résiste, alliées comprises. Niv 2 roule une de plus.',
       'bombard': 'Pilonne trois cases à trois rangs, par-dessus tout mur. Niv 2 frappe aussi à mi-chemin.',
-      'nuker': 'Explose où elle tombe : toute rune de Niv 1 du plateau meurt, les vôtres aussi. Niv 2 tient.'
+      'nuker': 'Explose où elle tombe : toute rune de Niv 1 du plateau meurt, les vôtres aussi. Niv 2 tient.',
+      'crown': 'Prend la rune qu’elle vise et se consume : celle-ci combat aussitôt pour toi. Niv. 2 prend les piles.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Glissez une rune sur le plateau'
     },
     'aim': {
-      'touch': 'Balayez pour viser, relâchez pour valider',
-      'desktop': 'Glissez ou utilisez les flèches / WASD pour viser, relâchez pour valider'
+      'touch': 'Relâche sur le bord qu’elle doit viser',
+      'desktop': 'Va vers le bord qu’elle doit viser, puis clique'
     },
     'archer': {
       'touch': 'Les arcs sautent une case et frappent la suivante',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Le détonateur détruit toute rune de Niv 1 — les vôtres comprises',
       'desktop': 'Le détonateur détruit toute rune de Niv 1 — les vôtres comprises'
+    },
+    'crown': {
+      'touch': 'La couronne prend la rune qu’elle vise – elle combat pour toi',
+      'desktop': 'La couronne prend la rune qu’elle vise – elle combat pour toi'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Ambre',
       'marble': 'Marbre',
-      'ember': 'Braise'
+      'ember': 'Braise',
+      'sapphire': 'Saphir',
+      'ruby': 'Rubis',
+      'diamond': 'Diamant'
     },
     'tagline': 'Chaque rune que tu poses le porte.',
     'needMore': 'Il manque {n} pièces',
@@ -250,7 +260,10 @@ export default {
       'jade': "Jade vert poli, le glyphe incrusté d'or.",
       'amber': "Une gemme d'ambre facettée qui brille de l'intérieur.",
       'marble': 'Marbre blanc, gravé profond et ombré.',
-      'ember': 'Une dalle de lave refroidie, le glyphe brûle à travers les fissures.'
+      'ember': 'Une dalle de lave refroidie, le glyphe brûle à travers les fissures.',
+      'sapphire': 'Saphir bleu profond taillé en escalier, une étoile blanche sous la table.',
+      'ruby': 'Un rubis cabochon bombé, le glyphe brûle en rouge dessous.',
+      'diamond': 'Diamant taille brillant, le glyphe éclaté en spectre.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Nouveau cadeau dans {t}',
     'freeTaken': 'Revenez pour la prochaine',
     'nukerUnlock': 'Débloquer le Détonateur',
-    'nukerLocked': 'Ou gagnez le Niveau 4-1'
+    'nukerLocked': 'Ou gagnez le Niveau 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Gagne pour voir',
+    'mysteryAria': 'Une rune que vous n’avez pas encore débloquée',
+    'nextUp': 'Prochaine',
+    'winsAt': 'Gagnez-la au Niveau {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Musique',
     'musicTrack': 'Piste musicale',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Pierre paisible',
       'trance': 'Pouls runique'
     },

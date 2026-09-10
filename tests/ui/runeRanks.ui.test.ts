@@ -116,7 +116,12 @@ const RANKS_EN = {
   freeIn: 'New gift in {t}',
   freeTaken: 'Come back for the next one',
   nukerUnlock: 'Unlock the Nuker',
-  nukerLocked: 'Wins it at Stage 4-1'
+  nukerLocked: 'Or win it at Level 4-1',
+  mystery: '???',
+  mysteryHint: 'Keep winning to find out',
+  mysteryAria: 'A rune you have not unlocked yet',
+  nextUp: 'Next up',
+  winsAt: 'Win it at Level {c}-{n}'
 }
 const SHOP_EN_FALLBACK = { watchAd: 'Watch ad' }
 
@@ -132,7 +137,10 @@ const i18n = () => {
       en: {
         ...bundle,
         shop: { ...SHOP_EN_FALLBACK, ...shop },
-        ranks: (bundle.ranks as Record<string, unknown>) ?? RANKS_EN
+        // Merged, not chosen: the shipped strings win wherever they exist, and
+        // the fallback fills any key the locales have not landed yet — so a
+        // half-finished bundle cannot make these cases pass on an empty string.
+        ranks: { ...RANKS_EN, ...((bundle.ranks as Record<string, unknown>) ?? {}) }
       }
     }
   })
@@ -159,7 +167,8 @@ const stubs = {
   GameIcon: defineComponent({ props: ['name'], template: '<i class="icon-stub" />' })
 }
 
-const FULL_ROSTER = ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker']
+const FULL_ROSTER =
+  ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker', 'crown']
 
 const fresh = async (blob: Record<string, unknown> = {}) => {
   vi.resetModules()
@@ -178,9 +187,10 @@ const fresh = async (blob: Record<string, unknown> = {}) => {
   st.watched = []
   st.claimed = []
   const RuneRankCard = (await import('@/components/organisms/RuneRankCard.vue')).default
+  const MysteryRuneCard = (await import('@/components/organisms/MysteryRuneCard.vue')).default
   const RankShopPanel = (await import('@/components/organisms/RankShopPanel.vue')).default
   const campaign = await import('@/use/useCampaign')
-  return { RuneRankCard, RankShopPanel, campaign, st }
+  return { RuneRankCard, MysteryRuneCard, RankShopPanel, campaign, st }
 }
 
 const mountCard = (Card: unknown, type: string): VueWrapper =>
@@ -196,53 +206,58 @@ beforeEach(() => {
 })
 
 describe('a rune rank card', () => {
-  it('lights one pip per rank and names the rank it is at', async () => {
+  it('lights one star per rank, and prints no number beside them', async () => {
     const { RuneRankCard, st } = await fresh()
     st.table = { melee: 3 }
     wrapper = mountCard(RuneRankCard, 'melee')
-    expect(wrapper.findAll('.rrc__pip')).toHaveLength(MAX_RUNE_RANK)
-    expect(wrapper.findAll('.rrc__pip.is-lit')).toHaveLength(3)
-    expect(wrapper.find('.rrc__rank').text()).toBe(`Rank 3/${MAX_RUNE_RANK}`)
-    // The body it stands up with: a Lv 1 sword is 3, plus one per rank.
-    expect(wrapper.find('.rrc__stat-val').text()).toBe('6')
-    expect(wrapper.find('.rrc__gain').text()).toBe('+3 HP')
+    expect(wrapper.findAll('.rrc__star')).toHaveLength(MAX_RUNE_RANK)
+    expect(wrapper.findAll('.rrc__star.is-lit')).toHaveLength(3)
+    // The count is a SHAPE, not a sentence: nothing on the card says "3/5",
+    // and no hit-point arithmetic appears either. The number still reaches a
+    // screen reader through the meter's label.
+    expect(wrapper.find('.rrc__stars').attributes('aria-label')).toBe(`Rank 3/${MAX_RUNE_RANK}`)
+    expect(wrapper.text()).not.toContain(`3/${MAX_RUNE_RANK}`)
+    expect(wrapper.text()).not.toMatch(/HP/i)
   })
 
-  it('shows the stone in the player\'s skin, and the next rank\'s gain, at rank 0', async () => {
+  it("shows the stone in the player's skin and five dark stars at rank 0", async () => {
     const { RuneRankCard } = await fresh()
     wrapper = mountCard(RuneRankCard, 'archer')
-    expect(wrapper.findAll('.rrc__pip.is-lit')).toHaveLength(0)
+    expect(wrapper.findAll('.rrc__star')).toHaveLength(MAX_RUNE_RANK)
+    expect(wrapper.findAll('.rrc__star.is-lit')).toHaveLength(0)
     expect(wrapper.find('.pebble-stub').attributes('data-type')).toBe('archer')
     expect(wrapper.find('.pebble-stub').attributes('data-level')).toBe('1')
-    expect(wrapper.find('.rrc__next').text()).toBe('Next: +1 HP')
-    // Nothing gained yet, so no gain chip at all.
+    // Four lines and no more: stone, name, stars, price.
+    expect(wrapper.find('.rrc__next').exists()).toBe(false)
     expect(wrapper.find('.rrc__gain').exists()).toBe(false)
+    expect(wrapper.find('.rrc__stats').exists()).toBe(false)
   })
 
-  it('reads as FINISHED at the cap: every pip lit, no buttons, no price', async () => {
+  it('reads as FINISHED at the cap: every star lit, no buttons, no price', async () => {
     const { RuneRankCard, st } = await fresh({ gx_coins: 99_999 })
     st.table = { mage: MAX_RUNE_RANK }
     wrapper = mountCard(RuneRankCard, 'mage')
-    expect(wrapper.findAll('.rrc__pip.is-lit')).toHaveLength(MAX_RUNE_RANK)
+    expect(wrapper.findAll('.rrc__star.is-lit')).toHaveLength(MAX_RUNE_RANK)
     expect(wrapper.find('.rrc__maxed').text()).toBe('Maxed')
     expect(wrapper.find('.rrc__buy').exists()).toBe(false)
     expect(wrapper.find('.rrc__ad').exists()).toBe(false)
-    expect(wrapper.find('.rrc__next').exists()).toBe(false)
     expect(wrapper.classes()).toContain('is-maxed')
   })
 
-  it('disables the coin button while the wallet is short, and spells out the shortfall', async () => {
+  it('disables the coin button while the wallet is short, and says nothing more', async () => {
     const { RuneRankCard, st } = await fresh({ gx_coins: RANK_PRICES[0]! - 10 })
     wrapper = mountCard(RuneRankCard, 'melee')
     const buy = wrapper.find('.rrc__buy')
     expect(buy.text()).toContain(String(RANK_PRICES[0]))
     expect((buy.element as HTMLButtonElement).disabled).toBe(true)
-    expect(wrapper.find('.rrc__need').text()).toBe('10 more coins')
+    // No "10 more coins" sentence any more: a disabled price button says
+    // "not yet" without spending a line on it.
+    expect(wrapper.find('.rrc__need').exists()).toBe(false)
     await buy.trigger('click')
     expect(st.bought).toEqual([])
   })
 
-  it('…and buys with coins when it is not, lighting the new pip', async () => {
+  it('…and buys with coins when it is not, lighting the new star', async () => {
     const { RuneRankCard, st } = await fresh({ gx_coins: 99_999 })
     wrapper = mountCard(RuneRankCard, 'melee')
     const buy = wrapper.find('.rrc__buy')
@@ -250,10 +265,10 @@ describe('a rune rank card', () => {
     await buy.trigger('click')
     await nextTick()
     expect(st.bought).toEqual(['melee'])
-    // The pip lights immediately, and the price moves on to the next rank.
-    expect(wrapper.findAll('.rrc__pip.is-lit')).toHaveLength(1)
+    // The star lights immediately, and the price moves on to the next rank.
+    expect(wrapper.findAll('.rrc__star.is-lit')).toHaveLength(1)
+    expect(wrapper.find('.rrc__stars').attributes('aria-label')).toBe(`Rank 1/${MAX_RUNE_RANK}`)
     expect(wrapper.find('.rrc__buy').text()).toContain(String(RANK_PRICES[1]))
-    expect(wrapper.find('.rrc__need').exists()).toBe(false)
   })
 
   it('offers a video only while the ads layer can play one — and ALWAYS behind the film mark', async () => {
@@ -263,7 +278,13 @@ describe('a rune rank card', () => {
     expect(ad.exists()).toBe(true)
     // The invariant: the mark is inside the button, before its label.
     expect(ad.find('.ad-icon-stub').exists()).toBe(true)
-    expect(ad.text()).toContain('Watch ad')
+    // ICON ONLY: the caption would overflow the card in a longer language,
+    // so the sentence lives on the label and the film frame does the talking.
+    expect(ad.text()).not.toContain('Watch ad')
+    // The label names BOTH halves of the switch — what it does, and what it
+    // costs — because neither is written on the button.
+    expect(ad.attributes('aria-label')).toContain('Watch ad')
+    expect(ad.attributes('aria-label')).toContain('Upgrade')
     await ad.trigger('click')
     await Promise.resolve(); await Promise.resolve(); await nextTick()
     expect(st.watched).toEqual(['defense'])
@@ -291,7 +312,13 @@ describe('a rune rank card', () => {
     const ad = wrapper.find('.rrc__ad')
     expect(ad.exists()).toBe(true)
     expect(ad.find('.reward-ad-icon').exists()).toBe(false)
-    expect(ad.text()).toContain('Watch ad')
+    // Icon-only either way, so with the mark gone the button is EMPTY of text
+    // and only its label still names the offer.
+    expect(ad.text()).not.toContain('Watch ad')
+    // The label names BOTH halves of the switch — what it does, and what it
+    // costs — because neither is written on the button.
+    expect(ad.attributes('aria-label')).toContain('Watch ad')
+    expect(ad.attributes('aria-label')).toContain('Upgrade')
   })
 
   it('wears the gift ribbon on the window\'s rune, and its FREE button carries no film mark', async () => {
@@ -310,7 +337,8 @@ describe('a rune rank card', () => {
     expect(wrapper.find('.rrc__buy').exists()).toBe(false)
     expect(wrapper.find('.rrc__ad').exists()).toBe(false)
     // 754 s → 12:34, formatted in the component, never in a locale file.
-    expect(wrapper.find('.rrc__timer').text()).toBe('New gift in 12:34')
+    // The countdown is the PANEL's, not the card's — one gift, one clock.
+    expect(wrapper.find('.rrc__timer').exists()).toBe(false)
     await free.trigger('click')
     expect(st.claimed).toEqual(['roller'])
   })
@@ -330,17 +358,70 @@ describe('a rune rank card', () => {
     expect(wrapper.find('.rrc__free').exists()).toBe(false)
     expect(wrapper.find('.rrc__ribbon').exists()).toBe(false)
     expect(wrapper.find('.rrc__buy').exists()).toBe(true)
-    expect(wrapper.find('.rrc__taken').text()).toBe('Come back for the next one')
+    expect(wrapper.find('.rrc__taken').exists()).toBe(false)
   })
 
-  it('greys a rune the player has not unlocked and sells it nothing', async () => {
+  it('shows a rune the player does not own as a named SILHOUETTE, and sells it nothing', async () => {
+    // A save one node into the game: the sword is owned, so the campaign's
+    // next hand-over is the bow at 1-1.
     const { RuneRankCard } = await fresh({ gx_coins: 99_999, gx_unlocked_runes: ['melee'] })
-    wrapper = mountCard(RuneRankCard, 'nuker')
-    expect(wrapper.classes()).toContain('is-locked')
-    expect(wrapper.find('.rrc__locked').text()).toBe('Not unlocked yet')
+    wrapper = mountCard(RuneRankCard, 'archer')
+    expect(wrapper.classes()).toContain('is-promise')
+    expect(wrapper.classes()).toContain('is-next')
+    // Named, and drawn from the REAL stone under a filter — never a second shape.
+    expect(wrapper.find('.rrc__name').text().length).toBeGreaterThan(0)
+    expect(wrapper.find('.rrc__stone').classes()).toContain('is-silhouette')
+    expect(wrapper.find('.pebble-stub').attributes('data-type')).toBe('archer')
+    // The ribbon says which one is coming; the line under it says where.
+    expect(wrapper.find('.rrc__ribbon').text().length).toBeGreaterThan(0)
+    const winsAt = wrapper.find('.rrc__winsat')
+    expect(winsAt.exists()).toBe(true)
+    expect(winsAt.text()).toMatch(/1/)
+    // Nothing to buy: a rank cannot be bought for a rune that is not owned.
     expect(wrapper.find('.rrc__buy').exists()).toBe(false)
     expect(wrapper.find('.rrc__ad').exists()).toBe(false)
     expect(wrapper.find('.rrc__free').exists()).toBe(false)
+    // …and no ladder either: pips for a rune you do not have are noise.
+    expect(wrapper.find('.rrc__stars').exists()).toBe(false)
+    expect(wrapper.find('.rrc__stat').exists()).toBe(false)
+  })
+
+  it('names the LATE runes by their own unlock stage once the tab reveals one', async () => {
+    // The nuker is not the campaign's next hand-over here, but the tab sells it
+    // (see the panel), so its card must still know where it is won: 4-1.
+    const { RuneRankCard } = await fresh({ gx_unlocked_runes: ['melee'] })
+    wrapper = mountCard(RuneRankCard, 'nuker')
+    expect(wrapper.classes()).toContain('is-promise')
+    // Not the campaign's NEXT, so no "next up" ribbon — but still placed.
+    expect(wrapper.classes()).not.toContain('is-next')
+    expect(wrapper.find('.rrc__ribbon').exists()).toBe(false)
+    const winsAt = wrapper.find('.rrc__winsat')
+    expect(winsAt.exists()).toBe(true)
+    expect(winsAt.text()).toMatch(/4/)
+  })
+})
+
+describe('a mystery rune card', () => {
+  it('says nothing about the rune it is standing in for', async () => {
+    const { MysteryRuneCard } = await fresh()
+    wrapper = mount(MysteryRuneCard as never, { global: { plugins: [i18n()], stubs } })
+    expect(wrapper.find('.mrc__name').text()).toBe('???')
+    expect(wrapper.find('.mrc__hint').text().length).toBeGreaterThan(0)
+    expect(wrapper.find('.mrc__mark').text()).toBe('?')
+    // No stone, and therefore no silhouette to read an identity off.
+    expect(wrapper.find('.pebble-stub').exists()).toBe(false)
+    // The whole sentence for a screen reader; the parts are hidden from it.
+    expect(wrapper.attributes('aria-label')!.length).toBeGreaterThan(0)
+    expect(wrapper.find('.mrc__stage').attributes('aria-hidden')).toBe('true')
+  })
+
+  it('is inert: nothing to press, nothing to focus', async () => {
+    const { MysteryRuneCard } = await fresh()
+    wrapper = mount(MysteryRuneCard as never, { global: { plugins: [i18n()], stubs } })
+    expect(wrapper.element.tagName).toBe('ARTICLE')
+    expect(wrapper.attributes('tabindex')).toBeUndefined()
+    expect(wrapper.findAll('button')).toHaveLength(0)
+    expect(wrapper.findAll('.fbutton-stub')).toHaveLength(0)
   })
 })
 
@@ -354,6 +435,51 @@ describe('the ranks panel', () => {
     // whichever tab is open; the panel repeating it three lines below read as
     // a mistake rather than as emphasis.
     expect(wrapper.find('.ranks__tagline').exists()).toBe(false)
+  })
+
+  it('names only what the player can act on, and hides the rest behind question marks', async () => {
+    // One rune owned, so: the sword's card, the bow as the campaign's next
+    // hand-over, and every other rung a mystery.
+    const { RankShopPanel } = await fresh({ gx_unlocked_runes: ['melee'] })
+    wrapper = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
+    const named = wrapper.findAll('.rrc').map((c) => c.attributes('data-type'))
+    expect(named).toContain('melee')
+    expect(named).toContain('archer')
+    // The runes two or more unlocks away give nothing away — not even a colour.
+    for (const hidden of ['mage', 'defense', 'support', 'cleave', 'roller', 'bombard']) {
+      expect(named, `${hidden} must stay a mystery`).not.toContain(hidden)
+    }
+    expect(wrapper.findAll('.mrc').length).toBeGreaterThan(0)
+  })
+
+  it('keeps ONE rung per rune whatever is hidden — a ladder, not a hole', async () => {
+    // The count is the point: the player can see how much roster is left even
+    // when they cannot see what it is.
+    for (const roster of [['melee'], ['melee', 'archer', 'mage'], FULL_ROSTER]) {
+      const { RankShopPanel } = await fresh({ gx_unlocked_runes: roster })
+      const w = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
+      expect(w.findAll('.rrc').length + w.findAll('.mrc').length, `roster of ${roster.length}`)
+        .toBe(FULL_ROSTER.length)
+      w.unmount()
+    }
+  })
+
+  it('reveals the nuker\'s own rung while the tab is selling it', async () => {
+    // A banner naming the Nuker directly under a card hiding it would be the
+    // screen contradicting itself, so the offer reveals its rung too.
+    const { RankShopPanel } = await fresh({ gx_unlocked_runes: ['melee'] })
+    wrapper = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
+    expect(wrapper.find('.nuker').exists()).toBe(true)
+    expect(wrapper.find('.rrc[data-type="nuker"]').exists()).toBe(true)
+    wrapper.unmount()
+
+    // With no video to play there is no offer — and the rung goes back to being
+    // a mystery like every other rune that far away.
+    canOffer.ref!.value = false
+    const quiet = await fresh({ gx_unlocked_runes: ['melee'] })
+    wrapper = mount(quiet.RankShopPanel, { global: { plugins: [i18n()], stubs } })
+    expect(wrapper.find('.nuker').exists()).toBe(false)
+    expect(wrapper.find('.rrc[data-type="nuker"]').exists()).toBe(false)
   })
 
   it('offers the nuker early for a video only while it is locked and a video can play', async () => {

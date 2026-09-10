@@ -29,7 +29,7 @@
 
 import {
   FACTION_DEFS, RUNES,
-  type Faction, type GlyphStyle, type Owner, type PebbleShape, type RuneType, type SkinDef
+  type Faction, type GlyphStyle, type Owner, type RuneType, type SkinDef, type StoneCut
 } from '@/game/rules'
 import { glyphPath } from '@/game/glyphs'
 import { rand, seedFrom } from '@/game/rng'
@@ -127,105 +127,320 @@ const angDiff = (a: number, b: number): number => {
 }
 const gauss = (u: number): number => Math.exp(-u * u)
 
-// Seeds `stoneOutline` (with the skin's shape), so each rune type gets its own
-// cut of the same material. The VALUE is arbitrary but load-bearing: change one
-// and that rune's stones are re-knapped into a different silhouette, silently.
-// New types append; they never renumber the five that shipped.
+// Seeds `stoneOutline`, so a knapped stone of one rune is not the knapped
+// stone of another. The VALUE is arbitrary but load-bearing: change one and
+// that rune's raw stones are re-knapped, silently. New types append; they
+// never renumber the ones that shipped.
 const TYPE_IDX: Record<RuneType, number> =
-  { melee: 1, archer: 2, mage: 3, defense: 4, support: 5, cleave: 6, roller: 7, bombard: 8, nuker: 9 }
-const SHAPE_IDX: Record<PebbleShape, number> = { pebble: 1, shard: 2, oval: 3, hex: 4, disc: 5, slab: 6 }
+  { melee: 1, archer: 2, mage: 3, defense: 4, support: 5, cleave: 6, roller: 7, bombard: 8, nuker: 9, crown: 10 }
+const CUT_IDX: Record<StoneCut, number> = {
+  carved: 1, knapped: 2, polished: 3, faceted: 4, quarried: 5, slab: 6, step: 7, cabochon: 8, brilliant: 9
+}
 
 // ─── Outlines ───────────────────────────────────────────────────────────────
 
 export interface Pt { x: number; y: number }
 
 /**
+ * ─── The rune says the SHAPE, the skin says the CUT ─────────────────────────
+ *
+ * A stone has to say which rune it is twice over. The glyph is one of those,
+ * and at hand-tray size it is four dark strokes in a hole; the SILHOUETTE is
+ * the other, and it is the whole object. So the outline belongs to the rune
+ * TYPE — a shield is blocky and flat-topped, a bow is a slim spindle, an axe
+ * is a bit with two horns — and the skin only decides how that outline is
+ * worked: carved with a border, knapped into flats, worn round, blunted into a
+ * slab, cut as a gem.
+ *
+ * It was the other way round once, and that is the bug this split fixes: the
+ * SKIN owned the shape, so all ten runes of a skin were one outline with ten
+ * different glyphs cut into it, and the shape said nothing at all.
+ *
+ * A profile is HALF an outline — the right side, from the apex on the axis
+ * down to the foot on the axis — as cubic segments, mirrored to the left. Two
+ * reasons it is written that way and not drawn freehand: the two sides come
+ * out exactly equal (a hand-wobbled plaque reads as a mistake where a
+ * hand-wobbled pebble reads as a pebble), and every one of the nine cuts can
+ * be applied to the same few control points instead of nine drawings each.
+ * None of them draws a random number: same rune, same skin, same stone, always.
+ */
+export interface RuneProfile {
+  /** The right half, apex → foot, as cubic beziers. First point and last point sit on x = 0. */
+  half: readonly (readonly [Pt, Pt, Pt, Pt])[]
+  /** Samples per segment. A cut scales these; FEW samples leave the curve as visible flats. */
+  steps: readonly number[]
+  /**
+   * The glyph's extent as a multiple of the stone's radius, and how far down
+   * its centre sits. Both are the PROFILE's, because they are questions about
+   * this silhouette: a mortar's field is low and a crown's is under the peaks.
+   */
+  glyph: { scale: number; drop: number }
+}
+
+const pt = (x: number, y: number): Pt => ({ x, y })
+type Seg = readonly [Pt, Pt, Pt, Pt]
+const seg = (a: Pt, b: Pt, c: Pt, d: Pt): Seg => [a, b, c, d]
+
+export const RUNE_PROFILES: Record<RuneType, RuneProfile> = {
+  // Sword — the blade. The original carved plaque, and the shape every other
+  // one is read against: a sharp point at the top, shoulders sweeping down into
+  // a full belly, a round base.
+  melee: {
+    half: [
+      seg(pt(0, -1), pt(0.12, -0.965), pt(0.58, -0.80), pt(0.78, -0.42)),
+      seg(pt(0.78, -0.42), pt(0.96, -0.02), pt(0.90, 0.52), pt(0.50, 0.87)),
+      seg(pt(0.50, 0.87), pt(0.33, 0.99), pt(0.16, 1), pt(0, 1))
+    ],
+    steps: [7, 12, 7],
+    glyph: { scale: 0.90, drop: 0.11 }
+  },
+  // Bow — the spindle. The narrow one: long tapers at both ends and a belly
+  // only two thirds as wide as the stone is tall.
+  archer: {
+    half: [
+      seg(pt(0, -1), pt(0.06, -0.96), pt(0.30, -0.90), pt(0.50, -0.62)),
+      seg(pt(0.50, -0.62), pt(0.74, -0.26), pt(0.74, 0.26), pt(0.50, 0.62)),
+      seg(pt(0.50, 0.62), pt(0.30, 0.90), pt(0.06, 0.96), pt(0, 1))
+    ],
+    steps: [8, 12, 8],
+    glyph: { scale: 0.74, drop: 0 }
+  },
+  // Orb — the egg. Smooth all the way round, no corner anywhere, taller than
+  // it is wide so it never reads as the boulder.
+  mage: {
+    half: [
+      seg(pt(0, -1), pt(0.36, -0.99), pt(0.70, -0.76), pt(0.80, -0.42)),
+      seg(pt(0.80, -0.42), pt(0.90, -0.05), pt(0.90, 0.30), pt(0.78, 0.62)),
+      seg(pt(0.78, 0.62), pt(0.62, 0.90), pt(0.34, 1.0), pt(0, 1))
+    ],
+    steps: [9, 13, 9],
+    glyph: { scale: 0.88, drop: 0.02 }
+  },
+  // Shield — the block. The widest stone, and the ONLY one whose point is at
+  // the BOTTOM: a flat top with square shoulders, straight sides, a blunt point
+  // under it. A heater shield lying on its face.
+  defense: {
+    half: [
+      seg(pt(0, -1), pt(0.44, -1.0), pt(0.78, -1.0), pt(0.95, -0.92)),
+      seg(pt(0.95, -0.92), pt(1.0, -0.86), pt(1.0, 0.10), pt(0.94, 0.34)),
+      seg(pt(0.94, 0.34), pt(0.80, 0.78), pt(0.42, 0.96), pt(0, 1))
+    ],
+    steps: [5, 8, 9],
+    glyph: { scale: 1.0, drop: -0.08 }
+  },
+  // Cross — the quatrefoil. Four shallow lobes with a soft armpit between
+  // them: a medallion that is already a cross before the glyph is cut into it.
+  support: {
+    half: [
+      seg(pt(0, -1), pt(0.26, -0.99), pt(0.40, -0.94), pt(0.44, -0.72)),
+      seg(pt(0.44, -0.72), pt(0.48, -0.56), pt(0.62, -0.48), pt(0.76, -0.46)),
+      seg(pt(0.76, -0.46), pt(0.92, -0.44), pt(0.99, -0.30), pt(0.99, -0.02)),
+      seg(pt(0.99, -0.02), pt(0.99, 0.26), pt(0.92, 0.42), pt(0.74, 0.44)),
+      seg(pt(0.74, 0.44), pt(0.60, 0.46), pt(0.46, 0.56), pt(0.44, 0.74)),
+      seg(pt(0.44, 0.74), pt(0.42, 0.94), pt(0.26, 0.99), pt(0, 1))
+    ],
+    steps: [5, 4, 5, 4, 5, 5],
+    glyph: { scale: 0.84, drop: 0 }
+  },
+  // Axe — the bit. Narrow at the poll, flaring into a crescent whose two horns
+  // are the LOWEST points on the stone, with the cutting edge curving back up
+  // between them. The one outline that is not lowest on the axis.
+  cleave: {
+    half: [
+      seg(pt(0, -1), pt(0.20, -0.99), pt(0.38, -0.94), pt(0.50, -0.82)),
+      seg(pt(0.50, -0.82), pt(0.72, -0.62), pt(0.86, -0.28), pt(0.90, 0.10)),
+      seg(pt(0.90, 0.10), pt(0.95, 0.50), pt(0.95, 0.88), pt(0.92, 1.0)),
+      seg(pt(0.92, 1.0), pt(0.72, 0.80), pt(0.34, 0.60), pt(0, 0.55))
+    ],
+    steps: [5, 7, 7, 7],
+    glyph: { scale: 1.0, drop: -0.05 }
+  },
+  // Boulder — the squat round. Wider than it is tall, with a knocked flat down
+  // each side (two samples on that segment, so it is a chord and not a curve).
+  roller: {
+    half: [
+      seg(pt(0, -0.88), pt(0.34, -0.86), pt(0.70, -0.74), pt(0.86, -0.52)),
+      seg(pt(0.86, -0.52), pt(1.0, -0.30), pt(1.0, 0.16), pt(0.90, 0.44)),
+      seg(pt(0.90, 0.44), pt(0.78, 0.72), pt(0.42, 0.88), pt(0, 0.88))
+    ],
+    steps: [7, 2, 7],
+    glyph: { scale: 0.98, drop: 0.0 }
+  },
+  // Mortar — the base plate. Narrow and flat at the top, flaring the whole way
+  // down to a wide plate with SQUARE bottom corners and a dead-flat foot.
+  bombard: {
+    half: [
+      seg(pt(0, -1), pt(0.20, -1.0), pt(0.32, -0.99), pt(0.36, -0.88)),
+      seg(pt(0.36, -0.88), pt(0.42, -0.52), pt(0.60, -0.12), pt(0.74, 0.28)),
+      seg(pt(0.74, 0.28), pt(0.86, 0.54), pt(0.98, 0.60), pt(1.0, 0.72)),
+      seg(pt(1.0, 0.72), pt(1.0, 0.90), pt(0.99, 1.0), pt(0.84, 1.0)),
+      seg(pt(0.84, 1.0), pt(0.56, 1.0), pt(0.28, 1.0), pt(0, 1))
+    ],
+    steps: [3, 8, 4, 3, 3],
+    glyph: { scale: 0.92, drop: 0.18 }
+  },
+  // Warhead — the spike. A needle apex over a narrow body, with a hard STEP out
+  // to a collar near the foot: the thinnest body on the roster, as the roster
+  // says it should be.
+  nuker: {
+    half: [
+      seg(pt(0, -1), pt(0.06, -0.97), pt(0.20, -0.86), pt(0.30, -0.60)),
+      seg(pt(0.30, -0.60), pt(0.44, -0.22), pt(0.56, 0.14), pt(0.62, 0.42)),
+      seg(pt(0.62, 0.42), pt(0.64, 0.50), pt(0.80, 0.52), pt(0.82, 0.56)),
+      seg(pt(0.82, 0.56), pt(0.84, 0.74), pt(0.80, 0.92), pt(0.70, 1.0)),
+      seg(pt(0.70, 1.0), pt(0.46, 1.0), pt(0.22, 1.0), pt(0, 1))
+    ],
+    steps: [6, 8, 2, 4, 3],
+    glyph: { scale: 0.82, drop: 0.22 }
+  },
+  // Crown — the three peaks. The band is the body; the peaks are the top edge,
+  // and they are what a player sees first at hand-tray size.
+  crown: {
+    half: [
+      seg(pt(0, -1), pt(0.10, -1.0), pt(0.18, -0.96), pt(0.24, -0.72)),
+      seg(pt(0.24, -0.72), pt(0.30, -0.52), pt(0.38, -0.44), pt(0.46, -0.52)),
+      seg(pt(0.46, -0.52), pt(0.54, -0.62), pt(0.62, -0.82), pt(0.70, -0.94)),
+      seg(pt(0.70, -0.94), pt(0.80, -0.70), pt(0.88, -0.44), pt(0.92, -0.16)),
+      seg(pt(0.92, -0.16), pt(0.98, 0.10), pt(1.0, 0.46), pt(0.94, 0.80)),
+      seg(pt(0.94, 0.80), pt(0.90, 0.94), pt(0.80, 1.0), pt(0, 1))
+    ],
+    steps: [4, 4, 4, 5, 6, 4],
+    glyph: { scale: 0.92, drop: 0.26 }
+  }
+}
+
+/**
+ * How a skin works the rune's silhouette. Five knobs, nine skins — because the
+ * family resemblance is the point: a jade bow and a marble bow have to read as
+ * the same object in two materials, and a jade bow and a jade shield have to
+ * read as two different runes in the same one.
+ */
+interface Cut {
+  /** Samples per segment, as a multiple of the profile's own. Under 1 leaves flats. */
+  density: number
+  /** Width bias: the rune's proportions, nudged by what the material wants to be. */
+  wide: number
+  /** Corner-rounding passes. Sharp corners round off; smooth runs barely move. */
+  smooth: number
+  /** Toward the block it was cut from: 0 the rune's own outline, 1 a rectangle. */
+  blunt: number
+  /** Radial jitter, so a knapped stone is not a machined one. */
+  knap: number
+  /** A raised border round a sunken field — see `paintFrame`. Carved stones only. */
+  framed: boolean
+}
+
+const CUTS: Record<StoneCut, Cut> = {
+  // River: the reference. The rune's outline exactly as it is written, carved
+  // smooth, with the border that gives the glyph a field to sit in.
+  carved: { density: 1, wide: 1, smooth: 0, blunt: 0, knap: 0, framed: true },
+  // Obsidian: knapped. Few samples, so the sides are long straight chords, and
+  // a little radial jitter so no two flakes come off the same.
+  knapped: { density: 0.38, wide: 0.98, smooth: 0, blunt: 0, knap: 0.1, framed: false },
+  // Jade: worn. Every corner rounded off — a point becomes a nose — and a
+  // touch narrower, the way a thing carried in a pocket ends up.
+  polished: { density: 1.3, wide: 0.96, smooth: 3, blunt: 0, knap: 0, framed: true },
+  // Amber: cut. The same outline sampled coarsely, so the light breaks along an
+  // edge instead of sliding round a curve.
+  faceted: { density: 0.42, wide: 0.97, smooth: 0, blunt: 0, knap: 0, framed: true },
+  // Marble: quarried. Broader and heavier, its sides filled part of the way out
+  // toward the block — a stone that was cut down rather than shaped.
+  quarried: { density: 0.9, wide: 1.04, smooth: 0, blunt: 0.2, knap: 0, framed: true },
+  // Ember: a slab. Blunted a third of the way to a rectangle and then rounded
+  // off — a THIRD and not a half, because at a half a bow and an orb come back
+  // as the same rounded brick and the silhouette has stopped saying anything.
+  slab: { density: 0.7, wide: 1.02, smooth: 2, blunt: 0.32, knap: 0.04, framed: false },
+  // Sapphire: a step cut. The coarsest sampling of the nine — long hard flats
+  // with chamfered corners, and squared off toward the table.
+  step: { density: 0.3, wide: 1.0, smooth: 0, blunt: 0.24, knap: 0, framed: false },
+  // Ruby: a cabochon. Rounded until there is not a facet left on it, and a
+  // little plumper than the rune draws itself.
+  cabochon: { density: 1.4, wide: 1.03, smooth: 5, blunt: 0, knap: 0, framed: false },
+  // Diamond: brilliant. Many small crisp flats and the faintest irregularity,
+  // so the girdle sparkles instead of reading as a machined outline.
+  brilliant: { density: 0.6, wide: 0.99, smooth: 0, blunt: 0, knap: 0.05, framed: false }
+}
+
+/** Whether this cut carries a raised border round a sunken field. */
+export const cutIsFramed = (cut: StoneCut): boolean => CUTS[cut]!.framed
+
+const bezier = (s: Seg, t: number): Pt => {
+  const u = 1 - t
+  const [p0, p1, p2, p3] = s
+  return {
+    x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+    y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y
+  }
+}
+
+/** One pass of corner rounding: every vertex slides halfway toward its neighbours' midpoint. */
+const roundOff = (pts: Pt[]): Pt[] =>
+  pts.map((p, i) => {
+    const a = pts[(i - 1 + pts.length) % pts.length]!
+    const b = pts[(i + 1) % pts.length]!
+    return { x: (p.x + (a.x + b.x) / 2) / 2, y: (p.y + (a.y + b.y) / 2) / 2 }
+  })
+
+/**
+ * Toward the block: each point slides out along its own ray to where that ray
+ * leaves the outline's bounding rectangle. The extremes do not move (their ray
+ * already leaves at the box), so a blunted stone keeps the rune's silhouette at
+ * its corners and fills out everywhere between — a slab of THIS rune, not a
+ * slab of nothing.
+ */
+const towardBlock = (pts: Pt[], t: number): Pt[] => {
+  if (t <= 0) return pts
+  let hw = 0
+  let hh = 0
+  for (const p of pts) { hw = Math.max(hw, Math.abs(p.x)); hh = Math.max(hh, Math.abs(p.y)) }
+  if (hw <= 0 || hh <= 0) return pts
+  return pts.map((p) => {
+    const r = Math.hypot(p.x, p.y)
+    if (r < 1e-9) return p
+    const dx = p.x / r
+    const dy = p.y / r
+    const box = Math.min(Math.abs(dx) < 1e-9 ? Infinity : hw / Math.abs(dx), Math.abs(dy) < 1e-9 ? Infinity : hh / Math.abs(dy))
+    const k = (r + (box - r) * t) / r
+    return { x: p.x * k, y: p.y * k }
+  })
+}
+
+/**
  * The silhouette of a stone as a closed polygon in a unit box: every point has
  * |x| ≤ 1 and |y| ≤ 1 and at least one touches ±1, so a caller scales by ONE
- * radius. Deterministic in `seed`; the same seed always cuts the same stone.
+ * radius. The RUNE decides the shape, the CUT decides the finish, and `seed`
+ * only ever moves a cut that has chance in it (the knapped ones).
  */
-export const stoneOutline = (shape: PebbleShape, seed: number): Pt[] => {
-  const rng = makeRng(seed)
-  const pts: Pt[] = []
-  switch (shape) {
-    case 'pebble': {
-      const N = 48
-      const a1 = rng() * TAU
-      const a2 = rng() * TAU
-      const a3 = rng() * TAU
-      const chipA = rng() * TAU
-      const chipB = chipA + Math.PI * (0.7 + rng() * 0.6)
-      const d1 = 0.05 + rng() * 0.05
-      const d2 = 0.03 + rng() * 0.04
-      for (let i = 0; i < N; i++) {
-        const th = (i / N) * TAU
-        const wob = 1 + 0.05 * Math.sin(2 * th + a1) + 0.04 * Math.sin(3 * th + a2) + 0.018 * Math.sin(5 * th + a3)
-        const chip = -d1 * gauss(angDiff(th, chipA) / 0.2) - d2 * gauss(angDiff(th, chipB) / 0.15)
-        const r = wob + chip
-        pts.push({ x: Math.cos(th) * r, y: Math.sin(th) * r * 0.86 })
-      }
-      break
-    }
-    case 'oval': {
-      const N = 48
-      for (let i = 0; i < N; i++) {
-        const th = (i / N) * TAU
-        pts.push({ x: Math.cos(th), y: Math.sin(th) * 0.78 })
-      }
-      break
-    }
-    case 'disc': {
-      const N = 48
-      for (let i = 0; i < N; i++) {
-        const th = (i / N) * TAU
-        pts.push({ x: Math.cos(th), y: Math.sin(th) })
-      }
-      break
-    }
-    case 'hex': {
-      for (let k = 0; k < 6; k++) {
-        const th = -Math.PI / 2 + (k * Math.PI) / 3
-        pts.push({ x: Math.cos(th), y: Math.sin(th) })
-      }
-      break
-    }
-    case 'shard': {
-      const n = 6 + Math.floor(rng() * 3)
-      const step = TAU / n
-      const start = rng() * TAU
-      for (let k = 0; k < n; k++) {
-        const th = start + k * step + (rng() - 0.5) * step * 0.5
-        const r = 0.72 + rng() * 0.28
-        pts.push({ x: Math.cos(th) * r, y: Math.sin(th) * r * 0.92 })
-      }
-      break
-    }
-    case 'slab': {
-      const hw = 0.95
-      const hh = 0.76
-      const rr = 0.2
-      const chipped = Math.floor(rng() * 4)
-      const arc = (cx: number, cy: number, from: number): void => {
-        for (let i = 0; i <= 6; i++) {
-          const th = from + (i / 6) * (Math.PI / 2)
-          pts.push({ x: cx + Math.cos(th) * rr, y: cy + Math.sin(th) * rr })
-        }
-      }
-      // Clockwise from the top edge; one corner is knocked off.
-      const corner = (k: number, cx: number, cy: number, from: number, sx: number, sy: number): void => {
-        if (k !== chipped) { arc(cx, cy, from); return }
-        // A jagged chamfer in place of the rounded corner.
-        pts.push({ x: cx + sx * (rr - 0.34), y: cy + sy * rr })
-        pts.push({ x: cx + sx * (rr - 0.1), y: cy + sy * (rr - 0.12) })
-        pts.push({ x: cx + sx * rr, y: cy + sy * (rr - 0.34) })
-      }
-      corner(0, hw - rr, -hh + rr, -Math.PI / 2, 1, -1)
-      corner(1, hw - rr, hh - rr, 0, 1, 1)
-      corner(2, -hw + rr, hh - rr, Math.PI / 2, -1, 1)
-      corner(3, -hw + rr, -hh + rr, Math.PI, -1, -1)
-      break
-    }
+export const stoneOutline = (cut: StoneCut, type: RuneType, seed: number): Pt[] => {
+  const profile = RUNE_PROFILES[type]!
+  const f = CUTS[cut]!
+
+  // Down the right side from the apex…
+  const right: Pt[] = []
+  for (const [i, s] of profile.half.entries()) {
+    const steps = Math.max(1, Math.round((profile.steps[i] ?? 6) * f.density))
+    for (let k = i === 0 ? 0 : 1; k <= steps; k++) right.push(bezier(s, k / steps))
   }
+  // …and back up the left, skipping the two points that sit on the axis.
+  let pts = [...right]
+  for (let i = right.length - 2; i >= 1; i--) {
+    const q = right[i]!
+    pts.push({ x: -q.x, y: q.y })
+  }
+
+  if (f.wide !== 1) pts = pts.map((p) => ({ x: p.x * f.wide, y: p.y }))
+  pts = towardBlock(pts, f.blunt)
+  for (let i = 0; i < f.smooth; i++) pts = roundOff(pts)
+  if (f.knap > 0) {
+    // After the mirror on purpose: a knapped stone that is perfectly symmetric
+    // reads as a machined one, which is the opposite of the point.
+    const rng = makeRng(seed ^ 0x7d)
+    pts = pts.map((p) => {
+      const k = 1 + (rng() - 0.5) * 2 * f.knap
+      return { x: p.x * k, y: p.y * k }
+    })
+  }
+
   // Normalise so the widest extent touches the unit box.
   let m = 0
   for (const p of pts) m = Math.max(m, Math.abs(p.x), Math.abs(p.y))
@@ -262,7 +477,9 @@ const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
 // ─── Materials ──────────────────────────────────────────────────────────────
 
-export type Material = 'sandstone' | 'obsidian' | 'jade' | 'amber' | 'marble' | 'lava'
+export type Material =
+  | 'sandstone' | 'obsidian' | 'jade' | 'amber' | 'marble' | 'lava'
+  | 'sapphire' | 'ruby' | 'diamond'
 
 /** The way the glyph is cut tells you what the stone is made of. */
 export const materialOf = (style: GlyphStyle): Material => {
@@ -272,13 +489,16 @@ export const materialOf = (style: GlyphStyle): Material => {
     case 'gem': return 'amber'
     case 'carved': return 'marble'
     case 'ember': return 'lava'
+    case 'starcut': return 'sapphire'
+    case 'blood': return 'ruby'
+    case 'prism': return 'diamond'
     default: return 'sandstone'
   }
 }
 
 /** The enemy's stone: the same sandstone, fired rust-red. */
 export const ENEMY_STONE: SkinDef = {
-  id: 'river', price: 0, shape: 'pebble', glyph: 'engraved',
+  id: 'river', price: 0, cut: 'carved', glyph: 'engraved',
   hi: '#d4886a', base: '#9c4b3a', lo: '#4a1c16', rim: '#ffb89c', ink: '#1e0c09', glow: null
 }
 
@@ -532,17 +752,6 @@ const paintMarble = (ctx: CanvasRenderingContext2D, b: Body): void => {
   ctx.beginPath()
   ctx.ellipse(cx - R * 0.32, cy - R * 0.4, R * 0.4, R * 0.18, -0.55, 0, TAU)
   ctx.fill()
-  if (skin.shape === 'disc') {
-    // The raised rim: a recessed inner face.
-    const g = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R)
-    g.addColorStop(0, rgba(skin.lo, 0.55))
-    g.addColorStop(1, rgba('#ffffff', 0.4))
-    ctx.strokeStyle = g
-    ctx.lineWidth = R * 0.06
-    ctx.beginPath()
-    ctx.arc(cx, cy, R * 0.8, 0, TAU)
-    ctx.stroke()
-  }
 }
 
 const paintLava = (ctx: CanvasRenderingContext2D, b: Body): void => {
@@ -599,6 +808,156 @@ const paintLava = (ctx: CanvasRenderingContext2D, b: Body): void => {
   }
 }
 
+/**
+ * Sapphire: a STEP cut, so the light is in long straight bands rather than
+ * sparkles — the facets run parallel to the girdle, and the table holds a
+ * six-armed star of white where the light gathers.
+ */
+const paintSapphire = (ctx: CanvasRenderingContext2D, b: Body): void => {
+  const { cx, cy, R, skin } = b
+  const rng = makeRng(b.seed ^ 0x3f)
+  // Step facets: bands parallel to the outline, each a shade of its own.
+  for (let k = 0; k < 4; k++) {
+    const t = 1 - k * 0.2
+    const g = ctx.createLinearGradient(cx - R * t, cy - R * t, cx + R * t, cy + R * t)
+    g.addColorStop(0, rgba(lighten(skin.hi, 0.25), 0.28 - k * 0.04))
+    g.addColorStop(0.55, rgba(skin.base, 0))
+    g.addColorStop(1, rgba(darken(skin.lo, 0.3), 0.3))
+    ctx.strokeStyle = g
+    ctx.lineWidth = R * 0.13
+    ctx.lineJoin = 'round'
+    trace(ctx, b.pts, cx, cy, R * t)
+    ctx.stroke()
+  }
+  // The table: a flat plane across the middle, brighter than the steps round it.
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  const table = ctx.createLinearGradient(cx - R * 0.5, cy - R * 0.5, cx + R * 0.4, cy + R * 0.5)
+  table.addColorStop(0, rgba(skin.rim, 0.3))
+  table.addColorStop(0.7, rgba(skin.hi, 0.05))
+  ctx.fillStyle = table
+  trace(ctx, b.pts, cx, cy, R * 0.52)
+  ctx.fill()
+  // The star under the table: six short arms of white.
+  ctx.strokeStyle = rgba('#ffffff', 0.5)
+  ctx.lineWidth = Math.max(0.6, R * 0.018)
+  ctx.lineCap = 'round'
+  for (let k = 0; k < 6; k++) {
+    const th = (k / 6) * TAU + 0.3
+    ctx.beginPath()
+    ctx.moveTo(cx - R * 0.06, cy - R * 0.08)
+    ctx.lineTo(cx - R * 0.06 + Math.cos(th) * R * 0.42, cy - R * 0.08 + Math.sin(th) * R * 0.42)
+    ctx.stroke()
+  }
+  ctx.restore()
+  // A couple of internal reflections, off-centre so it does not read as a logo.
+  for (let k = 0; k < 3; k++) {
+    ctx.fillStyle = rgba('#ffffff', 0.1 + rng() * 0.12)
+    ctx.beginPath()
+    ctx.ellipse(cx + (rng() - 0.5) * 1.2 * R, cy + (rng() - 0.5) * 1.2 * R, R * 0.2, R * 0.05, rng() * TAU, 0, TAU)
+    ctx.fill()
+  }
+}
+
+/**
+ * Ruby: a CABOCHON, so there is no facet at all — one dome, one long highlight
+ * sliding round it, and the deep red glow of light that went in and came back
+ * out. The dark heart under the highlight is what makes it read as a dome
+ * rather than as a red disc.
+ */
+const paintRuby = (ctx: CanvasRenderingContext2D, b: Body): void => {
+  const { cx, cy, R, skin } = b
+  const rng = makeRng(b.seed ^ 0x6c)
+  // The dome: deep in the middle, hot toward the rim where light escapes.
+  const dome = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.3, R * 0.05, cx, cy, R * 1.05)
+  dome.addColorStop(0, rgba(lighten(skin.hi, 0.3), 0.55))
+  dome.addColorStop(0.42, rgba(skin.base, 0.15))
+  dome.addColorStop(0.78, rgba(darken(skin.lo, 0.25), 0.5))
+  dome.addColorStop(1, rgba(skin.rim, 0.35))
+  ctx.fillStyle = dome
+  ctx.fillRect(cx - R * 1.2, cy - R * 1.2, R * 2.4, R * 2.4)
+  // Silk: the fine parallel needles a cabochon ruby is cut to show.
+  ctx.strokeStyle = rgba(lighten(skin.hi, 0.4), 0.14)
+  ctx.lineWidth = Math.max(0.5, R * 0.014)
+  for (let k = 0; k < 7; k++) {
+    const off = (k - 3) * R * 0.22
+    ctx.beginPath()
+    ctx.moveTo(cx - R * 0.9 + off * 0.3, cy + off)
+    ctx.lineTo(cx + R * 0.9 + off * 0.3, cy + off * 0.6)
+    ctx.stroke()
+  }
+  // The highlight, and its small companion — the two marks that say "dome".
+  ctx.fillStyle = rgba('#ffffff', 0.5)
+  ctx.beginPath()
+  ctx.ellipse(cx - R * 0.32, cy - R * 0.4, R * 0.34, R * 0.15, -0.55, 0, TAU)
+  ctx.fill()
+  ctx.fillStyle = rgba('#ffffff', 0.75)
+  ctx.beginPath()
+  ctx.arc(cx - R * 0.46, cy - R * 0.48, R * 0.07, 0, TAU)
+  ctx.fill()
+  // Bounced light pooling at the bottom of the dome.
+  const pool = ctx.createRadialGradient(cx + R * 0.2, cy + R * 0.52, 0, cx + R * 0.2, cy + R * 0.52, R * 0.6)
+  pool.addColorStop(0, rgba(skin.rim, 0.3 + rng() * 0.1))
+  pool.addColorStop(1, rgba(skin.rim, 0))
+  ctx.fillStyle = pool
+  ctx.fillRect(cx - R * 1.2, cy - R * 1.2, R * 2.4, R * 2.4)
+}
+
+/**
+ * Diamond: BRILLIANT cut, and the only stone with no colour of its own. All of
+ * its character is the light it splits — small hard facets, a hot white
+ * highlight, and three tiny spectral flashes. The flashes are the whole reason
+ * this material exists; without them a colourless gem is a grey pebble.
+ */
+const paintDiamond = (ctx: CanvasRenderingContext2D, b: Body): void => {
+  const { cx, cy, R, pts, skin } = b
+  const rng = makeRng(b.seed ^ 0xd1)
+  // Kite facets from the girdle to the table.
+  const step = Math.max(1, Math.floor(pts.length / 12))
+  let k = 0
+  for (let i = 0; i < pts.length; i += step, k++) {
+    const p0 = pts[i]!
+    const p1 = pts[(i + step) % pts.length]!
+    ctx.beginPath()
+    ctx.moveTo(cx + p0.x * R * 0.42, cy + p0.y * R * 0.42)
+    ctx.lineTo(cx + p0.x * R, cy + p0.y * R)
+    ctx.lineTo(cx + p1.x * R, cy + p1.y * R)
+    ctx.lineTo(cx + p1.x * R * 0.42, cy + p1.y * R * 0.42)
+    ctx.closePath()
+    ctx.fillStyle = rgba(k % 3 === 0 ? '#ffffff' : k % 3 === 1 ? skin.lo : skin.hi, 0.1 + rng() * 0.2)
+    ctx.fill()
+    ctx.strokeStyle = rgba('#ffffff', 0.25)
+    ctx.lineWidth = Math.max(0.5, R * 0.01)
+    ctx.stroke()
+  }
+  // The table, flat and bright.
+  ctx.fillStyle = rgba('#ffffff', 0.16)
+  trace(ctx, pts, cx, cy, R * 0.42)
+  ctx.fill()
+  ctx.strokeStyle = rgba('#ffffff', 0.4)
+  ctx.lineWidth = Math.max(0.5, R * 0.014)
+  ctx.stroke()
+  // Fire: three spectral flashes, small and saturated, on a colourless stone.
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  const fire = ['#ff5a6e', '#5affc8', '#6ea8ff']
+  for (let i = 0; i < 3; i++) {
+    const th = rng() * TAU
+    const rr = R * (0.35 + rng() * 0.45)
+    const g = ctx.createRadialGradient(cx + Math.cos(th) * rr, cy + Math.sin(th) * rr, 0, cx + Math.cos(th) * rr, cy + Math.sin(th) * rr, R * 0.26)
+    g.addColorStop(0, rgba(fire[i]!, 0.55))
+    g.addColorStop(1, rgba(fire[i]!, 0))
+    ctx.fillStyle = g
+    ctx.fillRect(cx - R * 1.2, cy - R * 1.2, R * 2.4, R * 2.4)
+  }
+  ctx.restore()
+  // The one hard specular.
+  ctx.fillStyle = rgba('#ffffff', 0.85)
+  ctx.beginPath()
+  ctx.arc(cx - R * 0.4, cy - R * 0.44, R * 0.08, 0, TAU)
+  ctx.fill()
+}
+
 const paintMaterial = (ctx: CanvasRenderingContext2D, b: Body, mat: Material): void => {
   switch (mat) {
     case 'obsidian': paintObsidian(ctx, b); break
@@ -606,6 +965,9 @@ const paintMaterial = (ctx: CanvasRenderingContext2D, b: Body, mat: Material): v
     case 'amber': paintAmber(ctx, b); break
     case 'marble': paintMarble(ctx, b); break
     case 'lava': paintLava(ctx, b); break
+    case 'sapphire': paintSapphire(ctx, b); break
+    case 'ruby': paintRuby(ctx, b); break
+    case 'diamond': paintDiamond(ctx, b); break
     default: paintSandstone(ctx, b)
   }
 }
@@ -614,6 +976,91 @@ const paintMaterial = (ctx: CanvasRenderingContext2D, b: Body, mat: Material): v
  * The stone itself: halo, body gradient, material, bevels, rim light, outline,
  * and the gold ring of a Lv 2. `level` 0 = a bare stone (previews, the key).
  */
+/**
+ * The carved border of a framed stone: a sunken field inside a raised rim.
+ *
+ * It is drawn as the INVERSE of the body's own bevel, which is the whole
+ * trick — a recess is lit from the opposite side to the thing around it. The
+ * body has a light edge at its top-left and a dark one at its bottom-right;
+ * the field gets a dark edge at ITS top-left (the rim casting a shadow into
+ * the hollow) and a light one at its bottom-right (light bouncing back off the
+ * far wall). Between them the eye reads depth, from four strokes and no
+ * gradients to speak of.
+ *
+ * `INSET` is how far in the rim sits, as a fraction of the radius. Anything
+ * under about 0.1 reads as a scratch rather than a border; anything over 0.2
+ * leaves the glyph nowhere to go.
+ */
+const INSET = 0.155
+
+const paintFrame = (ctx: CanvasRenderingContext2D, b: Body): void => {
+  const { cx, cy, R, pts, skin } = b
+  const r = R * (1 - INSET)
+  ctx.save()
+  trace(ctx, pts, cx, cy, R)
+  ctx.clip()
+
+  // The field itself, a shade darker than the rim around it and lit from the
+  // BOTTOM — the floor of a hollow catches bounced light, not the sun.
+  trace(ctx, pts, cx, cy, r)
+  const field = ctx.createLinearGradient(cx, cy - r, cx, cy + r)
+  field.addColorStop(0, rgba(darken(skin.base, 0.42), 0.95))
+  field.addColorStop(0.62, rgba(darken(skin.base, 0.12), 0.55))
+  field.addColorStop(1, rgba(lighten(skin.base, 0.18), 0.6))
+  ctx.fillStyle = field
+  ctx.fill()
+
+  ctx.save()
+  trace(ctx, pts, cx, cy, r)
+  ctx.clip()
+  ctx.lineJoin = 'round'
+  // The shadow the rim throws into the hollow.
+  const shade = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r)
+  shade.addColorStop(0, rgba(darken(skin.lo, 0.45), 0.9))
+  shade.addColorStop(0.55, rgba(skin.lo, 0))
+  ctx.lineWidth = R * 0.13
+  ctx.strokeStyle = shade
+  trace(ctx, pts, cx, cy, r)
+  ctx.stroke()
+  // …and the light coming back off the far wall.
+  const bounce = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r)
+  bounce.addColorStop(0.5, rgba(skin.hi, 0))
+  bounce.addColorStop(1, rgba(lighten(skin.hi, 0.3), 0.55))
+  ctx.lineWidth = R * 0.1
+  ctx.strokeStyle = bounce
+  trace(ctx, pts, cx, cy, r)
+  ctx.stroke()
+  ctx.restore()
+
+  // The border read as a BAND, all the way round.
+  //
+  // Physically the far side of a rim is in shadow and should stay dark, and
+  // that is what the body's own bevel does. But a border the eye can only
+  // follow for half its length is not a border, so it gets a faint even
+  // lightening on top of the honest lighting — the same cheat a carved plaque
+  // gets in every painted game, for the same reason.
+  ctx.lineJoin = 'round'
+  ctx.lineWidth = R * INSET * 0.9
+  ctx.strokeStyle = rgba(lighten(skin.hi, 0.12), 0.16)
+  trace(ctx, pts, cx, cy, R * (1 - INSET * 0.5))
+  ctx.stroke()
+
+  // The lip: a hard line where the rim breaks into the hollow, and a highlight
+  // just outside it along the lit edge.
+  ctx.lineWidth = Math.max(1, R * 0.022)
+  ctx.strokeStyle = rgba(darken(skin.lo, 0.6), 0.85)
+  trace(ctx, pts, cx, cy, r)
+  ctx.stroke()
+  const lip = ctx.createLinearGradient(cx - R, cy - R, cx + R * 0.4, cy + R * 0.4)
+  lip.addColorStop(0, rgba(lighten(skin.rim, 0.2), 0.85))
+  lip.addColorStop(0.65, rgba(skin.rim, 0))
+  ctx.lineWidth = Math.max(1, R * 0.03)
+  ctx.strokeStyle = lip
+  trace(ctx, pts, cx, cy, r * 1.06)
+  ctx.stroke()
+  ctx.restore()
+}
+
 const paintBody = (ctx: CanvasRenderingContext2D, b: Body, level: number): void => {
   const { cx, cy, R, pts, skin } = b
   const mat = materialOf(skin.glyph)
@@ -666,6 +1113,8 @@ const paintBody = (ctx: CanvasRenderingContext2D, b: Body, level: number): void 
   trace(ctx, pts, cx, cy, R)
   ctx.stroke()
   ctx.restore()
+
+  if (cutIsFramed(skin.cut)) paintFrame(ctx, b)
 
   // Outline.
   ctx.save()
@@ -849,6 +1298,77 @@ const drawStyledGlyph = (
       })
       break
     }
+    // Sapphire: the glyph is a POLISHED CHANNEL sunk into the step cut — a
+    // hard white edge along the lit side, deep blue in the groove, and a cold
+    // bloom rising out of it.
+    case 'starcut': {
+      bloom(ctx, type, cx, cy, size, glow, 0.8 * p)
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.translate(3, 3.5); ctx.fillStyle = rgba(hi, 0.7); ctx.fill(path) })
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.fillStyle = ink; ctx.fill(path) })
+      withGlyph(ctx, type, cx, cy, size, (path) => {
+        ctx.clip(path)
+        const g = ctx.createLinearGradient(0, 0, 100, 100)
+        g.addColorStop(0, rgba('#ffffff', 0.9 * p))
+        g.addColorStop(0.4, rgba(glow, 0.4 * p))
+        g.addColorStop(1, rgba(glow, 0))
+        ctx.lineJoin = 'round'
+        ctx.strokeStyle = g
+        ctx.lineWidth = 6
+        ctx.stroke(path)
+      })
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.lineJoin = 'round'; ctx.strokeStyle = rgba('#ffffff', 0.35); ctx.lineWidth = 1.4; ctx.stroke(path) })
+      break
+    }
+    // Ruby: the glyph BURNS under the dome rather than being cut into it — no
+    // hard edge anywhere, a soft red core and a halo held inside the outline.
+    case 'blood': {
+      bloom(ctx, type, cx, cy, size, glow, 1.35 * p)
+      // A dark seat first, so the lit core has something to sit in — without it
+      // a red glyph on a red dome is a shape you can only find by looking for it.
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.lineJoin = 'round'; ctx.strokeStyle = rgba(ink, 0.9); ctx.lineWidth = 6; ctx.stroke(path); ctx.fillStyle = rgba(ink, 0.95); ctx.fill(path) })
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.fillStyle = rgba(glow, 0.95); ctx.fill(path) })
+      withGlyph(ctx, type, cx, cy, size, (path) => {
+        ctx.clip(path)
+        const g = ctx.createRadialGradient(46, 44, 2, 50, 50, 62)
+        g.addColorStop(0, rgba('#fff2f4', 0.95 * p))
+        g.addColorStop(0.4, rgba('#ffd0d8', 0.45 * p))
+        g.addColorStop(1, rgba(glow, 0))
+        ctx.fillStyle = g
+        ctx.fillRect(0, 0, 100, 100)
+      })
+      break
+    }
+    // Diamond: the glyph SPLITS the light. It is the only one that is not a
+    // single colour — red, green and blue slide across it — which is also the
+    // only way a colourless stone reads as a diamond and not as glass.
+    case 'prism': {
+      withGlyph(ctx, type, cx, cy, size, (path) => { ctx.lineJoin = 'round'; ctx.strokeStyle = rgba(ink, 0.85); ctx.lineWidth = 7; ctx.stroke(path) })
+      withGlyph(ctx, type, cx, cy, size, (path) => {
+        const g = ctx.createLinearGradient(6, 0, 94, 100)
+        g.addColorStop(0, '#e0344f')
+        g.addColorStop(0.3, '#e8a52a')
+        g.addColorStop(0.58, '#1fb98a')
+        g.addColorStop(1, '#3f6fd8')
+        ctx.fillStyle = g
+        ctx.fill(path)
+        ctx.lineJoin = 'round'
+        ctx.strokeStyle = rgba(ink, 0.9)
+        ctx.lineWidth = 2.2
+        ctx.stroke(path)
+      })
+      bloom(ctx, type, cx, cy, size, glow, 0.75 * p)
+      withGlyph(ctx, type, cx, cy, size, (path) => {
+        ctx.clip(path)
+        const g = ctx.createLinearGradient(0, 0, 100, 60)
+        g.addColorStop(0, rgba('#ffffff', 0.85 * p))
+        g.addColorStop(0.35, rgba('#ffffff', 0))
+        ctx.lineJoin = 'round'
+        ctx.strokeStyle = g
+        ctx.lineWidth = 5
+        ctx.stroke(path)
+      })
+      break
+    }
   }
   ctx.restore()
 }
@@ -938,6 +1458,34 @@ export const stoneFill = (level: number): number => {
 const LAUREL_LEAVES = 5
 
 /**
+ * The convex hull of an outline (Andrew's monotone chain), which is the shape
+ * a wreath actually lies against.
+ *
+ * A wreath laid on the raw outline follows every notch the rune has: it dives
+ * into the cross's armpits, kinks at the warhead's collar, and — worst — ties
+ * itself INSIDE the axe, whose foot on the centreline sits above its two
+ * horns, so the bow of the wreath came out at the top of the crescent. A
+ * branch resting against a stone bridges a hollow rather than entering it, and
+ * the hull is exactly that bridge. It still differs per rune, which is the
+ * whole point of ten wreaths: a bow's hull is slim, a shield's is wide.
+ */
+const convexHull = (pts: readonly Pt[]): Pt[] => {
+  const sorted = [...pts].sort((a, b) => a.x - b.x || a.y - b.y)
+  if (sorted.length < 3) return sorted
+  const cross = (o: Pt, a: Pt, b: Pt): number => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+  const half = (src: Pt[]): Pt[] => {
+    const out: Pt[] = []
+    for (const q of src) {
+      while (out.length >= 2 && cross(out[out.length - 2]!, out[out.length - 1]!, q) <= 0) out.pop()
+      out.push(q)
+    }
+    out.pop()
+    return out
+  }
+  return [...half(sorted), ...half([...sorted].reverse())]
+}
+
+/**
  * Where a ray from the centre at angle `a` leaves a unit outline polygon — the
  * stone's rim in that direction, as a fraction of its radius. Every outline is
  * star-shaped around the centre, so one edge answers; `1` if none does.
@@ -960,16 +1508,24 @@ const rayHit = (pts: readonly Pt[], a: number): number => {
   return best > 0 ? best : 1
 }
 
-/** The outline the laurel of `shape` hugs: the sword's cut of that stone, so every rune of a skin wears the same wreath. */
-const laurelOutline = (shape: PebbleShape): Pt[] =>
-  stoneOutline(shape, seedFrom(TYPE_IDX.melee * 7919 + 17, SHAPE_IDX[shape] * 104729))
+/**
+ * The outline the laurel of a rune hugs — that rune in the DEFAULT cut, so all
+ * nine skins of one rune wear the same wreath.
+ *
+ * Keyed by the rune and not by the skin, because the silhouette is the rune's:
+ * a wreath cut for a plaque sits half inside a shield and half in mid-air under
+ * an axe. Nine skins × ten runes would be ninety wreaths to paint; ten is the
+ * set that actually differs.
+ */
+const laurelOutline = (type: RuneType): Pt[] =>
+  convexHull(stoneOutline('carved', type, seedFrom(TYPE_IDX[type] * 7919 + 17, CUT_IDX.carved * 104729)))
 
 /**
- * The rim of a `shape` stone at absolute angle `a` (0 = right, π/2 = down),
- * as a fraction of the stone's radius. Exported so the tests can pin that an
- * oval's wreath sits closer under the stone than a disc's.
+ * The rim of a `type` stone at absolute angle `a` (0 = right, π/2 = down), as a
+ * fraction of the stone's radius. Exported so the tests can pin that the bow's
+ * wreath sits closer in at the sides than the shield's.
  */
-export const laurelRimAt = (shape: PebbleShape, a: number): number => rayHit(laurelOutline(shape), a)
+export const laurelRimAt = (type: RuneType, a: number): number => rayHit(laurelOutline(type), a)
 
 /**
  * The Lv 2 laurel, drawn into the SAME box as the stone it wraps —
@@ -982,16 +1538,16 @@ export const laurelRimAt = (shape: PebbleShape, a: number): number => rayHit(lau
  * around a stone that already has one, and at hand-tray size the two merge
  * into a hoop.
  */
-export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number, shape: PebbleShape = 'pebble'): void => {
+export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number, type: RuneType = 'melee'): void => {
   const size = Math.min(w, h)
   const cx = w / 2
   const cy = h / 2
   // The rim of a Lv 2 stone in this box; the wreath sits just outside it — and
-  // follows the SILHOUETTE: an oval's foot is closer than a disc's, a hex has
-  // corners, a slab is flat. One wreath shape per stone shape, never a circle
-  // floating under a stone that is not one.
+  // follows the SILHOUETTE: a bow's foot is a narrow taper, a shield's is a
+  // blunt point, a mortar's is a flat plate. One wreath per RUNE, never a
+  // circle floating under a stone that is not one.
   const R = (size / 2) * stoneFill(2)
-  const pts = laurelOutline(shape)
+  const pts = laurelOutline(type)
   const rimAt = (a: number): number => R * rayHit(pts, a) * 1.06
   const gold = ctx.createLinearGradient(cx - R, cy, cx + R, cy + R * 1.2)
   gold.addColorStop(0, GOLD_LIGHT)
@@ -1075,7 +1631,25 @@ export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number,
   ctx.restore()
 }
 
-const compact = (shape: PebbleShape): boolean => shape === 'hex' || shape === 'shard' || shape === 'disc'
+/**
+ * How big the glyph is drawn, as a multiple of the stone's radius, and how far
+ * down it sits.
+ *
+ * Both numbers belong to the RUNE's profile, because both are questions about
+ * this silhouette and no other: a mortar's field is down in the base plate, a
+ * shield's is above the point, a crown's is under the peaks, and a bow has two
+ * thirds of the width the rest of the roster has.
+ *
+ * The CUT then adjusts once: a framed stone spends `INSET` of its radius on
+ * the border, so an unframed one — a shard, a slab, a gem — has room for a
+ * fifth more glyph and needs less of the drop that kept the plaque's glyph
+ * clear of its rim.
+ */
+const glyphFit = (cut: StoneCut, type: RuneType): { scale: number; drop: number } => {
+  const g = RUNE_PROFILES[type]!.glyph
+  const framed = cutIsFramed(cut)
+  return { scale: g.scale * (framed ? 1 : 1.2), drop: g.drop * (framed ? 1 : 0.8) }
+}
 
 /** A rune stone with its glyph, direction-less (the arrow is the renderer's). */
 export const paintPebble = (ctx: CanvasRenderingContext2D, w: number, h: number, o: PebbleOpts): void => {
@@ -1092,13 +1666,13 @@ export const paintPebble = (ctx: CanvasRenderingContext2D, w: number, h: number,
     return
   }
   const R = (size / 2) * stoneFill(o.level)
-  const seed = seedFrom(TYPE_IDX[o.type] * 7919 + 17, SHAPE_IDX[skin.shape] * 104729)
-  const pts = stoneOutline(skin.shape, seed)
+  const seed = seedFrom(TYPE_IDX[o.type] * 7919 + 17, CUT_IDX[skin.cut] * 104729)
+  const pts = stoneOutline(skin.cut, o.type, seed)
   paintBody(ctx, { cx, cy, R, pts, skin, seed, glow }, o.level)
-  const gsize = R * (compact(skin.shape) ? 1.0 : 1.14)
-  drawStyledGlyph(ctx, cx, cy + R * 0.02, gsize, o.type, skin.glyph, skin.ink, glow, skin.hi, pulse)
+  const fit = glyphFit(skin.cut, o.type)
+  drawStyledGlyph(ctx, cx, cy + R * fit.drop, R * fit.scale, o.type, skin.glyph, skin.ink, glow, skin.hi, pulse)
   if (o.level >= 2) {
-    if (o.laurel !== false) paintLaurel(ctx, w, h, skin.shape)
+    if (o.laurel !== false) paintLaurel(ctx, w, h, o.type)
     paintCrest(ctx, cx, cy, R, o.label)
   }
   ctx.restore()
@@ -1271,7 +1845,7 @@ export const paintForge = (ctx: CanvasRenderingContext2D, w: number, h: number):
   // The stone on the anvil, its glyph lit by the forge.
   const R = s * 0.15
   const seed = seedFrom(99)
-  const pts = stoneOutline('pebble', seed)
+  const pts = stoneOutline('carved', 'support', seed)
   const skin: SkinDef = { ...ENEMY_STONE, hi: '#d9c9a6', base: '#b39b73', lo: '#7d6547', rim: '#f2e6c8', ink: '#2c2218', glow: '#ffb347' }
   paintBody(ctx, { cx, cy: cy - s * 0.32, R, pts, skin, seed, glow: '#ffb347' }, 1)
   drawStyledGlyph(ctx, cx, cy - s * 0.31, R * 1.0, 'support', 'ember', '#ff8a2a', '#ffd27a', skin.hi, 0.8)
@@ -1695,13 +2269,114 @@ export const paintRidge = (ctx: CanvasRenderingContext2D, w: number, h: number, 
   ctx.restore()
 }
 
-/** The bare stone silhouette of a shape, for previews and the sheet's key. */
-export const paintStoneShape = (ctx: CanvasRenderingContext2D, w: number, h: number, shape: PebbleShape, skin: SkinDef): void => {
+/** The bare stone silhouette of a rune in a cut, for previews and the sheet's key. */
+export const paintStoneShape = (
+  ctx: CanvasRenderingContext2D, w: number, h: number, cut: StoneCut, type: RuneType, skin: SkinDef
+): void => {
   const size = Math.min(w, h)
-  const seed = seedFrom(SHAPE_IDX[shape] * 31 + 5)
-  const pts = stoneOutline(shape, seed)
-  const body: SkinDef = { ...skin, shape }
+  const seed = seedFrom(CUT_IDX[cut] * 31 + 5, TYPE_IDX[type] * 17)
+  const pts = stoneOutline(cut, type, seed)
+  const body: SkinDef = { ...skin, cut }
   ctx.save()
   paintBody(ctx, { cx: w / 2, cy: h / 2, R: (size / 2) * 0.86, pts, skin: body, seed, glow: skin.glow ?? skin.rim }, 0)
+  ctx.restore()
+}
+
+/**
+ * ─── The conquest counter plate ─────────────────────────────────────────────
+ *
+ * The carved plaque behind "YOU 4" / "FOE 5". It is drawn here for two reasons
+ * and rendered in neither: the counters themselves live in the DOM now
+ * (`ConquestCounters.vue`), because redrawing two numbers sixty times a second
+ * on the canvas was the single most expensive thing this renderer did.
+ *
+ * What this painter is FOR:
+ *
+ *   1. The reference panel on the UI contact sheet, so a painter — human or
+ *      model — restyles THIS plaque instead of inventing one. A prompt that
+ *      describes a plaque in words comes back different on every sheet
+ *      (`artSheet.ts`, and the laurel that taught us).
+ *   2. The design of record for the CSS fallback, which has to look like the
+ *      same object when the painted `.webp` is absent or the art flag is off.
+ *
+ * `side` only changes the rim and the etch light: the player's plaque is cold
+ * blue, the enemy's is crimson, and the two must read as the same carved object
+ * in two liveries rather than as two different props.
+ *
+ * The text is NOT painted. A caption baked into a plate is a caption in one
+ * language, and this game ships twenty-one.
+ */
+export const paintCounterPlate = (
+  ctx: CanvasRenderingContext2D, w: number, h: number, side: 'you' | 'foe'
+): void => {
+  const rim = side === 'you' ? '#4fd0ff' : '#ff5a5f'
+  const deep = side === 'you' ? '#123049' : '#3c1418'
+  const r = h * 0.46
+  ctx.save()
+
+  // The stone body: a cold slate slab, lit from above.
+  const body = ctx.createLinearGradient(0, 0, 0, h)
+  body.addColorStop(0, '#2b3350')
+  body.addColorStop(0.45, '#171d30')
+  body.addColorStop(1, '#0d1120')
+  roundRect(ctx, h * 0.06, h * 0.06, w - h * 0.12, h - h * 0.12, r)
+  ctx.fillStyle = body
+  ctx.fill()
+
+  // A wash of the side's own colour, pooling at the ends where the numbers sit.
+  const wash = ctx.createLinearGradient(0, 0, w, 0)
+  wash.addColorStop(0, rgba(deep, 0.85))
+  wash.addColorStop(0.5, rgba(deep, 0))
+  wash.addColorStop(1, rgba(deep, 0.85))
+  ctx.fillStyle = wash
+  ctx.fill()
+
+  // Carved groove: a dark inner line, then a light one below it, so the rim
+  // reads as raised rather than as a drawn outline.
+  ctx.strokeStyle = rgba('#000000', 0.75)
+  ctx.lineWidth = Math.max(1.5, h * 0.055)
+  roundRect(ctx, h * 0.06, h * 0.06, w - h * 0.12, h - h * 0.12, r)
+  ctx.stroke()
+  ctx.strokeStyle = rgba(rim, 0.9)
+  ctx.lineWidth = Math.max(1, h * 0.03)
+  roundRect(ctx, h * 0.11, h * 0.11, w - h * 0.22, h - h * 0.22, r * 0.88)
+  ctx.stroke()
+
+  // The rim's own light, kept TIGHT — a halo over magenta cannot be keyed out
+  // on the return trip (`artSheet.ts`, the background contract).
+  ctx.strokeStyle = rgba(rim, 0.35)
+  ctx.lineWidth = Math.max(1, h * 0.08)
+  roundRect(ctx, h * 0.09, h * 0.09, w - h * 0.18, h - h * 0.18, r * 0.92)
+  ctx.stroke()
+
+  // Four rivets, one at each shoulder, so the plaque reads as fixed to
+  // something rather than floating.
+  const rivet = (x: number, y: number): void => {
+    ctx.beginPath()
+    ctx.arc(x, y, h * 0.055, 0, Math.PI * 2)
+    ctx.fillStyle = '#5a6480'
+    ctx.fill()
+    ctx.strokeStyle = rgba('#000000', 0.7)
+    ctx.lineWidth = Math.max(1, h * 0.018)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(x - h * 0.015, y - h * 0.018, h * 0.02, 0, Math.PI * 2)
+    ctx.fillStyle = rgba('#dfe6ff', 0.8)
+    ctx.fill()
+  }
+  const inset = h * 0.26
+  rivet(inset, h * 0.28)
+  rivet(inset, h - h * 0.28)
+  rivet(w - inset, h * 0.28)
+  rivet(w - inset, h - h * 0.28)
+
+  // A shallow highlight across the top third — one sweep of light on stone.
+  const gloss = ctx.createLinearGradient(0, h * 0.08, 0, h * 0.5)
+  gloss.addColorStop(0, rgba('#ffffff', 0.16))
+  gloss.addColorStop(1, rgba('#ffffff', 0))
+  roundRect(ctx, h * 0.13, h * 0.11, w - h * 0.26, h * 0.4, r * 0.7)
+  ctx.fillStyle = gloss
+  ctx.fill()
+
   ctx.restore()
 }

@@ -27,10 +27,11 @@ import { isMobileLandscape, isShortViewport } from '@/use/useUser'
 import { playFirstStartInterstitial } from '@/use/useFirstStartInterstitial'
 import { leaderboardEnabled } from '@/use/useLeaderboard'
 import { getState, setState } from '@/use/useGlyphyxState'
+import type { Rect } from '@/game/view'
 import { AIMED_KEY, GOAL_SEEN_KEY, RESULTS_SEEN_KEY, TUTORIAL_KEY } from '@/keys'
 import { spawnCoinExplosion } from '@/use/useCoinExplosion'
 import { tooltipWantedFor } from '@/use/useRuneUses'
-import { CHEST_AUTO_CONTINUE_MS, REWARD_MULTIPLIER, type NodeConfig, type RuneType, chestIsGift, LESSON_HANDOVER_MS } from '@/game/rules'
+import { CHEST_AUTO_CONTINUE_MS, FACTION_DEFS, REWARD_MULTIPLIER, type NodeConfig, type RuneType, chestIsGift, LESSON_HANDOVER_MS } from '@/game/rules'
 
 import StreakFlame from '@/components/game/StreakFlame.vue'
 import RuneForge from '@/components/game/RuneForge.vue'
@@ -41,6 +42,7 @@ import RuneTooltip from '@/components/game/RuneTooltip.vue'
 import TurnBanner from '@/components/game/TurnBanner.vue'
 import ChestOverlay from '@/components/game/ChestOverlay.vue'
 import NextUnlockTeaser from '@/components/game/NextUnlockTeaser.vue'
+import ConquestCounters from '@/components/game/ConquestCounters.vue'
 import RewardAdIcon from '@/components/atoms/RewardAdIcon.vue'
 import FHudButton from '@/components/atoms/FHudButton.vue'
 import FMuteButton from '@/components/atoms/FMuteButton.vue'
@@ -148,11 +150,24 @@ const showLeaderboard = ref(false)
  */
 const stripRoomPx = ref(Infinity)
 
+/**
+ * The renderer's own rects for the two conquest plaques, mirrored into the HUD.
+ *
+ * `ConquestCounters` is a DOM overlay, but the row it sits in belongs to
+ * `computeArenaLayout` — so the geometry is taken verbatim rather than
+ * re-derived in CSS, where it would drift from the canvas the first time the
+ * landscape layout moved. Written only when the layout is recomputed, never
+ * per frame.
+ */
+const counterRects = ref<{ you: Rect; foe: Rect } | null>(null)
+
 const applyInsets = (): void => {
   if (!renderer || cssW === 0) return
   renderer.resize(cssW, cssH, dpr, measureInsets())
   const topBottom = topBarRef.value?.getBoundingClientRect().bottom ?? 0
-  stripRoomPx.value = renderer.layout().board.y - topBottom
+  const geom = renderer.layout()
+  stripRoomPx.value = geom.board.y - topBottom
+  counterRects.value = { you: geom.counters.you, foe: geom.counters.foe }
 }
 
 const resize = (): void => {
@@ -241,6 +256,10 @@ watch(locale, applyLabels)
 
 /** The node on screen: the running match's, or the one the save points at. */
 const nodeCfg = computed<NodeConfig>(() => battle.node.value ?? nodeConfigFor(currentNode.value))
+
+/** The enemy faction's colour — the foe plaque's rim and caption take it, the
+ *  way the canvas counter did. */
+const foeColor = computed(() => FACTION_DEFS[nodeCfg.value.enemies[0]?.faction ?? 'orc'].color)
 const chapter = computed(() => nodeCfg.value.chapter)
 const nodeIndex = computed(() => nodeCfg.value.index)
 const enemies = computed(() => nodeCfg.value.enemies)
@@ -755,6 +774,16 @@ onUnmounted(() => {
     //- ── HUD overlay ───────────────────────────────────────────────────────
     //- Non-interactive by default; individual controls opt back in.
     div.scene__hud
+      //- The conquest readout, positioned from the renderer's own layout. It
+      //- was `drawCounters` on the canvas until it turned out to be 39 % of
+      //- render time to redraw two numbers that change a few times a match.
+      ConquestCounters(
+        v-if="!overlayUp"
+        :you="battle.playerTiles.value"
+        :foe="battle.enemyTiles.value"
+        :foe-color="foeColor"
+        :rects="counterRects"
+      )
       div.scene__top(ref="topBarRef")
         //- The player's column: the streak flame, the wallet, and under it
         //- the forge whose coins fly INTO the wallet.

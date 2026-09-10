@@ -80,16 +80,63 @@ Each match is played in rapid, synchronized turns following a strict 3-step loop
 
 ## 3. RUNE & GLYPH SYSTEM
 
-Runes are represented as smooth, dark river pebbles with glowing neon glyphs carved into their surface.
+Runes are carved stone PLAQUES with glowing neon glyphs cut into their faces.
+
+**A rune says what it is twice: in its glyph, and in its OUTLINE.** A glyph at
+hand-tray size is four dark strokes in a hollow; a silhouette is the whole
+object, and it is what a player actually reads across a board of forty stones.
+So the shape belongs to the RUNE TYPE and the skin only decides how that shape
+is worked:
+
+| Rune | Silhouette |
+| :--- | :--- |
+| **Sword** | a blade-tip plaque: a sharp point at the top over a full belly and a round base — the pointiest of them |
+| **Bow** | a slender spindle, tapered at both ends — the thinnest of them |
+| **Orb** | a smooth upright egg: no point, no corner anywhere |
+| **Shield** | blocky: flat across the top, straight sides, a blunt point at the FOOT — the only one that points down |
+| **Cross** | a four-lobed medallion, an arm up, an arm down and one to each side |
+| **Axe** | an axe bit: narrow on top, a broad crescent below with a horn at each bottom corner |
+| **Boulder** | squat, wider than it is tall, a flat plane knocked off each side |
+| **Mortar** | narrow on top, flaring to a wide base plate with square corners |
+| **Warhead** | a needle apex over a narrow body, stepping out to a collar at the foot |
+| **Crown** | a heavy band whose top edge rises into three peaks |
+
+Every one of them is exactly symmetric, half an outline mirrored, and the
+default cut wraps it in a **raised bevelled border** round a shallow **sunken
+field** — an amulet somebody cut a rune into. That structure is doing work a
+plain rock could not: the border frames the glyph at tile size, and the two
+edges of the bevel (lit at the top-left, shadowed at the bottom-right, and
+reversed inside the hollow) give a flat sprite depth from four strokes.
+
+The nine SKINS are nine ways of working that outline, in three families —
+carved stone, raw stone, cut gem:
+
+| Skin | Cut |
+| :--- | :--- |
+| **River** | the default: carved smooth, bordered |
+| **Jade** | worn round, every corner and point softened, bordered |
+| **Amber** | the same outline CUT rather than polished: flats, so light breaks along an edge |
+| **Marble** | quarried heavy: broader, its sides filled out toward the block, bordered |
+| **Obsidian** | knapped: long straight flats struck off a flake point, no border |
+| **Ember** | blunted a third of the way to a cracked slab, no border |
+| **Sapphire** | a step cut: few long hard flats, chamfered corners, a white star under the table |
+| **Ruby** | a cabochon: domed until there is not a facet left on it |
+| **Diamond** | brilliant cut: many small crisp flats, and a glyph that splits the light |
+
+Obsidian and ember are deliberately NOT carved, and the three gems are cut
+rather than carved: a roster where every stone is a bordered plaque has nothing
+left to say about the ones that were never carved.
 
 ```
-       [ STONE PEBBLE RUNE LAYOUT ]
-             /--------------\
-            /   [GLYPH ICON]  \
-           |   (Glowing Neon)  |
-           |    [SWIPE ARROW]  |
-            \    [HP / LVL]   /
-             \--------------/
+        [ RUNE PLAQUE LAYOUT ]
+               /\            ← the point, at the top
+              /  \
+             / __ \          ← raised border
+            | |  | |
+            | | G| |         ← G: the glyph, in the sunken field
+            | |__| |
+             \    /
+              \__/           ← [SWIPE ARROW] under it, [HP / LVL] below
 ```
 
 ### 3.1 Complete Rune Roster
@@ -106,6 +153,24 @@ Runes are represented as smooth, dark river pebbles with glowing neon glyphs car
 | **Bombard** | Magenta Mortar | Cardinal (Up, Down, Left, Right) | HP: 2 | Atk: 2 | **Lobs** a shell onto the 3 side-by-side tiles **3 ranks ahead**. It arcs over everything between, so no shield can intercept it — and nothing beside the tube is ever in danger. | **HP: 4 | Atk: 4.** Also shells the tile 2 ranks ahead, dead centre. |
 | **Nuker** | Acid-Yellow Warhead | **Omni-Directional** (never aimed) | HP: 2 | Atk: 0 | **Detonates once, on the placement itself**, and never attacks again. Every Lv 1 rune on the board is destroyed outright — **friendlies included** — whatever its hit points; Lv 2+ runes survive with 3 damage. The nuker itself is untouched. | **HP: 4 | Atk: 0.** Its own body outlives a second nuke. |
 
+| **Crown** | Royal-Indigo Crown | Cardinal (Up, Down, Left, Right) | HP: 2 | Atk: 0 | **Never attacks.** On the placement itself, the Lv 1 rune it faces **changes side** — same body, same hit points, turned to face the way its new owner's runes face — and the crown is **spent** doing it. A stack, an empty tile, a friendly or the board's edge: nothing happens, and nothing is paid. | **HP: 4 | Atk: 0.** A Lv 2 crown takes a Lv 2 stack. |
+
+**Why the crown is a trade and not a gift.** Its own tile empties as the
+enemy's tile changes hands, so the swing is ONE tile, not two: a body for a
+body, plus the position. Nothing is left standing to crown a second stone, so
+it can never be spammed, and the stolen rune fights for its new owner on the
+very turn it changes hands — the crown step runs before every attack — which is
+the whole reason to spend a rune taking one rather than breaking it.
+
+Nine runes win by killing; the game is won by **holding eight of sixteen
+tiles**. The crown is the only rune that plays the win condition directly,
+which is why the campaign keeps it for last (4-5, one chapter's play after the
+nuke). Those two are the opposite answers to a board that has gone wrong —
+burn it down, or take a piece of theirs — and meeting them together would blur
+both. It is never given to an enemy faction: having a stone you built taken and
+turned on you is the sourest thing these rules can express, and there is no
+counter-play to it, only a rune gone.
+
 **Why the nuke reads levels, not hit points.** A Lv 1 shield with 9 HP is
 vaporised exactly like a 2-HP bow, and the smallest Lv 2 body in the game (4)
 is larger than the 3 damage a survivor takes. So "stacks survive, singles do
@@ -115,17 +180,26 @@ wipes a board you are losing; from in front it clears everything except the
 stacks you have built. It is the last rune the campaign hands over (4-1).
 
 **Where they come from.** The first five are chapter 1's lessons. The last
-three are the long game: the campaign hands the axe over at **Stage 2-1**, the
-boulder at **2-5** and the mortar at **3-1**, and every result screen and the
-campaign map advertise the next one by name and stone ("Win Stage 2-1 for …"),
-so a new player knows there is something to come before they have earned it.
+five are the long game: the campaign hands the axe over at **Level 2-1**, the
+boulder at **2-5**, the mortar at **3-1**, the nuke at **4-1** and the crown at
+**4-5**, and every result screen and the campaign map advertise the next one by
+name and stone ("Win Level 2-1 for …"), so a new player knows there is
+something to come before they have earned it.
 
-**And each is taught the node after it is given.** 2-2, 2-6 and 3-2 are
-lessons, built exactly like chapter 1's — a ghost hand, bone dummies that
+**And each is taught the node after it is given.** 2-2, 2-6, 3-2, 4-2 and 4-6
+are lessons, built exactly like chapter 1's — a ghost hand, bone dummies that
 never place and cannot hurt, no clock — and each is won by the ghost's single
 placement: three dummies abreast for the axe, three queued down one lane for
-the boulder, three on the far rank behind your own shield for the mortar. A
-rune out of a chest is a rune nobody has used, and these three are the least
+the boulder, three on the far rank behind your own shield for the mortar, three
+scattered so that nothing but a nuke could take them all.
+
+The crown's is the one lesson that does not clear the board by breaking it: a
+skeleton sword with a 2-HP bow behind it, in one file. The crown takes the
+sword, and the sword — now the player's, and turned around — kills the bow in
+the same resolution. One drop teaches both halves of the rune, and the second
+half is the one that decides matches.
+
+A rune out of a chest is a rune nobody has used, and these five are the least
 guessable in the game.
 
 ---
@@ -287,7 +361,7 @@ To maintain an average session length of **10–20 minutes** with **>50% D1 Rete
 
 ```
 +---------------------------------------+
-| [Profile]   [Stage 3-4]   [Settings]  |
+| [Profile]   [Level 3-4]   [Settings]  |
 | [ Conquest Progress: |||||||.. 7/8 ]  |
 +---------------------------------------+
 |                                       |
@@ -357,6 +431,59 @@ The drag-and-swipe control scheme uses a simple 3-state machine designed for low
        |---> If swipe magnitude < threshold: Snap default direction (UP)
        |---> If swipe magnitude >= threshold: Snap angle to nearest 45° / 90° vector
 ```
+
+**Shipped: the tile is a compass (position aiming), on every device.** The
+facing comes from WHERE the pointer stands inside the tile rather than from a
+stroke — for a cursor and for a thumb alike, because sliding toward the edge you
+want is easier than a flick with a distance threshold in it. Each tile carves
+into one region per facing the rune actually has:
+
+| rune aim | carving | regions |
+| :--- | :--- | :--- |
+| cardinal (sword, bow, axe, boulder, mortar) | the tile's two **diagonals** → four triangles | up / right / down / left, each triangle's wide edge being the edge it faces |
+| diagonal (orb) | the two **midlines** → four quadrants | ul / ur / dr / dl, each touching the corner it faces |
+| omni (shield, cross, nuker) | none — one region | nothing to aim |
+
+Every region is outlined with the orientation it would produce, and the one
+under the pointer lights and grows inward from its own outer edge. The middle
+of the tile is a small DEAD ZONE (`AIM_CENTRE_DEAD_ZONE`, 18 % of the tile):
+every point still names a region — the renderer must draw something everywhere
+— but inside that radius the player has not *chosen*, so the facing simply
+holds whatever it already was, a pre-pressed key or the default. That is not
+the flicker a neutral region would cause: nothing changes as the pointer
+crosses the middle, which is the point. Without it, an arrow key pressed before
+the click would be silently overridden by a click in the centre, and a stone
+dropped dead-centre would count as aimed and skip the window that is the only
+way to fix it.
+
+**And therefore no correction window on a mouse.** The one-second window exists
+because a stroke could be misread and because a pointer can hide what it is
+choosing. A cursor is a few pixels that never covers the tile, so a player who
+watched the region light up before clicking has already confirmed the facing and
+goes straight to the reveal. A FINGERTIP covers the middle of the very tile it
+is aiming — so touch gets the compass (leaned outward, away from the contact
+patch) but keeps its window. That is the only thing the precise/imprecise
+distinction still decides. The window is also kept for tap-to-place with no
+direction and for a pebble released inside the centre dead zone.
+
+It is no longer kept for node 1-1. That lesson used to BE the correction
+window: the ghost dropped a sword facing nothing and then flicked it round, and
+the player's own window was held open until they copied it. With the compass
+that is a tutorial in the fallback — two gestures and a second of waiting to
+teach the slower way to play — so 1-1 now shows the single gesture the game is
+actually played with: the sword carried onto (1,2) and released on the LEFT
+side of that tile, where the skeleton stands. The ghost lights the same compass
+the player's own finger will light, from the same painter (`drawGhostCompass`).
+The held window itself stays in the rules (`GhostSpec.reaim`) for any lesson
+that wants to drill the correction later; nothing shipped asks for it today.
+
+The swipe stays too, on both: a flick still re-aims inside the window, and it
+is the whole of the correction gesture. Position wins while the pointer is
+inside the tile; a stroke wins when it leaves.
+
+Geometry: `aimRegionShape` / `dirFromCellPoint` / `aimRegionPolygon` in
+`rules.ts`, pure and swept by `tests/game/rules.test.ts` over every point of
+every tile for every rune.
 
 ### 8.2 Network & Determinism Architecture
 * **Simultaneous Turn Synchronization:** Inputs are transmitted as lightweight 8-byte packets containing `(RuneID, TileIndex, DirectionVector)`.

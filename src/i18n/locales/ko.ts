@@ -9,7 +9,8 @@ export default {
       'cleave': '첫 턴부터 앞의 세 칸을 한 번에 베어 넘깁니다.',
       'roller': '첫 턴부터 버틴 둘을 밀어붙인 뒤 멈춥니다.',
       'bombard': '첫 턴부터 먼 줄과 중간 칸을 함께 포격합니다.',
-      'nuker': 'Lv 3으로 떨어져 방금 비운 보드를 그대로 지킵니다. 첫 턴부터.'
+      'nuker': 'Lv 3으로 떨어져 방금 비운 보드를 그대로 지킵니다. 첫 턴부터.',
+      'crown': 'Lv 3으로 등장 — 첫 턴부터 쌓인 룬까지 빼앗습니다.'
     },
     'watchAd': '광고 보기',
     'armed': '장착 ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': '스테이지 {c}-{n}',
+    'stage': '레벨 {c}-{n}',
     'conquest': '정복',
     'tiles': '{n} / {total}',
     'turn': '턴 {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': '도끼',
       'roller': '바위',
       'bombard': '박격포',
-      'nuker': '기폭석'
+      'nuker': '기폭석',
+      'crown': '왕관'
     },
     'descriptions': {
       'melee': '정면 칸을 공격합니다. Lv 2는 대상을 밀쳐냅니다.',
@@ -89,7 +91,8 @@ export default {
       'cleave': '앞의 세 칸을 벱니다. 정면과 양옆입니다.',
       'roller': '룬이 버틸 때까지 구릅니다. 아군도 포함. Lv 2는 한 칸 더 굴러갑니다.',
       'bombard': '세 줄 앞 세 칸을 벽 너머로 포격합니다. Lv 2는 중간도 때립니다.',
-      'nuker': '떨어진 자리에서 폭발합니다. 보드의 Lv 1 룬은 전부 소멸, 아군도 포함. Lv 2는 버팁니다.'
+      'nuker': '떨어진 자리에서 폭발합니다. 보드의 Lv 1 룬은 전부 소멸, 아군도 포함. Lv 2는 버팁니다.',
+      'crown': '마주한 룬을 빼앗고 그대로 소멸합니다 — 그 룬은 즉시 당신 편으로 싸웁니다. Lv 2는 쌓인 룬도 빼앗습니다.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': '룬을 보드로 끌어다 놓으세요'
     },
     'aim': {
-      'touch': '스와이프로 조준, 손을 떼면 고정',
-      'desktop': '드래그하거나 방향키 / WASD로 조준하고, 놓으면 고정'
+      'touch': '향할 방향의 가장자리에서 손을 떼기',
+      'desktop': '향할 방향의 가장자리로 옮기고 클릭'
     },
     'archer': {
       'touch': '활은 한 칸을 건너뛰고 다음 칸을 맞힙니다',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': '기폭석은 Lv 1 룬을 모두 없앱니다 — 아군도',
       'desktop': '기폭석은 Lv 1 룬을 모두 없앱니다 — 아군도'
+    },
+    'crown': {
+      'touch': '왕관은 마주한 룬을 빼앗습니다 — 이제 당신 편입니다',
+      'desktop': '왕관은 마주한 룬을 빼앗습니다 — 이제 당신 편입니다'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': '패배',
     'turns': '턴 수',
     'playAgain': '다시 하기',
-    'nextStage': '다음 스테이지',
+    'nextStage': '다음 레벨',
     'newRecord': '신기록!',
     'streakBonus': '연승 ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': '보상',
     'play': '플레이',
     'replay': '다시',
-    'nextUnlock': '스테이지 {c}-{n} 승리 보상:',
-    'nextUnlockAria': '스테이지 {c}-{n}을 이겨 {rune} 해제'
+    'nextUnlock': '레벨 {c}-{n} 승리 보상:',
+    'nextUnlockAria': '레벨 {c}-{n}을 이겨 {rune} 해제'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': '옥',
       'amber': '호박',
       'marble': '대리석',
-      'ember': '잔불'
+      'ember': '잔불',
+      'sapphire': '사파이어',
+      'ruby': '루비',
+      'diamond': '다이아몬드'
     },
     'tagline': '놓는 룬마다 이 모습이 됩니다.',
     'needMore': '{n} 코인 부족',
@@ -250,7 +260,10 @@ export default {
       'jade': '광택 낸 녹옥, 문양은 금으로 상감.',
       'amber': '다면 커팅한 호박 보석, 안에서부터 빛납니다.',
       'marble': '흰 대리석, 깊게 조각되어 그림자가 집니다.',
-      'ember': '식은 용암 판, 갈라진 틈으로 문양이 타오릅니다.'
+      'ember': '식은 용암 판, 갈라진 틈으로 문양이 타오릅니다.',
+      'sapphire': '짙푸른 사파이어. 계단식 컷 테이블 아래에 흰 별이 깃든다.',
+      'ruby': '돔형 루비 카보숑. 그 아래에서 문양이 붉게 타오른다.',
+      'diamond': '브릴리언트 컷 다이아몬드. 문양이 무지갯빛으로 갈라진다.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': '{t} 후 새 선물',
     'freeTaken': '다음 선물에 다시 오세요',
     'nukerUnlock': '기폭석 해금',
-    'nukerLocked': '또는 스테이지 4-1 승리'
+    'nukerLocked': '또는 레벨 4-1 승리',
+    'mystery': '???',
+    'mysteryHint': '계속 이겨 보세요',
+    'mysteryAria': '아직 해금하지 않은 룬',
+    'nextUp': '다음 룬',
+    'winsAt': '레벨 {c}-{n}에서 획득'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': '리더보드',
     'rank': '#',
     'player': '플레이어',
-    'stage': '스테이지',
+    'stage': '레벨',
     'streak': '연승',
     'empty': '아직 기록이 없습니다. 첫 번째가 되어 보세요.',
     'failed': '리더보드에 연결할 수 없습니다.',
@@ -304,6 +322,7 @@ export default {
     'music': '음악',
     'musicTrack': '음악 트랙',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': '고요한 돌',
       'trance': '룬의 맥동'
     },

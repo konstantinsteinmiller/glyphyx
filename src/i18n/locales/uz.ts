@@ -9,7 +9,8 @@ export default {
       'cleave': 'Birinchi yurishdanoq oldidagi uchta katakni birdan qulatadi.',
       'roller': 'Birinchi yurishdanoq toʻxtashdan oldin ikki omon qolganni bosib oʻtadi.',
       'bombard': 'Birinchi yurishdanoq uzoq qator va oradagi katakni otadi.',
-      'nuker': '3-dar. tushadi va endigina boʻshatgan taxtani ushlab turadi, birinchi yurishdanoq.'
+      'nuker': '3-dar. tushadi va endigina boʻshatgan taxtani ushlab turadi, birinchi yurishdanoq.',
+      'crown': '3-darajada tushadi — birinchi yurishdanoq hatto taxlangan runani ham oladi.'
     },
     'watchAd': 'Reklama ko\'rish',
     'armed': 'Qurollangan ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': '{c}-{n} bosqich',
+    'stage': '{c}-{n} daraja',
     'conquest': 'Istilo',
     'tiles': '{n} / {total}',
     'turn': '{n}-yurish',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Bolta',
       'roller': 'Qoyatosh',
       'bombard': 'Mortira',
-      'nuker': 'Vayronkor'
+      'nuker': 'Vayronkor',
+      'crown': 'Toj'
     },
     'descriptions': {
       'melee': 'Roʻparasidagi katakka uradi. 2-dar. nishonni orqaga itaradi.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Oldidagi uchta katakni kesadi: roʻparasi va ikki yoni.',
       'roller': 'Runa bardosh bermaguncha dumalaydi, oʻzinikilar ham. 2-dar. bittaga uzoqroq dumalaydi.',
       'bombard': 'Uch qator oldindagi uchta katakni devor osha otadi. 2-dar. oʻrtaga ham tegadi.',
-      'nuker': 'Tushgan joyida portlaydi: taxtadagi barcha 1-dar. runalar yoʻq boʻladi, sizniki ham. 2-dar. bardosh beradi.'
+      'nuker': 'Tushgan joyida portlaydi: taxtadagi barcha 1-dar. runalar yoʻq boʻladi, sizniki ham. 2-dar. bardosh beradi.',
+      'crown': 'Qarshisidagi runani oladi va shu bilan sarflanadi — u darhol siz uchun jang qiladi. 2-daraja taxlamlarni ham oladi.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Runani taxtaga torting'
     },
     'aim': {
-      'touch': 'Nishon uchun suring, qulflash uchun qoʻyib yuboring',
-      'desktop': 'Nishonga olish uchun torting yoki strelka / WASD tugmalarini bosing, mahkamlash uchun qoʻyib yuboring'
+      'touch': 'Qaratmoqchi boʻlgan chetda qoʻyib yuboring',
+      'desktop': 'Qaratmoqchi boʻlgan chetga olib boring va bosing'
     },
     'archer': {
       'touch': 'Kamon bir katakni oʻtkazib, keyingisiga uradi',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Vayronkor barcha 1-dar. runalarni yoʻq qiladi — sizniki ham',
       'desktop': 'Vayronkor barcha 1-dar. runalarni yoʻq qiladi — sizniki ham'
+    },
+    'crown': {
+      'touch': 'Toj qarshisidagi runani oladi — endi u siz uchun jang qiladi',
+      'desktop': 'Toj qarshisidagi runani oladi — endi u siz uchun jang qiladi'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': 'Magʻlubiyat',
     'turns': 'Yurishlar',
     'playAgain': 'Qayta oʻynash',
-    'nextStage': 'Keyingi bosqich',
+    'nextStage': 'Keyingi daraja',
     'newRecord': 'Yangi rekord!',
     'streakBonus': 'Seriya ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': 'Mukofot',
     'play': 'Oʻynash',
     'replay': 'Qayta',
-    'nextUnlock': '{c}-{n} bosqichda gʻalaba qozoning:',
-    'nextUnlockAria': '{rune} ochish uchun {c}-{n} bosqichda gʻalaba qozoning'
+    'nextUnlock': '{c}-{n} darajada gʻalaba qozoning:',
+    'nextUnlockAria': '{rune} ochish uchun {c}-{n} darajada gʻalaba qozoning'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': 'Nefrit',
       'amber': 'Qahrabo',
       'marble': 'Marmar',
-      'ember': 'Choʻgʻ'
+      'ember': 'Choʻgʻ',
+      'sapphire': 'Safir',
+      'ruby': 'Yoqut',
+      'diamond': 'Olmos'
     },
     'tagline': "Siz qo'ygan har bir runa shuni kiyadi.",
     'needMore': 'Yana {n} tanga kerak',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Sayqallangan yashil nefrit, runa oltin bilan bezatilgan.',
       'amber': 'Qirrali qahrabo toshi, ichidan porlaydi.',
       'marble': "Oq marmar, chuqur o'yilgan va soyali.",
-      'ember': 'Sovigan lava plitasi, runa yoriqlardan yonadi.'
+      'ember': 'Sovigan lava plitasi, runa yoriqlardan yonadi.',
+      'sapphire': 'To‘q ko‘k safir, zinapoyasimon qirqim; maydonchasi ostida oq yulduz.',
+      'ruby': 'Gumbazsimon yoqut kabushon, ostida glif qizil bo‘lib yonadi.',
+      'diamond': 'Brilliant qirqimli olmos: glifni kamalak ranglariga ajratadi.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Yangi sovgʻa {t} dan keyin',
     'freeTaken': 'Keyingisi uchun qayting',
     'nukerUnlock': 'Vayronkorni ochish',
-    'nukerLocked': 'Yoki 4-1 bosqichda gʻalaba qozoning'
+    'nukerLocked': 'Yoki 4-1 darajada gʻalaba qozoning',
+    'mystery': '???',
+    'mysteryHint': 'Yutib boring',
+    'mysteryAria': 'Siz hali ochmagan runa',
+    'nextUp': 'Keyingi',
+    'winsAt': '{c}-{n} darajada yutib oling'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'Yetakchilar jadvali',
     'rank': '#',
     'player': 'Oʻyinchi',
-    'stage': 'Bosqich',
+    'stage': 'Daraja',
     'streak': 'Seriya',
     'empty': 'Hali oʻyinlar yoʻq. Birinchi boʻling.',
     'failed': 'Jadvalni yuklab boʻlmadi.',
@@ -304,6 +322,7 @@ export default {
     'music': 'Musiqa',
     'musicTrack': 'Musiqa treki',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Sokin tosh',
       'trance': 'Runa pulsi'
     },

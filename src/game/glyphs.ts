@@ -1,7 +1,7 @@
 import { RUNES, type RuneType } from './rules'
 
 /**
- * ─── The nine glyphs ────────────────────────────────────────────────────────
+ * ─── The ten glyphs ─────────────────────────────────────────────────────────
  *
  * Each is ONE path in a 100×100 box, filled with the `nonzero` rule. Solid
  * parts wind clockwise, holes (the sword's fuller, the shield's cross, the
@@ -23,14 +23,29 @@ export const GLYPH_PATHS: Record<RuneType, string> = {
     'M20 58 L80 58 L80 68 L20 68 Z ' +
     'M43 68 L57 68 L57 84 L43 84 Z ' +
     'M50 88 m-10 0 a10 10 0 1 1 20 0 a10 10 0 1 1 -20 0 Z',
-  // A thick recurve bow with its string, an arrow nocked and flying right —
-  // the head is the biggest thing on it so the direction reads at 24 px.
+  // A recurve bow with its string, an arrow nocked and flying right — the head
+  // is the biggest thing on it, so the direction reads at 24 px.
+  //
+  // The limb is a CRESCENT of even thickness, not a filled belly. That is the
+  // whole difference between this drawing and the one it replaces: the old
+  // limb ran from the string to two thirds across the box as one solid mass,
+  // which reads as a bow only while the glyph is a glowing OUTLINE. The
+  // moment a skin fills it — jade's gold inlay, marble's carved ink, amber's
+  // lit interior — the belly became a solid sail with a stick through it, and
+  // the same rune looked like a different object on every material. A stroke
+  // of steady width survives every one of the six ways this game carves a
+  // glyph, which is the only test a glyph has to pass.
+  //
+  // It is also the DOM icon's geometry, scaled: `bow` in `iconPaths.ts` is
+  // this drawing in a 24-box, so the stone in the hand and the icon on the
+  // unlock card are one bow rather than two.
   archer:
-    'M28 4 C100 28 100 72 28 96 C66 72 66 28 28 4 Z ' +
-    'M26 2 L34 2 L34 98 L26 98 Z ' +
-    'M6 45 L84 45 L84 55 L6 55 Z ' +
-    'M82 33 L100 50 L82 67 Z ' +
-    'M8 38 L20 50 L8 62 L0 50 Z',
+    'M25.8 10 C53 19 66 33.5 66 50 C66 66.5 53 81 25.8 90 ' +
+    'L22.1 80.8 C44 72.6 55.5 62.6 55.5 50 C55.5 37.4 44 27.4 22.1 19.2 Z ' +
+    'M21.7 11.7 L29.6 11.7 L29.6 88.3 L21.7 88.3 Z ' +
+    'M8 44 L86 44 L86 56 L8 56 Z ' +
+    'M78 32 L100 50 L78 68 Z ' +
+    'M10 38 L20 50 L10 62 L0 50 Z',
   // An arcane orb: a solid core inside a ring, four sparks on the diagonals.
   mage:
     'M50 50 m-20 0 a20 20 0 1 1 40 0 a20 20 0 1 1 -40 0 Z ' +
@@ -90,7 +105,17 @@ export const GLYPH_PATHS: Record<RuneType, string> = {
     'M38 29.2 L27 10.2 A46 46 0 0 1 73 10.2 L62 29.2 A24 24 0 0 0 38 29.2 Z ' +
     'M74 50 L96 50 A46 46 0 0 1 73 89.8 L62 70.8 A24 24 0 0 0 74 50 Z ' +
     'M38 70.8 L27 89.8 A46 46 0 0 1 4 50 L26 50 A24 24 0 0 0 38 70.8 Z ' +
-    'M50 36 A14 14 0 1 1 50 64 A14 14 0 1 1 50 36 Z'
+    'M50 36 A14 14 0 1 1 50 64 A14 14 0 1 1 50 36 Z',
+  // A crown: three peaks over a heavy band, with one gem cut clean out of the
+  // band (counter-wound, so it is a hole). Every other glyph is a thing that
+  // does damage; this one is a thing that commands, and a crown is the only
+  // silhouette that says "this stone is MINE now" without a word of text. The
+  // peaks are deliberately unequal — the middle one tallest — so the shape
+  // still reads as a crown rather than a saw at 24 px.
+  crown:
+    'M8 72 L4 24 L27 47 L50 12 L73 47 L96 24 L92 72 Z ' +
+    'M6 68 L94 68 L94 90 L6 90 Z ' +
+    'M50 72 L43 79 L50 86 L57 79 Z'
 }
 
 /** The neon colour of each glyph — the GDD's palette, shared with the roster. */
@@ -103,7 +128,8 @@ export const GLYPH_COLORS: Record<RuneType, string> = {
   cleave: RUNES.cleave.color,
   roller: RUNES.roller.color,
   bombard: RUNES.bombard.color,
-  nuker: RUNES.nuker.color
+  nuker: RUNES.nuker.color,
+  crown: RUNES.crown.color
 }
 
 const path2dCache = new Map<RuneType, Path2D>()

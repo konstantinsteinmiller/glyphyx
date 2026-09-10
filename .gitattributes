@@ -1,0 +1,58 @@
+# ─── Line endings ────────────────────────────────────────────────────────────
+#
+# One rule for the whole repo: every text file is LF, in the object database
+# AND in the working tree, on every platform. Not "whatever the checkout did".
+#
+# This is not tidiness. The suite is full of SOURCE-SCAN tests — checks that
+# read a component's own text and assert on it, because a scoped `<style>`
+# block and a template's structure are invisible to a jsdom mount. Several of
+# them slice on an anchor like `indexOf('.reward-stage\n')`. In a CRLF file
+# that anchor never matches, `indexOf` returns -1, `slice(-1)` yields the last
+# character, and the assertion runs against "\n" — so the failure reads as
+# "this component lost a rule it must never lose" when the truth is that a
+# tool wrote the file with Windows endings. That cost real debugging time
+# twice in one session, from two different directions.
+#
+# Mixed endings had already crept in from several tools, so `eol=lf` is set
+# explicitly rather than left to `core.autocrlf`: the working tree is where
+# the tests read, so the working tree is what has to be LF.
+#
+# Applying it to files that already exist takes one command, which is
+# deliberately NOT run for you:
+#
+#     git add --renormalize .
+#
+# It stages every file it touches, which is a decision for whoever is holding
+# the branch — not a side effect of adding this file.
+
+* text=auto eol=lf
+
+# ─── Binary: never normalised, never diffed as text ──────────────────────────
+#
+# `text=auto` guesses, and a guess that goes wrong on a binary corrupts it —
+# a webp with an LF-looking byte pair is not a file you want "fixed". These
+# say so outright.
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.gif   binary
+*.ico   binary
+*.ogg   binary
+*.mp3   binary
+*.wav   binary
+*.mp4   binary
+*.mov   binary
+*.webm  binary
+*.ttf   binary
+*.woff  binary
+*.woff2 binary
+*.zip   binary
+*.pdf   binary
+
+# ─── Generated ───────────────────────────────────────────────────────────────
+# Still LF (it is text, and the rule above holds), just collapsed in diffs and
+# kept out of language statistics.
+
+pnpm-lock.yaml  linguist-generated=true  -diff

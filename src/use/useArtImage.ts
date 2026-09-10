@@ -16,7 +16,8 @@ export const useArtImage = (kind: ArtKind, id: string): Ref<string | null> => {
   const src = ref<string | null>(null)
   const read = (): void => { src.value = spriteFor(kind, id)?.src ?? null }
   read()
-  const off = onArtChanged(read)
+  // Its own painting arriving, or the flag flipping — not every other one.
+  const off = onArtChanged((change) => { if (!change || (change.kind === kind && change.id === id)) read() })
   onBeforeUnmount(off)
   return src
 }

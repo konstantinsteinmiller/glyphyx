@@ -29,7 +29,13 @@
 //   --reps <n>        repetitions of each arm, interleaved      (default 6)
 //   --throttle <n>    CPU throttling rate; 4 ≈ a mid-range 2021 Android (4)
 //   --frames <n>      frames recorded per run                   (default 600)
-//   --metric <k>      workP95 | workP50 | intervalP95           (workP95)
+//   --metric <k>      drawMean | workP95 | workP50 | intervalP95  (drawMean)
+//                     drawMean is the DEFAULT and the right choice for a draw-
+//                     path change: p95 is a tail statistic and this runner's
+//                     A-vs-A null test on it swings +-25 %.
+//   --seed <n>        seed for Math.random and the save fixture  (default 7)
+//   --tier <t>        pin the quality ladder; 'off' to let it adapt   (high)
+//   --nofixture       cold first-boot instead of the fixed save
 //   --chrome <path>   Chrome executable
 //
 // The page must publish `window.__perf` and set `window.__perfDone`; both come
@@ -55,14 +61,30 @@ const B_QS = arg('b', '')
 const REPS = Number(arg('reps', 6))
 const THROTTLE = Number(arg('throttle', 4))
 const FRAMES = Number(arg('frames', 600))
-const METRIC = arg('metric', 'workP95')
+const METRIC = arg('metric', 'drawMean')
 const PORT = Number(arg('port', 9400 + Math.floor(Math.random() * 400)))
 const PROFILE = arg('profile', mkdtempSync(join(tmpdir(), 'perf-ab-')))
+const SEED = Number(arg('seed', 7))
+const TIER = arg('tier', 'high')
+const NO_FIXTURE = argv.includes('--nofixture')
 
 const withQs = (base, qs) => {
   const u = new URL(base)
   u.searchParams.set('perfprobe', '1')
   u.searchParams.set('perfframes', String(FRAMES))
+  /**
+   * PIN THE QUALITY TIER. Without this the adaptive ladder in `useVfx` is free
+   * to settle differently in each rep, and it does: the tier picks the canvas
+   * DPR cap and gates whole passes (the mote field is skipped below `medium`),
+   * so two reps of the SAME arm can be rendering a different scene at a
+   * different resolution. That confound alone put an A-versus-A null test at
+   * +-20 % on `drawMean`. `useVfx` already documents the seam and the reason;
+   * it simply was not being used.
+   *
+   * `high` is the default because it is the full workload: an arm cannot then
+   * "win" by being slow enough to drop a tier and draw less.
+   */
+  if (TIER !== 'off') u.searchParams.set('tier', TIER)
   for (const pair of qs.split('&').filter(Boolean)) {
     const [k, v = ''] = pair.split('=')
     u.searchParams.set(k, v)
@@ -125,6 +147,62 @@ const connect = wsUrl => {
   return { ws, ready, send }
 }
 
+/**
+ * ─── Determinism ────────────────────────────────────────────────────────────
+ *
+ * Two runs of a game are not comparable unless they played the same game, and
+ * this runner used to guarantee nothing at all: every rep booted a fresh
+ * profile at node 1-1, auto-advanced through matches at its own pace, and
+ * rolled its own hands and particle bursts. Reps diverged into genuinely
+ * different scenes, and the spread that produced was wide enough to swallow
+ * real effects — at 6x throttle a baseline's own reps ranged over a factor of
+ * 2.4, which is how a change with a -16 % median stayed indistinguishable from
+ * noise. See `PERF-LEDGER.md`, `counter-text-legacy`.
+ *
+ * So both sources of divergence are pinned before any app code runs:
+ *
+ *   THE SAVE — a fixed mid-campaign fixture, so every rep plays the same node
+ *   against the same faction with the same roster instead of wherever the
+ *   previous match happened to leave it. Node 7 specifically: nodes 1-1..1-6
+ *   and 10 / 14 / 18 are clockless authored LESSONS with no planning timer, and
+ *   measuring one of those measures a different game.
+ *
+ *   THE RNG — `Math.random` becomes a seeded mulberry32. The VFX layer draws on
+ *   it a few hundred times per burst (`arenaFx.ts`), so left alone it is the
+ *   largest single source of difference between two otherwise identical reps.
+ *
+ * `--nofixture` measures a cold first-time-player boot instead; those numbers
+ * are not comparable with a normal run's.
+ */
+const FIXTURE = {
+  gx_node: 7,
+  gx_best_node: 6,
+  gx_unlocked_runes: ['melee', 'archer', 'mage', 'defense', 'support'],
+  gx_tutorial_seen: true,
+  gx_aimed: true,
+  gx_goal_seen: true,
+  gx_results_seen: 6,
+  gx_coins: 60,
+  gx_matches: 6,
+  gx_wins: 6
+}
+
+const determinismScript = seed => `
+(() => {
+  try {
+    localStorage.setItem('glyphyx_state', ${JSON.stringify(JSON.stringify(FIXTURE))})
+  } catch (e) { /* private mode — the run still works, it just starts fresh */ }
+  let a = ${seed} >>> 0
+  Math.random = () => {
+    a = (a + 0x6D2B79F5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+})()
+`
+
 const runOnce = async url => {
   const t = await (await fetch(`${api}/new?about:blank`, { method: 'PUT' })).json()
   const { ws, ready, send } = connect(t.webSocketDebuggerUrl)
@@ -132,6 +210,9 @@ const runOnce = async url => {
   try {
     await send('Page.enable')
     await send('Runtime.enable')
+    if (!NO_FIXTURE) {
+      await send('Page.addScriptToEvaluateOnNewDocument', { source: determinismScript(SEED) })
+    }
     await send('Emulation.setCPUThrottlingRate', { rate: THROTTLE })
     await send('Page.navigate', { url })
     for (let i = 0; i < 1200; i++) {
@@ -166,7 +247,9 @@ console.log(`browser    ${version.Browser}`)
 console.log(`base       ${BASE}`)
 console.log(`arms       A "${A_QS || '(none)'}"   B "${B_QS || '(none)'}"`)
 console.log(`throttle   ${THROTTLE}x    frames/rep ${FRAMES}    reps ${REPS}`)
-console.log(`metric     ${METRIC}\n`)
+console.log(`metric     ${METRIC}
+scenario   ${NO_FIXTURE ? 'cold boot, unseeded (NOT comparable across runs)' : `node ${FIXTURE.gx_node} fixture, Math.random seeded ${SEED}`}
+tier       ${TIER}\n`)
 
 const runs = { A_base: [], B_test: [] }
 for (let rep = 0; rep < REPS; rep++) {
@@ -185,7 +268,7 @@ for (let rep = 0; rep < REPS; rep++) {
     }
     runs[name].push(r)
     console.log(`rep ${String(rep + 1).padStart(2)} ${name}  ` +
-      `workP50=${r.workP50.toFixed(3)}  workP95=${r.workP95.toFixed(3)}  ` +
+      `drawMean=${r.drawMean.toFixed(3)}  workP95=${r.workP95.toFixed(3)}  ` +
       `intervalP95=${r.intervalP95.toFixed(2)}  longTasks=${r.longTasks}  ` +
       `heap=${(r.heapSlope / 1024).toFixed(1)}KB/f`)
   }

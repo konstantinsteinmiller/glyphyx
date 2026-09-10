@@ -48,6 +48,7 @@ export const ICON_LABEL_KEYS: Partial<Record<GameIconName, string>> = {
   roller: 'runes.names.roller',
   bombard: 'runes.names.bombard',
   nuker: 'runes.names.nuker',
+  crown: 'runes.names.crown',
   close: 'close',
   music: 'options.music',
   'music-off': 'options.music',

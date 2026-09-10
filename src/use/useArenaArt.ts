@@ -2,21 +2,21 @@ import { watch } from 'vue'
 import {
   archerRange, bombardCells, cleaveCells, CONQUEST_TILES, DIR_VEC, FACTION_DEFS, GRID, HAND_SIZE, LOCK_CHEVRON_HIT_TILES,
   LOCK_CHEVRON_TILES, MAGE_REACH, MAX_LEVEL, RESET_MS, REVEAL_MS, rollerLane, RUNES, SKINS, STARTING_SKIN,
-  cellIndex, defaultDir, dirsFor, inBounds,
+  aimRegionPolygon, aimRegionShape, aimRegions, cellIndex, defaultDir, dirsFor, inBounds,
   type BoardState, type Cell, type Dir, type Faction, type Hit, type Move, type Owner,
   type ResolveEvent, type Rune, type RuneSnapshot, type RuneType, type SkinId, type Side, type Weapon
 } from '@/game/rules'
 import type { FxSound } from '@/game/cues'
-import type { ArenaLayout, ArenaView, CanvasLabels, DragState, HitTarget, Rect } from '@/game/view'
+import type { ArenaLayout, ArenaView, CanvasLabels, DragState, HitTarget, HoverState, Rect } from '@/game/view'
 import { drawGlyph } from '@/game/glyphs'
 import { placementKind } from '@/game/board'
 import {
   ENEMY_STONE, GRID_GLOW, RIDGE_SKYLINE, paintBoardFrame, paintLaurel, paintPebble, paintRerollChip, paintRidge, paintSky,
   paintTile, resolveGlow
 } from '@/use/arenaPainters'
-import { onArtChanged, spriteFor } from '@/game/art'
+import { onArtChanged, spriteFor, type ArtKind } from '@/game/art'
 import {
-  blit, glowSprite, paintArrow, paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave,
+  blit, glowSprite, paintAimRefused, paintAimRegion, paintArrow, paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave,
   paintCleaveArc, paintClashFlash, paintCrossBurst, paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing,
   paintNukeFlash, paintNukeWave,
   paintRing, paintShellArc, paintShellBurst, paintShieldDome, paintShockwave, paintSlash, spawnArrowTrail, spawnBeamCrackle, spawnBuffGlint,
@@ -300,7 +300,10 @@ const attackCells = (
   let ns = 0
   if (dir === 'omni') return { hits: 0, skipped: 0 }
   const [dx, dy] = DIR_VEC[dir]
-  if (type === 'melee') {
+  if (type === 'melee' || type === 'crown') {
+    // A sword's reach, and the crown has exactly the same one — it takes the
+    // stone it faces. Highlighting the tile is the whole preview: the player
+    // sees WHICH rune they would be walking away with before they let go.
     const c = col + dx
     const r = row + dy
     if (inBounds(c, r)) { hits[nh]!.col = c; hits[nh]!.row = r; nh++ }
@@ -367,6 +370,9 @@ const tintCache = new Map<string, HTMLCanvasElement>()
 const flameCache = new Map<string, HTMLCanvasElement>()
 const fingerCache = new Map<string, HTMLCanvasElement>()
 const rerollCache = new Map<string, HTMLCanvasElement>()
+/** Baked hand sockets and static HUD captions. See `socketSprite`, `captionSprite`. */
+const socketCache = new Map<string, HTMLCanvasElement>()
+const captionCache = new Map<string, HTMLCanvasElement>()
 
 const makeCanvas = (wCss: number, hCss: number, dpr: number): [HTMLCanvasElement, CanvasRenderingContext2D] | null => {
   try {
@@ -419,12 +425,12 @@ const bakePebble = (
     })
   }
   if (level >= 2) {
-    // One wreath per silhouette: the player's skin cuts the stone, the enemy's
-    // stone is always a pebble.
-    const shape = side === 'player' ? (SKINS[skin] ?? SKINS.river).shape : 'pebble'
-    const wreath = spriteFor('fx', `laurel-${shape}`)
+    // One wreath per RUNE: the rune owns the silhouette the wreath hugs, and
+    // the skin only decides how that silhouette is finished — so both sides
+    // wear the same wreath for the same rune.
+    const wreath = spriteFor('fx', `laurel-${type}`)
     if (wreath) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
-    else paintLaurel(ctx, sideLen, sideLen, shape)
+    else paintLaurel(ctx, sideLen, sideLen, type)
   }
   pebbleCache.set(key, canvas)
   return canvas
@@ -568,6 +574,85 @@ const rerollSprite = (w: number, h: number, dpr: number): HTMLCanvasElement | nu
   else paintRerollChip(ctx, w, h)
   rerollCache.set(key, canvas)
   return canvas
+}
+
+/**
+ * One empty hand socket — the gradient plate and both border strokes.
+ *
+ * `drawHand` used to build this live for every slot, every frame: a
+ * `createLinearGradient` plus two `addColorStop`s, discarded microseconds
+ * later, to produce a result that only changes when the layout does. The
+ * endpoints are the slot's own rect, so at 60 fps with three slots that was
+ * ~180 identical gradient objects a second. Bucketed by size, so a resize
+ * re-bakes and nothing else does.
+ */
+const socketSprite = (w: number, h: number, size: number, dpr: number): HTMLCanvasElement | null => {
+  const key = `${bucket(w)}|${bucket(h)}|${Math.round(size)}`
+  const hit = socketCache.get(key)
+  if (hit) return hit
+  const made = makeCanvas(w, h, dpr)
+  if (!made) return null
+  const [canvas, c] = made
+  const g = c.createLinearGradient(0, 0, 0, h)
+  g.addColorStop(0, '#171b28')
+  g.addColorStop(1, '#232838')
+  c.fillStyle = g
+  c.strokeStyle = rgba('#000000', 0.7)
+  c.lineWidth = Math.max(1, size * 0.02)
+  roundRect(c, 0, 0, w, h, w * 0.2)
+  c.fill()
+  c.stroke()
+  c.strokeStyle = rgba(GRID_GLOW, 0.28)
+  roundRect(c, 1.5, 1.5, w - 3, h - 3, w * 0.18)
+  c.stroke()
+  socketCache.set(key, canvas)
+  return canvas
+}
+
+/**
+ * A STATIC caption — "YOU", "FOE", "REROLL" — baked once per wording and size.
+ *
+ * Assigning `ctx.font` is the single most expensive canvas operation this
+ * renderer performs: Chrome re-parses the CSS font shorthand and re-resolves
+ * the `Angry` face on every assignment, and the six per frame measured 9.5 % of
+ * all CPU at 4x throttle. Three of those six are words that change only when
+ * the locale does. The numbers beside them still draw live, because those
+ * genuinely change.
+ *
+ * Only cached once the face has actually loaded — otherwise a bake landing in
+ * the download window would freeze the fallback into the caption forever.
+ * `createArenaRenderer`'s `document.fonts.ready` hook drops these anyway; this
+ * is the belt to that braces.
+ */
+const captionSprite = (
+  text: string, px: number, fill: string, dpr: number
+): { sprite: HTMLCanvasElement; w: number; h: number; pad: number } | null => {
+  const size = Math.max(6, Math.round(px))
+  const key = `${text}|${size}|${fill}`
+  const hit = captionCache.get(key)
+  const pad = Math.ceil(Math.max(1.5, size * 0.16)) + 1
+  if (hit) return { sprite: hit, w: hit.width / dpr, h: hit.height / dpr, pad }
+  const probe = makeCanvas(1, 1, 1)
+  if (!probe) return null
+  probe[1].font = font(size)
+  const tw = Math.ceil(probe[1].measureText(text).width) + pad * 2
+  const th = Math.ceil(size * 1.5) + pad * 2
+  const made = makeCanvas(tw, th, dpr)
+  if (!made) return null
+  const [canvas, c] = made
+  c.font = font(size)
+  c.textAlign = 'center'
+  c.textBaseline = 'middle'
+  c.lineJoin = 'round'
+  c.lineWidth = Math.max(1.5, size * 0.16)
+  c.strokeStyle = rgba('#000000', 0.85)
+  c.strokeText(text, tw / 2, th / 2)
+  c.fillStyle = fill
+  c.fillText(text, tw / 2, th / 2)
+  let ready = true
+  try { ready = document.fonts?.check(font(size)) !== false } catch { ready = true }
+  if (ready) captionCache.set(key, canvas)
+  return { sprite: canvas, w: tw, h: th, pad }
 }
 
 /** A teardrop flame, white-hot core to `color` to nothing, drawn additively. */
@@ -716,10 +801,66 @@ const invalidateSprites = (): void => {
   flameCache.clear()
   fingerCache.clear()
   rerollCache.clear()
+  socketCache.clear()
+  captionCache.clear()
   bakeQueue = []
   bakeTotal = 0
   bakeDone = 0
   primedSize = 0
+}
+
+/**
+ * The drop-in paintings a baked stone is made of, read back off its cache key
+ * (`pebbleKey`): the stone's own file and, from Lv 2, its rune's wreath.
+ *
+ * Built with `runeArtId`, the function `bakePebble` asks `spriteFor` with, so
+ * "which painting is this bake made of" cannot drift from "which painting did
+ * the bake use".
+ */
+export const paintingsInPebble = (key: string): string[] => {
+  const [type, lv, tint] = key.split('|') as [RuneType, string, string]
+  const level = Number(lv)
+  const who = tint.slice(2)
+  const stone = tint.startsWith('p:')
+    ? runeArtId(type, level, 'player', who as SkinId, null)
+    : runeArtId(type, level, 'enemy', STARTING_SKIN, who as Faction)
+  return level >= 2 ? [`rune/${stone}`, `fx/laurel-${type}`] : [`rune/${stone}`]
+}
+
+/**
+ * One painting decoded: forget exactly the baked sprites it is part of, and
+ * say whether the renderer's own two bakes (the backdrop, the board plate)
+ * hold it too.
+ *
+ * Everything else stays. The glyph glows, arrows, flames, the finger, the hand
+ * sockets and the captions are drawn and never painted, so no painting can
+ * change them; dropping them on every arrival — as the whole-scene invalidate
+ * did, 91 times in the first seconds of play — only bought them a re-bake.
+ * What is dropped re-bakes on its next draw.
+ *
+ * `fx/ring-heal` and `round/bolt` are read fresh each frame, and monster and
+ * hero art lives in the DOM, so they drop nothing here.
+ */
+export const dropBakesFor = (kind: ArtKind, id: string): { backdrop: boolean; plate: boolean } => {
+  const art = `${kind}/${id}`
+  if (kind === 'rune' || (kind === 'fx' && id.startsWith('laurel-'))) {
+    for (const key of pebbleCache.keys()) if (paintingsInPebble(key).includes(art)) pebbleCache.delete(key)
+  } else if (kind === 'tile' && id !== 'frame') {
+    // `tileSprite` keys lead with the owner, which is the tile painting's id.
+    for (const key of tintCache.keys()) if (key.startsWith(`${id}|`)) tintCache.delete(key)
+  } else if (kind === 'ui' && id === 'reroll') {
+    rerollCache.clear()
+  } else if (kind === 'fx' && id === 'smoke') {
+    // The tinted puffs share `useGradientRamps`' sprite cache, which nothing
+    // else dropped on an arrival — a puff painting that decoded after the
+    // first smoke waited for the next stage to show.
+    clearRamps()
+  }
+  return {
+    backdrop: kind === 'bg',
+    // The plate is the frame painting with a neutral tile baked into every cell.
+    plate: kind === 'tile' && (id === 'frame' || id === 'neutral')
+  }
 }
 
 // ─── Visual state per rune ──────────────────────────────────────────────────
@@ -795,6 +936,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   let cssW = 0
   let cssH = 0
   let lastArgs: [number, number, number, Insets] | null = null
+  /** The insets the current bakes were laid out for. Compared FIELD BY FIELD:
+   *  the scene hands us a fresh object every tick, so identity never matches. */
+  const lastInsets: Insets = { top: -1, bottom: -1, left: -1, right: -1 }
+  /** Set by `dispose`, so an async font callback cannot rebuild a dead scene. */
+  let disposed = false
 
   // Tile centres, precomputed per resize.
   const tileCX = new Float64Array(GRID * GRID)
@@ -868,9 +1014,41 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   const resize = (w: number, h: number, dprIn: number, insets: Insets): void => {
-    lastArgs = [w, h, dprIn, insets]
     const cap = tierCap()
-    dpr = renderScaleTier.value === 'min' ? Math.min(dprIn || 1, 1) * cap : Math.min(dprIn || 1, cap)
+    const nextDpr = renderScaleTier.value === 'min' ? Math.min(dprIn || 1, 1) * cap : Math.min(dprIn || 1, cap)
+    /**
+     * NOTHING CHANGED — do not throw the bakes away.
+     *
+     * The scene re-measures its HUD insets on a 1 s timer (a wrapped faction
+     * name or an appearing streak chip moves the board), and every one of those
+     * calls landed here. Unconditionally this function drops the backdrop, the
+     * plate, the mote field and every gradient ramp, so a measurement that
+     * found the HUD exactly as tall as it was a second ago still cost a
+     * full-screen backdrop re-bake — three `getImageData` GPU readbacks, a
+     * ~3.4 MB canvas allocated and discarded, sixteen clipped tile-crack
+     * passes — once per second, for the whole session. Measured at 4x CPU
+     * throttle it was 17 % of all render time and about half the long tasks
+     * (`PERF-LEDGER.md`, `resize-rebake-legacy`).
+     *
+     * The insets are compared field by field rather than by identity: the
+     * caller builds a fresh object every tick, so an identity check never
+     * matches and would leave the bug exactly where it was.
+     */
+    if (
+      backdrop !== null
+      && w === cssW && h === cssH && nextDpr === dpr
+      && insets.top === lastInsets.top && insets.bottom === lastInsets.bottom
+      && insets.left === lastInsets.left && insets.right === lastInsets.right
+    ) {
+      lastArgs = [w, h, dprIn, insets]
+      return
+    }
+    lastArgs = [w, h, dprIn, insets]
+    lastInsets.top = insets.top
+    lastInsets.bottom = insets.bottom
+    lastInsets.left = insets.left
+    lastInsets.right = insets.right
+    dpr = nextDpr
     cssW = w
     cssH = h
     canvas.width = Math.round(w * dpr)
@@ -897,12 +1075,23 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   const stopTierWatch = watch(renderScaleTier, () => { if (lastArgs) resize(...lastArgs) })
-  const offArt = onArtChanged(() => {
-    backdrop = null
-    plate = null
-    // A painted stone replaces a drawn one only if the drawn one is dropped.
-    invalidateSprites()
-    primePebbleSprites(geom.tile, labels ? labels.level(2) : primedLabel, lastSkin ?? STARTING_SKIN)
+  // One painting arrived: drop only the bakes made from it (`dropBakesFor`,
+  // PERF-LEDGER 2026-09-10). Dropping everything per arrival re-baked the
+  // whole scene once per painting through the first seconds of play.
+  const offArt = onArtChanged((change) => {
+    if (!change) {
+      // The flag flipped or the probes were refreshed: anything may have
+      // changed, so everything goes.
+      backdrop = null
+      plate = null
+      // A painted stone replaces a drawn one only if the drawn one is dropped.
+      invalidateSprites()
+      primePebbleSprites(geom.tile, labels ? labels.level(2) : primedLabel, lastSkin ?? STARTING_SKIN)
+      return
+    }
+    const held = dropBakesFor(change.kind, change.id)
+    if (held.backdrop) backdrop = null
+    if (held.plate) plate = null
   })
 
   const invalidate = (): void => {
@@ -910,6 +1099,38 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     backdrop = null
     plate = null
     clearRamps()
+  }
+
+  /**
+   * ─── The face has to land before anything bakes text ────────────────────
+   *
+   * Several sprites have words baked into them — the level crest on a pebble,
+   * the reroll chip's caption. A bake freezes whatever face `ctx.font` resolved
+   * to at that moment, and nothing here ever re-made one, so a sprite baked in
+   * the window before `Angry` finished downloading kept the sans-serif fallback
+   * for the entire session. On a warm cache the race is usually won; on a cold
+   * first load over a slow connection — which is every portal's first
+   * impression — it frequently was not.
+   *
+   * So: when the font finishes loading, drop the bakes once and let them be
+   * re-made against the real face. `document.fonts.ready` settles once and
+   * costs nothing afterwards, and on a browser without the Font Loading API
+   * this is simply skipped, which is the behaviour that shipped until now.
+   */
+  let fontsSettled = false
+  try {
+    void document.fonts?.ready.then(() => {
+      // A late resolve after the scene is gone must not resurrect anything.
+      if (fontsSettled || disposed) return
+      fontsSettled = true
+      // Only the SPRITES — not the backdrop or the plate. Neither of those has
+      // a word in it, and dropping the backdrop would buy a full-screen re-bake
+      // and three `getImageData` readbacks to fix a font it never used.
+      invalidateSprites()
+      primePebbleSprites(geom.tile, labels ? labels.level(2) : primedLabel, lastSkin ?? STARTING_SKIN)
+    })
+  } catch {
+    // No Font Loading API — the bakes stand as they always did.
   }
 
   // ── Bakes bound to this canvas' size ──
@@ -1409,6 +1630,9 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       // Every event that names its actor as `from` — the nuke's origin is the
       // tile the nuker landed on, which is where its ring starts.
       case 'aura': case 'shot': case 'nuke': return [cx(e.from.col, e.from.row), cy(e.from.col, e.from.row)]
+      // The crown's beat starts on the crown's own tile and travels to the
+      // stone it takes; `startEvent` draws the second half itself.
+      case 'crown': return [cx(e.from.col, e.from.row), cy(e.from.col, e.from.row)]
       case 'heal': case 'buff': return [cx(e.to.col, e.to.row), cy(e.to.col, e.to.row)]
       case 'knockback': return [cx(e.from.col, e.from.row), cy(e.from.col, e.from.row)]
       default: return [cx(e.rune.col, e.rune.row), cy(e.rune.col, e.rune.row)]
@@ -1502,6 +1726,25 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         // The heaviest shake in the game, and the only place `big` is used
         // outside a match ending.
         triggerShake('big')
+        break
+      }
+      case 'crown': {
+        // The stone changes hands HERE, on the local board the resolution is
+        // drawn from, so the pebble is re-cut in its new owner's colours in
+        // front of the player rather than after the dust settles.
+        const cc = RUNES.crown.color
+        const tx = cx(e.turned.col, e.turned.row)
+        const ty = cy(e.turned.col, e.turned.row)
+        putRune(local, e.turned)
+        const v = getVis(e.turned.id)
+        v.sx = 1.35; v.sy = 1.35; v.flash = 0.9
+        // Off the crown…
+        spawnBurstMotes(x, y, size, cc, 10)
+        // …and onto the tile it claims, in the colour of its new owner.
+        spawnMergeFountain(tx, ty, size, cc, 18)
+        spawnCaptureSparks(tx, ty, size, ownerColor(e.turned.side, e.turned.faction))
+        triggerShake('small')
+        playFx('crown', 1)
         break
       }
       case 'shatter':
@@ -1936,6 +2179,12 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       if (mx[i]! > cssW + 10) mx[i] = -10
       const a = 0.12 + 0.12 * Math.sin(age * 0.0015 + mph[i]!)
       ctx.globalAlpha = a
+      // Forty stroked paths a frame, and it stays that way: blitting a baked
+      // dot instead measured WORSE here (+3.5 % draw time, 2/5 paired wins,
+      // and two reps with 60-80 long tasks). See `PERF-LEDGER.md`,
+      // `motes-path-legacy` — the second paths-to-blits swap this renderer has
+      // rejected. `drawMotes` is skipped entirely below the `medium` tier, so
+      // no struggling device pays this at all.
       ctx.fillStyle = MOTE_COLORS[mcol[i]!]!
       ctx.beginPath()
       ctx.arc(mx[i]!, my[i]!, msz[i]!, 0, Math.PI * 2)
@@ -2339,6 +2588,127 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   const DASH = [6, 5]
   const NO_DASH: number[] = []
 
+  // ── The tile's compass ────────────────────────────────────────────────────
+  //
+  // While a pebble is in hand and a MOUSE is over a tile, that tile shows every
+  // facing the pebble could take at once: each region outlined with the arrow it
+  // would produce, and the one under the pointer lit and grown in from its own
+  // edge. The player chooses by moving rather than by dropping and correcting,
+  // which is what lets a precise placement skip the correction window entirely.
+  //
+  // It is drawn UNDER the runes, as a marking on the floor of the tile: a stack
+  // target's stone has to stay readable while its compass is up.
+
+  /** How long the lit wedge takes to travel in from its edge. */
+  const COMPASS_GROW_MS = 130
+  let compassDir: Dir | null = null
+  let compassCell = -1
+  let compassAt = 0
+
+  /**
+   * Where a region's arrow sits, in unit space — memoised, since the polygons
+   * never change.
+   *
+   * Two points per region. `mid` is the centre of mass, which is where the mark
+   * belongs under a CURSOR: balanced inside its own wedge. `rim` is the middle
+   * of the region's outer boundary — the top edge of a triangle, the outer
+   * corner of a quadrant — which is where it belongs under a FINGERTIP, because
+   * the contact patch covers the middle of the tile and the rim is the one part
+   * of it the player can still see.
+   */
+  const anchorCache = new Map<string, readonly [number, number, number, number]>()
+  const regionAnchors = (type: RuneType, dir: Dir): readonly [number, number, number, number] => {
+    const key = `${type}|${dir}`
+    let hit = anchorCache.get(key)
+    if (!hit) {
+      const poly = aimRegionPolygon(type, dir)
+      let sx = 0
+      let sy = 0
+      for (const p of poly) { sx += p[0]; sy += p[1] }
+      // The polygons are wound FROM the region's outer boundary, so its first
+      // two points are the outer edge of a triangle, and its first point is the
+      // outer corner of a quadrant.
+      const a = poly[0]!
+      const b = poly[1]!
+      const outer = aimRegionShape(type) === 'quadrants' ? a : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+      hit = [sx / poly.length, sy / poly.length, outer[0]!, outer[1]!] as const
+      anchorCache.set(key, hit)
+    }
+    return hit
+  }
+
+  /** How far a touch drag pulls each mark from its centre of mass toward the rim. */
+  const TOUCH_LEAN = 0.5
+  /** …and how much heavier the chosen region's rim stroke is drawn for it. */
+  const TOUCH_RIM = 1.7
+
+  const drawAimCompass = (view: ArenaView): void => {
+    const hover: HoverState | null = view.hover
+    // Drawn for a finger as well as a cursor — a touch drag is choosing a
+    // facing too. What changes is WHERE: see `regionAnchors`.
+    if (!ctx || !hover) return
+    const size = geom.tile
+    const rect = geom.tileRect(hover.cell.col, hover.cell.row)
+
+    if (hover.kind === 'invalid') {
+      // A refused tile is not a menu. The drag path already draws its own
+      // refusal mark, so only the SELECTED-pebble hover needs one here.
+      if (!view.drag) paintAimRefused(ctx, rect, size, INVALID, 0.75 + 0.25 * Math.sin(age * 0.012))
+      return
+    }
+
+    // The wedge grows from its edge each time a NEW facing is chosen. Sliding
+    // back through the centre un-chooses, so leaving the dead zone again plays
+    // the travel afresh rather than snapping to a shape already at full size.
+    const cellId = cellIndex(hover.cell.col, hover.cell.row)
+    const chosenDir = hover.chosen ? hover.dir : null
+    if (chosenDir !== compassDir || cellId !== compassCell) {
+      compassDir = chosenDir
+      compassCell = cellId
+      compassAt = age
+    }
+    const grow = easeOutCubic(clamp01((age - compassAt) / COMPASS_GROW_MS))
+    const color = RUNES[hover.type].color
+
+    // An omni rune has nothing to aim: light the whole tile once, with no
+    // arrows. Four identical marks around a shield would be four lies — and
+    // the dead zone does not apply, because there is no facing to withhold.
+    if (aimRegionShape(hover.type) === 'whole') {
+      paintAimRegion(ctx, rect, hover.type, 'omni', size, { color, lit: true, grow, alpha: 0.85 })
+    } else {
+      // Under a fingertip the middle of the tile is gone, so every mark moves
+      // out toward the rim and the chosen region's white edge — which lies on
+      // the tile border, clear of the contact patch — is drawn heavier.
+      const lean = hover.precise ? 0 : TOUCH_LEAN
+      const rim = hover.precise ? 1 : TOUCH_RIM
+      for (const d of aimRegions(hover.type)) {
+        // Three weights: the chosen facing, the facing it would take anyway
+        // while the pointer sits in the middle, and the ones on offer.
+        const lit = hover.chosen && d === hover.dir
+        const held = !hover.chosen && d === hover.dir
+        paintAimRegion(ctx, rect, hover.type, d, size, { color, lit, held, grow, alpha: lit ? 1 : 0.8, rim })
+        const [mx, my, ox, oy] = regionAnchors(hover.type, d)
+        const ax = mx + (ox - mx) * lean
+        const ay = my + (oy - my) * lean
+        drawArrowAt(
+          rect.x + ax * rect.w, rect.y + ay * rect.h, d,
+          lit ? PLAYER_ARROW : color, size,
+          lit ? 0.95 : held ? 0.6 : 0.3,
+          lit ? 0.5 : held ? 0.46 : 0.4
+        )
+      }
+    }
+
+    // The cone answers a different question — which tiles the attack would
+    // REACH — and during a drag `drawDrag` already asks it. A pebble picked up
+    // by TAP has no drag, so the hover asks it here instead; either way the
+    // cone is drawn exactly once, over tiles the compass does not touch.
+    if (!view.drag) {
+      const level = hover.kind === 'stack' ? targetLevel(view.board, hover.cell) : 1
+      drawAimCone(hover.type, level, hover.dir, hover.cell.col, hover.cell.row, PLAYER_ARROW)
+    }
+  }
+
   /** The re-aim stroke: a glowing streak from where the finger landed to where it is now. */
   const drawCorrectionStroke = (drag: DragState): void => {
     if (!ctx || !drag.anchor) return
@@ -2560,36 +2930,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     }
   }
 
-  const drawCounters = (view: ArenaView): void => {
-    if (!ctx || !labels) return
-    const size = geom.tile
-    const draw = (r: Rect, label: string, n: number, color: string, alignRight: boolean): void => {
-      const reached = n >= CONQUEST_TILES
-      const glow = reached ? 0.6 + 0.4 * Math.sin(age * 0.015) : 0
-      if (reached) blit(ctx, glowSprite(GOLD, r.h * 2), r.x + r.w / 2, r.y + r.h / 2, r.w * 1.4, r.h * 2.4, 0.4 * glow, true)
-      ctx.save()
-      ctx.fillStyle = rgba('#0a1020', 0.72)
-      ctx.strokeStyle = reached ? GOLD : rgba(color, 0.7)
-      ctx.lineWidth = Math.max(1.5, size * 0.03)
-      roundRect(ctx, r.x, r.y, r.w, r.h, r.h / 2)
-      ctx.fill()
-      ctx.stroke()
-      ctx.restore()
-      const px = size * 0.22
-      const pad = r.h * 0.45
-      if (alignRight) {
-        drawText(String(n), r.x + r.w - pad, r.y + r.h / 2, px * 1.15, reached ? GOLD : '#ffffff', 'right')
-        drawText(label, r.x + pad, r.y + r.h / 2, px * 0.8, color, 'left')
-      } else {
-        drawText(String(n), r.x + pad, r.y + r.h / 2, px * 1.15, reached ? GOLD : '#ffffff', 'left')
-        drawText(label, r.x + r.w - pad, r.y + r.h / 2, px * 0.8, color, 'right')
-      }
-    }
-    const foe = view.config.enemies[0]
-    draw(geom.counters.you, labels.you, view.playerTiles, PLAYER_COLOR, false)
-    draw(geom.counters.foe, labels.foe, view.enemyTiles, FACTION_DEFS[foe?.faction ?? 'orc'].color, true)
-  }
-
   const drawHand = (view: ArenaView): void => {
     if (!ctx) return
     const size = geom.tile
@@ -2599,21 +2939,9 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       const r = geom.hand[i]!
       const type = view.hand[i]
       const empty = !type || (view.drag !== null && view.drag.handIndex === i)
-      // Socket.
-      ctx.save()
-      const g = ctx.createLinearGradient(r.x, r.y, r.x, r.y + r.h)
-      g.addColorStop(0, '#171b28')
-      g.addColorStop(1, '#232838')
-      ctx.fillStyle = g
-      ctx.strokeStyle = rgba('#000000', 0.7)
-      ctx.lineWidth = Math.max(1, size * 0.02)
-      roundRect(ctx, r.x, r.y, r.w, r.h, r.w * 0.2)
-      ctx.fill()
-      ctx.stroke()
-      ctx.strokeStyle = rgba(GRID_GLOW, 0.28)
-      roundRect(ctx, r.x + 1.5, r.y + 1.5, r.w - 3, r.h - 3, r.w * 0.18)
-      ctx.stroke()
-      ctx.restore()
+      // Socket — baked; it only changes with the layout. See `socketSprite`.
+      const socket = socketSprite(r.w, r.h, size, bakeDpr())
+      if (socket) ctx.drawImage(socket, r.x, r.y, r.w, r.h)
       if (empty || !type) continue
       const selected = view.selected === i && canAct
       if (selected) {
@@ -2650,7 +2978,10 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       let px = rr.h * 0.3
       const wide = measureLabel(ctx, labels.reroll, px)
       if (wide > half * 0.96) px *= (half * 0.96) / wide
-      drawText(labels.reroll, lx + half * 0.5, rr.y + rr.h * 0.34, px, enabled ? '#ffffff' : '#9aa3b8')
+      // The word is static; only its greying changes. Baked either way.
+      const cap = captionSprite(labels.reroll, px, enabled ? '#ffffff' : '#9aa3b8', bakeDpr())
+      if (cap) ctx.drawImage(cap.sprite, lx + half * 0.5 - cap.w / 2, rr.y + rr.h * 0.34 - cap.h / 2, cap.w, cap.h)
+      else drawText(labels.reroll, lx + half * 0.5, rr.y + rr.h * 0.34, px, enabled ? '#ffffff' : '#9aa3b8')
       drawText(`×${view.rerollsLeft}`, lx + half * 0.5, rr.y + rr.h * 0.72, rr.h * 0.28, enabled ? GOLD : '#9aa3b8')
     }
   }
@@ -2730,6 +3061,42 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   /**
+   * The tile's compass under the ghost's finger — the SAME compass the player
+   * gets under their own, painted by the same `paintAimRegion`: four wedges on
+   * offer, the one the stone is being carried into lit and grown in from its
+   * own edge.
+   *
+   * Drawn by the ghost rather than by the hover path because the ghost is not
+   * a pointer — `view.hover` is null while it plays — but a demonstration that
+   * showed a mark the player will never see again would teach nothing. It is
+   * the whole compass and not just the chosen wedge on purpose: the lesson is
+   * that a tile offers four facings and the release picks one.
+   */
+  const drawGhostCompass = (cell: Cell, type: RuneType, dir: Dir, k: number, size: number): void => {
+    if (!ctx || k <= 0) return
+    const rect = geom.tileRect(cell.col, cell.row)
+    const color = RUNES[type].color
+    if (aimRegionShape(type) === 'whole') {
+      paintAimRegion(ctx, rect, type, 'omni', size, { color, lit: true, grow: k, alpha: 0.85 * k })
+      return
+    }
+    // A finger's compass, because the ghost IS a finger: every mark leaned out
+    // toward the rim, where a real contact patch would not cover it, and the
+    // chosen wedge's outer edge — the side the rune ends up facing — heavy.
+    for (const d of aimRegions(type)) {
+      const lit = d === dir
+      paintAimRegion(ctx, rect, type, d, size, { color, lit, grow: k, alpha: (lit ? 1 : 0.75) * k, rim: TOUCH_RIM })
+      const [mx, my, ox, oy] = regionAnchors(type, d)
+      const ax = mx + (ox - mx) * TOUCH_LEAN
+      const ay = my + (oy - my) * TOUCH_LEAN
+      drawArrowAt(
+        rect.x + ax * rect.w, rect.y + ay * rect.h, d,
+        lit ? PLAYER_ARROW : color, size, (lit ? 0.95 : 0.3) * k, lit ? 0.5 : 0.4
+      )
+    }
+  }
+
+  /**
    * The ghost hand. `place`: lift a hand pebble, carry it to the tile, swipe
    * the facing, release, loop — or, when the script has a `reaim`, DROP it
    * without a swipe and then press the stone again and flick it round, so one
@@ -2760,8 +3127,14 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const reaim = g.reaim && g.reaim !== 'omni' ? g.reaim : null
     const period = reaim ? 3600 : 2600
     const t = (age % period) / period
-    const [ddx, ddy] = DIR_VEC[g.dir]
     const spr = pebbleSprite(type, 1, 'player', view.skin, null, size)
+    // Where inside the tile the stone has to be let go for this facing. The
+    // ghost aims at the region's own middle, which is what the hit test reads
+    // — so the demonstration and the rule cannot drift apart.
+    const rect = geom.tileRect(g.to.col, g.to.row)
+    const [ax, ay] = regionAnchors(type, g.dir)
+    const aimX = rect.x + rect.w * ax
+    const aimY = rect.y + rect.h * ay
 
     if (reaim) {
       // Drop without a swipe, then the re-aim beat on the stone.
@@ -2807,23 +3180,34 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       pebbleY = fy - size * 0.3
       showPebble = true
     } else if (t < 0.75) {
-      press = 1
+      // ── The aim, as the game now works ────────────────────────────────
+      //
+      // The finger does NOT flick away from a stone parked in the middle of
+      // the tile — that was the old stroke gesture, and a tutorial that
+      // teaches it is teaching the harder way to play. It CARRIES the stone
+      // into the region that faces the target and stops there, because that
+      // is the whole move now: where you let go is which way it points.
       const k = easeOutCubic((t - 0.55) / 0.2)
-      fx = tx + ddx * size * 0.5 * k
-      fy = ty + ddy * size * 0.5 * k
-      pebbleX = tx
-      pebbleY = ty - size * 0.06
+      press = 1
+      fx = tx + (aimX - tx) * k
+      fy = ty + (aimY - ty) * k
+      pebbleX = fx
+      pebbleY = fy - size * 0.06
       showPebble = true
-      // The arrow grows with the swipe.
-      drawGhostArrow(tx, ty, g.dir, k, size)
+      // The tile's compass, lighting the region the stone is being carried
+      // into — the same mark, from the same painter, that the player sees
+      // under their own finger. It carries its own arrow, so no second one.
+      drawGhostCompass(g.to, type, g.dir, k, size)
     } else if (t < 0.88) {
+      // Released THERE. The stone stays where it was let go.
       press = 1 - easeOutQuad((t - 0.75) / 0.13)
-      fx = tx + ddx * size * 0.5
-      fy = ty + ddy * size * 0.5
-      pebbleX = tx
-      pebbleY = ty - size * 0.06
+      fx = aimX
+      fy = aimY
+      pebbleX = aimX
+      pebbleY = aimY - size * 0.06
       showPebble = true
       alpha = 1 - (t - 0.75) / 0.13
+      drawGhostCompass(g.to, type, g.dir, 1, size)
     } else {
       return
     }
@@ -3011,6 +3395,9 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
 
     drawTiles(board, view)
     drawDecals()
+    // Under the runes: the compass is a marking on the tile's floor, so a
+    // stack target's stone stays readable while its regions are lit.
+    drawAimCompass(view)
 
     // ── The pieces ──
     const breathe = view.phase === 'planning' || view.phase === 'ended'
@@ -3029,7 +3416,8 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
 
     // ── HUD on canvas ──
     drawTimer(view)
-    drawCounters(view)
+    // The conquest counters are DOM now (`ConquestCounters.vue`) — redrawing
+    // two numbers here sixty times a second was 39 % of render time.
     drawHand(view)
     drawGhost(view)
     drawBanners(view)
@@ -3056,6 +3444,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   const dispose = (): void => {
+    disposed = true
     stopTierWatch()
     offArt()
   }

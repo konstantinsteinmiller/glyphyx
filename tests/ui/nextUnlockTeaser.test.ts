@@ -44,8 +44,8 @@ vi.mock('@/use/useSkins', async () => {
 const enBundle = {
   ...(en as unknown as Record<string, unknown>),
   campaign: {
-    nextUnlock: 'Win Stage {c}-{n} for',
-    nextUnlockAria: 'Win Stage {c}-{n} to unlock {rune}',
+    nextUnlock: 'Win Level {c}-{n} for',
+    nextUnlockAria: 'Win Level {c}-{n} to unlock {rune}',
     ...(en as unknown as { campaign: Record<string, unknown> }).campaign
   },
   runes: {
@@ -87,7 +87,8 @@ describe('NextUnlockTeaser', () => {
   it('names the stage that pays the next rune, and the rune', async () => {
     wrapper = await mountTeaser({ nodeId: 9, chapter: 2, index: 1, rune: 'cleave' })
     const text = wrapper.text()
-    // The user's own phrasing: "Win Stage 2-1 for" → the stone.
+    // The user's own phrasing, with the label since renamed:
+    // "Win Level 2-1 for" → the stone.
     expect(text).toContain(i18n.global.t('campaign.nextUnlock', { c: 2, n: 1 }))
     expect(text).toContain('2-1')
     expect(text).toContain(runeName('cleave'))

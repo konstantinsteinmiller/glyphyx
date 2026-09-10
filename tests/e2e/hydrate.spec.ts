@@ -32,7 +32,7 @@ test.describe('save hydration', () => {
     expect(await currentNode(page)).toBe(7)
     expect(await coins(page)).toBe(777)
     // The stage badge (the turn banner says it too, briefly — hence the role).
-    await expect(page.getByRole('button', { name: 'Campaign' })).toHaveText('Stage 1-7')
+    await expect(page.getByRole('button', { name: 'Campaign' })).toHaveText('Level 1-7')
     // Not a newcomer: no ghost hand, no drag primer.
     expect(await page.evaluate(() => (window as any).__glyphyx.battle.ghostActive.value)).toBe(false)
     await expect(page.getByText('Drag a rune onto the board')).toHaveCount(0)

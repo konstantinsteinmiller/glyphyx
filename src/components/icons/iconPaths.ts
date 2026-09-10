@@ -407,12 +407,23 @@ export const ICON_PATHS: Record<GameIconName, string[]> = {
     'M12 19.6A1.7 1.7 0 1 1 12 23 1.7 1.7 0 0 1 12 19.6Z'
   ],
   // A bow (crescent + string) with an arrow across it, all pointing right.
+  //
+  // The same drawing as the canvas glyph in `glyphs.ts`, at 24 units instead
+  // of 100: the stone in the hand and the icon on the unlock card have to be
+  // ONE bow, and they were not — the stone carried a fat filled belly that
+  // turned into a sail on any skin that fills its glyph. The limb is a
+  // crescent of even width for that reason; it is the only shape that survives
+  // being outlined, inlaid, carved and lit in turn.
+  //
+  // The arrow crosses the WHOLE box, nock to head. That horizontal axis is
+  // what says "this one flies past the tile in front of it", and it is also
+  // what keeps the bow from reading as a letter D.
   'bow': [
-    'M6.2 2.4C13.2 4.6 16.8 8.1 16.8 12S13.2 19.4 6.2 21.6L5.3 19.4C11 17.5 13.9 15.1 13.9 12S11 6.5 5.3 4.6L6.2 2.4Z',
+    'M6.2 2.4C12.7 4.6 15.8 8 15.8 12S12.7 19.4 6.2 21.6L5.3 19.4C10.6 17.4 13.3 15 13.3 12S10.6 6.6 5.3 4.6L6.2 2.4Z',
     'M5.2 2.8H7.1V21.2H5.2Z',
-    'M8 10.9H17.4V13.1H8Z',
-    'M16.6 8.3 21.4 12 16.6 15.7Z',
-    'M8.4 9.1 10.6 12 8.4 14.9H6.7L8.9 12 6.7 9.1Z'
+    'M1.9 10.6H20.6V13.4H1.9Z',
+    'M18.7 7.7 24 12 18.7 16.3Z',
+    'M2.4 9.1 4.8 12 2.4 14.9 0 12Z'
   ],
   // The arcane orb: a sphere with a ring cut through it (counter-wound) and a
   // bright core, plus four sparks so it reads as magic rather than a ball.
@@ -470,6 +481,16 @@ export const ICON_PATHS: Record<GameIconName, string[]> = {
     'M5.6 15.7L14.4 6.5L18.4 10.3L9.6 19.5Z',
     'M14.4 9.3L13.1 10.6L14.4 11.9L15.7 10.6Z',
     'M21.8 1.6L22.6 4.4L20.6 6.8L17.8 6L18.2 2.8Z'
+  ],
+  // A crown: three peaks over a heavy band, with one gem cut out of the band
+  // (counter-wound — a real hole, so the band reads as metal and not as a
+  // brick). The middle peak is the tallest, which is what stops the row of
+  // points reading as a saw at 16 px. The only rune glyph that is regalia:
+  // the crown does not break a stone, it takes it.
+  'crown': [
+    'M1.9 17.3 1 5.8 6.5 11.3 12 2.9 17.5 11.3 23 5.8 22.1 17.3Z',
+    'M1.4 16.3H22.6V21.6H1.4Z',
+    'M12 17.3 10.3 19 12 20.7 13.7 19Z'
   ],
   // The rune forge: an anvil on its block with a spark rising off the horn.
   'forge': [

@@ -1,5 +1,6 @@
 import { prependBaseUrl } from '@/utils/function'
-import useUser, { MUSIC_TRACK_FILES } from '@/use/useUser'
+import useUser, { MUSIC_TRACK_FILES, isProceduralTrack } from '@/use/useUser'
+import { startMusic as startProcedural, stopMusic as stopProcedural } from '@/use/useMusicEngine'
 import { getAudioContext, loadAudioBuffer, resourceCache, registerHtmlAudio, unregisterHtmlAudio, isAudioSuspended, registerOneShotSource } from '@/use/useAssets'
 import { isGamePaused } from '@/use/useGamePause'
 import { isPlatformAudioMuted } from '@/use/useGamePauseAudio'
@@ -59,6 +60,9 @@ export const resumeMusicAfterAd = (): void => {
 
 export const forceStopMusic = (): void => {
   shouldPlay.value = false
+  // The note scheduler has no element to pause: it is stopped by name, and it
+  // must be stopped HERE too or an interstitial plays over a live band.
+  stopProcedural()
   try {
     bgMusic.value?.pause()
     if (bgMusic.value) {
@@ -113,11 +117,35 @@ export const useMusic = () => {
 
   // Resolve the active track's filename, falling back to the default.
   const currentTrackFile = (): string =>
-    MUSIC_TRACK_FILES[userMusicTrack.value] ?? MUSIC_TRACK_FILES.trance
+    MUSIC_TRACK_FILES[userMusicTrack.value] ?? MUSIC_TRACK_FILES.trance ?? 'trance.ogg'
+
+  /**
+   * The game's own track is not a file, so every entry point below forks here
+   * first: the element is left alone and the note scheduler is started or
+   * stopped instead. Both paths answer to the same `shouldPlay` intent, so the
+   * ad gate, the mobile mute and the pause watchers keep working unchanged —
+   * they call these functions, not the element.
+   */
+  const procedural = (): boolean => isProceduralTrack(userMusicTrack.value)
 
   // Point the music element at the active track and fade it in — using the
   // preloaded/decoded copy when available, otherwise fetching on demand.
   const loadAndPlayTrack = () => {
+    if (procedural()) {
+      // Whichever way the player arrived here, only one of the two can sound.
+      bgMusic.value?.pause()
+      // The SAME three gates `playWithFade` applies to the element, and for the
+      // same reasons — an ad on screen, the portal's own mute, the mobile hard
+      // mute. `shouldPlay` stays true, so the watchers in `initMusic` bring the
+      // band in the moment the gate clears. A scheduler that ignored these
+      // would play UNDER an interstitial, which is the one audio rule every
+      // portal tests for.
+      if (isGamePaused.value || isMobileAudioMuted.value || isPlatformAudioMuted.value) return
+      isPlaying.value = true
+      startProcedural()
+      return
+    }
+    stopProcedural()
     if (!bgMusic.value) return
     const src = prependBaseUrl('audio/music/' + currentTrackFile())
     const cached = resourceCache.audio.get(src)
@@ -138,6 +166,7 @@ export const useMusic = () => {
   }
 
   const pauseMusic = () => {
+    stopProcedural()
     if (bgMusic.value) {
       bgMusic.value.pause()
       isPlaying.value = false
@@ -145,9 +174,9 @@ export const useMusic = () => {
   }
 
   const continueMusic = () => {
-    if (bgMusic.value && shouldPlay.value) {
-      playWithFade()
-    }
+    if (!shouldPlay.value) return
+    if (procedural()) { loadAndPlayTrack(); return }
+    if (bgMusic.value) playWithFade()
   }
 
   const initMusic = () => {
@@ -229,6 +258,7 @@ export const useMusic = () => {
 
   const stopBattleMusic = () => {
     shouldPlay.value = false
+    stopProcedural()
     if (!bgMusic.value) return
     fadeOut(() => {
       bgMusic.value?.pause()

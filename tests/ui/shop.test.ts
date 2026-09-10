@@ -3,6 +3,7 @@ import { defineComponent, nextTick, ref } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import en from '@/i18n/locales/en'
+import { SKIN_IDS } from '@/game/rules'
 
 /**
  * ─── The shop, the goal rail and the goal intro, mounted ────────────────────
@@ -81,7 +82,8 @@ const stubs = {
  * about the CARDS rather than the roster starts from a full roster. A case
  * about the gate itself passes its own `gx_unlocked_runes` and overrides this.
  */
-const FULL_ROSTER = ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker']
+const FULL_ROSTER =
+  ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker', 'crown']
 
 const fresh = async (blob: Record<string, unknown> = {}) => {
   vi.resetModules()
@@ -179,7 +181,7 @@ describe('the shop', () => {
     frame.vm.$emit('update:activeTab', 'skins')
     await nextTick()
     expect(frame.props('activeTab')).toBe('skins')
-    expect(wrapper.findAll('.card')).toHaveLength(6)
+    expect(wrapper.findAll('.card')).toHaveLength(SKIN_IDS.length)
     // The hero opens on the worn skin (owned): equip state, no ad button.
     expect(wrapper.find('.hero__ad').exists()).toBe(false)
     // Select an unowned one: coins or a video.

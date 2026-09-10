@@ -3,7 +3,6 @@ import {
   type Faction, type Owner, type RuneType, type SkinId
 } from './rules'
 import { ART_CATALOGUE, artTarget, type ArtKind } from './artCatalogue'
-import type { PebbleShape } from './rules'
 
 /**
  * ─── Art sheet manifest ─────────────────────────────────────────────────────
@@ -62,8 +61,9 @@ export type CellArt =
   | { kind: 'frame' }
   | { kind: 'forge' }
   | { kind: 'reroll' }
+  | { kind: 'counter'; side: 'you' | 'foe' }
   | { kind: 'spark' }
-  | { kind: 'laurel'; shape: PebbleShape }
+  | { kind: 'laurel'; type: RuneType }
   | { kind: 'sky' }
   | { kind: 'bolt' }
   | { kind: 'ridge'; layer: 'far' | 'near' }
@@ -133,54 +133,153 @@ export const aspectOf = (w: number, h: number): string => {
 
 // ─── Words for the painter ──────────────────────────────────────────────────
 
-const RUNE_WORDS: Record<RuneType, { name: string; glyph: string; hue: string }> = {
-  melee: { name: 'Sword', glyph: 'a straight sword point-up: tapered blade, cross-guard, grip, round pommel', hue: 'crimson' },
-  archer: { name: 'Bow', glyph: 'a bow with the string drawn and an arrow nocked, flying to the right', hue: 'emerald' },
-  mage: { name: 'Orb', glyph: 'an arcane orb: a solid core inside a ring, four diagonal sparks', hue: 'amethyst violet' },
-  defense: { name: 'Shield', glyph: 'a heater shield with a cross cut out of its face', hue: 'sapphire blue' },
-  support: { name: 'Cross', glyph: 'a radiant cross, four flared arms and a small burst at the centre', hue: 'topaz gold' },
-  cleave: { name: 'Axe', glyph: 'a broad axe, bit upward: a wide crescent blade with drooping horns on a short haft with a round pommel', hue: 'burnt orange' },
-  roller: { name: 'Boulder', glyph: 'a chipped round boulder mid-roll, two cracks knocked out of it and two short speed bars trailing behind it', hue: 'cold teal' },
-  bombard: { name: 'Mortar', glyph: 'a squat mortar canted up to the right on a heavy base plate, its bore open, one shell already in the air above the muzzle', hue: 'hot magenta' },
-  nuker: { name: 'Warhead', glyph: 'a three-bladed hazard trefoil: a solid round core with three heavy wedge blades spaced evenly around it, a clear ring of empty space between the core and the blades', hue: 'acid yellow-green' }
+/**
+ * ─── A rune says what it is TWICE ───────────────────────────────────────────
+ *
+ * `glyph` is the mark cut into the stone. `shape` is the stone's own outline,
+ * and it carries the same information: at hand-tray size a glyph is four dark
+ * strokes in a hole, while a silhouette is the whole object and reads across
+ * the board. So every rune type has an outline of its own — a shield is
+ * blocky, a bow is a slim spindle, an axe is a bit with two horns — and the
+ * SKIN only decides how that outline is finished.
+ *
+ * These are the words for `RUNE_PROFILES` in `arenaPainters.ts`, which is what
+ * actually draws the reference. When one moves, move the other: the reference
+ * settles every argument, and a prompt describing a different stone than the
+ * reference draws is a prompt the painter resolves on its own.
+ */
+const RUNE_WORDS: Record<RuneType, { name: string; glyph: string; hue: string; shape: string; shapeShort: string }> = {
+  melee: {
+    name: 'Sword', glyph: 'a straight sword point-up: tapered blade, cross-guard, grip, round pommel', hue: 'crimson',
+    shape: 'a BLADE-TIP plaque: a sharp point at the top, shoulders sweeping down into a full belly and a round base — the tallest and pointiest stone of the set',
+    shapeShort: 'the BLADE-TIP silhouette — a sharp point at the top over a full belly and a round base'
+  },
+  archer: {
+    name: 'Bow', glyph: 'a recurve bow seen side-on with one arrow nocked and flying to the right: the limb is a crescent of EVEN thickness bulging right, never a filled belly, its two tips joined by a straight vertical string, and the arrow lies across the whole width — a diamond flight at the left, a broad triangular head at the right, standing clear of the limb', hue: 'emerald',
+    shape: 'a SLENDER SPINDLE: narrow and tall, drawn out to a long taper at the top AND at the foot, its belly barely two thirds as wide as the stone is tall — the thinnest stone of the set',
+    shapeShort: 'the SLENDER SPINDLE silhouette — narrow and tall, drawn to a long taper at both ends'
+  },
+  mage: {
+    name: 'Orb', glyph: 'an arcane orb: a solid core inside a ring, four diagonal sparks', hue: 'amethyst violet',
+    shape: 'a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it',
+    shapeShort: 'the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner'
+  },
+  defense: {
+    name: 'Shield', glyph: 'a heater shield with a cross cut out of its face', hue: 'sapphire blue',
+    shape: 'a BLOCKY SHIELD tablet: a FLAT top with square shoulders and straight vertical sides, drawn down to a blunt point at the FOOT — a heater shield lying on its face, and the only stone of the set whose point is at the bottom',
+    shapeShort: 'the BLOCKY SHIELD silhouette — flat across the top, straight sides, a blunt point at the FOOT'
+  },
+  support: {
+    name: 'Cross', glyph: 'a radiant cross, four flared arms and a small burst at the centre', hue: 'topaz gold',
+    shape: 'a FOUR-LOBED medallion: four shallow rounded arms, one up, one down and one to each side, with a soft notch between them — the stone is already a cross before any glyph is cut into it',
+    shapeShort: 'the FOUR-LOBED silhouette — an arm up, an arm down and one to each side, with a notch between them'
+  },
+  cleave: {
+    name: 'Axe', glyph: 'a broad axe, bit upward: a wide crescent blade with drooping horns on a short haft with a round pommel', hue: 'burnt orange',
+    shape: 'an AXE BIT: narrow across the top, flaring out and down into a broad crescent whose two HORNS are the lowest points on the stone, the cutting edge sweeping back UP between them — an axe head seen face on',
+    shapeShort: 'the AXE-BIT silhouette — narrow on top, a broad crescent below with a horn at each bottom corner'
+  },
+  roller: {
+    name: 'Boulder', glyph: 'a chipped round boulder mid-roll, two cracks knocked out of it and two short speed bars trailing behind it', hue: 'cold teal',
+    shape: 'a SQUAT BOULDER: wider than it is tall, heavy and round, with one long flat plane knocked off each side',
+    shapeShort: 'the SQUAT BOULDER silhouette — wider than it is tall, with a flat plane knocked off each side'
+  },
+  bombard: {
+    name: 'Mortar', glyph: 'a squat mortar canted up to the right on a heavy base plate, its bore open, one shell already in the air above the muzzle', hue: 'hot magenta',
+    shape: 'a MORTAR on its base plate: narrow and flat across the top, flaring the whole way down to a broad heavy plate with SQUARE bottom corners and a dead-flat foot — bottom-heavy, like something meant to stay put',
+    shapeShort: 'the MORTAR silhouette — narrow on top, flaring to a wide base plate with square bottom corners'
+  },
+  nuker: {
+    name: 'Warhead', glyph: 'a three-bladed hazard trefoil: a solid round core with three heavy wedge blades spaced evenly around it, a clear ring of empty space between the core and the blades', hue: 'acid yellow-green',
+    shape: 'a WARHEAD SPIKE: a needle-sharp apex over a narrow body, stepping abruptly OUT to a square collar just above a flat foot — tall, thin and top-heavy',
+    shapeShort: 'the WARHEAD SPIKE silhouette — a needle apex over a narrow body, stepping out to a collar at the foot'
+  },
+  crown: {
+    name: 'Crown', glyph: 'a three-peaked crown on a heavy band, the middle peak tallest, one diamond gem cut clean out of the band', hue: 'royal indigo',
+    shape: 'a CROWNED band: a heavy rounded band whose TOP EDGE rises into three peaks, a tall one on the axis and a shorter one to each side, with a V-shaped valley between them',
+    shapeShort: 'the CROWNED-BAND silhouette — a heavy band whose top edge rises into three peaks'
+  }
 }
 
-const SKIN_WORDS: Record<SkinId, { name: string; material: string; shape: string; cut: string }> = {
+/**
+ * What a SKIN is, now that it is no longer what the stone is SHAPED like.
+ *
+ * `finish` is the one that changed: it used to be the silhouette ("a rounded
+ * triangle with its point at the top"), which is why every rune of a skin came
+ * back as the same stone with a different mark on it. It is now how the RUNE's
+ * own outline is worked — carved with a border, knapped into flats, worn
+ * round, blunted into a slab, cut as a gem — and it never says what the
+ * outline IS.
+ */
+const SKIN_WORDS: Record<SkinId, { name: string; material: string; finish: string; cut: string }> = {
   river: {
     name: 'River',
     material: 'warm river sandstone, tan and beige, faintly banded',
-    shape: 'an irregular rounded pebble with a couple of chipped facets',
+    finish: 'CARVED SMOOTH and bordered: the outline is clean and unbroken, with a raised bevelled border running all the '
+      + 'way around it and a shallow sunken field inside that border. An amulet somebody cut a rune into, not a rock they '
+      + 'found — the two sides are exactly equal and the border is even the whole way round',
     cut: 'the glyph is CUT INTO the stone, a dark engraved groove lit from inside by its own colour'
   },
   obsidian: {
     name: 'Obsidian',
     material: 'black volcanic glass, knapped, with glassy conchoidal chips catching a cold rim light',
-    shape: 'an angular shard, straight-edged, faceted',
+    finish: 'KNAPPED: the same outline struck off in long straight flats instead of curves, its edges a little uneven, no '
+      + 'border and no sunken field — raw worked glass',
     cut: 'the glyph is a cold neon line drawn on the dark glass'
   },
   jade: {
     name: 'Jade',
     material: 'polished green jade, translucent at the edges, faint cloudy veins',
-    shape: 'a smooth oval, egg-like, no facets',
+    finish: 'WORN SMOOTH and bordered: every corner and point of the outline rounded off, as though carried in a pocket for '
+      + 'years, with a raised bevelled border all the way round and a shallow sunken field inside it. Polished, not cut — no '
+      + 'facet anywhere',
     cut: 'the glyph is INLAID in gold, a thin bevelled gold line set flush into the jade'
   },
   amber: {
     name: 'Amber',
     material: 'cut amber, honey to orange, with small dark inclusions trapped inside',
-    shape: 'a hexagonal gem with a flat table and bevelled facets',
+    finish: 'CUT and bordered: the same outline taken in flat planes rather than curves — a few facets down each side — so '
+      + 'the light breaks along an edge instead of sliding round. A raised bevelled border all the way round and a shallow '
+      + 'sunken field inside it',
     cut: 'the glyph glows from INSIDE the gem, a warm light trapped in the amber'
   },
   marble: {
     name: 'Marble',
     material: 'white marble with grey veins, softly polished',
-    shape: 'a flat coin-like disc with a rounded edge',
+    finish: 'QUARRIED HEAVY and bordered: the same outline, broader and thicker, its sides filled part of the way out '
+      + 'toward the block it was cut from, with a raised bevelled border all the way round and a shallow sunken field '
+      + 'inside it. The heaviest of the set',
     cut: 'the glyph is CARVED deep, a shadowed groove with no glow at all'
   },
   ember: {
     name: 'Ember',
     material: 'a slab of cooled lava, black-brown crust cracked into plates',
-    shape: 'a rounded rectangular slab, thick, cracked',
+    finish: 'BLUNTED INTO A SLAB: the outline pushed most of the way out to the block, its corners knocked round, thick and '
+      + 'cracked, with no border and no sunken field — the silhouette still shows at the corners, but softened',
     cut: 'the glyph BURNS through the fissures, orange ember light in the cracks'
+  },
+  sapphire: {
+    name: 'Sapphire',
+    material: 'deep blue sapphire, glassy and cold, its depths almost ink at the shoulders',
+    finish: 'STEP CUT: the outline taken in a FEW long hard flats with chamfered corners and squared-off sides, with wide '
+      + 'facet bands running parallel to the edge and a flat table across the middle. No border, no sunken field — a cut '
+      + 'gem, not a carved stone',
+    cut: 'the glyph is a polished channel sunk into the table, a hard white edge on its lit side and cold blue light in the groove'
+  },
+  ruby: {
+    name: 'Ruby',
+    material: 'pigeon-blood ruby, deep red and glowing, with fine silk needles inside',
+    finish: 'CABOCHON: the outline domed and rounded until there is not a facet or a corner left on it, a little plumper '
+      + 'than the stone draws itself, with one long highlight sliding across the dome. No border, no sunken field',
+    cut: 'the glyph BURNS under the dome rather than being cut into it, a soft red core with no hard edge anywhere'
+  },
+  diamond: {
+    name: 'Diamond',
+    material: 'colourless diamond, brilliant and glassy, with tiny spectral flashes of red, green and blue',
+    finish: 'BRILLIANT CUT: the outline taken in MANY small crisp flats, kite facets running from the edge in to a flat '
+      + 'table, the girdle sparkling. No border, no sunken field, and no colour of its own — all of its character is the '
+      + 'light it splits',
+    cut: 'the glyph SPLITS the light: it is the one glyph that is not a single colour, red through gold to green and blue across it'
   }
 }
 
@@ -214,7 +313,17 @@ const enemyStoneColour = (type: RuneType, faction: Faction): string => {
 const blank = (col: number, row: number, n: number): SheetCell =>
   ({ id: `blank-${n}`, label: '', sub: '', blurb: '', col, row, cw: 1, ch: 1, art: { kind: 'blank' } })
 
-/** One sheet per rune TYPE: six skins × two levels on a 4×3 grid (4:3). */
+/**
+ * One sheet per rune TYPE: every skin at Lv 1 and Lv 2, in pairs.
+ *
+ * The grid is derived, not written: nine skins is eighteen panels, which is
+ * 6 × 3 and a 2:1 sheet. It was 4 × 3 when there were six skins. What must not
+ * change is that a PAIR of neighbouring panels is one material at two levels —
+ * the reading order the prompt spends a paragraph on — so the column count is
+ * always even.
+ */
+const STONE_COLS = 6
+
 const stoneSheet = (type: RuneType): SheetSpec => {
   const w = RUNE_WORDS[type]
   const cells: SheetCell[] = []
@@ -226,13 +335,13 @@ const stoneSheet = (type: RuneType): SheetSpec => {
         id,
         label: SKIN_WORDS[skin].name,
         sub: `Lv ${level}`,
-        blurb: `the ${w.name} rune as a ${SKIN_WORDS[skin].name} stone at level ${level}: `
-          + `${SKIN_WORDS[skin].shape}, ${SKIN_WORDS[skin].cut}`
+        blurb: `the ${w.name} rune as a ${SKIN_WORDS[skin].name} stone at level ${level}: ${w.shapeShort}, `
+          + `${SKIN_WORDS[skin].finish}, ${SKIN_WORDS[skin].cut}`
           + (level === 2
             ? '; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger'
             : ''),
         colour: stoneColour(type, skin),
-        col: i % 4, row: Math.floor(i / 4), cw: 1, ch: 1,
+        col: i % STONE_COLS, row: Math.floor(i / STONE_COLS), cw: 1, ch: 1,
         target: artTarget('rune', id),
         art: { kind: 'pebble', type, level, owner: 'player', skin }
       })
@@ -242,13 +351,15 @@ const stoneSheet = (type: RuneType): SheetSpec => {
   return {
     id: `runes-${type}`,
     file: `sheet-runes-${type}`,
-    title: `${w.name} stones — the player's six skins`,
+    title: `${w.name} stones — the player's ${SKIN_IDS.length} skins`,
     kind: 'stones',
-    cols: 4,
-    brief: `The player's ${w.name} rune, cut into each of the six stone skins the shop sells, at level 1 and level 2. `
-      + `The glyph is ${w.glyph}, in ${w.hue}; it is the SAME glyph in every panel — the same rune carved into six different materials.`,
+    cols: STONE_COLS,
+    brief: `The player's ${w.name} rune, cut into each of the ${SKIN_IDS.length} stone skins the shop sells, at level 1 and level 2. `
+      + `EVERY PANEL IS THE SAME STONE SHAPE: ${w.shape}. That silhouette is how a player tells a ${w.name} from every other rune `
+      + 'across the board, so it is the one thing that must not vary between panels — the material and the way the stone is '
+      + `finished are what change. The glyph is ${w.glyph}, in ${w.hue}; it too is the SAME in every panel.`,
     panels: 'Read the grid two panels at a time: each PAIR of neighbouring panels is one material, first at level 1 then at level 2. '
-      + `Left to right, top to bottom: ${SKIN_IDS.map((s) => SKIN_WORDS[s].name).join(', ')} — each as Lv 1 then Lv 2. `
+      + `Left to right, top to bottom: ${SKIN_IDS.map((s2) => SKIN_WORDS[s2].name).join(', ')} — each as Lv 1 then Lv 2. `
       + 'A level-2 stone is the same material and the same glyph, a little larger and heavier, with a gold rim, a small gold crest on its shoulder and a stronger glow.',
     cells
   }
@@ -266,8 +377,8 @@ const enemyStoneSheet = (type: RuneType): SheetSpec => {
         id,
         label: FACTION_WORDS[faction].name,
         sub: `Lv ${level}`,
-        blurb: `the enemy's ${w.name} rune as a ${FACTION_WORDS[faction].name} stone at level ${level}: `
-          + 'an irregular rounded pebble of the faction\'s own rock, the glyph cut in and glowing'
+        blurb: `the enemy's ${w.name} rune as a ${FACTION_WORDS[faction].name} stone at level ${level}: ${w.shapeShort}, `
+          + `cut from the faction's own rough rock, unbordered and weathered, the glyph cut in and glowing`
           + (level === 2
             ? '; heavier and slightly larger, a dull-gold rim and a small dull-gold crest on its shoulder, the glyph glowing stronger'
             : ''),
@@ -286,7 +397,8 @@ const enemyStoneSheet = (type: RuneType): SheetSpec => {
     kind: 'enemyStones',
     cols: 4,
     brief: `The enemy's ${w.name} rune, one stone per faction, at level 1 and level 2. Every enemy stone is RED-TINTED rock so a player tells `
-      + `it from their own at a glance; the glyph is ${w.glyph}, in ${w.hue}, the same glyph in every panel.`,
+      + `it from their own at a glance. EVERY PANEL IS THE SAME STONE SHAPE — ${w.shape} — the same silhouette the player's `
+      + `${w.name} stones carry, because that outline is what says which rune it is; the glyph is ${w.glyph}, in ${w.hue}, the same glyph in every panel.`,
     panels: 'Each PAIR of neighbouring panels is one faction, first at level 1 then at level 2. '
       + `Left to right, top to bottom: ${(Object.keys(FACTION_DEFS) as Faction[]).map((f) => FACTION_WORDS[f].name).join(', ')}.`,
     cells
@@ -294,12 +406,16 @@ const enemyStoneSheet = (type: RuneType): SheetSpec => {
 }
 
 const glyphSheet = (): SheetSpec => {
-  // Nine runes tile a THREE-wide grid exactly — three rows of three, a square
-  // sheet. The grid was 4 wide while the roster was eight; keeping it there
-  // would have left three blank panels on the last row, and a blank panel is
-  // the thing these prompts most often lose (an image model fills it in). The
-  // width is chosen to fit the roster, not the other way round.
-  const COLS = 3
+  // The width is chosen to fit the ROSTER exactly, and it has moved every time
+  // the roster has: 4 across for eight runes (2:1), 3 across for nine (a
+  // square), and now 5 across for ten — two rows of five, 1280 × 512.
+  //
+  // What is never traded away is the BLANK. A blank panel is the thing these
+  // prompts most often lose: an image model asked for a grid with a hole in it
+  // fills the hole in with something. Ten does not tile any of the tidy
+  // ratios, so the ratio is what gave — see the manifest test, which lists
+  // 5:2 for this reason and no other.
+  const COLS = 5
   const cells: SheetCell[] = RUNE_TYPES.map((type, i) => ({
     id: type,
     label: RUNE_WORDS[type].name,
@@ -313,10 +429,10 @@ const glyphSheet = (): SheetSpec => {
   return {
     id: 'glyphs',
     file: 'sheet-glyphs',
-    title: 'Glyph icons — the nine runes, no stone',
+    title: 'Glyph icons — the ten runes, no stone',
     kind: 'glyphs',
     cols: COLS,
-    brief: 'The nine rune glyphs on their own, as UI icons: the unlock card, the campaign map and the shop show a rune without its stone. '
+    brief: 'The ten rune glyphs on their own, as UI icons: the unlock card, the campaign map and the shop show a rune without its stone. '
       + 'Bold, flat, one strong silhouette each, readable at 24 px. Every panel carries a glyph — none is blank.',
     cells
   }
@@ -387,19 +503,102 @@ const bitmap = (id: string, folder: ArtKind, label: string, sub: string, blurb: 
   art: { kind: 'bitmap', src: artTarget(folder, id) }
 })
 
+/**
+ * The Keeper: one object, one panel, its own sheet.
+ *
+ * He is the first thing anybody sees — the hooded figure holding a rune up on
+ * the loading screen — and the only drawable the game ships as inline SVG,
+ * because the splash paints before a single request has come back. The
+ * reference here is that SVG baked to a bitmap (`public/images/heroes/
+ * keeper.webp`), which is what a painter restyles.
+ *
+ * Where the painting goes: the SPLASH itself. The build bakes it into the
+ * static splash as a data: URI, so it is on screen in the first frame with no
+ * request, and FLogoProgress takes the same picture over
+ * (`src/game/keeperSplash.ts`). It is also the character the campaign map's
+ * commander, the result screen, the store tile and the portal covers want.
+ */
+const splashSheet = (): SheetSpec => ({
+  id: 'splash',
+  file: 'sheet-splash',
+  kind: 'ui',
+  cols: 1,
+  title: 'The Keeper — the game\'s mascot',
+  brief: 'ONE character on flat magenta, seen from the front, standing: a small hooded figure in a long tattered cloak, '
+    + 'holding a wooden staff planted at his side with a glowing rune stone bound to its top. The stone is the only light '
+    + 'in the picture and everything else is lit BY it — the rim of the hood, the near edge of the cloak, the hand on the '
+    + 'staff. Under the hood there is no face, only two small warm lights where eyes would be.',
+  panels: 'A single panel. The figure stands upright and fills it top to bottom with a little air around him; the staff '
+    + 'is vertical at his right (the viewer\'s right) with the rune at the top, and his hem is torn into points that just '
+    + 'clear the bottom edge. No ground, no shadow cast onto anything, no scenery — he floats on flat magenta.',
+  cells: [
+    bitmap(
+      'keeper', 'hero', 'The Keeper', 'mascot',
+      'a small hooded keeper standing with a staff: a long tattered cloak with a torn hem, a peaked hood with no face '
+        + 'under it but two warm points of light, one hand gripping the staff at chest height, a second small rune '
+        + 'stone at his belt glowing faintly, and the staff\'s rune stone blazing above his shoulder',
+      'the cloak deep blue-violet, lit face around #49557f falling to #151a28 in shadow; the staff warm brown wood '
+        + '#4a3a2c; the rune stone dark slate #3a4150 with its glyph in hot crimson #ff5c66; every rim light on the '
+        + 'side facing the stone in warm amber #ffb27a; the eyes #ffd79a',
+      0, 0
+    )
+  ]
+})
+
+/**
+ * A conquest plaque — the carved plate behind "4 YOU" / "FOE 5".
+ *
+ * The ONLY `ui` drawable the DOM consumes rather than the canvas: it lands as a
+ * CSS `background-image` on `ConquestCounters.vue`. That changes nothing about
+ * the round trip — it is still a panel on the lattice with a target path — but
+ * it is why the blurb is emphatic about the plate coming back EMPTY. The number
+ * and the caption are live text drawn over it in twenty-one languages, and a
+ * plaque with a painted "4" on it is a plaque that reads "4" forever.
+ */
+const counterPlate = (side: 'you' | 'foe', col: number): SheetCell => ({
+  id: `counter-${side}`,
+  label: side === 'you' ? 'Plaque · you' : 'Plaque · foe',
+  sub: 'conquest readout',
+  blurb: `the ${side === 'you' ? "player's" : "enemy's"} conquest plaque: a wide carved stone tablet with fully rounded ends, `
+    + 'a raised bevelled rim, a shallow sunken face, and one small iron rivet at each of its four shoulders — a plate bolted to '
+    + `the arena wall. The rim and the light caught along it are ${side === 'you' ? 'cold blue' : 'blood crimson'}. `
+    + 'Leave the FACE EMPTY: no numbers, no letters, no glyphs, no icons, no engraving in the middle — the game prints a number '
+    + 'and a word over it. The two plaques are the SAME carved object in two liveries, not two different props',
+  colour: side === 'you'
+    ? 'cold slate stone, top around #2b3350 falling to #0d1120, pooled at both ends with a deep navy #123049; the rim and its '
+      + 'light in cyan #4fd0ff; rivets in pale steel #5a6480'
+    : 'cold slate stone, top around #2b3350 falling to #0d1120, pooled at both ends with a deep oxblood #3c1418; the rim and its '
+      + 'light in crimson #ff5a5f; rivets in pale steel #5a6480',
+  col,
+  row: 2,
+  cw: 2,
+  ch: 1,
+  // Letterboxed, the way the ribbon is: a wide object drawn at its TRUE ~2.3:1
+  // inside a 2:1 panel, and restored to that size on the way back. Without this
+  // the panel's own 512 px edge would be the frame size, and the manifest test
+  // that caps a written frame at 256 px would (correctly) refuse it.
+  letterboxed: { w: 581, h: 256 },
+  target: artTarget('ui', `counter-${side}`),
+  art: { kind: 'counter', side }
+})
+
 const uiSheet = (): SheetSpec => ({
   id: 'ui',
   file: 'sheet-ui',
-  title: 'HUD chips — chest, crown, coin, forge, reroll, ribbon',
+  title: 'HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques',
   kind: 'ui',
   cols: 4,
-  brief: 'The HUD\'s small pictures: the reward chest, the elite crown, the coin, the Rune Forge chip, the reroll stone and the result '
+  brief: 'The HUD\'s small pictures: the reward chest, the elite mark, the coin, the Rune Forge chip, the reroll stone and the result '
     + 'ribbon. Each is a single object on flat magenta; the ribbon is the one wide panel.',
-  panels: 'Top row: chest, crown, coin, forge. Bottom row: the reroll chip, then the ribbon spanning the last three panels.',
+  panels: 'Top row: chest, elite mark, coin, forge. Middle row: the reroll chip, then the ribbon spanning the last three '
+    + 'panels. Bottom row: the two conquest plaques, each two panels wide — the YOU plaque on the left, the FOE plaque on the right.',
   cells: [
     bitmap('chest', 'ui', 'Chest', 'reward', 'a closed wooden treasure chest with iron bands and a gold lock, seen from the front, slightly above',
       'dark oak around #5a3a1e, iron bands #3a3f4a, gold fittings #e6b84a', 0, 0),
-    bitmap('crown', 'ui', 'Crown', 'elite mark', 'a small gold crown with three points and a red jewel, a badge not a portrait',
+    // `elite`, not `crown`: the tenth RUNE is the Crown, and a cell id is a
+    // filename stem — two `single-crown.png` prompts would have overwritten
+    // each other, and the manifest's own uniqueness test caught it.
+    bitmap('elite', 'ui', 'Elite mark', 'elite badge', 'a small gold crown with three points and a red jewel, a badge not a portrait',
       'gold around #e6b84a with a ruby around #d8283c', 1, 0),
     bitmap('coin', 'ui', 'Coin', 'currency', 'a single gold coin seen face-on with a rune stamped into it',
       'gold around #f2c14e, shadow #9a6a12', 2, 0),
@@ -416,36 +615,32 @@ const uiSheet = (): SheetSpec => ({
       col: 0, row: 1, cw: 1, ch: 1, target: artTarget('ui', 'reroll'), art: { kind: 'reroll' }
     },
     bitmap('ribbon', 'ui', 'Ribbon', 'result banner', 'a wide heraldic ribbon banner, its ends folded and notched, the middle a plain band (a caption is printed over it in play — leave it EMPTY)',
-      'deep crimson cloth around #a8232f with gold edging around #e6b84a', 1, 1, 3, 1, { w: 597, h: 256 })
+      'deep crimson cloth around #a8232f with gold edging around #e6b84a', 1, 1, 3, 1, { w: 597, h: 256 }),
+    // The two conquest plaques, on the bottom row. Two panels each, because
+    // they are wide: the game draws them at roughly 2.3:1 and a 1:1 panel would
+    // come back a square plaque that the DOM then stretches.
+    counterPlate('you', 0),
+    counterPlate('foe', 2)
   ]
 })
 
 const fxSheet = (): SheetSpec => {
   const fx = (id: string, label: string, blurb: string, colour: string, i: number, native?: { w: number; h: number }, maxEdge?: number): SheetCell =>
-    bitmap(id, 'fx', label, 'effect', blurb, colour, i % 6, Math.floor(i / 6), 1, 1, native, maxEdge)
-  const LAUREL_STONE: Record<PebbleShape, string> = {
-    pebble: 'a rounded river pebble', shard: 'an angular knapped shard', oval: 'a wide smooth oval',
-    hex: 'a hexagonal cut gem', disc: 'a round flat disc', slab: 'a rounded rectangular slab'
-  }
-  const laurel = (shape: PebbleShape, i: number): SheetCell => ({
-    id: `laurel-${shape}`, label: `Laurel · ${shape}`, sub: 'Lv 2 wreath',
-    blurb: `the level-2 laurel for ${LAUREL_STONE[shape]}: a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, `
-      + 'OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape (the drawn reference shows exactly where they sit) — '
-      + 'the game lays it around an upgraded rune stone of that shape, so paint the wreath ALONE with nothing inside it and nothing behind it: '
-      + 'no stone, no shield, no medal, no ribbon banner, no glyph',
-    colour: 'polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge',
-    col: i % 6, row: Math.floor(i / 6), cw: 1, ch: 1, target: artTarget('fx', `laurel-${shape}`), art: { kind: 'laurel', shape }
-  })
+    bitmap(id, 'fx', label, 'effect', blurb, colour, i % 4, Math.floor(i / 4), 1, 1, native, maxEdge)
   return {
     id: 'fx',
     file: 'sheet-fx',
-    title: 'Effects — rings, dome, smoke, scorch, flashes, the six Lv 2 laurels',
+    title: 'Effects — rings, dome, smoke, scorch, flashes, the beam spark and the arrow',
     kind: 'fx',
-    cols: 6,
+    // Four across for twelve effects: 4 × 3 is 1024 × 768, a ratio any tool
+    // takes, with no blank panel in it. The laurels used to share this sheet
+    // and moved to one of their own when the wreath became a per-RUNE drawable
+    // — ten of them would have left this grid with holes, and a hole is the
+    // one thing an image model reliably fills in with something.
+    cols: 4,
     brief: 'The arena\'s effects: three shockwave rings, the shield dome, the absorb flash, the smoke puff, the scorch mark a shattered '
-      + 'rune leaves, the archer\'s muzzle flash, two crests, the mage beam\'s travelling spark, the archer\'s arrow, and six gold laurels — one per '
-      + 'stone silhouette — the game lays around a level-2 stone. Soft light on flat magenta — every glow must stay TIGHT to its own shape, because a halo over '
-      + 'magenta cannot be keyed.',
+      + 'rune leaves, the archer\'s muzzle flash, two crests, the mage beam\'s travelling spark and the archer\'s arrow. Soft light on flat '
+      + 'magenta — every glow must stay TIGHT to its own shape, because a halo over magenta cannot be keyed.',
     cells: [
       fx('ring-heal', 'Heal ring', 'a thin expanding ring of soft golden light seen from above, brightest at the rim', 'warm gold around #ffd23f', 0),
       fx('ring-shock', 'Shock ring', 'a thin expanding ring of white-blue impact light, the capture shockwave', 'cold white-blue around #cfe9ff', 1),
@@ -461,16 +656,15 @@ const fxSheet = (): SheetSpec => {
         id: 'spark', label: 'Spark', sub: 'beam round',
         blurb: 'the mage beam\'s travelling spark: a small bright violet star with a short trail, flying to the RIGHT',
         colour: 'white core, violet around #b57bff, kept tight',
-        col: 4, row: 1, cw: 1, ch: 1, target: artTarget('round', 'spark'), maxEdge: 128, art: { kind: 'spark' }
+        col: 2, row: 2, cw: 1, ch: 1, target: artTarget('round', 'spark'), maxEdge: 128, art: { kind: 'spark' }
       },
-      laurel('pebble', 11), laurel('shard', 12), laurel('oval', 13), laurel('hex', 14), laurel('disc', 15), laurel('slab', 16),
       {
         id: 'bolt', label: 'Bolt', sub: 'arrow in flight',
         blurb: 'the archer\'s arrow in flight, seen from the side and flying to the RIGHT: a straight ash shaft, a broad iron '
           + 'head at the right end, two emerald fletching vanes at the left end, and a short faint speed streak trailing off '
           + 'behind the nock — ONE arrow lying flat and level across the panel, not a bundle, not a quiver, not a bow',
         colour: 'ash shaft around #b1935f, iron head around #8e98a6, emerald vanes around #35e07a, the streak pale mint #b8ffd6',
-        col: 5, row: 2, cw: 1, ch: 1, target: artTarget('round', 'bolt'),
+        col: 3, row: 2, cw: 1, ch: 1, target: artTarget('round', 'bolt'),
         // The sprite ships 4:1: the panel is square, the arrow is drawn into
         // the middle of it, and the slicer trims the padding back off.
         letterboxed: { w: 256, h: 64 }, art: { kind: 'bolt' }
@@ -479,14 +673,58 @@ const fxSheet = (): SheetSpec => {
   }
 }
 
+/**
+ * The ten Lv 2 wreaths — one per RUNE, not one per skin.
+ *
+ * The wreath hugs the FOOT of the stone it wraps, and the foot is the rune's:
+ * a bow tapers to a needle, a shield comes down to a blunt point, a mortar
+ * sits on a flat plate. One wreath cut for a plaque sits half inside a shield
+ * and half in mid-air under an axe. It is not per skin because a skin only
+ * changes the finish, and ten × nine wreaths is ninety paintings of a
+ * difference nobody can see.
+ */
+const laurelSheet = (): SheetSpec => {
+  const COLS = 5
+  const cells: SheetCell[] = RUNE_TYPES.map((type, i) => ({
+    id: `laurel-${type}`,
+    label: `Laurel · ${RUNE_WORDS[type].name}`,
+    sub: 'Lv 2 wreath',
+    blurb: `the level-2 laurel for the ${RUNE_WORDS[type].name} stone (${RUNE_WORDS[type].shape}): a gold laurel wreath of two leafy `
+      + 'branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that '
+      + 'stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under '
+      + 'them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and '
+      + 'nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph',
+    colour: 'polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge',
+    col: i % COLS, row: Math.floor(i / COLS), cw: 1, ch: 1,
+    target: artTarget('fx', `laurel-${type}`),
+    art: { kind: 'laurel', type }
+  }))
+  return {
+    id: 'laurels',
+    file: 'sheet-laurels',
+    title: 'Laurels — the Lv 2 wreath, one per rune',
+    kind: 'fx',
+    cols: COLS,
+    brief: 'The gold laurel wreath the game lays around a level-2 rune stone, one per rune. Every panel is the SAME wreath — two leafy '
+      + 'branches rising from a tie at the bottom, open at the top like a horseshoe — but each is bent around a DIFFERENT stone '
+      + 'silhouette, which is the whole reason there are ten of them. Follow the reference panel for how wide each one opens and how far '
+      + 'up its branches reach. Paint the wreath alone: the middle of every panel is empty magenta, because the stone goes there in play.',
+    panels: `Left to right, top to bottom: ${RUNE_TYPES.map((t) => RUNE_WORDS[t].name).join(', ')} — the wreath for that rune's stone. `
+      + 'Every panel carries a wreath; none is blank.',
+    cells
+  }
+}
+
 export const SHEETS: SheetSpec[] = [
   ...RUNE_TYPES.map(stoneSheet),
   ...RUNE_TYPES.map(enemyStoneSheet),
   glyphSheet(),
+  splashSheet(),
   tileSheet(),
   frameSheet(),
   uiSheet(),
-  fxSheet()
+  fxSheet(),
+  laurelSheet()
 ]
 
 // ─── Walk cycles: the strips that already ship as bitmaps ───────────────────
@@ -864,15 +1102,22 @@ export const promptForSheet = (s: SheetSpec, fits?: FitMap): string => {
 
   const consistency = stones
     ? [
-      'ONE GLYPH.',
-      `All ${n} panels carry the SAME glyph — ${RUNE_WORDS[(s.cells[0]!.art as { type: RuneType }).type].glyph} —`,
-      'identical in shape, proportion and orientation in every panel. It is one',
-      'rune cut into different stones, not a set of similar runes. Only the STONE',
-      'changes between panels, exactly as the reference shows it.',
+      'ONE SILHOUETTE, ONE GLYPH.',
+      `All ${n} panels are the SAME STONE SHAPE — ${RUNE_WORDS[(s.cells[0]!.art as { type: RuneType }).type].shape} —`,
+      'and carry the SAME glyph —',
+      `${RUNE_WORDS[(s.cells[0]!.art as { type: RuneType }).type].glyph} —`,
+      'identical in outline, proportion and orientation in every panel. Each rune',
+      'in this game has an outline of its own, and that outline is how a player',
+      'tells one rune from another across the board — so it is the LAST thing that',
+      'may drift. Only the MATERIAL and the way the stone is finished change',
+      'between panels, exactly as the reference shows it.',
       '· A pair of panels is one material at two levels: same stone, same cut,',
       '  the level-2 one a little larger and heavier, with its gold rim and the',
       '  small gold crest on its shoulder — and NOTHING else added.',
-      '· Do not re-scale a stone from the reference. Do not move it in its panel.'
+      '· Do not re-scale a stone from the reference. Do not move it in its panel.',
+      '· Do not tidy the outline toward a plain oval or a rounded rectangle.',
+      '  Every corner, notch, horn, peak and taper in the reference is there',
+      '  because it says which rune this is.'
     ]
     : s.kind === 'tiles'
       ? [
@@ -978,7 +1223,12 @@ export const promptForSingle = (t: SingleSpec, fits?: FitMap): string => {
     '',
     `WHAT IT IS: ${c.blurb}.${colourLine(c)}`,
     ...(sheet.kind === 'stones' || sheet.kind === 'enemyStones'
-      ? ['', `THE GLYPH is ${RUNE_WORDS[(c.art as { type: RuneType }).type].glyph}. Keep its shape exactly.`,
+      ? ['',
+        `THE SILHOUETTE is ${RUNE_WORDS[(c.art as { type: RuneType }).type].shape}.`,
+        'Keep that outline exactly. Every rune in this game has an outline of its own,',
+        'and it is how a player tells one rune from another across the board — do not',
+        'tidy it toward a plain oval or a rounded rectangle.',
+        '', `THE GLYPH is ${RUNE_WORDS[(c.art as { type: RuneType }).type].glyph}. Keep its shape exactly.`,
         '', 'WHAT IT IS NOT:', NO_LAUREL]
       : []),
     '',

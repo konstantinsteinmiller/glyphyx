@@ -37,6 +37,7 @@ export type FxSound =
   | 'shellHit'    // …and it lands three ranks away
   | 'explode'     // the mage's Lv 2 cross
   | 'nuke'        // a nuker goes off: the whole board at once
+  | 'crown'       // a crown takes an enemy rune and is spent doing it
   | 'shield'      // damage absorbed by a defense / aura
   | 'heal'
   | 'buff'

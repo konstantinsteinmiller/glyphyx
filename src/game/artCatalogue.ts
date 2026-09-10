@@ -30,13 +30,17 @@ export const ART_FOLDERS = {
   tile: 'images/tiles',
   /**
    * Effects: rings, the shield dome, smoke, scorch, the muzzle flash, crests,
-   * and `laurel` — the gold wreath the arena lays around a level-2 stone. The
-   * wreath is a LAYER of its own so all 120 stones wear the SAME one; see
-   * `arenaPainters.paintLaurel`. It is drawn into the stone's own box, so it
-   * is blitted over the pebble sprite with no arithmetic.
+   * and `laurel-<rune>` — the gold wreath the arena lays around a level-2
+   * stone, one per rune because the wreath hugs the rune's own silhouette. The
+   * wreath is a LAYER of its own so all nine skins of a rune wear the SAME one;
+   * see `arenaPainters.paintLaurel`. It is drawn into the stone's own box, so
+   * it is blitted over the pebble sprite with no arithmetic.
    */
   fx: 'images/fx',
-  /** HUD art: the reward chest, the result ribbon, the elite crown, the forge, the coin, the reroll chip. */
+  /** HUD art: the reward chest, the result ribbon, the elite crown, the forge,
+   *  the coin, the reroll chip, and the two conquest plaques. The plaques are the
+   *  only `ui` art the DOM consumes (as a CSS `background-image`) rather than the
+   *  canvas — see `ConquestCounters.vue`. */
   ui: 'images/ui',
   /** Enemy commander walk cycles, one 8-panel strip per design (228×256 per panel). */
   monster: 'images/monsters',
@@ -71,10 +75,18 @@ export const ART_CATALOGUE: Record<ArtKind, readonly string[]> = {
   ],
   tile: ['player', 'enemy', 'neutral', 'frame'],
   fx: ['ring-heal', 'ring-shock', 'ring-heat', 'shield', 'guard', 'smoke', 'scorch', 'muzzle', 'crest-shield', 'crest-guard',
-    'laurel-pebble', 'laurel-shard', 'laurel-oval', 'laurel-hex', 'laurel-disc', 'laurel-slab'],
-  ui: ['chest', 'ribbon', 'crown', 'forge', 'coin', 'reroll'],
+    // One wreath per RUNE, because the silhouette is the rune's: the skin only
+    // decides how that outline is finished, and a wreath cut for a blade sits
+    // half in mid-air under an axe. Derived, never listed — the roster grows.
+    ...RUNE_TYPES.map((t) => `laurel-${t}`)],
+  ui: ['chest', 'ribbon', 'elite', 'forge', 'coin', 'reroll', 'counter-you', 'counter-foe'],
   monster: [...new Set(Object.values(FACTION_DEFS).map((f) => f.avatar))],
-  hero: ['teal'],
+  // `keeper` is the hooded figure on the loading screen — the game's mascot,
+  // and the only drawable whose DRAWN form is inline SVG (it has to paint in
+  // the first frame, before a request could return). No renderer probes it:
+  // the build bakes the painting into the static splash as a data: URI and
+  // FLogoProgress takes it from there (src/game/keeperSplash.ts).
+  hero: ['teal', 'keeper'],
   bg: ['sky', 'ridge-far', 'ridge-near'],
   round: ['bolt', 'spark']
 }

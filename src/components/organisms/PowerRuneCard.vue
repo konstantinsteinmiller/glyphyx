@@ -8,6 +8,7 @@ import PebblePreview from '@/components/game/PebblePreview.vue'
 import { RUNES, statsFor, type RuneType } from '@/game/rules'
 import usePowerRunes, { POWER_RUNE_LEVEL, POWER_RUNE_PRICE } from '@/use/usePowerRunes'
 import useSkins from '@/use/useSkins'
+import { isNative } from '@/use/useUser'
 import { coins } from '@/use/useEconomy'
 import { adInFlight, canOfferReward } from '@/use/useAdGate'
 import { playFx } from '@/use/useGameAudio'
@@ -29,6 +30,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
+
+/** Only a native build has the width to spell "Watch ad" out beside the frame. */
+const showAdWord = isNative
 const { activeSkin } = useSkins()
 const { powerRunes, canAffordPowerRune, buyPowerRune, earnPowerRuneByAd } = usePowerRunes()
 
@@ -86,13 +90,16 @@ const onWatch = async (): Promise<void> => {
           span {{ POWER_RUNE_PRICE }}
         FButton.prc__ad(
           v-if="canOfferReward"
+          :aria-label="t('shop.watchAd')"
           size="sm"
           type="secondary"
           :is-disabled="busy || adInFlight"
           @click="onWatch"
         )
           RewardAdIcon.prc__ad-icon
-          span {{ t('shop.watchAd') }}
+          //- Less text, same offer — see `RuneRankCard`'s upgrade switch, which
+          //- set this style after "Werbung ansehen" tore a card open.
+          span.prc__adword(v-if="showAdWord") {{ t('shop.watchAd') }}
       span.prc__need(v-if="!canAffordPowerRune") {{ t('skins.needMore', { n: shortfall }) }}
 </template>
 

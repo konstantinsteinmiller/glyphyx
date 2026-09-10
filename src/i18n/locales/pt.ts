@@ -9,7 +9,8 @@ export default {
       'cleave': 'Derruba as três casas à frente de uma vez, logo no primeiro turno.',
       'roller': 'Atropela dois sobreviventes antes de parar, logo no primeiro turno.',
       'bombard': 'Bombardeia a fileira distante e a casa do meio, logo no primeiro turno.',
-      'nuker': 'Cai no Nv 3 e segura o tabuleiro que acabou de limpar, logo no primeiro turno.'
+      'nuker': 'Cai no Nv 3 e segura o tabuleiro que acabou de limpar, logo no primeiro turno.',
+      'crown': 'Chega no Nv 3 — leva até uma runa empilhada, já no primeiro turno.'
     },
     'watchAd': 'Ver anúncio',
     'armed': 'Armada ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': 'Fase {c}-{n}',
+    'stage': 'Nível {c}-{n}',
     'conquest': 'Conquista',
     'tiles': '{n} / {total}',
     'turn': 'Turno {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Machado',
       'roller': 'Rocha',
       'bombard': 'Morteiro',
-      'nuker': 'Detonador'
+      'nuker': 'Detonador',
+      'crown': 'Coroa'
     },
     'descriptions': {
       'melee': 'Golpeia a casa à frente. Nv 2 empurra o alvo para trás.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Corta as três casas à frente: a de frente e as duas ao lado.',
       'roller': 'Rola até uma runa resistir, aliadas incluídas. Nv 2 rola mais uma.',
       'bombard': 'Bombardeia três casas, três fileiras à frente, sobre qualquer muro. Nv 2 acerta também no meio.',
-      'nuker': 'Detona onde cai: toda runa Nv 1 no tabuleiro morre, as suas também. Nv 2 aguenta.'
+      'nuker': 'Detona onde cai: toda runa Nv 1 no tabuleiro morre, as suas também. Nv 2 aguenta.',
+      'crown': 'Leva a runa à sua frente e gasta-se nisso: ela luta por você na hora. Nv 2 leva pilhas.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Arraste uma runa para o tabuleiro'
     },
     'aim': {
-      'touch': 'Deslize para mirar, solte para fixar',
-      'desktop': 'Arraste ou use as setas / WASD para mirar, solte para fixar'
+      'touch': 'Solte na borda para onde deve olhar',
+      'desktop': 'Vá até a borda para onde deve olhar e clique'
     },
     'archer': {
       'touch': 'Arcos pulam uma casa e acertam a seguinte',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'O detonador destrói toda runa Nv 1 — as suas também',
       'desktop': 'O detonador destrói toda runa Nv 1 — as suas também'
+    },
+    'crown': {
+      'touch': 'A coroa leva a runa à frente dela — agora ela luta por você',
+      'desktop': 'A coroa leva a runa à frente dela — agora ela luta por você'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': 'Derrota',
     'turns': 'Turnos',
     'playAgain': 'Jogar de novo',
-    'nextStage': 'Próxima fase',
+    'nextStage': 'Próximo nível',
     'newRecord': 'Novo recorde!',
     'streakBonus': 'Sequência ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': 'Recompensa',
     'play': 'Jogar',
     'replay': 'Repetir',
-    'nextUnlock': 'Vença a Fase {c}-{n} e receba:',
-    'nextUnlockAria': 'Vença a Fase {c}-{n} para desbloquear {rune}'
+    'nextUnlock': 'Vença o Nível {c}-{n} e receba:',
+    'nextUnlockAria': 'Vença o Nível {c}-{n} para desbloquear {rune}'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Âmbar',
       'marble': 'Mármore',
-      'ember': 'Brasa'
+      'ember': 'Brasa',
+      'sapphire': 'Safira',
+      'ruby': 'Rubi',
+      'diamond': 'Diamante'
     },
     'tagline': 'Cada runa que você coloca usa isso.',
     'needMore': 'Faltam {n} moedas',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Jade verde polido, o glifo incrustado em ouro.',
       'amber': 'Uma gema de âmbar facetada que brilha por dentro.',
       'marble': 'Mármore branco, esculpido fundo e sombreado.',
-      'ember': 'Uma placa de lava fria, o glifo arde pelas fendas.'
+      'ember': 'Uma placa de lava fria, o glifo arde pelas fendas.',
+      'sapphire': 'Safira azul-profundo em lapidação degrau, uma estrela branca sob a mesa.',
+      'ruby': 'Um rubi cabochão abaulado, o glifo arde em vermelho por baixo.',
+      'diamond': 'Diamante de lapidação brilhante, o glifo desdobrado num espectro.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Novo presente em {t}',
     'freeTaken': 'Volte para a próxima',
     'nukerUnlock': 'Desbloquear o Detonador',
-    'nukerLocked': 'Ou vença a Fase 4-1'
+    'nukerLocked': 'Ou vença o Nível 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Continue vencendo',
+    'mysteryAria': 'Uma runa que você ainda não desbloqueou',
+    'nextUp': 'Próxima',
+    'winsAt': 'Vença o Nível {c}-{n}'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'Ranking',
     'rank': '#',
     'player': 'Jogador',
-    'stage': 'Fase',
+    'stage': 'Nível',
     'streak': 'Sequência',
     'empty': 'Nenhuma partida ainda. Seja o primeiro.',
     'failed': 'Não foi possível carregar o ranking.',
@@ -304,6 +322,7 @@ export default {
     'music': 'Música',
     'musicTrack': 'Faixa musical',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Pedra Serena',
       'trance': 'Pulso Rúnico'
     },

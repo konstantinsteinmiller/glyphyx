@@ -14,6 +14,7 @@ import SaveStatusBanner from '@/components/atoms/SaveStatusBanner.vue'
 import AdsBlockedModal from '@/components/atoms/AdsBlockedModal.vue'
 import VConsoleHideButton from '@/components/atoms/VConsoleHideButton.vue'
 import { useCrazyMuteSync } from '@/use/useCrazyMuteSync'
+import { useHudMotion } from '@/use/useHudMotion'
 import useCheats, { installDebugUnlock } from '@/use/useCheats'
 import { isCrazyWeb, isWaveDash, isItch, isGlitch, isGameDistribution, isPlaygama, isGamepix, isGameMonetize, isYandex, isPoki, isNative, orientation } from '@/use/useUser'
 import { glitchLicenseStatus } from '@/use/useGlitchLicense'
@@ -25,6 +26,9 @@ const { initMusic, pauseMusic, continueMusic } = useMusic()
 useExtensionGuard()
 const { resourceCache } = useAssets()
 useCrazyMuteSync()
+// Stamps `perf-lite` on <body> when the quality ladder settles low, which
+// stops the always-on decorative HUD animations. See `useHudMotion`.
+useHudMotion()
 // Attach the "cmarc" debug-unlock key listener at app boot (App.vue is eager),
 // so typing it anywhere flips debug mode — the lazy game scene used to be the
 // only importer, which tree-shook the listener out of production builds.

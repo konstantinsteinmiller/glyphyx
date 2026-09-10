@@ -110,6 +110,12 @@ export const RESOLVE_TIMELINE = {
   // both are consequences of the same placement step — and the renderer plays
   // them on one clock.
   nuke: { at: 160, dur: 280 },
+  // The crown turns its target in the same breath as the placement that fired
+  // it — BEFORE the blast, so a nuke dropped in the same resolution vaporises
+  // a stone that has already changed sides rather than cancelling the crown.
+  // The turned rune then fights for its new owner in every step below, which
+  // is the whole point of stealing it.
+  crown: { at: 150, dur: 260 },
   clash: { at: 160, dur: 220 },
   aura: { at: 120, dur: 180 },
   heal: { at: 260, dur: 220 },
@@ -129,9 +135,9 @@ export type ResolveStep = keyof typeof RESOLVE_TIMELINE
  * in the game (the hand's deck, the shop grid, the campaign map) reads it.
  */
 export type RuneType =
-  | 'melee' | 'archer' | 'mage' | 'defense' | 'support' | 'cleave' | 'roller' | 'bombard' | 'nuker'
+  | 'melee' | 'archer' | 'mage' | 'defense' | 'support' | 'cleave' | 'roller' | 'bombard' | 'nuker' | 'crown'
 export const RUNE_TYPES: readonly RuneType[] =
-  ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker']
+  ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker', 'crown']
 
 export type AimKind = 'cardinal' | 'diagonal' | 'omni'
 
@@ -176,7 +182,17 @@ export const RUNES: Record<RuneType, RuneDef> = {
   // attacks — the blast happens once, on the placement itself — and its body is
   // the thinnest on the roster, because what it leaves behind is a bare tile
   // holder standing in the wreckage.
-  nuker: { type: 'nuker', aim: 'omni', lv1: { hp: 2, atk: 0 }, lv2: { hp: 4, atk: 0 }, color: '#e8ff3d' }
+  nuker: { type: 'nuker', aim: 'omni', lv1: { hp: 2, atk: 0 }, lv2: { hp: 4, atk: 0 }, color: '#e8ff3d' },
+  // The tenth rune, and the only one that takes a tile without breaking
+  // anything: the crown turns the rune it faces to your side (see `crownTurns`)
+  // and is spent doing it. `atk` is 0 on both levels because it never attacks —
+  // it has one move, it makes it on the resolution it lands in, and then it is
+  // gone. Its body is a bow's: it is meant to be spent, not defended.
+  //
+  // Royal indigo, the one deep blue-violet on the roster: darker and far more
+  // saturated than the orb's pastel amethyst, and nothing like the shield's
+  // sky blue.
+  crown: { type: 'crown', aim: 'cardinal', lv1: { hp: 2, atk: 0 }, lv2: { hp: 4, atk: 0 }, color: '#6c5cff' }
 }
 
 /** Clamp any number to a real level. */
@@ -269,6 +285,53 @@ export const NUKE_SURVIVES_LEVEL = 2
 export const NUKE_DAMAGE = 3
 /** True for a rune the blast destroys outright rather than damages. */
 export const nukeVaporises = (level: number): boolean => clampLevel(level) < NUKE_SURVIVES_LEVEL
+
+// ─── The crown ──────────────────────────────────────────────────────────────
+//
+// Nine runes win by killing. The game is won by HOLDING TILES — eight of the
+// sixteen — so the tenth rune plays the objective directly: dropped facing an
+// enemy rune, it turns that rune to your side, keeping the body and the hit
+// points it already had, and the crown itself is spent in the act.
+//
+// ── Why it is a trade and not a gift ──
+//
+// The crown's tile empties as the enemy's tile changes hands, so the swing is
+// ONE tile, not two: a body for a body, plus the position. That is what keeps
+// the last rune in the game from being the only rune in the game. It also
+// means it can never be spammed — nothing that stays on the board is left to
+// crown a second stone.
+//
+// ── The level rule ──
+//
+// A crown turns a rune of its OWN level or below: a Lv 1 crown takes Lv 1
+// stones, and only a crown stacked to Lv 2 can turn a Lv 2 stack. So the
+// answer to "can they steal the tower I built?" is "only by building one
+// themselves", which is the same shape as the nuke's Lv 2 rule and reads the
+// same way at the table.
+//
+// Facing an empty tile, the board's edge or your own rune does nothing at all,
+// and costs nothing: the crown just stands there, a 2-HP tile holder, and may
+// try again never. (It fires on PLACEMENT, once, like the nuke — a crown that
+// is already standing when a target walks in front of it does not go off.) The
+// aim preview shows the target before the pebble is released, so the wasted
+// drop is a choice rather than a trap.
+
+/** True when a crown of `crownLevel` can turn a rune of `targetLevel`. */
+export const crownTurns = (crownLevel: number, targetLevel: number): boolean =>
+  clampLevel(targetLevel) <= clampLevel(crownLevel)
+
+/**
+ * The one tile a crown reaches: the neighbour it faces, exactly a sword's
+ * reach. `null` off the board, and for an `omni` facing that names no
+ * direction.
+ */
+export const crownTarget = (from: Cell, dir: Dir): Cell | null => {
+  if (dir === 'omni') return null
+  const [dx, dy] = DIR_VEC[dir]
+  const col = from.col + dx
+  const row = from.row + dy
+  return inBounds(col, row) ? { col, row } : null
+}
 
 // ─── Rune ranks: the permanent, buyable upgrade ─────────────────────────────
 //
@@ -436,6 +499,36 @@ export const snapDir = (
 // and `DIR_VEC`. Pure geometry — the renderer draws these, the input reads
 // them, and neither owns them.
 
+/**
+ * How far from a tile's centre (in unit tile space) the pointer must be before
+ * it counts as having CHOSEN a facing.
+ *
+ * `dirFromCellPoint` is total — every point names a region, because the
+ * renderer has to draw something for every position. But naming a region and
+ * choosing one are different acts, and inside this radius the player has not
+ * chosen: the centre is where a pebble snaps, where a pointer arrives, and
+ * where it sits when someone dropped a rune without caring which way it faced.
+ *
+ * Treating the centre as a choice would break two things that already work. A
+ * player who pre-aims with an arrow key and then clicks the middle of a tile
+ * would have their key silently overridden by the click. And a rune dropped
+ * dead-centre would count as deliberately aimed, so it would skip the
+ * correction window that is the only way to fix it.
+ *
+ * So inside the dead zone the facing simply HOLDS whatever it already was — a
+ * pressed key, or the default. That is not the flicker a neutral zone would
+ * cause: nothing changes as the pointer crosses the middle, which is precisely
+ * the point.
+ */
+export const AIM_CENTRE_DEAD_ZONE = 0.18
+
+/** True when the pointer is far enough from the tile's centre to have chosen. */
+export const isAimChosen = (fx: number, fy: number): boolean => {
+  const x = Number.isFinite(fx) ? fx : 0.5
+  const y = Number.isFinite(fy) ? fy : 0.5
+  return Math.hypot(x - 0.5, y - 0.5) > AIM_CENTRE_DEAD_ZONE
+}
+
 export type AimRegionShape = 'diagonals' | 'quadrants' | 'whole'
 
 export const aimRegionShape = (type: RuneType): AimRegionShape => {
@@ -461,13 +554,24 @@ export const dirFromCellPoint = (type: RuneType, fx: number, fy: number): Dir =>
   if (shape === 'whole') return 'omni'
   const x = Math.min(1, Math.max(0, Number.isFinite(fx) ? fx : 0.5))
   const y = Math.min(1, Math.max(0, Number.isFinite(fy) ? fy : 0.5))
+  // ── The tie at the exact centre ──
+  //
+  // All four regions meet at (0.5, 0.5), and a pointer dropped there has to
+  // resolve to SOMETHING. The comparisons below are arranged so that the tie
+  // falls on the player's own default facing — `up` for a cardinal rune, `ur`
+  // for the orb (see `defaultDir`) — because the middle of a tile is exactly
+  // where a pointer that was never deliberately aimed ends up: it is the tile's
+  // centre the pebble snaps to, and it is where the e2e helpers and most
+  // players drop. A tie resolving to `down` would point a fresh rune at the
+  // player's own base, which is the worst answer available and would only ever
+  // be chosen by accident.
   if (shape === 'quadrants') {
-    return y < 0.5 ? (x < 0.5 ? 'ul' : 'ur') : (x < 0.5 ? 'dl' : 'dr')
+    return y <= 0.5 ? (x < 0.5 ? 'ul' : 'ur') : (x < 0.5 ? 'dl' : 'dr')
   }
-  // Which side of the two diagonals the point falls on. `y < x` is above the
-  // ↘ diagonal, `y < 1 - x` is above the ↙ one; the pair names the triangle.
-  const aboveMain = y < x
-  const aboveAnti = y < 1 - x
+  // Which side of the two diagonals the point falls on. `y <= x` is above the
+  // ↘ diagonal, `y <= 1 - x` is above the ↙ one; the pair names the triangle.
+  const aboveMain = y <= x
+  const aboveAnti = y <= 1 - x
   if (aboveMain && aboveAnti) return 'up'
   if (aboveMain) return 'right'
   if (aboveAnti) return 'left'
@@ -691,6 +795,13 @@ export type ResolveEvent =
    * other death.
    */
   | { kind: 'nuke'; at: number; dur: number; from: RuneSnapshot; hits: Hit[]; vaporised: RuneSnapshot[] }
+  /**
+   * A crown turned a rune. `from` is the crown as it was when it landed (it is
+   * spent immediately after, and its `shatter` follows in the same step);
+   * `turned` is the target AFTER changing sides, `was` the side it fought for
+   * a moment ago.
+   */
+  | { kind: 'crown'; at: number; dur: number; from: RuneSnapshot; turned: RuneSnapshot; was: Side }
   /** A rune reached 0 HP. */
   | { kind: 'shatter'; at: number; dur: number; rune: RuneSnapshot }
   /** A Lv 2 sword pushed its surviving target one tile back. */
@@ -744,8 +855,15 @@ export interface PresetRune {
   maxHp?: number
 }
 
-export type SkinId = 'river' | 'obsidian' | 'jade' | 'amber' | 'marble' | 'ember'
-export const SKIN_IDS: readonly SkinId[] = ['river', 'obsidian', 'jade', 'amber', 'marble', 'ember']
+export type SkinId =
+  | 'river' | 'obsidian' | 'jade' | 'amber' | 'marble' | 'ember'
+  | 'sapphire' | 'ruby' | 'diamond'
+/**
+ * Shop order, and the order the campaign hands them out: the four carved
+ * stones, the two raw ones, then the three cut gems at the top of the ladder.
+ */
+export const SKIN_IDS: readonly SkinId[] =
+  ['river', 'obsidian', 'jade', 'amber', 'marble', 'ember', 'sapphire', 'ruby', 'diamond']
 
 export interface ChestReward {
   coins: number
@@ -773,7 +891,7 @@ export const chestIsGift = (chest: ChestReward | null | undefined): boolean =>
  */
 export type TutorialBeat =
   | 'drag' | 'archer' | 'stack' | 'mage' | 'defense' | 'support'
-  | 'cleave' | 'roller' | 'bombard' | 'nuker'
+  | 'cleave' | 'roller' | 'bombard' | 'nuker' | 'crown'
   | null
 
 /** The ghost hand's script for a tutorial node: which rune, onto which tile, facing where. */
@@ -811,6 +929,17 @@ export interface NodeConfig {
   timer: boolean
   turnLimit: number
   reward: ChestReward
+  /**
+   * Force the stones of this node to a given material, whatever the player has
+   * equipped. Set on the very first lesson so a brand-new player meets the game
+   * on knapped obsidian — black volcanic glass with the glyph cut as a cold
+   * neon line — rather than on the beige river pebble they start with. The
+   * first thing anyone sees should be the game at its best-looking, and 1-1 is
+   * the one board where nobody has a skin of their own to override yet.
+   *
+   * Absent on every other node, where the player's own choice wins.
+   */
+  skin?: SkinId
   /** Deterministic seed for the AI's dice. */
   seed: number
 }
@@ -931,15 +1060,50 @@ export const FORGE_CAP_HOURS = 8
 /** A brand-new player finds the forge already this many minutes along. */
 export const FORGE_HEAD_START_MIN = 45
 
-/** The silhouette a skin's stones are cut to. */
-export type PebbleShape = 'pebble' | 'shard' | 'oval' | 'hex' | 'disc' | 'slab'
+/**
+ * ─── Silhouette: the rune says WHAT shape, the skin says HOW it is cut ──────
+ *
+ * A stone carries its type twice — once in the glyph, once in its outline —
+ * because a glyph is four dark strokes at hand-tray size and an outline is the
+ * whole object. So the SILHOUETTE belongs to the rune type (a shield is
+ * blocky, a bow is slender, an axe has a bit with horns; see `RUNE_PROFILES`
+ * in `arenaPainters.ts`) and the skin only decides how that silhouette is
+ * WORKED: carved smooth with a border, knapped into flats, worn round,
+ * blunted into a slab, cut as a gem.
+ *
+ * It used to be the other way round — the skin owned the shape and all ten
+ * runes of a skin were one outline with ten different glyphs cut into it,
+ * which is the bug this split fixes.
+ */
+export type StoneCut =
+  /** River: carved smooth, a raised bevelled border round a sunken field. */
+  | 'carved'
+  /** Obsidian: knapped — sparse straight chords off a flake point, no border. */
+  | 'knapped'
+  /** Jade: worn round and a touch narrower, still bordered. */
+  | 'polished'
+  /** Amber: the same outline CUT — few samples, so the light breaks on a flat. */
+  | 'faceted'
+  /** Marble: quarried broader and heavier, its sides filled out toward the block. */
+  | 'quarried'
+  /** Ember: blunted most of the way to a cracked rectangular slab, no border. */
+  | 'slab'
+  /** Sapphire: a step cut — long hard flats and chamfered corners. */
+  | 'step'
+  /** Ruby: a cabochon — domed and plump, not a facet anywhere. */
+  | 'cabochon'
+  /** Diamond: brilliant cut — many small crisp flats and star points. */
+  | 'brilliant'
 /** How a skin's glyph is drawn into the stone. */
-export type GlyphStyle = 'engraved' | 'neon' | 'inlay' | 'gem' | 'carved' | 'ember'
+export type GlyphStyle =
+  | 'engraved' | 'neon' | 'inlay' | 'gem' | 'carved' | 'ember'
+  | 'starcut' | 'blood' | 'prism'
 
 export interface SkinDef {
   id: SkinId
   price: number
-  shape: PebbleShape
+  /** How this skin works the rune's own silhouette. */
+  cut: StoneCut
   glyph: GlyphStyle
   /** Stone body colours: lit face, base, shadowed edge, rim light. */
   hi: string
@@ -952,23 +1116,40 @@ export interface SkinDef {
 }
 
 /**
- * Six materials, six silhouettes, six ways of carving — a skin has to be
- * recognisable from the hand tray, not only from a shop card. Prices climb
- * with how much the stone changes.
+ * Nine materials, nine ways of working a stone — a skin has to be recognisable
+ * from the hand tray, not only from a shop card. Prices climb with how much
+ * the stone changes: four carved stones, two raw ones, three cut gems.
+ *
+ * A skin no longer decides the OUTLINE — the rune type does (`StoneCut`). What
+ * a skin decides is the material, the light on it, how the glyph is worked
+ * into it, and how the rune's silhouette is finished.
  */
 export const SKINS: Record<SkinId, SkinDef> = {
-  // The default: warm river sandstone, an irregular rounded pebble, the glyph cut in and lit by its own colour.
-  river: { id: 'river', price: 0, shape: 'pebble', glyph: 'engraved', hi: '#d9c9a6', base: '#b39b73', lo: '#7d6547', rim: '#f2e6c8', ink: '#2c2218', glow: null },
-  // Black volcanic glass, knapped into an angular shard; the glyph is a cold neon line.
-  obsidian: { id: 'obsidian', price: 120, shape: 'shard', glyph: 'neon', hi: '#4a4f6a', base: '#1b1d2b', lo: '#0a0b12', rim: '#9fb0ff', ink: '#05060a', glow: '#8ff0ff' },
-  // Polished green jade, a smooth oval, the glyph inlaid in gold.
-  jade: { id: 'jade', price: 180, shape: 'oval', glyph: 'inlay', hi: '#6fcf9a', base: '#2f8a5f', lo: '#16503a', rim: '#c8ffe4', ink: '#0d3324', glow: '#ffd76a' },
-  // Amber cut into a hexagonal gem with dark inclusions; the glyph glows from inside.
-  amber: { id: 'amber', price: 220, shape: 'hex', glyph: 'gem', hi: '#ffcf6b', base: '#d98a1e', lo: '#7a3f08', rim: '#fff0b0', ink: '#3d1e05', glow: '#ffe28a' },
-  // White marble turned into a coin-like disc, grey veins, the glyph carved deep and shadowed.
-  marble: { id: 'marble', price: 260, shape: 'disc', glyph: 'carved', hi: '#ffffff', base: '#d7dbe3', lo: '#8f97a6', rim: '#ffffff', ink: '#3a4150', glow: null },
+  // The default: warm river sandstone, carved smooth with a raised border round
+  // a sunken field. The glyph is cut into that field and lit by its own colour.
+  river: { id: 'river', price: 0, cut: 'carved', glyph: 'engraved', hi: '#d9c9a6', base: '#b39b73', lo: '#7d6547', rim: '#f2e6c8', ink: '#2c2218', glow: null },
+  // Black volcanic glass, knapped into straight flats; the glyph is a cold neon line.
+  obsidian: { id: 'obsidian', price: 120, cut: 'knapped', glyph: 'neon', hi: '#4a4f6a', base: '#1b1d2b', lo: '#0a0b12', rim: '#9fb0ff', ink: '#05060a', glow: '#8ff0ff' },
+  // Polished green jade, worn round as a pendant. The glyph is inlaid in gold.
+  jade: { id: 'jade', price: 180, cut: 'polished', glyph: 'inlay', hi: '#6fcf9a', base: '#2f8a5f', lo: '#16503a', rim: '#c8ffe4', ink: '#0d3324', glow: '#ffd76a' },
+  // Amber, CUT rather than polished: flats all round, dark inclusions inside.
+  // The glyph glows from within.
+  amber: { id: 'amber', price: 220, cut: 'faceted', glyph: 'gem', hi: '#ffcf6b', base: '#d98a1e', lo: '#7a3f08', rim: '#fff0b0', ink: '#3d1e05', glow: '#ffe28a' },
+  // White marble quarried heavy: the broadest stone on the roster, its sides
+  // filled out toward the block it came from. The glyph is carved deep and shadowed.
+  marble: { id: 'marble', price: 260, cut: 'quarried', glyph: 'carved', hi: '#ffffff', base: '#d7dbe3', lo: '#8f97a6', rim: '#ffffff', ink: '#3a4150', glow: null },
   // A cracked slab of cooled lava; the glyph burns orange through the fissures.
-  ember: { id: 'ember', price: 320, shape: 'slab', glyph: 'ember', hi: '#5a3a36', base: '#2f1c1a', lo: '#140908', rim: '#ff9a4a', ink: '#ff5a1f', glow: '#ffb060' }
+  ember: { id: 'ember', price: 320, cut: 'slab', glyph: 'ember', hi: '#5a3a36', base: '#2f1c1a', lo: '#140908', rim: '#ff9a4a', ink: '#ff5a1f', glow: '#ffb060' },
+  // ── The gem tier ──
+  // Deep blue sapphire, step cut: long hard flats and chamfered corners, with a
+  // white star of light held under the table.
+  sapphire: { id: 'sapphire', price: 420, cut: 'step', glyph: 'starcut', hi: '#7db4ff', base: '#1f4bbf', lo: '#0b1c58', rim: '#dbe9ff', ink: '#04102e', glow: '#bcd8ff' },
+  // Pigeon-blood ruby, a domed cabochon — no facet anywhere, one long highlight
+  // sliding round the dome and the glyph burning red under it.
+  ruby: { id: 'ruby', price: 560, cut: 'cabochon', glyph: 'blood', hi: '#ff7a90', base: '#c0113a', lo: '#5c0418', rim: '#ffd0d8', ink: '#2a0209', glow: '#ff5570' },
+  // Colourless diamond, brilliant cut: many small crisp flats, and the only
+  // stone whose glyph is not one colour — it splits the light into a spectrum.
+  diamond: { id: 'diamond', price: 750, cut: 'brilliant', glyph: 'prism', hi: '#ffffff', base: '#cfe4f2', lo: '#7d95a8', rim: '#ffffff', ink: '#33465a', glow: '#eaf6ff' }
 }
 
 /** Every player starts with this rune and this skin. */

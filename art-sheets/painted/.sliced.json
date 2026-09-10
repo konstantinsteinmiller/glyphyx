@@ -1,0 +1,41 @@
+{
+  "note": "written by tools/slice-sheets.mjs — the reference revision each painting was cut against",
+  "files": {
+    "sheet-runes-cleave.jpg": {
+      "sheet": "runes-cleave",
+      "rev": "ca43f41356a5",
+      "painting": "ac2eaf717647",
+      "at": "2026-09-10T12:01:04.906Z"
+    },
+    "sheet-splash.jpg": {
+      "sheet": "splash",
+      "rev": "d7cab4ab04d4",
+      "painting": "a9590fe57751",
+      "at": "2026-09-10T12:20:10.066Z"
+    },
+    "sheet-runes-archer.jpg": {
+      "sheet": "runes-archer",
+      "rev": "49daa10c33d3",
+      "painting": "6c1041a6ab10",
+      "at": "2026-09-10T12:26:48.366Z"
+    },
+    "sheet-runes-melee.jpg": {
+      "sheet": "runes-melee",
+      "rev": "96f58fd7782c",
+      "painting": "7a6adc67c71c",
+      "at": "2026-09-10T12:28:08.772Z"
+    },
+    "sheet-runes-enemy-melee.jpg": {
+      "sheet": "runes-enemy-melee",
+      "rev": "08e3dcf1a922",
+      "painting": "06a7c4d2a2a5",
+      "at": "2026-09-10T12:28:59.215Z"
+    },
+    "sheet-runes-support.jpg": {
+      "sheet": "runes-support",
+      "rev": "46c604edbe60",
+      "painting": "2e019db56927",
+      "at": "2026-09-10T12:30:17.106Z"
+    }
+  }
+}

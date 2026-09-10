@@ -1,8 +1,8 @@
 /**
  * ─── One resolution ─────────────────────────────────────────────────────────
  *
- * The GDD's combat priority, as one pure function: placements → the nuke →
- * auras → heals → ranged → melee → settle. Takes a board and every committed
+ * The GDD's combat priority, as one pure function: placements → crowns → the
+ * nuke → auras → heals → ranged → melee → settle. Takes a board and every committed
  * move, returns a NEW board and the time-stamped event list the renderer
  * animates.
  *
@@ -49,6 +49,21 @@
  * The patterns themselves are `cleaveCells` / `rollerLane` / `bombardCells` in
  * `rules.ts`, so the AI and the renderer read the same shapes this does.
  *
+ * ── The crown, and why the stone it takes fights the same turn ──
+ *
+ * A crown is fired by its PLACEMENT too, and it does exactly one thing: the
+ * rune it faces changes side, keeping its body, its hit points and its level,
+ * and is turned to face the way its new owner's runes face. The crown is spent
+ * doing it — it leaves the board in the same step, and its going is nobody's
+ * KILL: no counter moves, no combo, no relief. `crownTurns` decides what can be
+ * taken, and it reads levels, so only a stacked crown takes a stacked rune.
+ *
+ * The step sits before the blast and before every attack, which is what makes
+ * the stolen stone swing for its new side on the very turn it changed hands.
+ * That is the whole feeling of the rune, and it is also why it cannot be a
+ * turn-by-turn ability: a crown that could take a stone every round would end
+ * every match it appeared in.
+ *
  * ── The nuke, and why it has a step of its own ──
  *
  * A nuker is fired by its own PLACEMENT, not by a turn of attacking, so it
@@ -72,7 +87,8 @@
 import {
   ARCHER_RANGE, DEFENSE_AURA_SHIELD, DEFENSE_MITIGATION, DIR_VEC, MAGE_REACH, MAX_LEVEL, NUKE_DAMAGE, clampLevel,
   RESOLVE_TIMELINE, SHIELD_BLOCKS_PROJECTILES, SUPPORT_ATK_BONUS, archerRange, bombardCells, cleaveCells,
-  nukeVaporises, rankOf, rollerLane, rollerPierce, supportHeal, cellIndex, inBounds, statsFor, statsWithRank,
+  crownTarget, crownTurns, defaultDir, nukeVaporises, rankOf, rollerLane, rollerPierce, supportHeal, cellIndex,
+  inBounds, statsFor, statsWithRank,
   type BoardState, type Cell, type Faction, type Hit, type Move, type RankTable, type ResolveEvent,
   type ResolveStep, type Rune, type RuneSnapshot, type RuneStats
 } from './rules'
@@ -206,6 +222,11 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
    * nuker that is already standing is inert: it never appears here again.
    */
   const detonators: Rune[] = []
+  /**
+   * Every crown that LANDED this resolution, by the same three routes as a
+   * bomb. A crown already standing is inert: it fires once, on the placement.
+   */
+  const crowns: Rune[] = []
   // One level up, and the dropped pebble brings its own Lv 1 body: a full
   // Lv 1 + Lv 1 lands exactly on the Lv 2 maximum, a wounded rune is healed by
   // the stone stacked onto it. Capped by `MAX_LEVEL` (the board refuses the
@@ -227,6 +248,9 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
     existing.dir = m.dir
     events.push({ kind: 'merge', at: at('place', placeIdx++), dur: T.place.dur, rune: snap(existing) })
     if (existing.type === 'nuker') detonators.push(existing)
+    // A crown stacked onto a crown is a Lv 2 crown, and it fires as it lands:
+    // that is the only way to take a Lv 2 stone off somebody.
+    if (existing.type === 'crown') crowns.push(existing)
   }
   const place = (m: Move): void => {
     const rune = makeRune(m)
@@ -234,6 +258,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
     claim(rune)
     events.push({ kind: 'place', at: at('place', placeIdx++), dur: T.place.dur, rune: snap(rune) })
     if (rune.type === 'nuker') detonators.push(rune)
+    if (rune.type === 'crown') crowns.push(rune)
   }
 
   for (const list of byCell.values()) {
@@ -270,6 +295,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
       claim(survivor)
       // A bomb that won the tile still went off; one that lost it never landed.
       if (survivor.type === 'nuker') detonators.push(survivor)
+      if (survivor.type === 'crown') crowns.push(survivor)
     }
     events.push({
       kind: 'clash', at: when, dur: T.clash.dur, col: first.col, row: first.row,
@@ -331,7 +357,43 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
   /** An enemy shield on this tile stops a projectile dead. */
   const isWall = (t: Rune | null): t is Rune => SHIELD_BLOCKS_PROJECTILES && t !== null && t.type === 'defense'
 
-  // ── 2. The nuke ────────────────────────────────────────────────────────────
+  // ── 2. The crowns ──────────────────────────────────────────────────────────
+  //
+  // Before the blast and before every attack: the stone a crown takes fights
+  // for its new owner on the turn it changed hands, which is the whole reason
+  // to spend a rune on taking it rather than on breaking it.
+  if (crowns.length > 0) {
+    let crownIdx = 0
+    for (const crown of crowns.slice().sort((a, b) => a.id - b.id)) {
+      // It lost its clash and never landed.
+      if (!board.runes[crown.id]) continue
+      const cell = crownTarget(crown, crown.dir)
+      const target = cell ? runeAt(board, cell.col, cell.row) : null
+      // Nothing there, the board's edge, one of your own, or a stack too heavy
+      // for this crown's level: the crown simply stands, and is not spent. The
+      // aim preview showed the player all four of those before they let go.
+      if (!target || target.side === crown.side || !crownTurns(crown.level, target.level)) continue
+      const was = target.side
+      target.side = crown.side
+      target.faction = crown.faction
+      // It turns to face the way its new owner's runes face — a stolen sword
+      // that kept pointing at your own line would be a punishment for winning.
+      target.dir = defaultDir(target.type, target.side)
+      // Whatever the old side had put on it this turn is not inherited.
+      target.shield = 0
+      target.atkBonus = 0
+      claim(target)
+      const when = at('crown', crownIdx++)
+      events.push({ kind: 'crown', at: when, dur: T.crown.dur, from: snap(crown), turned: snap(target), was })
+      // Spent. NOT a kill — nobody broke it, so no counter moves, no combo and
+      // no relief: it is the price of the rune, paid by the player who chose it.
+      events.push({ kind: 'shatter', at: when + 90, dur: SHATTER_DUR_MS, rune: snap(crown) })
+      delete board.runes[crown.id]
+      if (tile(crown.col, crown.row).runeId === crown.id) vacate(crown.col, crown.row)
+    }
+  }
+
+  // ── 3. The nuke ────────────────────────────────────────────────────────────
   //
   // Every nuker that landed this resolution goes off, here, before anything on
   // the board gets to act — so a rune the blast took never swings, heals or
@@ -374,7 +436,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
     sweepDead('nuke')
   }
 
-  // ── 3. Auras ───────────────────────────────────────────────────────────────
+  // ── 4. Auras ───────────────────────────────────────────────────────────────
   let auraIdx = 0
   for (const def of Object.values(board.runes).sort((a, b) => a.id - b.id)) {
     if (def.type !== 'defense' || def.level < 2) continue
@@ -390,7 +452,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
     }
   }
 
-  // ── 4. Heals and buffs ─────────────────────────────────────────────────────
+  // ── 5. Heals and buffs ─────────────────────────────────────────────────────
   let healIdx = 0
   for (const sup of Object.values(board.runes).sort((a, b) => a.id - b.id)) {
     if (sup.type !== 'support') continue
@@ -409,7 +471,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
     }
   }
 
-  // ── 5. Ranged: archers, mages, boulders and tubes, simultaneously ──────────
+  // ── 6. Ranged: archers, mages, boulders and tubes, simultaneously ──────────
   const RANGED_TYPES: ReadonlySet<Rune['type']> = new Set(['archer', 'mage', 'roller', 'bombard'])
   let rangedIdx = 0
   const ranged = Object.values(board.runes)
@@ -504,7 +566,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
   }
   sweepDead('ranged')
 
-  // ── 6. Melee, simultaneously, then knockbacks ──────────────────────────────
+  // ── 7. Melee, simultaneously, then knockbacks ──────────────────────────────
   let meleeIdx = 0
   const blades = Object.values(board.runes)
     .filter((r) => r.type === 'melee' || r.type === 'cleave')
@@ -553,7 +615,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
   }
   sweepDead('melee')
 
-  // ── 7. Settle: tile control, as a diff against the input ───────────────────
+  // ── 8. Settle: tile control, as a diff against the input ───────────────────
   let settleIdx = 0
   for (let i = 0; i < board.tiles.length; i++) {
     const before = input.tiles[i]!

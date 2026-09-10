@@ -9,7 +9,8 @@ export default {
       'cleave': 'Merobohkan tiga petak di depan sekaligus, sejak giliran pertama.',
       'roller': 'Menerjang dua yang bertahan sebelum berhenti, sejak giliran pertama.',
       'bombard': 'Menembaki baris jauh dan petak di antaranya, sejak giliran pertama.',
-      'nuker': 'Turun di Lv 3 dan bertahan di papan yang baru dikosongkannya, sejak giliran pertama.'
+      'nuker': 'Turun di Lv 3 dan bertahan di papan yang baru dikosongkannya, sejak giliran pertama.',
+      'crown': 'Muncul di Lv 3 — mengambil rune bertumpuk pun sejak giliran pertama.'
     },
     'watchAd': 'Tonton iklan',
     'armed': 'Bersenjata ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Kapak',
       'roller': 'Batu Besar',
       'bombard': 'Mortir',
-      'nuker': 'Penghancur'
+      'nuker': 'Penghancur',
+      'crown': 'Mahkota'
     },
     'descriptions': {
       'melee': 'Menyerang petak di depannya. Lv 2 mendorong target mundur.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Menebas tiga petak di depan: yang dihadapi dan kedua sisinya.',
       'roller': 'Menggelinding sampai ada rune bertahan, termasuk kawan. Lv 2 menggelinding satu lagi.',
       'bombard': 'Menembaki tiga petak, tiga baris di depan, melewati dinding. Lv 2 juga kena tengahnya.',
-      'nuker': 'Meledak di tempat ia jatuh: semua rune Lv 1 di papan mati, milikmu juga. Lv 2 selamat.'
+      'nuker': 'Meledak di tempat ia jatuh: semua rune Lv 1 di papan mati, milikmu juga. Lv 2 selamat.',
+      'crown': 'Mengambil rune di depannya dan habis terpakai — rune itu langsung bertarung untukmu. Lv 2 mengambil tumpukan.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Seret rune ke papan'
     },
     'aim': {
-      'touch': 'Geser untuk membidik, lepas untuk mengunci',
-      'desktop': 'Seret atau tekan tombol panah / WASD untuk membidik, lepas untuk mengunci'
+      'touch': 'Lepas di sisi yang dituju',
+      'desktop': 'Arahkan ke sisi yang dituju, lalu klik'
     },
     'archer': {
       'touch': 'Busur melompati satu petak dan mengenai berikutnya',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Penghancur memusnahkan semua rune Lv 1 — termasuk milikmu',
       'desktop': 'Penghancur memusnahkan semua rune Lv 1 — termasuk milikmu'
+    },
+    'crown': {
+      'touch': 'Mahkota mengambil rune di depannya — kini ia bertarung untukmu',
+      'desktop': 'Mahkota mengambil rune di depannya — kini ia bertarung untukmu'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Giok',
       'amber': 'Ambar',
       'marble': 'Marmer',
-      'ember': 'Bara'
+      'ember': 'Bara',
+      'sapphire': 'Safir',
+      'ruby': 'Rubi',
+      'diamond': 'Berlian'
     },
     'tagline': 'Setiap rune yang kamu pasang memakainya.',
     'needMore': 'Kurang {n} koin',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Giok hijau terpoles, glif bertatahkan emas.',
       'amber': 'Permata ambar berfaset yang menyala dari dalam.',
       'marble': 'Marmer putih, terukir dalam dan berbayang.',
-      'ember': 'Lempengan lava yang membeku, glif membara di sela retakan.'
+      'ember': 'Lempengan lava yang membeku, glif membara di sela retakan.',
+      'sapphire': 'Safir biru pekat potongan bertingkat, bintang putih tertahan di bawah mejanya.',
+      'ruby': 'Rubi kaboson berkubah, glif menyala merah di bawahnya.',
+      'diamond': 'Berlian potongan brilian, glifnya terurai jadi spektrum.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Hadiah baru dalam {t}',
     'freeTaken': 'Kembali untuk yang berikutnya',
     'nukerUnlock': 'Buka Penghancur',
-    'nukerLocked': 'Atau menangkan Level 4-1'
+    'nukerLocked': 'Atau menangkan Level 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Terus menang',
+    'mysteryAria': 'Rune yang belum kamu buka',
+    'nextUp': 'Berikutnya',
+    'winsAt': 'Menangkan di Level {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Musik',
     'musicTrack': 'Trek musik',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Batu Hening',
       'trance': 'Denyut Rune'
     },

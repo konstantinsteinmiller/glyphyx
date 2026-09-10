@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { RANDOM_CHANCE_CAP, effectiveRandomChance, enumerateEnemyMoves, planEnemyMove, randomChance, scoreMove } from '@/game/ai'
-import { nodeConfig } from '@/game/campaign'
+import { LATE_LESSON_NODES, nodeConfig } from '@/game/campaign'
 import { createMatch, beginPlanning, commitPlayerMove, resolveCurrentTurn, nextTurn } from '@/game/match'
 import { placementKind } from '@/game/board'
 import { NO_HANDICAP, RUNE_TYPES, dirsFor, type EnemySetup, type MatchState } from '@/game/rules'
@@ -146,6 +146,10 @@ describe('planEnemyMove', () => {
     const seen = new Set<string>()
     let decisions = 0
     for (let id = 25; id <= 32; id++) {
+      // Two of chapter 4's eight nodes are LESSONS now (4-2 the nuke, 4-6 the
+      // crown): passive dummies that never place, so they contribute nothing
+      // to a test about what the AI reaches for.
+      if (LATE_LESSON_NODES[id]) continue
       const config = nodeConfig(id, 'medium')
       for (let seed = 0; seed < 8; seed++) {
         let s = beginPlanning(createMatch(config, [...RUNE_TYPES], seed, 0), 'medium')
@@ -163,7 +167,7 @@ describe('planEnemyMove', () => {
         }
       }
     }
-    expect(decisions).toBeGreaterThan(200)
+    expect(decisions).toBeGreaterThan(150)
     // …and it actually reaches for them rather than only ever playing the old five.
     for (const late of ['cleave', 'roller', 'bombard'] as const) expect(seen).toContain(late)
   })

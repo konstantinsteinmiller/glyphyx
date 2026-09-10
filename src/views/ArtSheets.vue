@@ -6,7 +6,8 @@ import {
 } from '@/game/artSheet'
 import { SKINS, type GlyphStyle } from '@/game/rules'
 import {
-  paintPebble, paintGlyph, paintTile, paintBoardFrame, paintForge, paintRerollChip, paintLaurel, paintSky, paintRidge, paintBolt
+  paintPebble, paintGlyph, paintTile, paintBoardFrame, paintForge, paintRerollChip, paintLaurel, paintSky, paintRidge, paintBolt,
+  paintCounterPlate
 } from '@/use/arenaPainters'
 import { prependBaseUrl } from '@/utils/function'
 
@@ -98,8 +99,8 @@ const paintCell = (ctx: CanvasRenderingContext2D, art: CellArt, w: number, h: nu
     ctx.save()
     switch (art.kind) {
       case 'pebble':
-        // `laurel: false` — the wreath is its own panel on the fx sheet and its
-        // own layer in play. A stone reference that wore one would be repainted
+        // `laurel: false` — the wreath is its own panel on the laurel sheet and
+        // its own layer in play. A stone reference that wore one would be repainted
         // with one, and the game would lay a second wreath over that.
         paintPebble(ctx, w, h, {
           type: art.type, level: art.level, owner: art.owner, faction: art.faction ?? null,
@@ -116,7 +117,7 @@ const paintCell = (ctx: CanvasRenderingContext2D, art: CellArt, w: number, h: nu
         paintRidge(ctx, w, h, art.layer)
         break
       case 'laurel':
-        paintLaurel(ctx, w, h, art.shape)
+        paintLaurel(ctx, w, h, art.type)
         break
       case 'glyph': {
         const skin = SKINS[art.skin]
@@ -136,6 +137,19 @@ const paintCell = (ctx: CanvasRenderingContext2D, art: CellArt, w: number, h: nu
       case 'reroll':
         paintRerollChip(ctx, w, h)
         break
+      case 'counter': {
+        // The plaque is drawn at the proportions the GAME uses (~2.3:1),
+        // centred in its 2:1 panel rather than stretched to fill it. The slicer
+        // keys the magenta away and trims to the plate's own edges, so the
+        // returned file carries those proportions instead of the panel's.
+        const pw = Math.min(w, h * 2.27)
+        const ph = pw / 2.27
+        ctx.save()
+        ctx.translate((w - pw) / 2, (h - ph) / 2)
+        paintCounterPlate(ctx, pw, ph, art.side)
+        ctx.restore()
+        break
+      }
       case 'spark': {
         // The beam's spark has no painter of its own — it is a few pooled
         // particles in `useVfx` — so the reference is a stand-in the prompt

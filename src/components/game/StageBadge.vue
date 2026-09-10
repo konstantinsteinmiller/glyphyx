@@ -8,7 +8,7 @@ import { playFx } from '@/use/useGameAudio'
 /**
  * ─── The stage badge ────────────────────────────────────────────────────────
  *
- * Top centre of the HUD: "Stage 1-3" and the conquest rail under it. It is a
+ * Top centre of the HUD: "Level 1-3" and the conquest rail under it. It is a
  * Button + Modal pair — tapping it opens the campaign map — so the number a
  * player looks at all match is also the way to the map, and nothing else on
  * the HUD has to be learned for it.

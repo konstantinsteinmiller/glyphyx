@@ -9,7 +9,8 @@ export default {
       'cleave': 'Hạ cả ba ô phía trước cùng lúc ngay từ lượt đầu.',
       'roller': 'Cán qua hai kẻ trụ được rồi mới dừng ngay từ lượt đầu.',
       'bombard': 'Nã hàng xa và ô ở giữa ngay từ lượt đầu.',
-      'nuker': 'Rơi ở Cấp 3, đủ cứng để giữ bàn cờ vừa dọn sạch, ngay từ lượt đầu.'
+      'nuker': 'Rơi ở Cấp 3, đủ cứng để giữ bàn cờ vừa dọn sạch, ngay từ lượt đầu.',
+      'crown': 'Xuất hiện ở Lv 3 — lấy được cả rune đã xếp chồng, ngay từ lượt đầu.'
     },
     'watchAd': 'Xem quảng cáo',
     'armed': 'Đã trang bị ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': 'Màn {c}-{n}',
+    'stage': 'Cấp độ {c}-{n}',
     'conquest': 'Chinh phục',
     'tiles': '{n} / {total}',
     'turn': 'Lượt {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Rìu',
       'roller': 'Tảng Đá',
       'bombard': 'Súng Cối',
-      'nuker': 'Bom Hủy Diệt'
+      'nuker': 'Bom Hủy Diệt',
+      'crown': 'Vương miện'
     },
     'descriptions': {
       'melee': 'Đánh ô phía trước. Cấp 2 đẩy lùi mục tiêu.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Chém ba ô phía trước: ô đối diện và hai ô bên cạnh.',
       'roller': 'Lăn đến khi một rune trụ được, kể cả đồng minh. Cấp 2 lăn xa thêm một.',
       'bombard': 'Nã ba ô cách ba hàng, vượt qua mọi tường. Cấp 2 bắn thêm ở giữa.',
-      'nuker': 'Nổ ngay chỗ nó rơi: mọi rune Cấp 1 trên bàn đều chết, kể cả của bạn. Cấp 2 trụ được.'
+      'nuker': 'Nổ ngay chỗ nó rơi: mọi rune Cấp 1 trên bàn đều chết, kể cả của bạn. Cấp 2 trụ được.',
+      'crown': 'Lấy rune trước mặt và tiêu biến khi làm vậy — rune đó lập tức chiến đấu cho bạn. Lv 2 lấy được cả chồng.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Kéo một rune lên bàn cờ'
     },
     'aim': {
-      'touch': 'Vuốt để ngắm, thả để khóa',
-      'desktop': 'Kéo hoặc bấm phím mũi tên / WASD để ngắm, thả ra để chốt'
+      'touch': 'Thả ở cạnh muốn hướng tới',
+      'desktop': 'Đưa tới cạnh muốn hướng, rồi nhấp'
     },
     'archer': {
       'touch': 'Cung bỏ qua một ô và đánh ô kế tiếp',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Bom hủy diệt xóa mọi rune Cấp 1 — kể cả của bạn',
       'desktop': 'Bom hủy diệt xóa mọi rune Cấp 1 — kể cả của bạn'
+    },
+    'crown': {
+      'touch': 'Vương miện lấy rune trước mặt — giờ nó chiến đấu cho bạn',
+      'desktop': 'Vương miện lấy rune trước mặt — giờ nó chiến đấu cho bạn'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': 'Thất bại',
     'turns': 'Số lượt',
     'playAgain': 'Chơi lại',
-    'nextStage': 'Màn tiếp theo',
+    'nextStage': 'Cấp độ tiếp theo',
     'newRecord': 'Kỷ lục mới!',
     'streakBonus': 'Chuỗi ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': 'Phần thưởng',
     'play': 'Chơi',
     'replay': 'Chơi lại',
-    'nextUnlock': 'Thắng Màn {c}-{n} để nhận:',
-    'nextUnlockAria': 'Thắng Màn {c}-{n} để mở khóa {rune}'
+    'nextUnlock': 'Thắng Cấp độ {c}-{n} để nhận:',
+    'nextUnlockAria': 'Thắng Cấp độ {c}-{n} để mở khóa {rune}'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': 'Ngọc bích',
       'amber': 'Hổ phách',
       'marble': 'Cẩm thạch',
-      'ember': 'Than hồng'
+      'ember': 'Than hồng',
+      'sapphire': 'Lam ngọc',
+      'ruby': 'Hồng ngọc',
+      'diamond': 'Kim cương'
     },
     'tagline': 'Mọi rune bạn đặt đều mang nó.',
     'needMore': 'Còn thiếu {n} xu',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Ngọc bích xanh đánh bóng, ký tự khảm vàng.',
       'amber': 'Viên hổ phách mài giác, phát sáng từ bên trong.',
       'marble': 'Đá cẩm thạch trắng, khắc sâu và đổ bóng.',
-      'ember': 'Phiến dung nham nguội, ký tự cháy qua các vết nứt.'
+      'ember': 'Phiến dung nham nguội, ký tự cháy qua các vết nứt.',
+      'sapphire': 'Lam ngọc xanh thẫm, mài kiểu bậc thang, một ngôi sao trắng nằm dưới mặt đá.',
+      'ruby': 'Hồng ngọc mài vòm cabochon, ký tự cháy đỏ bên dưới.',
+      'diamond': 'Kim cương mài brilliant, ký tự tách thành cả một quang phổ.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Quà mới sau {t}',
     'freeTaken': 'Quay lại nhận phần sau',
     'nukerUnlock': 'Mở khóa Bom Hủy Diệt',
-    'nukerLocked': 'Hoặc thắng Màn 4-1'
+    'nukerLocked': 'Hoặc thắng Cấp độ 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Thắng tiếp sẽ rõ',
+    'mysteryAria': 'Một rune bạn chưa mở khóa',
+    'nextUp': 'Tiếp theo',
+    'winsAt': 'Thắng Cấp độ {c}-{n} để nhận'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'Bảng xếp hạng',
     'rank': '#',
     'player': 'Người chơi',
-    'stage': 'Màn',
+    'stage': 'Cấp độ',
     'streak': 'Chuỗi',
     'empty': 'Chưa có trận nào. Hãy là người đầu tiên.',
     'failed': 'Không kết nối được bảng xếp hạng.',
@@ -304,6 +322,7 @@ export default {
     'music': 'Nhạc',
     'musicTrack': 'Bản nhạc',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Đá lặng',
       'trance': 'Nhịp rune'
     },

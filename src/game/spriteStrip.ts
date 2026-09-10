@@ -81,5 +81,9 @@ export const stripCacheSize = (): number => cache.size
 
 // The flag can be turned off at run time and a strip can decode long after the
 // first miss, so the slices are dropped whenever the art layer changes rather
-// than being trusted for the life of the page.
-onArtChanged(() => { cache.clear() })
+// than being trusted for the life of the page — the one strip that arrived, or
+// all of them when the flag flipped.
+onArtChanged((change) => {
+  if (change) cache.delete(`${change.kind}/${change.id}`)
+  else cache.clear()
+})

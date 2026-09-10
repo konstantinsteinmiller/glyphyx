@@ -9,7 +9,8 @@ export default {
       'cleave': 'Abbatte le tre caselle davanti in un colpo, fin dal primo turno.',
       'roller': 'Travolge due superstiti prima di fermarsi, fin dal primo turno.',
       'bombard': 'Bombarda la fila lontana e la casella di mezzo, fin dal primo turno.',
-      'nuker': 'Arriva a Lv 3 e regge il tabellone che ha appena svuotato, fin dal primo turno.'
+      'nuker': 'Arriva a Lv 3 e regge il tabellone che ha appena svuotato, fin dal primo turno.',
+      'crown': 'Arriva al Lv 3: si prende anche una runa impilata, fin dal primo turno.'
     },
     'watchAd': 'Guarda un annuncio',
     'armed': 'Armata ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Ascia',
       'roller': 'Masso',
       'bombard': 'Mortaio',
-      'nuker': 'Detonatore'
+      'nuker': 'Detonatore',
+      'crown': 'Corona'
     },
     'descriptions': {
       'melee': 'Colpisce la casella di fronte. Lv 2 respinge il bersaglio.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Taglia le tre caselle davanti: quella di fronte e le due accanto.',
       'roller': 'Rotola finché una runa resiste, alleate incluse. Lv 2 rotola una in più.',
       'bombard': 'Bombarda tre caselle a tre file, oltre ogni muro. Lv 2 colpisce anche a metà.',
-      'nuker': 'Esplode dove atterra: ogni runa Lv 1 sul tabellone muore, anche le tue. Lv 2 resiste.'
+      'nuker': 'Esplode dove atterra: ogni runa Lv 1 sul tabellone muore, anche le tue. Lv 2 resiste.',
+      'crown': 'Si prende la runa che ha di fronte e si consuma: combatte subito per te. Lv 2 prende anche le pile.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Trascina una runa sul tabellone'
     },
     'aim': {
-      'touch': 'Scorri per mirare, rilascia per bloccare',
-      'desktop': 'Trascina o usa le frecce / WASD per mirare, rilascia per fissare'
+      'touch': 'Rilascia sul lato verso cui deve guardare',
+      'desktop': 'Vai sul lato verso cui deve guardare, poi clicca'
     },
     'archer': {
       'touch': 'Gli archi saltano una casella e colpiscono la successiva',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Il detonatore distrugge ogni runa Lv 1 — anche le tue',
       'desktop': 'Il detonatore distrugge ogni runa Lv 1 — anche le tue'
+    },
+    'crown': {
+      'touch': 'La corona si prende la runa di fronte: ora combatte per te',
+      'desktop': 'La corona si prende la runa di fronte: ora combatte per te'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Giada',
       'amber': 'Ambra',
       'marble': 'Marmo',
-      'ember': 'Brace'
+      'ember': 'Brace',
+      'sapphire': 'Zaffiro',
+      'ruby': 'Rubino',
+      'diamond': 'Diamante'
     },
     'tagline': 'Ogni runa che posi la indossa.',
     'needMore': 'Mancano {n} monete',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Giada verde levigata, il glifo intarsiato in oro.',
       'amber': "Una gemma d'ambra sfaccettata che brilla da dentro.",
       'marble': 'Marmo bianco, scolpito a fondo e in ombra.',
-      'ember': 'Una lastra di lava raffreddata, il glifo arde tra le crepe.'
+      'ember': 'Una lastra di lava raffreddata, il glifo arde tra le crepe.',
+      'sapphire': 'Zaffiro blu intenso a taglio gradino, una stella bianca sotto la tavola.',
+      'ruby': 'Un rubino cabochon bombato, il glifo brucia di rosso sotto di esso.',
+      'diamond': 'Diamante a taglio brillante, il glifo scomposto in uno spettro.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Nuovo regalo tra {t}',
     'freeTaken': 'Torna per il prossimo',
     'nukerUnlock': 'Sblocca il Detonatore',
-    'nukerLocked': 'O vinci il Livello 4-1'
+    'nukerLocked': 'O vinci il Livello 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Vinci e scopri',
+    'mysteryAria': 'Una runa che non hai ancora sbloccato',
+    'nextUp': 'Prossima',
+    'winsAt': 'Vincila al Livello {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Musica',
     'musicTrack': 'Brano musicale',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Pietra quieta',
       'trance': 'Pulsar runico'
     },

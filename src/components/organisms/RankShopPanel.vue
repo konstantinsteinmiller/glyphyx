@@ -5,9 +5,13 @@ import FButton from '@/components/atoms/FButton.vue'
 import RewardAdIcon from '@/components/atoms/RewardAdIcon.vue'
 import PebblePreview from '@/components/game/PebblePreview.vue'
 import RuneRankCard from '@/components/organisms/RuneRankCard.vue'
-import { RUNES, RUNE_TYPES } from '@/game/rules'
+import MysteryRuneCard from '@/components/organisms/MysteryRuneCard.vue'
+import { RUNES, RUNE_TYPES, type RuneType } from '@/game/rules'
 import useSkins from '@/use/useSkins'
-import { unlockRune, unlockedRunes } from '@/use/useCampaign'
+import { freeRankAvailable, freeRankLeftMs, freeRankRune } from '@/use/useRuneRanks'
+import { isNative } from '@/use/useUser'
+import GameIcon from '@/components/icons/GameIcon.vue'
+import { nextRuneUnlock, unlockRune, unlockedRunes } from '@/use/useCampaign'
 import { adInFlight, canOfferReward, watchRewarded } from '@/use/useAdGate'
 import { playFx } from '@/use/useGameAudio'
 
@@ -19,13 +23,28 @@ import { playFx } from '@/use/useGameAudio'
  * the rotating free gift one of these cards is wearing at any moment — the one
  * reason to open the app that is not a match.
  *
- * Runes the player has not unlocked yet stay in the grid, greyed. That is
- * deliberate: the ladder is also a picture of the roster, and a gap where a
- * rune will be is a goal. The one thing that gap can be acted on is the NUKER,
- * the last rune the campaign gives (4-1) — so when it is still locked and the
- * ads layer can play a video, the tab ends with an offer to unlock it now. It
- * appears only under both conditions: with no video to play there is nothing to
- * offer, and the campaign hands it over regardless.
+ * ── What the ladder shows, and what it holds back ──
+ *
+ * Every rune keeps a rung, but only what the player can act on is named:
+ *
+ *   OWNED   → the full card: pips, stats, and the ways to pay.
+ *   NEXT    → the one rune the campaign hands over next, as a named
+ *             silhouette with the stage that gives it. The result screen has
+ *             already teased this same rune, so the two surfaces agree.
+ *   THE REST→ `MysteryRuneCard`: a question mark, same footprint. Its header
+ *             carries the reasoning; the short version is that one concrete
+ *             goal plus a countable number of unknowns behind it beats both a
+ *             wall of unbuyable cards and a stub with no future in it.
+ *
+ * ── The nuker's early unlock, and the one exception it forces ──
+ *
+ * The NUKER is the last rune the campaign gives (4-1), so it is normally deep
+ * in mystery. But when the ads layer can play a video the tab ends with an
+ * offer to unlock it NOW — and a banner naming the Nuker directly under a card
+ * hiding it would be the game contradicting itself on one screen. So while
+ * that offer stands, the nuker's rung is REVEALED as a silhouette like any
+ * named promise. One truth per screen: either the game is advertising this
+ * rune or it is keeping it back, never both.
  */
 const { t } = useI18n()
 const { activeSkin } = useSkins()
@@ -33,6 +52,30 @@ const { activeSkin } = useSkins()
 const nukerOwned = computed(() => unlockedRunes.value.includes('nuker'))
 const offerNuker = computed(() => !nukerOwned.value && canOfferReward.value)
 const nukerStyle = computed(() => ({ '--glow': RUNES.nuker.color }))
+
+/**
+ * A rune is NAMED when the player owns it, when it is the campaign's next
+ * hand-over, or when this tab is actively selling it (the nuker, above).
+ * Everything else is a mystery rung.
+ */
+const isNamed = (type: RuneType): boolean =>
+  unlockedRunes.value.includes(type)
+  || nextRuneUnlock.value?.rune === type
+  || (type === 'nuker' && offerNuker.value)
+
+/** The rune this window's gift landed on, for the header's one countdown. */
+const giftRune = computed(() => freeRankRune.value)
+
+/** `freeRankLeftMs` ticks once a second; the header only ever shows mm:ss. */
+const countdown = computed(() => {
+  const total = Math.max(0, Math.ceil(freeRankLeftMs.value / 1000))
+  const m = Math.floor(total / 60)
+  const sec = total % 60
+  return `${m}:${String(sec).padStart(2, '0')}`
+})
+
+/** Only a native build has the width to spell "Watch ad" out beside the frame. */
+const showAdWord = isNative
 
 const busy = ref(false)
 
@@ -58,9 +101,17 @@ const onUnlockNuker = async (): Promise<void> => {
     //- read as a mistake rather than as emphasis.
     header.ranks__head
       span.ranks__title {{ t('ranks.title') }}
+      //- The gift's clock, ONCE. There is only ever one gift running, so a
+      //- countdown per card was the same number printed nine times; the cards
+      //- keep the ribbon that says WHICH rune it landed on and nothing else.
+      span.ranks__gift(v-if="giftRune")
+        | {{ freeRankAvailable ? t('ranks.freeIn', { t: countdown }) : t('ranks.freeTaken') }}
 
+    //- Every rune keeps a rung; only the ones worth naming are named.
     div.ranks__grid
-      RuneRankCard(v-for="type in RUNE_TYPES" :key="type" :type="type")
+      template(v-for="type in RUNE_TYPES" :key="type")
+        RuneRankCard(v-if="isNamed(type)" :type="type")
+        MysteryRuneCard(v-else)
 
     //- ── The last rune, early ──────────────────────────────────────────────
     section.nuker(v-if="offerNuker" :style="nukerStyle")
@@ -69,14 +120,18 @@ const onUnlockNuker = async (): Promise<void> => {
       div.nuker__body
         span.nuker__title {{ t('ranks.nukerUnlock') }}
         span.nuker__note {{ t('ranks.nukerLocked') }}
+        //- Less text here too: the frame says "a video", the banner above it
+        //- already says what is being unlocked.
         FButton.nuker__ad(
           size="sm"
           type="secondary"
           :is-disabled="busy || adInFlight"
+          :aria-label="`${t('ranks.nukerUnlock')} · ${t('shop.watchAd')}`"
           @click="onUnlockNuker"
         )
           RewardAdIcon.nuker__ad-icon
-          span {{ t('shop.watchAd') }}
+          span.nuker__adword(v-if="showAdWord") {{ t('shop.watchAd') }}
+          GameIcon.nuker__up(name="unlock")
 </template>
 
 <style scoped lang="sass">
@@ -102,9 +157,23 @@ const onUnlockNuker = async (): Promise<void> => {
 
 // Two across on a phone, more as the room appears — the same fluid column rule
 // the power-rune grid uses, so the two tabs feel like one shop.
+.ranks__gift
+  color: #6dffa8
+  font-weight: 900
+  text-align: center
+  font-size: clamp(0.52rem, 2.4vw, 0.72rem)
+  line-height: 1.2
+  text-shadow: 1px 1px 0 #000
+
 .ranks__grid
   display: grid
-  grid-template-columns: repeat(auto-fit, minmax(clamp(6.6rem, 36vw, 8.6rem), 1fr))
+  // Denser than the power-rune grid on purpose: there are NINE rungs here and
+  // the tab has to be readable without scrolling. Three across on a phone and
+  // six on a desktop panel puts the whole ladder in three rows and two rows
+  // respectively — the card is only a stone, a name, five stars and a price,
+  // and it sizes to its own width (`container-type`), so it survives being
+  // narrow instead of wrapping its buttons and growing every row.
+  grid-template-columns: repeat(auto-fit, minmax(clamp(4.6rem, 26vw, 5.9rem), 1fr))
   gap: clamp(0.35rem, 1.8vw, 0.6rem)
   // The gift ribbon sits above its card's top edge; without a little room the
   // first row would clip it against the grid's bounding box.
@@ -160,6 +229,14 @@ const onUnlockNuker = async (): Promise<void> => {
 .nuker__ad-icon
   flex: 0 0 auto
   width: 1.3em
+  height: 1em
+
+.nuker__adword
+  white-space: nowrap
+
+.nuker__up
+  flex: 0 0 auto
+  width: 1em
   height: 1em
 
 @media (orientation: landscape) and (max-height: 30rem)

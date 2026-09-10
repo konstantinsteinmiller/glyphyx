@@ -1,15 +1,15 @@
 import { expect, test } from '@playwright/test'
 import {
-  center, chevronPoint, coins, collectConsoleErrors, correctionStroke, currentNode, dragRuneToTile,
+  center, chevronPoint, coins, collectConsoleErrors, currentNode, dragRuneToTile,
   expectNoConsoleErrors, hand, layout, phase, tapAt, waitForGame, waitForTurnEnd
 } from './helpers'
 
 /**
  * ─── The first fifteen seconds ──────────────────────────────────────────────
  *
- * A brand-new player boots straight into 1-1, is shown the ghost hand, drops
- * the sword beside the skeleton, turns it to face left inside the correction
- * window (the lesson holds the window until they do), and wins in one
+ * A brand-new player boots straight into 1-1, is shown the ghost hand, carries
+ * the sword onto the tile beside the skeleton and lets go on the LEFT side of
+ * it — one gesture, the release side is the facing — and wins in one
  * resolution. The chest opens on its own step, the bow is unlocked, the loot
  * stays until they continue, and 1-2 begins. Then one bow shot on 1-2 proves
  * the archer shoots over a friendly stone.
@@ -19,7 +19,7 @@ import {
  */
 
 test.describe('onboarding flow', () => {
-  test('a new player wins 1-1 by dropping the sword and turning it in the held window, then lands on 1-2', async ({ page }) => {
+  test('a new player wins 1-1 with one aimed drop, then lands on 1-2', async ({ page }) => {
     const errors = collectConsoleErrors(page)
     await page.goto('/')
     await waitForGame(page)
@@ -36,22 +36,16 @@ test.describe('onboarding flow', () => {
 
     const coinsBefore = await coins(page)
 
-    // The lesson: drop the sword on (1,2) WITHOUT aiming — it lands facing up,
-    // at nothing, and the window holds until it is turned toward the skeleton
-    // on (0,2). The ghost hand shows the press-and-flick meanwhile.
-    await dragRuneToTile(page, 0, 1, 2, 'none')
-    const lockState = () => page.evaluate(() => {
-      const v = (window as any).__glyphyx.battle.view
-      return v.lock ? { held: v.lock.held, dir: v.lock.dir } : null
-    })
-    await expect.poll(lockState).toEqual({ held: true, dir: 'up' })
-    expect(await page.evaluate(() => (window as any).__glyphyx.battle.view.ghost?.mode ?? null)).toBe('reaim')
-    await page.waitForTimeout(400)
-    expect(await lockState()).toEqual({ held: true, dir: 'up' })
-    // Turn it left: the arrow key on a keyboard, a flick anywhere on touch.
-    if (test.info().project.name === 'desktop') await page.keyboard.press('ArrowLeft')
-    else await correctionStroke(page, 'left')
+    // The lesson, in ONE gesture: carry the sword onto (1,2) and let go on the
+    // LEFT side of that tile, where the skeleton stands on (0,2). Which side of
+    // a tile the pebble is released on is which way the rune faces — there is
+    // no second step to correct it, on either input.
+    await dragRuneToTile(page, 0, 1, 2, 'left')
     await expect.poll(() => page.evaluate(() => (window as any).__glyphyx.battle.view.playerMove?.dir ?? null)).toBe('left')
+    // Nothing is held open waiting for a correction, and no ghost finger works
+    // on a placed stone: the demonstration ended when the pebble landed.
+    expect(await page.evaluate(() => (window as any).__glyphyx.battle.view.lock?.held ?? false)).toBe(false)
+    expect(await page.evaluate(() => (window as any).__glyphyx.battle.view.ghost)).toBeNull()
     await expect.poll(() => phase(page)).not.toBe('planning')
     await waitForTurnEnd(page)
 

@@ -43,12 +43,23 @@
 
       /* The greeting card.
          ------------------------------------------------------------------
-         The same picture `FLogoProgress.vue` draws — a rune pebble breathing
-         over the title — at the SAME size in the SAME place, so when Vue
-         mounts and this element fades out, nothing moves.
+         The same picture `FLogoProgress.vue` draws — the Keeper holding a rune
+         up over the game's mark — at the SAME size in the SAME place, so when
+         Vue mounts and this element fades out, nothing moves.
 
          Duplicated rather than shared because this has to paint before any
-         stylesheet or module has been fetched. Change one, change both. */
+         stylesheet or module has been fetched. Change one, change both.
+
+         The FIGURE is inline SVG for that reason: it is on screen in the first
+         frame, with no request behind it. The LOGO is the one bitmap here, and
+         it is allowed to arrive a beat late — the hero is already lighting the
+         screen by then, and both splashes name the same URL, so the browser
+         has it cached before Vue mounts and there is nothing to re-fetch.
+
+         When the build ships painted art and the Keeper has been painted, the
+         build bakes the painting in as a data: URI right before the SVG
+         (src/game/keeperSplash.ts) — still no request, still the first frame —
+         and `.splash-painted + svg` puts the drawing away. */
       .splash-greet {
           position: relative;
           display: flex;
@@ -59,19 +70,29 @@
           font-family: 'Angry', Impact, 'Arial Black', sans-serif;
       }
 
-      .splash-pebble {
-          width: 46%;
+      .splash-hero {
+          width: 62%;
           aspect-ratio: 1;
           animation: splash-breathe 2.6s ease-in-out infinite;
       }
 
-      .splash-pebble svg {
+      .splash-hero svg {
           display: block;
           width: 100%;
           height: 100%;
           overflow: visible;
           filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
       }
+
+      .splash-painted {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+      }
+
+      .splash-painted + svg { display: none; }
 
       .splash-glow {
           animation: splash-glow 2.6s ease-in-out infinite;
@@ -81,6 +102,15 @@
           filter: drop-shadow(0 0 6px #ff3b4a) drop-shadow(0 0 1px #fff);
       }
 
+      .splash-eye {
+          filter: drop-shadow(0 0 5px #ffae55);
+          animation: splash-eyes 5.6s ease-in-out infinite;
+      }
+
+      .splash-mote { animation: splash-mote 3.4s ease-in-out infinite; }
+      .splash-mote-b { animation-duration: 4.6s; animation-delay: -1.4s; }
+      .splash-mote-c { animation-duration: 5.2s; animation-delay: -2.6s; }
+
       .splash-logo {
           display: flex;
           justify-content: center;
@@ -88,13 +118,10 @@
       }
 
       .splash-wordmark {
-          color: #fff;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.14em;
-          font-size: clamp(2rem, 12vmin, 3.8rem);
-          line-height: 1;
-          text-shadow: 0 0 0.35em rgba(120, 200, 255, 0.9), 0 0 0.9em rgba(80, 170, 255, 0.55), 3px 3px 0 #000;
+          display: block;
+          width: 100%;
+          height: auto;
+          filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
       }
 
       /* The loading read-out's placeholder. It is here for the SPACE as much as
@@ -119,15 +146,27 @@
           50%      { opacity: 1; }
       }
 
+      @keyframes splash-eyes {
+          0%, 42%, 100% { opacity: 1; }
+          46%, 48%      { opacity: 0.15; }
+      }
+
+      @keyframes splash-mote {
+          0%   { opacity: 0; transform: translateY(0); }
+          20%  { opacity: 0.9; }
+          100% { opacity: 0; transform: translateY(-14%); }
+      }
+
       @media (prefers-reduced-motion: reduce) {
-          .splash-pebble, .splash-glow { animation: none; }
+          .splash-hero, .splash-glow, .splash-eye, .splash-mote { animation: none; }
       }
   </style>
 </head>
 <body>
 <div id="static-splash">
   <div class="splash-greet">
-    <div class="splash-pebble" aria-hidden="true">
+    <div class="splash-hero" aria-hidden="true">
+      <!-- painted keeper: baked in at build time when the art ships (src/game/keeperSplash.ts) -->
       <svg viewBox="0 0 200 200">
         <defs>
           <radialGradient id="staticStone" cx="0.38" cy="0.32" r="0.75">
@@ -139,16 +178,65 @@
             <stop offset="0" stop-color="#ff5c66" stop-opacity="0.85"/>
             <stop offset="1" stop-color="#ff3b4a" stop-opacity="0"/>
           </radialGradient>
+          <linearGradient id="staticCloak" x1="0.15" y1="0" x2="0.85" y2="1">
+            <stop offset="0" stop-color="#49557f"/>
+            <stop offset="0.55" stop-color="#2a3149"/>
+            <stop offset="1" stop-color="#151a28"/>
+          </linearGradient>
+          <linearGradient id="staticHood" x1="0.2" y1="0" x2="0.9" y2="1">
+            <stop offset="0" stop-color="#414c74"/>
+            <stop offset="1" stop-color="#1d2233"/>
+          </linearGradient>
         </defs>
-        <ellipse cx="100" cy="176" rx="66" ry="12" fill="rgba(0,0,0,0.5)"/>
-        <ellipse cx="100" cy="102" rx="80" ry="68" fill="url(#staticStone)" stroke="#0b0d12" stroke-width="4"/>
-        <ellipse cx="82" cy="70" rx="34" ry="16" fill="rgba(255,255,255,0.09)"/>
-        <circle class="splash-glow" cx="100" cy="104" r="46" fill="url(#staticGlow)"/>
-        <path class="splash-glyph" transform="translate(58 58) scale(3.5)" d="M12 1.4 14.5 5.4 13.5 13.6H10.5L9.5 5.4 12 1.4ZM6.6 13.8H17.4A1.5 1.5 0 0 1 17.4 16.8H6.6A1.5 1.5 0 0 1 6.6 13.8ZM10.7 16.9H13.3V20.2H10.7ZM12 19.6A1.7 1.7 0 1 1 12 23 1.7 1.7 0 0 1 12 19.6Z" fill="#ff5c66"/>
+        <g transform="translate(-4 0)">
+          <ellipse cx="84" cy="188" rx="56" ry="8" fill="rgba(0,0,0,0.5)"/>
+          <ellipse cx="132" cy="190" rx="16" ry="5" fill="rgba(0,0,0,0.4)"/>
+          <!-- The staff, planted, leaning back into the frame. It is what -->
+          <!-- makes the silhouette read as somebody at a hundred pixels: a -->
+          <!-- hooded shape alone is a hooded shape, a hooded shape with a -->
+          <!-- staff is a keeper. -->
+          <path d="M148 30L158 32L136 190L126 188Z" fill="#4a3a2c" stroke="#0b0d12" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M150 30L154 31L133 189L129 188Z" fill="rgba(255,190,140,0.18)"/>
+          <!-- Its binding, where the hand goes. -->
+          <path d="M142 92L156 94L153 108L139 106Z" fill="#6b5236" stroke="#0b0d12" stroke-width="3" stroke-linejoin="round"/>
+          <!-- The cloak: shoulders, a heavy fall, and a hem torn into five -->
+          <!-- points so the outline has teeth. -->
+          <path d="M80 84C56 84 42 102 38 126L28 182L44 189L58 178L72 189L88 178L104 189L118 178L128 185L120 126C116 102 102 84 80 84Z" fill="url(#staticCloak)" stroke="#0b0d12" stroke-width="4" stroke-linejoin="round"/>
+          <!-- The side away from the rune, in its own shadow. -->
+          <path d="M80 84C56 84 42 102 38 126L28 182L44 189L58 178L72 189L80 184Z" fill="rgba(0,0,0,0.32)"/>
+          <!-- A fold, so the cloak has a front and a side. -->
+          <path d="M86 100L92 140L96 180" fill="none" stroke="#0b0d12" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+          <!-- The hood, peaked and leaning — the one line that stops this -->
+          <!-- being a bell jar with eyes. -->
+          <path d="M70 16C58 26 40 48 42 78C44 93 58 101 80 101C102 101 116 93 118 78C120 46 98 24 70 16Z" fill="url(#staticHood)" stroke="#0b0d12" stroke-width="4" stroke-linejoin="round"/>
+          <ellipse cx="82" cy="74" rx="21" ry="16" fill="#090b11"/>
+          <ellipse class="splash-eye" cx="74" cy="73" rx="4" ry="3.4" fill="#ffd79a"/>
+          <ellipse class="splash-eye" cx="90" cy="73" rx="4" ry="3.4" fill="#ffd79a"/>
+          <!-- The arm across to the staff, with a cuff and a hand on it. -->
+          <path d="M104 92C118 86 130 86 142 92L139 106C129 101 118 101 108 106Z" fill="url(#staticCloak)" stroke="#0b0d12" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M136 88C146 86 152 90 152 97C152 105 145 108 136 105Z" fill="#c9ad86" stroke="#0b0d12" stroke-width="3" stroke-linejoin="round"/>
+          <!-- The light of the whole picture, on top of the staff. -->
+          <circle class="splash-glow" cx="153" cy="30" r="44" fill="url(#staticGlow)"/>
+          <ellipse cx="153" cy="30" rx="27" ry="24" fill="url(#staticStone)" stroke="#0b0d12" stroke-width="4"/>
+          <ellipse cx="144" cy="20" rx="11" ry="5" fill="rgba(255,255,255,0.11)"/>
+          <path class="splash-glyph" transform="translate(137 13) scale(1.36)" d="M12 1.4 14.5 5.4 13.5 13.6H10.5L9.5 5.4 12 1.4ZM6.6 13.8H17.4A1.5 1.5 0 0 1 17.4 16.8H6.6A1.5 1.5 0 0 1 6.6 13.8ZM10.7 16.9H13.3V20.2H10.7ZM12 19.6A1.7 1.7 0 1 1 12 23 1.7 1.7 0 0 1 12 19.6Z" fill="#ff5c66"/>
+          <!-- Rim light down the edges the rune actually reaches, and nowhere -->
+          <!-- else: one light source, honestly drawn, is most of what makes a -->
+          <!-- flat shape look solid. -->
+          <path d="M74 18C100 26 118 48 118 78" fill="none" stroke="#ffb27a" stroke-opacity="0.5" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M112 104L120 128L127 180" fill="none" stroke="#ffb27a" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round"/>
+          <!-- A second rune at the belt, dim: they come in a set. -->
+          <ellipse cx="103" cy="122" rx="9" ry="8" fill="#2c3346" stroke="#0b0d12" stroke-width="2.5"/>
+          <ellipse cx="103" cy="122" rx="3" ry="2.6" fill="#ff5c66" opacity="0.65"/>
+          <!-- Three embers off the stone, on three different clocks. -->
+          <circle class="splash-mote splash-mote-a" cx="130" cy="48" r="2.5" fill="#ffc98a"/>
+          <circle class="splash-mote splash-mote-b" cx="178" cy="44" r="1.9" fill="#ff9a6a"/>
+          <circle class="splash-mote splash-mote-c" cx="156" cy="8" r="1.6" fill="#ffdaa8"/>
+        </g>
       </svg>
     </div>
     <div class="splash-logo">
-      <span class="splash-wordmark">Glyphyx</span>
+      <img class="splash-wordmark" src="./images/logo/wordmark.webp" alt="Glyphyx" width="640" height="232" fetchpriority="high"/>
     </div>
     <span class="splash-progress">0%</span>
   </div>

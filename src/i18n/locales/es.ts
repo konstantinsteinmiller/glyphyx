@@ -9,7 +9,8 @@ export default {
       'cleave': 'Siega las tres casillas de delante a la vez desde el primer turno.',
       'roller': 'Arrolla a dos supervivientes antes de parar desde el primer turno.',
       'bombard': 'Bombardea la fila lejana y la casilla intermedia desde el primer turno.',
-      'nuker': 'Cae a Nv 3 y aguanta en el tablero que acaba de vaciar, desde el primer turno.'
+      'nuker': 'Cae a Nv 3 y aguanta en el tablero que acaba de vaciar, desde el primer turno.',
+      'crown': 'Aparece en Nv 3: se lleva incluso una runa apilada desde el primer turno.'
     },
     'watchAd': 'Ver anuncio',
     'armed': 'Armada ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Hacha',
       'roller': 'Roca',
       'bombard': 'Mortero',
-      'nuker': 'Detonador'
+      'nuker': 'Detonador',
+      'crown': 'Corona'
     },
     'descriptions': {
       'melee': 'Golpea la casilla que enfrenta. Nv 2 empuja al objetivo.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Corta las tres casillas de delante: la de enfrente y las dos vecinas.',
       'roller': 'Rueda hasta que una runa aguante, aliadas incluidas. Nv 2 rueda una más.',
       'bombard': 'Bombardea tres casillas a tres filas, sobre cualquier muro. Nv 2 golpea también a mitad.',
-      'nuker': 'Detona donde cae: toda runa de Nv 1 del tablero muere, también las tuyas. Nv 2 aguanta.'
+      'nuker': 'Detona donde cae: toda runa de Nv 1 del tablero muere, también las tuyas. Nv 2 aguanta.',
+      'crown': 'Se lleva la runa a la que mira y se gasta al hacerlo: luchará por ti al instante. Nv 2 se lleva pilas.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Arrastra una runa al tablero'
     },
     'aim': {
-      'touch': 'Desliza para apuntar, suelta para fijar',
-      'desktop': 'Arrastra o usa las flechas / WASD para apuntar, suelta para fijar'
+      'touch': 'Suelta en el borde al que debe mirar',
+      'desktop': 'Muévete al borde al que debe mirar y haz clic'
     },
     'archer': {
       'touch': 'Los arcos saltan una casilla y golpean la siguiente',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'El detonador destruye toda runa de Nv 1 — también las tuyas',
       'desktop': 'El detonador destruye toda runa de Nv 1 — también las tuyas'
+    },
+    'crown': {
+      'touch': 'La corona se lleva la runa a la que mira: ahora lucha por ti',
+      'desktop': 'La corona se lleva la runa a la que mira: ahora lucha por ti'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Ámbar',
       'marble': 'Mármol',
-      'ember': 'Brasa'
+      'ember': 'Brasa',
+      'sapphire': 'Zafiro',
+      'ruby': 'Rubí',
+      'diamond': 'Diamante'
     },
     'tagline': 'Cada runa que colocas lo lleva.',
     'needMore': 'Faltan {n} monedas',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Jade verde pulido, el glifo incrustado en oro.',
       'amber': 'Una gema de ámbar facetada que brilla desde dentro.',
       'marble': 'Mármol blanco, tallado hondo y sombreado.',
-      'ember': 'Una losa de lava enfriada, el glifo arde entre las grietas.'
+      'ember': 'Una losa de lava enfriada, el glifo arde entre las grietas.',
+      'sapphire': 'Zafiro azul intenso de talla escalonada, con una estrella blanca bajo la mesa.',
+      'ruby': 'Un rubí cabujón abombado, el glifo arde en rojo bajo él.',
+      'diamond': 'Diamante de talla brillante, el glifo descompuesto en un espectro.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Nuevo regalo en {t}',
     'freeTaken': 'Vuelve a por el siguiente',
     'nukerUnlock': 'Desbloquear el Detonador',
-    'nukerLocked': 'O gánalo en el Nivel 4-1'
+    'nukerLocked': 'O gánalo en el Nivel 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Sigue ganando',
+    'mysteryAria': 'Una runa que aún no has desbloqueado',
+    'nextUp': 'Próxima',
+    'winsAt': 'Gánala en el Nivel {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Música',
     'musicTrack': 'Pista musical',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Piedra Serena',
       'trance': 'Pulso Rúnico'
     },

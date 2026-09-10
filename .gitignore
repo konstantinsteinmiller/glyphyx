@@ -74,15 +74,18 @@ __screenshots__/
 # relative so concurrent sessions — the main checkout and each agent worktree —
 # never contend for one profile directory.
 .mcp-browser-profiles
-/public/images/monsters/tinified.zip
-/public/images/bg/tinified.zip
-/public/images/fx/tinified.zip
-/public/images/gates/tinified.zip
-/public/images/heroes/tinified.zip
-/public/images/logo/tinified.zip
-/public/images/props/tinified.zip
-/public/images/rounds/tinified.zip
-/public/images/ui/tinified.zip
+# TinyPNG download receipts (which files that tool processed). They must never
+# sit under public/ — Vite copies public/ verbatim, so they shipped 1.25 MB
+# into every portal zip. They live in art-sheets/tinypng-receipts/ now.
+*tinified.zip
+
+# Pristine copies kept by scripts/compress-images.mjs so --force can re-run
+# without stacking generation loss. Outside public/ for the same reason.
+/public-backup/
+
+# Paintings the Art Desk (tools/art-desk) replaced with a newer return. Kept
+# on disk so a re-roll never loses a good generation; not worth a commit.
+/art-sheets/painted/replaced/
 
 # Playwright e2e output
 /test-results

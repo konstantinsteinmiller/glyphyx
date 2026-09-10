@@ -3,8 +3,8 @@ import {
   LATE_LESSON_NODES, NODES_PER_CHAPTER, RUNE_UNLOCK_NODES, chapterOf, indexInChapter, nodeConfig, nodeId
 } from '@/game/campaign'
 import {
-  NUKE_DAMAGE, RUNE_TYPES, SKIN_IDS, STARTING_RUNES, TUTORIAL_TURN_LIMIT, chestIsGift, dirsFor, nukeVaporises,
-  statsFor, type RuneType
+  NUKE_DAMAGE, RUNE_TYPES, SKIN_IDS, STARTING_RUNES, TUTORIAL_TURN_LIMIT, chestIsGift, crownTurns, dirsFor,
+  nukeVaporises, statsFor, type RuneType
 } from '@/game/rules'
 
 describe('node numbering', () => {
@@ -32,9 +32,22 @@ describe('chapter 1 is the onboarding', () => {
     expect(n.enemies).toHaveLength(1)
     expect(n.enemies[0]!.ai).toBe('passive')
     expect(n.enemies[0]!.atkMul).toBe(0)
-    // The script: drop, then press and flick left — the correction window is the lesson.
-    expect(n.ghost).toEqual({ type: 'melee', to: { col: 1, row: 2 }, dir: 'left', reaim: 'left' })
+    // ONE move: carry the sword to (1,2) and release on the LEFT of that tile,
+    // which is what makes it face the skeleton. No `reaim` — the lesson is the
+    // gesture the game leads with, not the correction that backs it up.
+    expect(n.ghost).toEqual({ type: 'melee', to: { col: 1, row: 2 }, dir: 'left' })
+    expect(n.ghost?.reaim).toBeUndefined()
     expect(n.reward).toMatchObject({ coins: 15, unlockRune: 'archer' })
+    // The first board anyone sees is cut from obsidian, whatever the save says:
+    // a new player has no material of their own yet, and black glass with a
+    // neon cut reads better at a glance than the beige starting pebble.
+    expect(n.skin).toBe('obsidian')
+  })
+
+  it('pins the opening material to 1-1 alone, and lets the player choose everywhere else', () => {
+    for (let id = 2; id <= 40; id++) {
+      expect(nodeConfig(id, 'medium').skin, `node ${id}`).toBeUndefined()
+    }
   })
 
   it('only a rune or a skin makes a chest a gift; the coin-only chests of 1-2 and 1-6 are not', () => {
@@ -176,9 +189,13 @@ describe('later chapters are generated', () => {
   })
 
   it('hands out the remaining skins on the 4th and 8th nodes until they run out', () => {
-    const later = [nodeId(2, 4), nodeId(2, 8), nodeId(3, 4)].map((id) => nodeConfig(id, 'medium').reward.unlockSkin)
-    expect(later).toEqual(['amber', 'marble', 'ember'])
-    expect(nodeConfig(nodeId(3, 8), 'medium').reward.unlockSkin).toBeNull()
+    // Two per chapter from chapter 2 on, in shop order — the three carved and
+    // raw ones first, then the gem tier, which is the top of the price ladder
+    // as well as the end of this one.
+    const slots = [nodeId(2, 4), nodeId(2, 8), nodeId(3, 4), nodeId(3, 8), nodeId(4, 4), nodeId(4, 8)]
+    const later = slots.map((id) => nodeConfig(id, 'medium').reward.unlockSkin)
+    expect(later).toEqual(['amber', 'marble', 'ember', 'sapphire', 'ruby', 'diamond'])
+    expect(nodeConfig(nodeId(5, 4), 'medium').reward.unlockSkin).toBeNull()
     expect(nodeConfig(nodeId(2, 3), 'medium').reward.unlockSkin).toBeNull()
     // Every skin in the roster is reachable through the campaign.
     const fromCampaign = new Set<string>()
@@ -189,14 +206,16 @@ describe('later chapters are generated', () => {
     for (const s of SKIN_IDS) if (s !== 'river') expect(fromCampaign.has(s)).toBe(true)
   })
 
-  it('hands the four late runes over on 2-1, 2-5, 3-1 and 4-1', () => {
+  it('hands the five late runes over on 2-1, 2-5, 3-1, 4-1 and 4-5', () => {
     expect(RUNE_UNLOCK_NODES).toEqual({
-      [nodeId(2, 1)]: 'cleave', [nodeId(2, 5)]: 'roller', [nodeId(3, 1)]: 'bombard', [nodeId(4, 1)]: 'nuker'
+      [nodeId(2, 1)]: 'cleave', [nodeId(2, 5)]: 'roller', [nodeId(3, 1)]: 'bombard',
+      [nodeId(4, 1)]: 'nuker', [nodeId(4, 5)]: 'crown'
     })
     expect(nodeConfig(nodeId(2, 1), 'medium').reward.unlockRune).toBe('cleave')
     expect(nodeConfig(nodeId(2, 5), 'medium').reward.unlockRune).toBe('roller')
     expect(nodeConfig(nodeId(3, 1), 'medium').reward.unlockRune).toBe('bombard')
     expect(nodeConfig(nodeId(4, 1), 'medium').reward.unlockRune).toBe('nuker')
+    expect(nodeConfig(nodeId(4, 5), 'medium').reward.unlockRune).toBe('crown')
     // …and nowhere else in the generated chapters.
     for (let id = 9; id <= 60; id++) {
       const rune = nodeConfig(id, 'medium').reward.unlockRune
@@ -228,18 +247,28 @@ describe('later chapters are generated', () => {
     // The sword is never a reward: the player starts holding it.
     for (const s of STARTING_RUNES) expect(seen).not.toContain(s)
     expect([...STARTING_RUNES, ...seen].sort()).toEqual([...RUNE_TYPES].sort())
-    // The nuke comes LAST of all of them. It is the one move that can undo a
-    // whole board, so it is the reward for having a board worth undoing.
-    expect(seen[seen.length - 1]).toBe('nuker')
+    // The last two, in this order and no other. The nuke is the reward for
+    // having a board worth undoing; the crown comes after it because it is the
+    // only rune that plays the WIN CONDITION rather than the fight, and a
+    // player who has not yet lost a match on tiles held has no idea what they
+    // are being given.
+    expect(seen.slice(-2)).toEqual(['nuker', 'crown'])
   })
 
-  it('never gives the nuke to an enemy faction, at any chapter', () => {
+  it('never gives the nuke or the crown to an enemy faction, at any chapter', () => {
     // A nuke in the AI's hand would clear the player's board on a die roll,
     // and no relief in `adaptive.ts` can soften an attack that reads level
     // rather than damage. It stays the player's button.
+    //
+    // The crown is held back for a different reason: having a stone you built
+    // TAKEN and turned on you is the sourest thing this rule set can express,
+    // and a player cannot answer it — there is no counter-play, only a rune
+    // gone. It reads as a delight in the player's hand and as a cheat in the
+    // AI's, so it stays in one of them.
     for (let id = 1; id <= 80; id++) {
       for (const e of nodeConfig(id, 'medium').enemies) {
         expect(e.deck, `node ${id} / ${e.faction}`).not.toContain('nuker')
+        expect(e.deck, `node ${id} / ${e.faction}`).not.toContain('crown')
       }
     }
   })
@@ -281,7 +310,7 @@ describe('later chapters are generated', () => {
       expect(nodeConfig(id, 'medium').tutorial, `node ${id}`).toBe(rune)
     }
     expect(Object.keys(LATE_LESSON_NODES).map(Number))
-      .toEqual([nodeId(2, 2), nodeId(2, 6), nodeId(3, 2), nodeId(4, 2)])
+      .toEqual([nodeId(2, 2), nodeId(2, 6), nodeId(3, 2), nodeId(4, 2), nodeId(4, 6)])
   })
 
   it('gives the late lessons the same contract chapter 1\'s have', () => {
@@ -306,6 +335,23 @@ describe('later chapters are generated', () => {
       // weapons that means a body no bigger than one hit; for the nuke it
       // means Lv 1, because the blast reads level and ignores health entirely.
       const dummies = n.presets.filter((p) => p.side === 'enemy')
+      if (rune === 'crown') {
+        // The crown's lesson is the one that does not clear the board by
+        // BREAKING it. It takes the stone it faces, and that stone — now the
+        // player's, and turned around — kills the one behind it in the same
+        // resolution. So there are two dummies rather than three, and neither
+        // is measured against the crown's own attack, because it has none.
+        expect(dummies, where).toHaveLength(2)
+        const taken = dummies.find((d) => d.col === n.ghost!.to.col && d.row === n.ghost!.to.row - 1)
+        expect(taken, `${where}: a dummy stands on the tile the crown faces`).toBeDefined()
+        expect(crownTurns(1, taken!.level ?? 1), where).toBe(true)
+        const behind = dummies.filter((d) => d !== taken)
+        expect(behind, where).toHaveLength(1)
+        // …and the stolen stone can finish it on the turn it changes hands,
+        // which is the half of the rune a one-dummy board would have hidden.
+        expect(behind[0]!.hp, where).toBeLessThanOrEqual(statsFor(taken!.type, 1).atk)
+        continue
+      }
       expect(dummies, where).toHaveLength(3)
       for (const d of dummies) {
         if (rune === 'nuker') expect(nukeVaporises(d.level ?? 1), where).toBe(true)

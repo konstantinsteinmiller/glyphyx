@@ -1,5 +1,5 @@
 import { glyphPath } from '@/game/glyphs'
-import type { RuneType } from '@/game/rules'
+import { aimRegionPolygon, aimRegionShape, type Dir, type RuneType } from '@/game/rules'
 import { emit as emitParticle, qualityTier, registerSprite, type QualityTier } from '@/use/useVfx'
 
 /**
@@ -1260,6 +1260,181 @@ export const paintAuraLink = (
 }
 
 /** A landing thud: a flattened ring and a dust flash under a placed stone. */
+// ─── The tile's aim compass ─────────────────────────────────────────────────
+//
+// One region of a hovered tile — a triangle for a cardinal rune, a corner
+// quadrant for the orb, the whole tile for an omni one. The geometry is
+// `rules.aimRegionPolygon`, so the shape drawn here and the shape the pointer
+// is hit-tested against can never drift apart.
+//
+// `grow` is what makes the control readable: the polygons come back wound from
+// the region's OWN OUTER EDGE inward, so at `grow` 0 the lit region is flat
+// against the edge it points at and at 1 it has reached the tile's centre. The
+// player sees the wedge travel in from the side they are aiming at.
+
+/** At most four points; a compass region is a triangle or a quad. */
+const regionScratch = new Float64Array(8)
+
+/**
+ * `aimRegionPolygon` builds its literal on every call, and this runs once per
+ * region per frame while the pointer is over a tile. The shapes are constant,
+ * so they are memoised here and the hot path allocates nothing.
+ */
+const polyCache = new Map<string, readonly (readonly [number, number])[]>()
+const regionPoly = (type: RuneType, dir: Dir): readonly (readonly [number, number])[] => {
+  const key = `${type}|${dir}`
+  let hit = polyCache.get(key)
+  if (!hit) {
+    hit = aimRegionPolygon(type, dir)
+    polyCache.set(key, hit)
+  }
+  return hit
+}
+
+/**
+ * Lay a region's polygon into `rect`, grown by `g`. Returns the point count.
+ *
+ * A triangle keeps its outer edge and walks the APEX in from that edge's
+ * midpoint; a quadrant scales about its outer CORNER. Both read as the shape
+ * growing inward from the side it names, which is the whole point of it.
+ */
+const layoutAimRegion = (
+  type: RuneType, dir: Dir, rect: { x: number; y: number; w: number; h: number }, g: number
+): number => {
+  const poly = regionPoly(type, dir)
+  const n = poly.length < 8 ? poly.length : 8
+  const shape = aimRegionShape(type)
+  const k = clamp01(g)
+  if (shape === 'diagonals' && n === 3) {
+    const a = poly[0]!
+    const b = poly[1]!
+    const c = poly[2]!
+    const mx = (a[0] + b[0]) / 2
+    const my = (a[1] + b[1]) / 2
+    regionScratch[0] = rect.x + a[0] * rect.w; regionScratch[1] = rect.y + a[1] * rect.h
+    regionScratch[2] = rect.x + b[0] * rect.w; regionScratch[3] = rect.y + b[1] * rect.h
+    regionScratch[4] = rect.x + (mx + (c[0] - mx) * k) * rect.w
+    regionScratch[5] = rect.y + (my + (c[1] - my) * k) * rect.h
+    return 3
+  }
+  if (shape === 'quadrants' && n === 4) {
+    const o = poly[0]!
+    for (let i = 0; i < 4; i++) {
+      const pt = poly[i]!
+      regionScratch[i * 2] = rect.x + (o[0] + (pt[0] - o[0]) * k) * rect.w
+      regionScratch[i * 2 + 1] = rect.y + (o[1] + (pt[1] - o[1]) * k) * rect.h
+    }
+    return 4
+  }
+  for (let i = 0; i < n; i++) {
+    const pt = poly[i]!
+    regionScratch[i * 2] = rect.x + pt[0] * rect.w
+    regionScratch[i * 2 + 1] = rect.y + pt[1] * rect.h
+  }
+  return n
+}
+
+/**
+ * One region of the compass, in one of three weights.
+ *
+ *   `lit`  — the player has CHOSEN this facing: it fills, grows in from its own
+ *            edge, and that edge is stroked white. Exactly one region per tile
+ *            is ever lit.
+ *   `held` — the facing the rune would take right now, without the player
+ *            having picked it (the pointer is in the tile's centre dead zone,
+ *            so this is a pre-aimed key or the default). A soft fill and no
+ *            white edge: the tile still says which way it points, but it does
+ *            not claim the choice was made.
+ *   plain  — a thin outline. Present, so the player can see there IS a choice;
+ *            quiet enough not to compete with the board.
+ *
+ * `rim` widens the lit region's white outer edge. Under a FINGERTIP that edge
+ * is the only cue that is not covered — it lies on the tile's border, and the
+ * contact patch is in the middle — so the touch path draws it heavier and the
+ * caller leans the arrows out to meet it.
+ */
+export const paintAimRegion = (
+  ctx: CanvasRenderingContext2D,
+  rect: { x: number; y: number; w: number; h: number },
+  type: RuneType,
+  dir: Dir,
+  size: number,
+  o: { color: string; lit?: boolean; held?: boolean; grow?: number; alpha?: number; rim?: number }
+): void => {
+  const lit = o.lit === true
+  const held = !lit && o.held === true
+  // A held facing is shown at full size: nothing is travelling toward it,
+  // because nothing has been chosen yet.
+  const n = layoutAimRegion(type, dir, rect, lit ? (o.grow ?? 1) : 1)
+  if (n < 3) return
+  const a = clamp01(o.alpha ?? 1)
+  if (a <= 0) return
+  ctx.save()
+  ctx.beginPath()
+  ctx.moveTo(regionScratch[0]!, regionScratch[1]!)
+  for (let i = 1; i < n; i++) ctx.lineTo(regionScratch[i * 2]!, regionScratch[i * 2 + 1]!)
+  ctx.closePath()
+  if (lit) {
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.fillStyle = rgba(o.color, 0.3 * a)
+    ctx.fill()
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = rgba(o.color, 0.85 * a)
+    ctx.lineWidth = size * 0.035
+    ctx.stroke()
+    // The outer edge — the side the rune will face — carries the weight.
+    ctx.beginPath()
+    ctx.moveTo(regionScratch[0]!, regionScratch[1]!)
+    ctx.lineTo(regionScratch[2]!, regionScratch[3]!)
+    const rim = o.rim === undefined ? 1 : Math.max(0, o.rim)
+    ctx.strokeStyle = rgba('#ffffff', Math.min(1, 0.6 * rim) * a)
+    ctx.lineWidth = size * 0.05 * rim
+    ctx.lineCap = 'round'
+    ctx.stroke()
+  } else if (held) {
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.fillStyle = rgba(o.color, 0.11 * a)
+    ctx.fill()
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = rgba(o.color, 0.45 * a)
+    ctx.lineWidth = size * 0.025
+    ctx.stroke()
+  } else {
+    ctx.globalAlpha = a
+    ctx.strokeStyle = rgba(o.color, 0.28)
+    ctx.lineWidth = size * 0.02
+    ctx.lineJoin = 'round'
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+/**
+ * A hovered tile the pebble cannot take: one flat wash and a cross, with no
+ * regions at all. A refused tile must not look like a menu of choices.
+ */
+export const paintAimRefused = (
+  ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }, size: number, color: string, alpha = 1
+): void => {
+  const a = clamp01(alpha)
+  if (a <= 0) return
+  const inset = size * 0.16
+  ctx.save()
+  ctx.globalAlpha = a
+  ctx.fillStyle = rgba(color, 0.16)
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
+  ctx.strokeStyle = rgba(color, 0.9)
+  ctx.lineWidth = size * 0.055
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(rect.x + inset, rect.y + inset)
+  ctx.lineTo(rect.x + rect.w - inset, rect.y + rect.h - inset)
+  ctx.moveTo(rect.x + rect.w - inset, rect.y + inset)
+  ctx.lineTo(rect.x + inset, rect.y + rect.h - inset)
+  ctx.stroke()
+  ctx.restore()
+}
+
 export const paintLanding = (ctx: CanvasRenderingContext2D, t: number, x: number, y: number, size: number, color: string): void => {
   const k = clamp01(t)
   if (k >= 1) return

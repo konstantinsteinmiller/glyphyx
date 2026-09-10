@@ -24,6 +24,9 @@ const read = (rel: string): string => readFileSync(resolve(__dirname, '../..', r
 const scene = read('src/views/GameScene.vue')
 const chestOverlay = read('src/components/game/ChestOverlay.vue')
 const chestReveal = read('src/components/game/ChestReveal.vue')
+const rewardStage = read('src/components/game/RewardStage.vue')
+const rewardConfetti = read('src/components/game/RewardConfetti.vue')
+const freward = read('src/components/atoms/FReward.vue')
 const hint = read('src/components/game/ControlHint.vue')
 
 const templateOf = (src: string): string =>
@@ -124,6 +127,128 @@ describe('the chest', () => {
     expect(chestOverlay).toMatch(/:show-continue="canContinue"/)
   })
 
+  it('stacks the reward as three planes: rays behind, gift, confetti in front', () => {
+    const tpl = templateOf(chestOverlay)
+    // Both full-bleed planes go in the `#stage` slot. In `fit` mode the default
+    // slot is wrapped in a `scale()`, and a transform is a containing block for
+    // `position: fixed` — a plane rendered there would be positioned against
+    // that wrapper AND scaled with it.
+    const stageSlot = between(tpl, 'template(#stage)', 'div.chest-overlay(')
+    expect(stageSlot).toMatch(/RewardStage\(/)
+    expect(stageSlot).toMatch(/RewardConfetti\(/)
+
+    // DOM order says nothing here — both planes precede the frame — so the
+    // layering is carried entirely by z-index, and these are the four numbers
+    // that make the effect work.
+    // Newline-agnostic on purpose: these files do not agree on line endings,
+    // and an anchor that assumes LF silently finds nothing in a CRLF file —
+    // which reads as "no z-index declared" rather than as "bad anchor".
+    const z = (src: string, selector: string): number => {
+      const at = src.search(new RegExp(`\\r?\\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\r?\\n`))
+      expect(at, `selector ${selector}`).toBeGreaterThanOrEqual(0)
+      const m = src.slice(at).match(/z-index: (\d+)/)
+      expect(m, `${selector} declares a z-index`).toBeTruthy()
+      return Number(m![1])
+    }
+    const rays = z(rewardStage, '.reward-stage')
+    const confetti = z(rewardConfetti, '.reward-confetti')
+    const frame = z(freward, '.reward-frame')
+    expect(rays, 'the rays fall behind the prize').toBeLessThan(frame)
+    expect(confetti, 'the confetti falls in front of it').toBeGreaterThan(frame)
+
+    // …and it only works because the stage WRAPPER is not itself a stacking
+    // context. Give `.reward-stage` a z-index and the confetti silently drops
+    // behind the gift, which is the kind of bug nobody finds by reading.
+    const wrapAt = freward.search(/\r?\n\.reward-layers\r?\n/)
+    const frameAt = freward.search(/\r?\n\.reward-frame\r?\n/)
+    expect(wrapAt, 'FReward declares a .reward-layers wrapper').toBeGreaterThanOrEqual(0)
+    expect(frameAt).toBeGreaterThan(wrapAt)
+    expect(freward.slice(wrapAt, frameAt)).not.toMatch(/z-index/)
+  })
+
+  it('lets a tap fall through both decorative planes — that is what "click to continue" rides on', () => {
+    // A plane that eats the tap turns the celebration into a dead screen: the
+    // continue handler lives on `FReward`'s overlay, and the click has to
+    // reach it through whatever is painted on top.
+    for (const [name, src] of [['RewardStage', rewardStage], ['RewardConfetti', rewardConfetti]] as const) {
+      expect(src, `${name} must not swallow the tap`).toMatch(/pointer-events: none/)
+    }
+  })
+
+  it('fires the beats in an order, not all on the frame of the tap', () => {
+    // A reveal that lights everything at once reads as a glitch. The chest's
+    // own squash owns the first beat; the rays follow, then the confetti.
+    const beats = chestOverlay.match(/const BEATS = \{ stage: (\d+), confetti: (\d+) \}/)
+    expect(beats, 'the schedule is declared in one place').toBeTruthy()
+    const stage = Number(beats![1])
+    const confetti = Number(beats![2])
+    expect(stage).toBeGreaterThan(0)
+    expect(confetti).toBeGreaterThan(stage)
+    expect(chestOverlay).toMatch(/setTimeout\(\(\) => \{ stageLit\.value = true \}, BEATS\.stage\)/)
+    expect(chestOverlay).toMatch(/setTimeout\(\(\) => \{ confettiFired\.value = true \}, BEATS\.confetti\)/)
+    // …and every one of them is cleared with the rest, so a re-opened chest
+    // cannot inherit a beat from the last one.
+    expect(chestOverlay).toMatch(/for \(const id of beatTimers\) clearTimeout\(id\)/)
+  })
+
+  it("tints all three planes with the prize's own colour", () => {
+    const tone = between(chestOverlay, 'const tone = computed', 'const stopTimers')
+    expect(tone).toMatch(/RUNES\[r\.unlockRune\]\.color/)
+    expect(tone).toMatch(/SKINS\[r\.unlockSkin\]\.rim/)
+    // Coins have no colour of their own; they keep the game's gold.
+    expect(tone).toMatch(/return '#ffd93c'/)
+    const tpl = templateOf(chestOverlay)
+    expect(tpl).toMatch(/RewardStage\([^)]*:tone="tone"/)
+    expect(tpl).toMatch(/RewardConfetti\([^)]*:tone="tone"/)
+  })
+
+  it("gives up the chest's SPACE once it is open, not just its brightness", () => {
+    // The gift needs the room. A transform-only shrink would dim a box that
+    // still occupied a phone's worth of height, which is how this screen
+    // ended up needing a scroll.
+    // The rule body under a top-level selector, read by line so the anchor
+    // cannot collide with the same class name in the template above.
+    const ruleBody = (selector: string): string => {
+      const lines = chestReveal.split(/\r?\n/)
+      const at = lines.findIndex((l) => l === selector)
+      expect(at, `selector ${selector}`).toBeGreaterThanOrEqual(0)
+      const out: string[] = []
+      for (let i = at + 1; i < lines.length && (lines[i] === '' || lines[i]!.startsWith('  ')); i++) out.push(lines[i]!)
+      return out.join(' ')
+    }
+    const maxRem = (block: string): number => {
+      const m = block.match(/width: clamp\([^,]+,[^,]+,\s*([\d.]+)rem\)/)
+      expect(m, 'a width clamp').toBeTruthy()
+      return Number(m![1])
+    }
+    const closed = ruleBody('.chest__btn')
+    const open = ruleBody('.is-open .chest__btn')
+    expect(maxRem(open)).toBeLessThan(maxRem(closed))
+  })
+
+  it('is sized so it never has to scroll, at any viewport the game supports', () => {
+    // Every dimension that could push the overlay is viewport-relative, and
+    // the flex chain can actually shrink — a flex child without `min-height: 0`
+    // refuses to go below its content and grows a scrollbar instead.
+    const rule = (src: string, selector: string): string => {
+      const lines = src.split(/\r?\n/)
+      const at = lines.findIndex((l) => l === selector)
+      expect(at, `selector ${selector}`).toBeGreaterThanOrEqual(0)
+      const out: string[] = []
+      for (let i = at + 1; i < lines.length && (lines[i] === '' || lines[i]!.startsWith('  ')); i++) out.push(lines[i]!)
+      return out.join(' ')
+    }
+    expect(rule(chestReveal, '.chest')).toMatch(/max-height: 100%/)
+    expect(rule(chestReveal, '.chest')).toMatch(/min-height: 0/)
+    expect(rule(chestReveal, '.chest__prize')).toMatch(/min-height: 0/)
+    expect(rule(chestOverlay, '.chest-overlay')).toMatch(/max-height: 100%/)
+    // The parts that carry real size are in vmin/vh, never a bare px or a
+    // rem that cannot see the window.
+    for (const decl of chestReveal.match(/^\s+(?:width|height|font-size): clamp\([^)]*\)/gm) ?? []) {
+      expect(decl, `viewport-relative: ${decl.trim()}`).toMatch(/vmin|vh|vw/)
+    }
+  })
+
   it('shows its loot through the same stone the field draws', () => {
     expect(read('src/components/game/RuneUnlockCard.vue')).toMatch(/PebblePreview\(/)
     expect(chestReveal).toMatch(/RuneUnlockCard\(v-else-if="reward\.unlockSkin" :skin=/)
@@ -156,8 +281,23 @@ describe('control hints', () => {
 
   it('names the other way in — a selected pebble asks for a tile — and the keys on desktop', () => {
     expect(scene).toMatch(/if \(battle\.selectedHand\.value >= 0\) return 'tap'/)
-    expect(en.hints.aim.desktop).toMatch(/WASD/)
+    // The CORRECTION window is still keys-and-chevrons on both voices: it
+    // survives on touch, and on any placement that was never aimed.
     expect(en.hints.correct.desktop).toMatch(/WASD/)
     expect(en.hints.correct.touch).toMatch(/arrow/i)
+  })
+
+  it('gives aiming two genuinely different voices now that the tile is a compass', () => {
+    // BOTH inputs aim by POSITION now — where inside the tile the pointer or
+    // the finger is picks the facing, and the region lights up before it is
+    // committed — so neither voice may talk about a stroke or a key. They are
+    // still two sentences because the commit differs: the mouse clicks where it
+    // stands, the finger lets go where it stands. (Touch used to say "swipe";
+    // that gesture is now the FALLBACK, taught by the correction hint.)
+    expect(en.hints.aim.desktop).not.toMatch(/WASD/)
+    expect(en.hints.aim.desktop).toMatch(/click/i)
+    expect(en.hints.aim.touch).not.toMatch(/swipe/i)
+    expect(en.hints.aim.touch).toMatch(/let go|release/i)
+    expect(en.hints.aim.desktop).not.toBe(en.hints.aim.touch)
   })
 })

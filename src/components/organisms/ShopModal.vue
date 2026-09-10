@@ -6,6 +6,7 @@ import type { TabOption } from '@/components/atoms/FTabs.vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
 import PowerRuneCard from '@/components/organisms/PowerRuneCard.vue'
 import RankShopPanel from '@/components/organisms/RankShopPanel.vue'
+import MysteryRuneCard from '@/components/organisms/MysteryRuneCard.vue'
 import SkinsPanel from '@/components/organisms/SkinsPanel.vue'
 import { RANK_HP_PER_RANK, RUNE_TYPES, type RuneType } from '@/game/rules'
 import { POWER_RUNE_LEVEL } from '@/use/usePowerRunes'
@@ -68,6 +69,9 @@ const tagline = computed(() => {
 const offered = computed<readonly RuneType[]>(() =>
   RUNE_TYPES.filter((t) => unlockedRunes.value.includes(t))
 )
+
+/** Something is still to come, so the grid ends with one mystery tile. */
+const hasLocked = computed(() => offered.value.length < RUNE_TYPES.length)
 </script>
 
 <template lang="pug">
@@ -84,6 +88,12 @@ const offered = computed<readonly RuneType[]>(() =>
       div.shop__runes(v-if="tab === 'runes'")
         div.shop__grid
           PowerRuneCard(v-for="type in offered" :key="type" :type="type")
+          //- ONE tile for everything still to come, never one per locked rune.
+          //- Listing them would be a wall of things that cannot be bought, and
+          //- drawing their stones would hand over the identities the campaign
+          //- is saving — the skins tab used to do exactly that. A single
+          //- question mark says "there is more" and spoils nothing.
+          MysteryRuneCard(v-if="hasLocked")
         p.shop__note {{ t('shop.landsAt', { n: POWER_RUNE_LEVEL }) }}
 
       RankShopPanel(v-else-if="tab === 'ranks'")

@@ -43,6 +43,15 @@ const node = () => {
     buffer: null,
     loop: false,
     type: 'sine',
+    curve: null,
+    oversample: 'none',
+    normalize: true,
+    delayTime: param(),
+    threshold: param(),
+    knee: param(),
+    ratio: param(),
+    attack: param(),
+    release: param(),
     playbackRate: param(),
     frequency: param(),
     detune: param(),
@@ -66,7 +75,14 @@ const makeCtx = (state: 'running' | 'suspended' = 'running', sampleRate = 48000)
   createBiquadFilter: node,
   createGain: node,
   createOscillator: node,
-  createStereoPanner: node
+  createStereoPanner: node,
+  // The master chain and the shared room (`audioBus.ts`). A runtime missing any
+  // of these degrades to a dry voice rather than a silent one, which is worth
+  // having covered too — see the `no bus` test below.
+  createConvolver: node,
+  createDynamicsCompressor: node,
+  createWaveShaper: node,
+  createDelay: node
 })
 
 let ctx: ReturnType<typeof makeCtx> | null = makeCtx()
@@ -203,17 +219,25 @@ describe('playFx', () => {
     expect(nodesBuilt).toBe(0)
   })
 
-  it('warms the noise buffer once and reuses it', async () => {
+  it('builds its buffers once and reuses them, however many cues fire', async () => {
     const audio = await import('@/use/useGameAudio')
-    // A sample rate no earlier test used, so the module's cached buffer (which
-    // is keyed on the rate — the point of the cache) cannot satisfy this one.
+    // A sample rate no earlier test used, so nothing cached on the context (the
+    // noise, the reverb's impulse) can be satisfied from an earlier one.
     const c = makeCtx('running', 22050)
     ctx = c
     const spy = vi.spyOn(c, 'createBuffer')
     audio.warmAudio()
     audio.warmAudio()
+    // Warming builds the shared bus: one room (the convolver's impulse) and one
+    // white-noise buffer, and never more than that.
+    const afterWarm = spy.mock.calls.length
+    expect(afterWarm).toBeLessThanOrEqual(2)
     audio.__resetThrottles()
-    audio.playFx('shatter', 0.5)
-    expect(spy).toHaveBeenCalledTimes(1)
+    for (const cue of ['shatter', 'place', 'roll', 'nuke'] as const) {
+      audio.__resetThrottles()
+      audio.playFx(cue, 0.5)
+    }
+    // Every one of those is built on noise; not one of them allocated another.
+    expect(spy).toHaveBeenCalledTimes(afterWarm)
   })
 })

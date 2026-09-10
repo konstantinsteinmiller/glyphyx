@@ -55,10 +55,15 @@ export interface DragState {
    */
   region: Dir | null
   /**
-   * The pointer is a MOUSE: fine control, and a hover the player can see
-   * BEFORE they commit. That is what lets an aimed placement skip the
-   * correction window entirely (see `LockState`) — a finger, which covers the
-   * tile it is choosing on, still gets the window.
+   * The pointer is a MOUSE or a pen: fine control, and a hover the player can
+   * see BEFORE they commit.
+   *
+   * It does NOT gate position aiming — the tile's compass works for a finger
+   * too, and a thumb sliding toward the edge it wants is easier than a flick
+   * with a distance threshold in it. What `precise` gates is the CORRECTION
+   * WINDOW: a mouse cursor is a few pixels that never hides the tile, so an
+   * aimed click needs no second chance, while a fingertip covers the middle of
+   * the very tile it is choosing on and keeps its window.
    */
   precise: boolean
 }
@@ -96,11 +101,27 @@ export interface HoverState {
   cell: Cell
   /** Whether the tile would accept the pebble at all. */
   kind: PlacementKind
-  /** The facing the pointer's region picks right now. */
+  /**
+   * The facing the rune would actually take if it were placed right now. Inside
+   * the tile's centre dead zone this is the HELD facing (a pre-aimed key, or
+   * the default), not the region under the pointer.
+   */
   dir: Dir
+  /**
+   * The pointer is far enough from the tile's centre to have CHOSEN `dir`
+   * (`rules.isAimChosen`). False in the middle of the tile, where the player is
+   * still moving through and nothing has been picked — the compass draws its
+   * regions but lights none of them.
+   */
+  chosen: boolean
   /** The rune being placed — the regions are carved to ITS aim. */
   type: RuneType
-  /** A mouse, so the regions are worth drawing at all (a finger covers them). */
+  /**
+   * A mouse or a pen. The compass is drawn either way — a finger dragging a
+   * pebble is choosing a facing too — but a touch drag hides the middle of the
+   * tile under the fingertip, so the renderer leans its marks outward and the
+   * placement keeps its correction window.
+   */
   precise: boolean
 }
 

@@ -42,12 +42,19 @@ defineExpose({ rootEl })
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.4)
   overflow: hidden
 
+  // The sheen sweeps by TRANSFORM, not by `background-position`.
+  // Background-position is not a compositable property: animating it repaints
+  // the badge every frame for the life of the session. Translating an
+  // over-wide gradient behind the badge's `overflow: hidden` looks the same
+  // and is the one animation here that had a genuinely free fix.
   &::before
     content: ''
     position: absolute
-    inset: 0
+    top: 0
+    bottom: 0
+    left: 0
+    width: 250%
     background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%)
-    background-size: 250% 100%
     animation: coin-shine 3.5s linear infinite
     pointer-events: none
 
@@ -82,7 +89,7 @@ defineExpose({ rootEl })
 
 @keyframes coin-shine
   0%
-    background-position: 200% 0
+    transform: translateX(-100%)
   100%
-    background-position: -100% 0
+    transform: translateX(0%)
 </style>

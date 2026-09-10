@@ -49,13 +49,66 @@ Samples shipped but currently **unused** (safe to delete or repurpose):
 
 ## Music
 
+The default track is **"Emberlight"**, and it is not a file. It is a SCORE —
+`src/game/music.ts` — performed note by note by `src/use/useMusicEngine.ts`:
+sixty seconds of D minor for piano, violin, cello, shaker, frame drum and a
+wood tick, 16 bars of 4/4 at 64 BPM (which is 60.000 s exactly).
+
+Two reasons it is written rather than recorded, and the second is the one that
+matters:
+
+* a minute of stereo is about a megabyte, and this game is playable the moment
+  its JS parses;
+* **a file cannot loop without a seam.** The element ends, restarts, and
+  whatever was ringing is cut off. Nothing restarts here: the scheduler walks
+  the beat count forever and wraps it, so the piano's decay, the cello's
+  release and the reverb tail all cross the join. The composition does the rest
+  — bar 16 is the dominant (A), bar 1 the tonic it resolves to, the violin is
+  gone by bar 15, and the last two bars are the quietest in the piece.
+
+To change the music, change the score: the chords are a table, the piano figure
+is six entries, the violin's phrase is eleven notes. `tests/audio/music.test.ts`
+holds it to the things that make a loop a loop (a minute long, in key, nothing
+hanging over the join, each instrument in its own register).
+
+The two inherited files are still selectable in Options:
+
 | Path | Length | Notes |
 | --- | --- | --- |
-| `public/audio/music/trance.ogg` | 2–4 min loop | "Rune Pulse" — the default track. Seamless loop; the engine can drive `playbackRate` (`setMusicRate`), so avoid anything that breaks when pitched ±15 %. |
-| `public/audio/music/bg-cozy.ogg` | 2–4 min loop | "Quiet Stone" — the alternate track, selectable in Options. |
+| *(none — `emberlight`)* | 60 s | "Emberlight", the default. A score, not a file. |
+| `public/audio/music/trance.ogg` | 2–4 min loop | "Rune Pulse". Seamless loop; the engine can drive `playbackRate` (`setMusicRate`), so avoid anything that breaks when pitched ±15 %. |
+| `public/audio/music/bg-cozy.ogg` | 2–4 min loop | "Quiet Stone". |
 
-Both names live in `options.musicTracks` in the locale files; the file map is
-`MUSIC_TRACK_FILES` in `src/use/useUser.ts`.
+All three names live in `options.musicTracks` in the locale files; the file map
+is `MUSIC_TRACK_FILES` in `src/use/useUser.ts`, where the procedural track is
+deliberately absent.
+
+## The palette every cue is drawn from
+
+Two rules turn a pile of cues into a sound design, and both live above the cue
+table in `useGameAudio.ts` rather than inside any one voice:
+
+1. **Everything is in the same key.** The music is D minor, so every pitched
+   cue is a degree of that scale (`NOTE()`), never a hand-picked frequency.
+   Before this, `merge` was a C major arpeggio and `capture` a G major triad
+   fired up to eight times in one settle wave — fine alone, a chord nobody
+   wrote underneath a track in D, and the reason forty cues an encounter can
+   feel tiring without a player being able to say why.
+2. **Everything is in the same room.** Each voice sends a little of itself to
+   one shared convolution reverb (`src/use/audioBus.ts`), which also carries a
+   glue compressor, a soft clip and a −3.5 dB shelf over 6 kHz. A click sends
+   almost nothing, a bell a lot.
+
+The families are deliberately distinct, so an action is identifiable with the
+screen off: **wood and stone** are the board (place, tick, capture),
+**metal** is a blade, a **plucked string** is the bow, **glass** is the orb and
+anything magical, a **struck bell** is something GAINED (heal, merge, shield,
+coin), a **low drum** is something LOST (shatter, defeat), and the two
+board-wide events get the only sub-bass (`nuke`) and the only fanfare
+(`crown`).
+
+If you replace one of these with a sample, keep it in D minor and dry — the
+room is added by the bus.
 
 ## Synthesised cues you can replace (all in `useGameAudio.ts`)
 

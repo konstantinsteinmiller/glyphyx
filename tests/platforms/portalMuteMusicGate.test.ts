@@ -25,8 +25,22 @@ import { mount } from '@vue/test-utils'
 import { useMusic } from '@/use/useSound'
 import { resourceCache } from '@/use/useAssets'
 import { setPlatformAudioMuted } from '@/use/useGamePauseAudio'
-import { MUSIC_TRACK_FILES } from '@/use/useUser'
+import useUser, { MUSIC_TRACK_FILES } from '@/use/useUser'
 import { prependBaseUrl } from '@/utils/function'
+
+/**
+ * The game's own track is not an element, so `play()` cannot be what proves it
+ * was gated. The note scheduler is mocked instead and the same three questions
+ * are asked of it — which is the point: BOTH kinds of track have to answer to
+ * the same mute, and the procedural one was the easier of the two to forget.
+ */
+const startProcedural = vi.fn()
+const stopProcedural = vi.fn()
+vi.mock('@/use/useMusicEngine', () => ({
+  startMusic: (...a: unknown[]) => startProcedural(...a),
+  stopMusic: (...a: unknown[]) => stopProcedural(...a),
+  isMusicPlaying: { value: false }
+}))
 
 let playSpy: ReturnType<typeof vi.fn>
 let originalPlay: typeof HTMLMediaElement.prototype.play
@@ -62,6 +76,13 @@ beforeEach(() => {
   // would pass. The control case below is the proof that it does not.
   const src = prependBaseUrl('audio/music/' + MUSIC_TRACK_FILES.trance)
   resourceCache.audio.set(src, { src } as unknown as HTMLAudioElement)
+
+  // The default track is the game's own, which has no element at all — so the
+  // element assertions in this file pick a FILE track explicitly rather than
+  // silently testing nothing the day the default changed. (It did.)
+  useUser().userMusicTrack.value = 'trance'
+  startProcedural.mockClear()
+  stopProcedural.mockClear()
 })
 
 afterEach(async () => {
@@ -72,6 +93,39 @@ afterEach(async () => {
   await nextTick()
   HTMLMediaElement.prototype.play = originalPlay
   resourceCache.audio.clear()
+})
+
+describe('the same gate holds for the track that is not a file', () => {
+  it('CONTROL: unmuted, starting a battle really does start the band', () => {
+    useUser().userMusicTrack.value = 'emberlight'
+    const { wrapper, api } = mountMusic()
+    api.startBattleMusic()
+    expect(startProcedural).toHaveBeenCalled()
+    // …and nothing touched the element, which is the other half of "only one
+    // of the two can sound".
+    expect(playSpy).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('refuses to start the scheduler while the portal is muted', () => {
+    // A scheduler that ignored this would queue notes into a suspended context
+    // and arrive all at once when the ad ended — or worse, play under it.
+    setPlatformAudioMuted(true)
+    useUser().userMusicTrack.value = 'emberlight'
+    const { wrapper, api } = mountMusic()
+    api.startBattleMusic()
+    expect(startProcedural).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('stops the band when the music stops, whatever started it', () => {
+    useUser().userMusicTrack.value = 'emberlight'
+    const { wrapper, api } = mountMusic()
+    api.startBattleMusic()
+    api.stopBattleMusic()
+    expect(stopProcedural).toHaveBeenCalled()
+    wrapper.unmount()
+  })
 })
 
 describe('portal mute gates the music START, not just running audio', () => {

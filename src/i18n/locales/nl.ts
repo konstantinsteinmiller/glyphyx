@@ -9,7 +9,8 @@ export default {
       'cleave': 'Velt alle drie vakken ervoor in één klap, vanaf de eerste beurt.',
       'roller': 'Walst twee overlevenden plat voor hij stopt, vanaf de eerste beurt.',
       'bombard': 'Beschiet de verre rij en het vak ertussen, vanaf de eerste beurt.',
-      'nuker': 'Landt op Lv 3 en houdt het bord dat hij net leegde, vanaf de eerste beurt.'
+      'nuker': 'Landt op Lv 3 en houdt het bord dat hij net leegde, vanaf de eerste beurt.',
+      'crown': 'Komt op Lv 3 — pakt vanaf de eerste beurt zelfs een gestapelde rune.'
     },
     'watchAd': 'Advertentie bekijken',
     'armed': 'Bewapend ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Bijl',
       'roller': 'Rotsblok',
       'bombard': 'Mortier',
-      'nuker': 'Vernietiger'
+      'nuker': 'Vernietiger',
+      'crown': 'Kroon'
     },
     'descriptions': {
       'melee': 'Raakt het vak ervoor. Lv 2 duwt het doelwit terug.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Klieft de drie vakken ervoor: het vak recht vooruit en beide ernaast.',
       'roller': 'Rolt door tot een rune standhoudt, ook eigen. Lv 2 rolt er één verder.',
       'bombard': 'Beschiet drie vakken, drie rijen verder, over elke muur. Lv 2 raakt ook halverwege.',
-      'nuker': 'Ontploft waar hij landt: elke Lv 1 rune op het bord sterft, ook die van jou. Lv 2 houdt stand.'
+      'nuker': 'Ontploft waar hij landt: elke Lv 1 rune op het bord sterft, ook die van jou. Lv 2 houdt stand.',
+      'crown': 'Pakt de rune waar hij naar wijst en gaat daarbij op: die vecht meteen voor jou. Lv 2 pakt stapels.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Sleep een rune op het bord'
     },
     'aim': {
-      'touch': 'Veeg om te richten, laat los om vast te zetten',
-      'desktop': 'Sleep of gebruik de pijltjestoetsen / WASD om te richten, laat los om vast te zetten'
+      'touch': 'Laat los bij de rand waar hij heen moet wijzen',
+      'desktop': 'Ga naar de rand waar hij heen moet wijzen, klik dan'
     },
     'archer': {
       'touch': 'Bogen slaan een vak over en raken het volgende',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'De vernietiger wist elke Lv 1 rune — ook die van jou',
       'desktop': 'De vernietiger wist elke Lv 1 rune — ook die van jou'
+    },
+    'crown': {
+      'touch': 'De kroon pakt de rune waar hij naar wijst — die vecht nu voor jou',
+      'desktop': 'De kroon pakt de rune waar hij naar wijst — die vecht nu voor jou'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Barnsteen',
       'marble': 'Marmer',
-      'ember': 'Gloed'
+      'ember': 'Gloed',
+      'sapphire': 'Saffier',
+      'ruby': 'Robijn',
+      'diamond': 'Diamant'
     },
     'tagline': 'Elke rune die je legt draagt het.',
     'needMore': 'Nog {n} munten',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Gepolijste groene jade, de glyph ingelegd met goud.',
       'amber': 'Een geslepen barnsteen die van binnenuit gloeit.',
       'marble': 'Wit marmer, diep uitgehakt en beschaduwd.',
-      'ember': 'Een plaat gestolde lava, de glyph brandt door de barsten.'
+      'ember': 'Een plaat gestolde lava, de glyph brandt door de barsten.',
+      'sapphire': 'Diepblauwe saffier in trapslijpsel, met een witte ster onder de tafel.',
+      'ruby': 'Een gewelfde robijn-cabochon, het teken gloeit er rood onder.',
+      'diamond': 'Diamant in briljantslijpsel, het teken uiteen in een spectrum.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Nieuw cadeau over {t}',
     'freeTaken': 'Kom terug voor de volgende',
     'nukerUnlock': 'Vernietiger vrijspelen',
-    'nukerLocked': 'Of win Level 4-1'
+    'nukerLocked': 'Of win Level 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Blijf winnen',
+    'mysteryAria': 'Een rune die je nog niet hebt vrijgespeeld',
+    'nextUp': 'Volgende',
+    'winsAt': 'Win hem in Level {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Muziek',
     'musicTrack': 'Muzieknummer',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Stille steen',
       'trance': 'Runenpuls'
     },

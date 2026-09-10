@@ -6,7 +6,7 @@ import {
   laurelRimAt,
 } from '@/use/arenaPainters'
 import { MAX_LEVEL } from '@/game/rules'
-import { FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, type Faction, type GlyphStyle, type PebbleShape, type SkinId } from '@/game/rules'
+import { FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, type Faction, type GlyphStyle, type RuneType, type SkinId, type StoneCut } from '@/game/rules'
 
 /**
  * jsdom has no rasteriser, so the painters are exercised against a RECORDING
@@ -44,8 +44,14 @@ const mockCtx = (): Mock => {
 /** Fewer leaves per branch than the painter draws — the count may be tuned, the wreath may not vanish. */
 const LAUREL_LEAVES_MIN = 4
 
-const SHAPES: PebbleShape[] = ['pebble', 'shard', 'oval', 'hex', 'disc', 'slab']
-const STYLES: GlyphStyle[] = ['engraved', 'neon', 'inlay', 'gem', 'carved', 'ember']
+const CUTS: StoneCut[] = [
+  'carved', 'knapped', 'polished', 'faceted', 'quarried', 'slab', 'step', 'cabochon', 'brilliant'
+]
+/** The cuts with no chance in them: same rune, same skin, same stone, every time. */
+const EXACT: StoneCut[] = ['carved', 'polished', 'faceted', 'quarried', 'step', 'cabochon']
+const STYLES: GlyphStyle[] = ['engraved', 'neon', 'inlay', 'gem', 'carved', 'ember', 'starcut', 'blood', 'prism']
+const widthOf = (pts: { x: number }[]): number => Math.max(...pts.map((q) => Math.abs(q.x)))
+const heightOf = (pts: { y: number }[]): number => Math.max(...pts.map((q) => Math.abs(q.y)))
 const SKIN_IDS = Object.keys(SKINS) as SkinId[]
 const FACTIONS = Object.keys(FACTION_DEFS) as Faction[]
 
@@ -57,46 +63,132 @@ beforeAll(() => {
 
 describe('stoneOutline', () => {
   it('is deterministic in its seed and fills the unit box', () => {
-    for (const shape of SHAPES) {
-      const a = stoneOutline(shape, 1234)
-      const b = stoneOutline(shape, 1234)
-      expect(a).toEqual(b)
-      expect(a.length).toBeGreaterThanOrEqual(6)
-      let extent = 0
-      for (const p of a) {
-        expect(Math.abs(p.x)).toBeLessThanOrEqual(1 + 1e-9)
-        expect(Math.abs(p.y)).toBeLessThanOrEqual(1 + 1e-9)
-        extent = Math.max(extent, Math.abs(p.x), Math.abs(p.y))
+    for (const cut of CUTS) {
+      for (const type of RUNE_TYPES) {
+        const a = stoneOutline(cut, type, 1234)
+        const b = stoneOutline(cut, type, 1234)
+        expect(a).toEqual(b)
+        expect(a.length).toBeGreaterThanOrEqual(6)
+        let extent = 0
+        for (const p of a) {
+          expect(Math.abs(p.x)).toBeLessThanOrEqual(1 + 1e-9)
+          expect(Math.abs(p.y)).toBeLessThanOrEqual(1 + 1e-9)
+          extent = Math.max(extent, Math.abs(p.x), Math.abs(p.y))
+        }
+        expect(extent).toBeCloseTo(1, 9)
       }
-      expect(extent).toBeCloseTo(1, 9)
     }
   })
 
-  it('cuts a different stone for a different seed where the shape has any chance in it', () => {
-    // A pebble and a shard draw a handful of numbers, so two seeds never agree.
-    for (const shape of ['pebble', 'shard'] as PebbleShape[]) {
-      expect(stoneOutline(shape, 1)).not.toEqual(stoneOutline(shape, 2))
+  // THE point of the split. Before it, the skin owned the shape, so all ten
+  // runes of a skin were one outline with ten different glyphs cut into it —
+  // and the silhouette, which is what a player reads across the board, said
+  // nothing at all about which rune it was.
+  it('gives every RUNE its own silhouette, in every cut', () => {
+    for (const cut of CUTS) {
+      const seen = new Set(RUNE_TYPES.map((t) => JSON.stringify(stoneOutline(cut, t, 7))))
+      expect(seen.size, cut).toBe(RUNE_TYPES.length)
     }
-    // A slab makes ONE choice (which corner is knocked off), so neighbouring
-    // seeds may coincide; across a few seeds more than one corner must go.
-    const slabs = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => JSON.stringify(stoneOutline('slab', seed))))
-    expect(slabs.size).toBeGreaterThan(1)
-    // …and the shapes with no chance in them are the same under every seed.
-    expect(stoneOutline('hex', 1)).toEqual(stoneOutline('hex', 2))
-    expect(stoneOutline('oval', 1)).toEqual(stoneOutline('oval', 2))
   })
 
-  it('gives each silhouette its own character', () => {
-    expect(stoneOutline('hex', 7).length).toBe(6)
-    expect(stoneOutline('shard', 7).length).toBeGreaterThanOrEqual(6)
-    expect(stoneOutline('shard', 7).length).toBeLessThanOrEqual(8)
-    expect(stoneOutline('oval', 7).length).toBe(48)
-    // The oval is wider than tall; the disc is round.
-    const oval = stoneOutline('oval', 7)
-    const disc = stoneOutline('disc', 7)
-    const tallest = (pts: { y: number }[]): number => Math.max(...pts.map((p) => Math.abs(p.y)))
-    expect(tallest(oval)).toBeLessThan(0.85)
-    expect(tallest(disc)).toBeCloseTo(1, 6)
+  it('gives every CUT its own finish, for every rune', () => {
+    for (const type of RUNE_TYPES) {
+      const seen = new Set(CUTS.map((c) => JSON.stringify(stoneOutline(c, type, 7))))
+      expect(seen.size, type).toBe(CUTS.length)
+    }
+  })
+
+  it('only lets the seed move a cut that has chance in it', () => {
+    // Knapped glass and a cracked slab are struck, not machined: two seeds
+    // never agree, and the asymmetry is the point.
+    for (const cut of ['knapped', 'slab', 'brilliant'] as StoneCut[]) {
+      expect(stoneOutline(cut, 'melee', 1), cut).not.toEqual(stoneOutline(cut, 'melee', 2))
+    }
+    // Everything else is a made object, and every one of them is the same
+    // object. A carved plaque that varied would read as a mistake.
+    for (const cut of EXACT) {
+      for (const type of RUNE_TYPES) {
+        expect(stoneOutline(cut, type, 1), `${cut} ${type}`).toEqual(stoneOutline(cut, type, 999))
+      }
+    }
+  })
+
+  it('is exactly symmetric wherever it is not knapped', () => {
+    for (const cut of EXACT) {
+      for (const type of RUNE_TYPES) {
+        const pts = stoneOutline(cut, type, 7)
+        for (const p of pts) {
+          expect(
+            pts.some((q) => Math.abs(q.x + p.x) < 1e-9 && Math.abs(q.y - p.y) < 1e-9),
+            `${cut} ${type} ${p.x},${p.y}`
+          ).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('carries each rune\'s character: the bow is the thinnest, the shield the blockiest, the axe has horns', () => {
+    const carved = (t: RuneType): { x: number; y: number }[] => stoneOutline('carved', t, 7)
+
+    // The bow is the slim one and the shield the wide one — the two the brief
+    // named, and the two furthest apart on the roster.
+    const widths = Object.fromEntries(RUNE_TYPES.map((t) => [t, widthOf(carved(t))])) as Record<RuneType, number>
+    expect(Math.min(...RUNE_TYPES.map((t) => widths[t]))).toBe(widths.archer)
+    expect(widths.archer).toBeLessThan(0.8)
+    expect(widths.defense).toBeGreaterThan(0.95)
+    expect(widths.defense).toBeGreaterThan(widths.melee)
+
+    // The sword keeps its point at the top and its belly below the middle.
+    const sword = carved('melee')
+    const top = sword.reduce((a, b) => (a.y < b.y ? a : b))
+    expect(top.y).toBeCloseTo(-1, 6)
+    expect(Math.abs(top.x)).toBeLessThan(1e-9)
+    expect(Math.max(...sword.filter((q) => q.y < -0.6).map((q) => Math.abs(q.x)))).toBeLessThan(0.8)
+
+    // The shield is FLAT across the top — the only rune with shoulders that
+    // wide that high — and comes down to a point instead of standing on one.
+    const shield = carved('defense')
+    expect(Math.max(...shield.filter((q) => q.y < -0.85).map((q) => Math.abs(q.x)))).toBeGreaterThan(0.7)
+    expect(Math.max(...shield.filter((q) => q.y > 0.85).map((q) => Math.abs(q.x)))).toBeLessThan(0.55)
+
+    // The boulder is the only rune wider than it is tall.
+    expect(heightOf(carved('roller'))).toBeLessThan(0.95)
+    expect(widthOf(carved('roller'))).toBeCloseTo(1, 6)
+
+    // The axe's lowest points are its two HORNS, off the axis — it is the one
+    // outline whose foot is not on the centreline.
+    const axe = carved('cleave')
+    const lowest = axe.reduce((a, b) => (a.y > b.y ? a : b))
+    expect(Math.abs(lowest.x)).toBeGreaterThan(0.5)
+    expect(axe.find((q) => Math.abs(q.x) < 1e-9 && q.y > 0)!.y).toBeLessThan(lowest.y)
+
+    // The mortar stands on a flat plate: a run of points along its foot.
+    expect(carved('bombard').filter((q) => q.y > 0.95).length).toBeGreaterThan(3)
+  })
+
+  it('gives each cut its own hand: flats, rounding, blunting, jitter', () => {
+    // The coarse cuts sample far less than the carved one, which is what
+    // leaves a flat where the carved stone has a curve.
+    for (const cut of ['faceted', 'step', 'knapped'] as StoneCut[]) {
+      expect(stoneOutline(cut, 'melee', 7).length, cut).toBeLessThan(stoneOutline('carved', 'melee', 7).length * 0.7)
+    }
+    // The cabochon has rounded the sword's point off; the carved one has not.
+    const apexY = (cut: StoneCut): number => Math.min(...stoneOutline(cut, 'melee', 7).filter((q) => Math.abs(q.x) < 0.12).map((q) => q.y))
+    expect(apexY('cabochon')).toBeGreaterThan(apexY('carved'))
+    expect(apexY('polished')).toBeGreaterThan(apexY('carved'))
+    // Blunting fills the sides out toward the block without moving the extremes.
+    const area = (cut: StoneCut): number => {
+      const pts = stoneOutline(cut, 'archer', 7)
+      let a2 = 0
+      for (let i = 0; i < pts.length; i++) {
+        const q = pts[i]!
+        const r = pts[(i + 1) % pts.length]!
+        a2 += q.x * r.y - r.x * q.y
+      }
+      return Math.abs(a2) / 2
+    }
+    expect(area('slab')).toBeGreaterThan(area('carved'))
+    expect(area('quarried')).toBeGreaterThan(area('carved'))
   })
 })
 
@@ -113,11 +205,11 @@ describe('skins and materials', () => {
     expect(resolveGlow(SKINS.obsidian, 'mage')).toBe(SKINS.obsidian.glow)
   })
 
-  it('keeps the enemy on the rust pebble whatever the faction, tinted and cached', () => {
+  it('keeps the enemy on the rust-red carved stone whatever the faction, tinted and cached', () => {
     expect(enemyStone(null)).toBe(ENEMY_STONE)
     for (const f of FACTIONS) {
       const s = enemyStone(f)
-      expect(s.shape).toBe('pebble')
+      expect(s.cut).toBe('carved')
       expect(s.glyph).toBe('engraved')
       expect(s.hi).not.toBe(ENEMY_STONE.hi)
       expect(enemyStone(f)).toBe(s)
@@ -190,28 +282,30 @@ describe('painters on a recording context', () => {
     }
   })
 
-  // The wreath is a LAYER: one drawable over any stone, painted or drawn. What
-  // that buys is a single wreath across 120 stones, and what it costs is this
-  // contract — a stone must be paintable WITHOUT one (the reference sheet and
-  // the arena both ask for that), and Lv 1 must never grow one.
-  it('the wreath hugs each silhouette: an oval\'s foot is nearer than a disc\'s, a shard has corners, nothing floats', () => {
+  // The wreath is a LAYER: one drawable over any stone of that rune, painted
+  // or drawn. What that buys is one wreath across all nine skins, and what it
+  // costs is this contract — a stone must be paintable WITHOUT one (the
+  // reference sheet and the arena both ask for that), and Lv 1 never grows one.
+  it('the wreath hugs each RUNE\'s silhouette, and nothing floats', () => {
     const down = Math.PI / 2
     const side = 0
-    expect(laurelRimAt('oval', down)).toBeCloseTo(0.78, 1)
-    expect(laurelRimAt('oval', side)).toBeCloseTo(1, 1)
-    expect(laurelRimAt('disc', down)).toBeGreaterThan(laurelRimAt('oval', down))
-    for (const shape of ['pebble', 'shard', 'oval', 'hex', 'disc', 'slab'] as const) {
+    // The wreath is keyed by the rune, because the rune owns the outline: the
+    // bow tapers to a needle at the foot and the shield is far wider there, so
+    // one wreath cannot serve both.
+    expect(laurelRimAt('archer', side)).toBeLessThan(laurelRimAt('defense', side))
+    expect(laurelRimAt('roller', down)).toBeLessThan(laurelRimAt('melee', down))
+    for (const type of RUNE_TYPES) {
       for (let k = 0; k <= 12; k++) {
         const a = Math.PI / 2 + (k / 12 - 0.5) * Math.PI
-        const r = laurelRimAt(shape, a)
-        expect(r).toBeGreaterThan(0.5)
-        expect(r).toBeLessThanOrEqual(1.45)
+        const r = laurelRimAt(type, a)
+        expect(r, type).toBeGreaterThan(0.4)
+        expect(r, type).toBeLessThanOrEqual(1.45)
       }
     }
-    // A laurel paints for every shape without throwing, at any size.
-    for (const shape of ['pebble', 'shard', 'oval', 'hex', 'disc', 'slab'] as const) {
+    // A laurel paints for every rune without throwing, at any size.
+    for (const type of RUNE_TYPES) {
       const ctx = mockCtx()
-      paintLaurel(ctx, 96, 96, shape)
+      paintLaurel(ctx, 96, 96, type)
       balanced(ctx)
     }
   })
@@ -309,10 +403,12 @@ describe('painters on a recording context', () => {
       paintRerollChip(chip, w, h)
       balanced(chip)
     }
-    for (const shape of SHAPES) {
-      const ctx = mockCtx()
-      paintStoneShape(ctx, 72, 72, shape, SKINS.marble)
-      balanced(ctx)
+    for (const cut of CUTS) {
+      for (const type of RUNE_TYPES) {
+        const ctx = mockCtx()
+        paintStoneShape(ctx, 72, 72, cut, type, SKINS.marble)
+        balanced(ctx)
+      }
     }
   })
 })

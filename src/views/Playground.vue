@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { FACTION_DEFS, RUNE_TYPES, SKINS, SKIN_IDS, type Faction, type RuneType, type SkinId } from '@/game/rules'
-import type { PebbleShape } from '@/game/rules'
 import { setArtOverrides, artOverridesEnabled, spriteFor } from '@/game/art'
 import { ART_CATALOGUE } from '@/game/artCatalogue'
 import { WALKS } from '@/game/artSheet'
@@ -104,12 +103,12 @@ const paintOrDraw = (
  * below are painted with `laurel: false` for the same reason the arena does —
  * so what the A/B compares is one wreath over two stones, not two wreaths.
  */
-const overlayLaurel = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, shape: PebbleShape = 'pebble'): void => {
-  const img = spriteFor('fx', `laurel-${shape}`)
+const overlayLaurel = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, type: RuneType = 'melee'): void => {
+  const img = spriteFor('fx', `laurel-${type}`)
   if (img) { ctx.drawImage(img, x, y, w, h); return }
   ctx.save()
   ctx.translate(x, y)
-  try { paintLaurel(ctx, w, h, shape) } catch { /* a stub stone is enough of a signal */ }
+  try { paintLaurel(ctx, w, h, type) } catch { /* a stub stone is enough of a signal */ }
   ctx.restore()
 }
 
@@ -145,8 +144,8 @@ const paint = (now: number): void => {
   const step = BOX + PAD
   let y = 30
 
-  // ── The player's stones: six skins × five runes × two levels, breathing ──
-  heading(ctx, `stones — six skins, Lv 1 / Lv 2 · ${painted.value ? 'PAINTED' : 'drawn'}`, PAD, y)
+  // ── The player's stones: every skin × every rune × two levels, breathing ──
+  heading(ctx, `stones — ${SKIN_IDS.length} skins, Lv 1 / Lv 2 · ${painted.value ? 'PAINTED' : 'drawn'}`, PAD, y)
   y += 14
   for (const skin of SKIN_IDS) {
     let x = PAD
@@ -157,7 +156,7 @@ const paint = (now: number): void => {
         paintOrDraw(ctx, x, y, BOX, BOX,
           () => spriteFor('rune', id),
           () => paintPebble(ctx, BOX, BOX, { type, level, owner: 'player', faction: null, skin: SKINS[skin], pulse, laurel: false }))
-        if (level >= 2) overlayLaurel(ctx, x, y, BOX, BOX, SKINS[skin].shape)
+        if (level >= 2) overlayLaurel(ctx, x, y, BOX, BOX, type)
         x += step
       }
     }
@@ -246,7 +245,7 @@ const paint = (now: number): void => {
       cellBox(ctx, x, y, BOX, BOX)
       // The laurel is the one fx with a painter of its own, so it gets the A/B
       // the others cannot have — and it is the layer every Lv 2 stone wears.
-      if (id.startsWith('laurel-')) overlayLaurel(ctx, x, y, BOX, BOX, id.slice('laurel-'.length) as PebbleShape)
+      if (id.startsWith('laurel-')) overlayLaurel(ctx, x, y, BOX, BOX, id.slice('laurel-'.length) as RuneType)
       else bitmapOnly(ctx, x, y, BOX, BOX, spriteFor('fx', id))
       label(ctx, id, x + BOX / 2, y + BOX + LABEL)
       x += step

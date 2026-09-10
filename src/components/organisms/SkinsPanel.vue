@@ -6,24 +6,31 @@ import IconCoin from '@/components/icons/IconCoin.vue'
 import GameIcon from '@/components/icons/GameIcon.vue'
 import RewardAdIcon from '@/components/atoms/RewardAdIcon.vue'
 import PebblePreview from '@/components/game/PebblePreview.vue'
-import { RUNE_TYPES, SKINS, SKIN_IDS, type SkinId } from '@/game/rules'
+import { RUNE_TYPES, SKINS, SKIN_IDS, type RuneType, type SkinId } from '@/game/rules'
 import useSkins from '@/use/useSkins'
 import useEconomy from '@/use/useEconomy'
+import { isNative } from '@/use/useUser'
 import { adInFlight, canOfferReward } from '@/use/useAdGate'
+import { unlockedRunes } from '@/use/useCampaign'
 import { playFx } from '@/use/useGameAudio'
 
 /**
  * ─── The skin shop, as a panel ──────────────────────────────────────────────
  *
- * Six materials the player's runes can be cut from — and a material is not a
- * tint: it is a different stone silhouette and a different way of carving the
- * glyph (see `SKINS`), so the shop has to SHOW that rather than name it.
+ * Nine materials the player's runes can be cut from — and a material is not a
+ * tint: it is a different way of WORKING the stone (carved and bordered,
+ * knapped, worn round, faceted, quarried, blunted into a slab, step cut,
+ * domed, brilliant cut) and a different way of cutting the glyph into it (see
+ * `SKINS`), so the shop has to SHOW that rather than name it. What a skin does
+ * NOT change is the outline: that belongs to the rune, which is why the hero
+ * shows the whole roster in the selected material — nine stones that are
+ * plainly the same stuff and plainly different runes.
  *
  * Two parts. The HERO is the selected material worn by every rune the game
  * has — the sword at Lv 2, big and breathing, and the five runes at Lv 1 under
  * it — with the material's name, one line on what makes it different, and the
  * actions that apply (buy with coins, watch a video, equip, equipped). The
- * LIST is the six materials as cards; a tap previews, it never spends. Every
+ * LIST is the nine materials as cards; a tap previews, it never spends. Every
  * stone on this screen is painted by the same `PebblePreview` the field uses,
  * so the thing bought and the thing placed are one drawing.
  *
@@ -77,6 +84,9 @@ const shortfall = computed(() => Math.max(0, sel.value.price - coins.value))
 /** A video is on its way for this material; the buttons wait for it. */
 const busy = ref(false)
 
+/** Only a native build has the width to spell "Watch ad" out beside the frame. */
+const showAdWord = isNative
+
 const select = (row: Row): void => {
   if (selected.value === row.id) return
   selected.value = row.id
@@ -103,6 +113,12 @@ const onWatch = async (row: Row): Promise<void> => {
   }
 }
 
+/**
+ * Which runes may be SHOWN wearing this material. A locked rune's stone is its
+ * identity, and the campaign is still saving it.
+ */
+const isOwned = (type: RuneType): boolean => unlockedRunes.value.includes(type)
+
 /** The hero's glow and the cards' rims follow the material's own rim light. */
 const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].base })
 </script>
@@ -115,9 +131,16 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
         div.hero__big
           PebblePreview(type="melee" :skin="selected" :level="2" animated)
           span.hero__lv {{ t('runes.level', { n: 2 }) }}
+        //- The material worn by the runes the player OWNS — and a question
+        //- mark for each one still to come. Drawing every rune's glyph here
+        //- was a spoiler hiding in the skins tab: the campaign spends chapters
+        //- keeping the axe, the boulder, the mortar and the warhead back, and
+        //- this row handed all four over to anyone who opened it on day one.
         div.hero__row
-          div.hero__slot(v-for="type in RUNE_TYPES" :key="type")
-            PebblePreview(:type="type" :skin="selected" :level="1")
+          template(v-for="type in RUNE_TYPES" :key="type")
+            div.hero__slot(v-if="isOwned(type)")
+              PebblePreview(:type="type" :skin="selected" :level="1")
+            div.hero__slot.is-locked(v-else aria-hidden="true") ?
 
       div.hero__caption
         span.hero__name {{ t(`skins.names.${selected}`) }}
@@ -144,15 +167,19 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
                 span {{ t('skins.buy') }}
                 IconCoin.hero__buy-coin
                 span {{ sel.price }}
+              //- Less text, same offer: the film frame carries it, and the
+              //- word only appears where there is room for it (see the rank
+              //- card's switch, which set this style).
               FButton.hero__ad(
                 v-if="canOfferReward"
                 size="sm"
                 type="secondary"
                 :is-disabled="busy || adInFlight"
+                :aria-label="t('shop.watchAd')"
                 @click="onWatch(sel)"
               )
                 RewardAdIcon.hero__ad-icon
-                span {{ t('shop.watchAd') }}
+                span.hero__adword(v-if="showAdWord") {{ t('shop.watchAd') }}
             span.hero__need(v-if="!sel.affordable") {{ t('skins.needMore', { n: shortfall }) }}
 
     //- ── The wallet and the six materials ────────────────────────────────
@@ -244,6 +271,21 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
 .hero__slot
   filter: drop-shadow(0 0.2rem 0.35rem rgba(0, 0, 0, 0.6))
 
+// A rune still to come: the socket it will sit in, and nothing that says which
+// rune it is.
+.hero__slot.is-locked
+  display: flex
+  align-items: center
+  justify-content: center
+  aspect-ratio: 1
+  border-radius: 50%
+  border: 2px dashed rgba(159, 178, 208, 0.35)
+  background-color: rgba(6, 10, 22, 0.5)
+  color: rgba(159, 178, 208, 0.75)
+  font-weight: 900
+  font-size: clamp(0.6rem, 3vw, 0.95rem)
+  filter: none
+
 .hero__caption
   display: flex
   flex-direction: column
@@ -301,6 +343,9 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
   height: 1em
 
 .hero__buy :deep(.f-button__text),
+.hero__adword
+  white-space: nowrap
+
 .hero__ad :deep(.f-button__text)
   display: inline-flex
   align-items: center

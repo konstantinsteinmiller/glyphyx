@@ -1,20 +1,57 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_LEVEL, RUNES, RUNE_TYPES, archerRange, clampLevel, statsFor, supportHeal, dirsFor, defaultDir, snapDir, streakMultiplier, DIR_VEC, CARDINALS, DIAGONALS,
-  BOMBARD_RANGE, bombardCells, cleaveCells, rollerLane, rollerPierce,
+  BOMBARD_RANGE, bombardCells, cleaveCells, crownTarget, crownTurns, rollerLane, rollerPierce,
   FREE_RANK_WINDOW_MS, MAX_RUNE_RANK, NUKE_DAMAGE, NUKE_SURVIVES_LEVEL, RANK_HP_PER_RANK, RANK_PRICES,
   clampRank, freeRankWindow, freeRankWindowLeft, nukeVaporises, rankHpBonus, rankOf, rankPrice, statsWithRank,
-  aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint,
+  aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, isAimChosen, AIM_CENTRE_DEAD_ZONE,
   type Cell
 } from '@/game/rules'
 
 /** Cell order is not part of any contract — these compare as sets. */
 const byCell = (a: Cell, b: Cell): number => a.row - b.row || a.col - b.col
 
+describe('the crown, as geometry and as a rule', () => {
+  it('reaches exactly one tile — the neighbour it faces, a sword\'s reach', () => {
+    expect(crownTarget({ col: 1, row: 2 }, 'up')).toEqual({ col: 1, row: 1 })
+    expect(crownTarget({ col: 1, row: 2 }, 'down')).toEqual({ col: 1, row: 3 })
+    expect(crownTarget({ col: 1, row: 2 }, 'left')).toEqual({ col: 0, row: 2 })
+    expect(crownTarget({ col: 1, row: 2 }, 'right')).toEqual({ col: 2, row: 2 })
+  })
+
+  it('reaches nothing off the board, and nothing at all without a facing', () => {
+    expect(crownTarget({ col: 0, row: 0 }, 'up')).toBeNull()
+    expect(crownTarget({ col: 0, row: 0 }, 'left')).toBeNull()
+    expect(crownTarget({ col: 3, row: 3 }, 'down')).toBeNull()
+    expect(crownTarget({ col: 3, row: 3 }, 'right')).toBeNull()
+    // `omni` names no direction; a crown is never omni, but the helper is total.
+    expect(crownTarget({ col: 1, row: 1 }, 'omni')).toBeNull()
+  })
+
+  it('turns a rune of its own level or below, and no higher', () => {
+    // The answer to "can they steal the tower I built?" is "only by building
+    // one themselves" — the same shape as the nuke's Lv 2 rule.
+    expect(crownTurns(1, 1)).toBe(true)
+    expect(crownTurns(1, 2)).toBe(false)
+    expect(crownTurns(2, 1)).toBe(true)
+    expect(crownTurns(2, 2)).toBe(true)
+    expect(crownTurns(2, 3)).toBe(false)
+    // A power-rune crown lands at Lv 3 and takes anything the board can hold.
+    for (let lv = 1; lv <= MAX_LEVEL; lv++) expect(crownTurns(MAX_LEVEL, lv), `lv ${lv}`).toBe(true)
+  })
+
+  it('clamps whatever it is handed, like every other level rule here', () => {
+    expect(crownTurns(1, 0)).toBe(true)
+    expect(crownTurns(0, 1)).toBe(true)
+    expect(crownTurns(1, 99)).toBe(false)
+    expect(crownTurns(99, 99)).toBe(true)
+  })
+})
+
 describe('the rune roster is the GDD table', () => {
-  it('has the nine runes with their Lv 1 / Lv 2 stats', () => {
+  it('has the ten runes with their Lv 1 / Lv 2 stats', () => {
     expect(RUNE_TYPES).toEqual(
-      ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker'])
+      ['melee', 'archer', 'mage', 'defense', 'support', 'cleave', 'roller', 'bombard', 'nuker', 'crown'])
     expect(RUNES.melee.lv1).toEqual({ hp: 3, atk: 2 })
     expect(RUNES.melee.lv2).toEqual({ hp: 6, atk: 4 })
     expect(RUNES.archer.lv1).toEqual({ hp: 2, atk: 2 })
@@ -38,6 +75,13 @@ describe('the rune roster is the GDD table', () => {
     expect(RUNES.nuker.lv1).toEqual({ hp: 2, atk: 0 })
     expect(RUNES.nuker.lv2).toEqual({ hp: 4, atk: 0 })
     expect(RUNES.nuker.aim).toBe('omni')
+    // The crown never attacks either: it takes the rune it faces and is spent.
+    // A bow's body, because it is meant to be spent rather than defended.
+    expect(RUNES.crown.lv1).toEqual({ hp: 2, atk: 0 })
+    expect(RUNES.crown.lv2).toEqual({ hp: 4, atk: 0 })
+    // …and it is AIMED, unlike the other two runes with no attack: which stone
+    // it takes is the whole decision.
+    expect(RUNES.crown.aim).toBe('cardinal')
   })
 
   it('a nuke is decided by LEVEL, and every Lv 2 body outlives its damage', () => {
@@ -204,6 +248,15 @@ describe('the rune roster is the GDD table', () => {
     // from, so a dead zone there would make the facing flicker.
     expect(dirFromCellPoint('melee', 0.5, 0.49)).toBe('up')
     expect(dirFromCellPoint('melee', 0.5, 0.51)).toBe('down')
+    // …and the tie AT the centre falls on the player's own default rather than
+    // on `down`. The tile's middle is where a pebble snaps and where a pointer
+    // that never aimed deliberately ends up, so the accidental answer must not
+    // be the one that points a fresh rune at the player's own base.
+    expect(dirFromCellPoint('melee', 0.5, 0.5)).toBe(defaultDir('melee', 'player'))
+    expect(dirFromCellPoint('mage', 0.5, 0.5)).toBe(defaultDir('mage', 'player'))
+    for (const t of RUNE_TYPES) {
+      expect(dirFromCellPoint(t, 0.5, 0.5), `${t} centre`).toBe(defaultDir(t, 'player'))
+    }
     // The orb's quadrants.
     expect(dirFromCellPoint('mage', 0.2, 0.2)).toBe('ul')
     expect(dirFromCellPoint('mage', 0.8, 0.2)).toBe('ur')
@@ -224,6 +277,34 @@ describe('the rune roster is the GDD table', () => {
     expect(dirFromCellPoint('melee', -3, 0.5)).toBe('left')
     expect(dirFromCellPoint('melee', 0.5, 9)).toBe('down')
     expect(dirsFor('melee')).toContain(dirFromCellPoint('melee', Number.NaN, Number.NaN))
+  })
+
+  it('treats the tile centre as "not chosen yet" rather than as a choice', () => {
+    // Naming a region and CHOOSING one are different acts: the renderer needs a
+    // region for every point, the placement logic needs to know whether the
+    // player actually picked. Inside the dead zone they have not.
+    expect(isAimChosen(0.5, 0.5)).toBe(false)
+    expect(isAimChosen(0.5, 0.5 + AIM_CENTRE_DEAD_ZONE / 2)).toBe(false)
+    expect(isAimChosen(0.5, 0.5 - AIM_CENTRE_DEAD_ZONE / 2)).toBe(false)
+    // …and just outside it they have.
+    expect(isAimChosen(0.5, 0.5 - AIM_CENTRE_DEAD_ZONE - 0.01)).toBe(true)
+    expect(isAimChosen(0.05, 0.5)).toBe(true)
+    expect(isAimChosen(0.5, 0.95)).toBe(true)
+    expect(isAimChosen(0.95, 0.95)).toBe(true)
+    // The zone is small: the great majority of a tile is still a live choice,
+    // or the control would feel dead rather than forgiving.
+    let chosen = 0
+    let total = 0
+    for (let i = 0; i <= 40; i++) {
+      for (let j = 0; j <= 40; j++) {
+        total++
+        if (isAimChosen(i / 40, j / 40)) chosen++
+      }
+    }
+    expect(chosen / total).toBeGreaterThan(0.85)
+    // Garbage is "not chosen": a pointer whose position cannot be read must
+    // never silently overrule a facing the player set deliberately.
+    expect(isAimChosen(Number.NaN, Number.NaN)).toBe(false)
   })
 
   it('gives every region a polygon that contains its own facing', () => {

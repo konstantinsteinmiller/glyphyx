@@ -9,7 +9,8 @@ export default {
       'cleave': 'Fällt alle drei Felder davor auf einmal, schon im ersten Zug.',
       'roller': 'Walzt zwei Überlebende nieder, bevor er hält, schon im ersten Zug.',
       'bombard': 'Beschießt die ferne Reihe und das Feld dazwischen, schon im ersten Zug.',
-      'nuker': 'Landet auf Stufe 3 und hält das leergefegte Feld, schon im ersten Zug.'
+      'nuker': 'Landet auf Stufe 3 und hält das leergefegte Feld, schon im ersten Zug.',
+      'crown': 'Startet auf Stufe 3 – nimmt schon im ersten Zug sogar gestapelte Runen.'
     },
     'watchAd': 'Werbung ansehen',
     'armed': 'Gerüstet ×{n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': 'Axt',
       'roller': 'Felsbrocken',
       'bombard': 'Mörser',
-      'nuker': 'Zerstörer'
+      'nuker': 'Zerstörer',
+      'crown': 'Krone'
     },
     'descriptions': {
       'melee': 'Trifft das Feld davor. Stufe 2 stößt das Ziel zurück.',
@@ -89,7 +91,8 @@ export default {
       'cleave': 'Trifft die drei Felder davor: das gegenüber und beide daneben.',
       'roller': 'Rollt weiter, bis eine Rune standhält – auch eigene. Stufe 2 rollt eins weiter.',
       'bombard': 'Beschießt drei Felder, drei Reihen entfernt, über jede Mauer. Stufe 2 trifft auch die Mitte.',
-      'nuker': 'Zündet, wo sie landet: jede Rune der Stufe 1 auf dem Feld stirbt, auch deine. Stufe 2 hält stand.'
+      'nuker': 'Zündet, wo sie landet: jede Rune der Stufe 1 auf dem Feld stirbt, auch deine. Stufe 2 hält stand.',
+      'crown': 'Nimmt die Rune, auf die sie zeigt, und wird dabei verbraucht – sie kämpft sofort für dich. Stufe 2 nimmt Stapel.'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'Zieh eine Rune aufs Brett'
     },
     'aim': {
-      'touch': 'Wischen zum Zielen, loslassen zum Setzen',
-      'desktop': 'Ziehen oder Pfeiltasten / WASD zum Zielen, loslassen zum Setzen'
+      'touch': 'Auf der Seite loslassen, in die sie zeigen soll',
+      'desktop': 'Zur Seite bewegen, in die sie zeigen soll, dann klicken'
     },
     'archer': {
       'touch': 'Bögen überspringen ein Feld und treffen das nächste',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': 'Der Zerstörer vernichtet jede Rune der Stufe 1 — auch deine',
       'desktop': 'Der Zerstörer vernichtet jede Rune der Stufe 1 — auch deine'
+    },
+    'crown': {
+      'touch': 'Die Krone nimmt die Rune, auf die sie zeigt – sie kämpft jetzt für dich',
+      'desktop': 'Die Krone nimmt die Rune, auf die sie zeigt – sie kämpft jetzt für dich'
     }
   },
 
@@ -240,7 +247,10 @@ export default {
       'jade': 'Jade',
       'amber': 'Bernstein',
       'marble': 'Marmor',
-      'ember': 'Glut'
+      'ember': 'Glut',
+      'sapphire': 'Saphir',
+      'ruby': 'Rubin',
+      'diamond': 'Diamant'
     },
     'tagline': 'Jede Rune, die du legst, trägt es.',
     'needMore': 'Noch {n} Münzen',
@@ -250,7 +260,10 @@ export default {
       'jade': 'Polierte grüne Jade, die Glyphe in Gold eingelegt.',
       'amber': 'Ein facettierter Bernstein, der von innen leuchtet.',
       'marble': 'Weißer Marmor, tief geschnitten und schattiert.',
-      'ember': 'Eine Platte erkalteter Lava, die Glyphe glüht durch die Risse.'
+      'ember': 'Eine Platte erkalteter Lava, die Glyphe glüht durch die Risse.',
+      'sapphire': 'Tiefblauer Saphir im Treppenschliff, ein weißer Stern unter der Tafel.',
+      'ruby': 'Ein gewölbter Rubin-Cabochon, die Glyphe glüht rot darunter.',
+      'diamond': 'Diamant im Brillantschliff, die Glyphe in ein Spektrum zerlegt.'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': 'Neues Geschenk in {t}',
     'freeTaken': 'Komm für das nächste wieder',
     'nukerUnlock': 'Zerstörer freischalten',
-    'nukerLocked': 'Oder gewinne Level 4-1'
+    'nukerLocked': 'Oder gewinne Level 4-1',
+    'mystery': '???',
+    'mysteryHint': 'Gewinne weiter',
+    'mysteryAria': 'Eine Rune, die du noch nicht freigeschaltet hast',
+    'nextUp': 'Demnächst',
+    'winsAt': 'Gewinne sie in Level {c}-{n}'
   },
 
   'forge': {
@@ -304,6 +322,7 @@ export default {
     'music': 'Musik',
     'musicTrack': 'Musiktitel',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': 'Stiller Stein',
       'trance': 'Runenpuls'
     },

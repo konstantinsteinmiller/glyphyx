@@ -47,7 +47,7 @@ export const GAME_ICON_NAMES = [
   // learn the same object twice. See `game/weapons.ts`.
   'rocket', 'gatling',
   // ── Glyphyx ─────────────────────────────────────────────────────────────
-  // The nine rune glyphs (`shield` above doubles as the defense rune's), the
+  // The ten rune glyphs (`shield` above doubles as the defense rune's), the
   // offline forge, the campaign map, the skin shop and a board tile. The rune
   // glyphs front the unlock card, the campaign modal's reward column and the
   // hint pills — the same silhouettes the renderer carves into the pebbles, so
@@ -60,7 +60,10 @@ export const GAME_ICON_NAMES = [
   //
   // `nuker` is the odd one out and is meant to be: a hazard trefoil, a SIGN
   // rather than a weapon, because it is the one rune nobody aims.
-  'sword', 'bow', 'orb', 'cross', 'cleave', 'roller', 'bombard', 'nuker', 'forge', 'map', 'skin', 'tile'
+  //
+  // `crown` is the other one that is not a weapon: the rune that takes a stone
+  // instead of breaking it, so its glyph is regalia rather than an implement.
+  'sword', 'bow', 'orb', 'cross', 'cleave', 'roller', 'bombard', 'nuker', 'crown', 'forge', 'map', 'skin', 'tile'
 ] as const
 
 export type GameIconName = (typeof GAME_ICON_NAMES)[number]

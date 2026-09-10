@@ -7,7 +7,7 @@
  * can rebuild any node on any device.
  *
  * The player's difficulty setting is deliberately NOT part of a node: it feeds
- * the AI's dice (see `ai.ts`) and nothing else, so two players on "Stage 3-4"
+ * the AI's dice (see `ai.ts`) and nothing else, so two players on "Level 3-4"
  * are looking at the same board.
  */
 
@@ -56,7 +56,8 @@ const reward = (coins: number, unlockRune: RuneType | null = null, unlockSkin: S
 // shield and cross lessons need an enemy that DOES hit, so their dummies fire
 // (`atkMul` 1 and 0.5) but still never place. What each teaches:
 //
-//   1-1 drag     a sword, dropped beside a skeleton, then pressed and flicked toward it
+//   1-1 drag     a sword carried onto a tile and released on the side that faces
+//                the skeleton — the drop and the aim as one move
 //   1-2 archer   the bow shoots OVER the tile in front of it (your own sword)
 //   1-3 stack    a sword dropped onto a sword is a Lv 2 sword
 //   1-4 mage     the orb's beam sweeps two tiles on the diagonal
@@ -79,13 +80,25 @@ const chapterOne = (id: number): NodeConfig => {
   const b = base(id)
   switch (indexInChapter(id)) {
     case 1:
-      // Drag the sword to (1,2) and let go: it lands facing up, at nothing —
-      // the 1-HP skeleton stands to its LEFT on (0,2). The ghost then presses
-      // the stone again and flicks left; the window of the player's own
-      // placement holds until they have turned it that way too. One lesson,
-      // both gestures: drop, then re-aim.
+      // ONE gesture, and it is the one the game is actually played with: carry
+      // the sword to (1,2) and let go on the LEFT side of that tile, where the
+      // 1-HP skeleton stands on (0,2). Where you release inside a tile is which
+      // way the rune faces, so the drop and the aim are a single move.
+      //
+      // This lesson used to drop the sword facing nothing and then teach a
+      // press-and-flick correction, holding the window open until the player
+      // performed it. That was right when a stroke was the only way to aim; it
+      // is now a tutorial in the game's FALLBACK — slower, and harder to
+      // understand than the thing it is standing in for. The correction still
+      // exists (it is how a finger fixes a mis-drop, and how a keyboard aims),
+      // but it is discovered from the hint pill, not drilled at minute one.
       return {
-        ...lesson(b, 'drag', { type: 'melee', to: { col: 1, row: 2 }, dir: 'left', reaim: 'left' }, ['melee']),
+        ...lesson(b, 'drag', { type: 'melee', to: { col: 1, row: 2 }, dir: 'left' }, ['melee']),
+        // The first board anyone sees is cut from OBSIDIAN, not from the beige
+        // river sandstone a new save starts with: black glass with the glyph
+        // as a cold neon line reads far better at a glance, and this is the
+        // one node where no player has a material of their own to override.
+        skin: 'obsidian',
         mode: '1v1', objective: 'eliminate',
         enemies: [enemy('skeleton', 'top', 'passive', { atkMul: 0, deck: ['melee'] })],
         presets: [skeleton('melee', 0, 2, 1)],
@@ -180,8 +193,14 @@ const chapterOne = (id: number): NodeConfig => {
 // ─── Chapter 2 and on, generated ────────────────────────────────────────────
 
 const REAL_FACTIONS: readonly Faction[] = ['goblin', 'orc', 'undead']
-/** Skins handed out by the campaign after the two chapter-1 ones, in order. */
-const LATER_SKINS: readonly SkinId[] = ['amber', 'marble', 'ember']
+/**
+ * Skins handed out by the campaign after the two chapter-1 ones, in order.
+ *
+ * The three gems are at the end because they are the top of the shop ladder
+ * too: a player who buys nothing still meets them, several chapters after the
+ * stone ones, and a player who buys everything has already earned them.
+ */
+const LATER_SKINS: readonly SkinId[] = ['amber', 'marble', 'ember', 'sapphire', 'ruby', 'diamond']
 
 /**
  * The four late runes and the node that hands each one over.
@@ -199,11 +218,19 @@ export const RUNE_UNLOCK_NODES: Readonly<Record<number, RuneType>> = {
   [nodeId(2, 1)]: 'cleave',   // 2-1, straight out of the chapter-1 chest
   [nodeId(2, 5)]: 'roller',   // 2-5, once the axe has been swung a few times
   [nodeId(3, 1)]: 'bombard',  // 3-1, the artillery that opens chapter 3
-  // 4-1, and the LAST rune the campaign ever gives. The nuke is the one move
-  // that can undo a whole board, so it is handed over only to a player who has
-  // three chapters of position behind them and something worth resetting — and
-  // it is the one rune impatience can buy early, for a rewarded video.
-  [nodeId(4, 1)]: 'nuker'
+  // 4-1. The nuke is the one move that can undo a whole board, so it is handed
+  // over only to a player who has three chapters of position behind them and
+  // something worth resetting — and it is the one rune impatience can buy
+  // early, for a rewarded video.
+  [nodeId(4, 1)]: 'nuker',
+  // 4-5, and the LAST rune the campaign ever gives. The crown is kept for the
+  // end because it is the only rune that plays the WIN CONDITION rather than
+  // the fight: a player who has not yet felt a match decided by who holds
+  // eight tiles has no idea what they are being handed. It also lands one
+  // chapter's worth of play after the nuke on purpose — those two are the
+  // opposite answers to a board that has gone wrong (burn it down, or take a
+  // piece of theirs), and meeting them together would blur both.
+  [nodeId(4, 5)]: 'crown'
 }
 
 const aiForChapter = (chapter: number): AiLevel =>
@@ -290,7 +317,8 @@ export const LATE_LESSON_NODES: Readonly<Record<number, RuneType>> = {
   [nodeId(2, 2)]: 'cleave',
   [nodeId(2, 6)]: 'roller',
   [nodeId(3, 2)]: 'bombard',
-  [nodeId(4, 2)]: 'nuker'
+  [nodeId(4, 2)]: 'nuker',
+  [nodeId(4, 6)]: 'crown'
 }
 
 /**
@@ -338,6 +366,27 @@ const lateLesson = (gen: NodeConfig, rune: RuneType): NodeConfig => {
         { type: 'roller', to: { col: 1, row: 3 }, dir: 'up' },
         ['melee', 'roller'],
         [skeleton('melee', 1, 2, 2), skeleton('melee', 1, 1, 2), skeleton('archer', 1, 0, 2)],
+        ['melee', 'archer']
+      )
+    case 'crown':
+      // Two dummies in one file: a sword on (1,1) and, behind it, a 2-HP bow
+      // the player cannot reach this turn. The crown dropped at (1,2) facing up
+      // takes the sword — and the sword, now theirs and turned around, kills
+      // the bow in the same resolution.
+      //
+      // One drop teaches both halves of the rune, which is why the board is
+      // shaped like this and not around a single target: that the stone you
+      // face becomes YOURS, and that it fights for you immediately. A lesson
+      // with one dummy on it would have taught the first half and quietly
+      // hidden the second, which is the half that decides matches.
+      //
+      // The crown is spent doing it and leaves the board; the player ends the
+      // turn holding the tile it stood on and the sword it took.
+      return duel(
+        'crown',
+        { type: 'crown', to: { col: 1, row: 2 }, dir: 'up' },
+        ['melee', 'crown'],
+        [skeleton('melee', 1, 1, 3), skeleton('archer', 1, 0, 2)],
         ['melee', 'archer']
       )
     case 'bombard':

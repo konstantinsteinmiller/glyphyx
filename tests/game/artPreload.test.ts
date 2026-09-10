@@ -43,7 +43,7 @@ describe('what the save says', () => {
     expect(resumeNode()).toBe(7)
     expect(resumeSkin()).toBe('ember')
     state.set(NODE_KEY, 'NaN')
-    state.set(SKIN_KEY, 'diamond')
+    state.set(SKIN_KEY, 'granite')
     expect(resumeNode()).toBe(1)
     expect(resumeSkin()).toBe('river')
   })

@@ -37,10 +37,40 @@
  * The whole contract is that cell N comes back at the pixels cell N went out
  * at. An image model that re-composed the grid produces a file that still looks
  * fine and slices into garbage — every sprite a few pixels off centre, which
- * nobody notices until the board looks subtly wrong. So a sheet whose aspect
- * ratio does not match the index is REJECTED rather than best-guessed.
+ * nobody notices until the board looks subtly wrong. So a sheet whose grid no
+ * longer matches the index is REJECTED rather than best-guessed.
+ *
+ * That test is a SHAPE test, and it is deliberately not a strict one. A return
+ * whose proportions drifted a percent — 1456x720 for a 1024x506 sheet — has not
+ * re-composed anything: the rects are read per axis (`c.x * sx`, `c.y * sy`),
+ * so every panel still lands on its own content and is resampled back to its
+ * nominal box on the way out. Refusing that throws away a good generation over
+ * arithmetic this file already does for strips and walks. A grid that really
+ * WAS re-composed misses by an order of magnitude more (the glyph sheet re-laid
+ * from 3 across to 5 came back 19% off), so the threshold separates them
+ * cleanly.
+ *
+ * WHAT IT REFUSES TO DO TWICE
+ *
+ * A painting is a snapshot of a DRAWING, and the drawing moves. The bow was
+ * re-cut after its stones were painted, and nothing in the pipeline noticed:
+ * `pnpm art:slice` would have cheerfully re-installed twelve stones carrying
+ * the old silhouette over the corrected one, silently, on the next run anybody
+ * made for an unrelated sheet.
+ *
+ * So a successful slice leaves a RECEIPT (`painted/.sliced.json`) naming the
+ * revision of the reference each file was cut against — the hash of the clean
+ * sheet the bench exported. When the reference has changed since, the painting
+ * is refused with the reason, because it is now a painting of something else.
+ * `--stale-ok` slices it anyway for the cases where the change was cosmetic and
+ * the operator knows it.
+ *
+ * Without a receipt (a fresh clone, a first run) nothing is refused: mtimes
+ * after a checkout say nothing, so an older-looking file is a WARNING and the
+ * slice goes ahead.
  */
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import {
   mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync,
   existsSync, readdirSync, statSync
@@ -90,6 +120,7 @@ const num = (name, fallback) => {
 }
 
 const DRY = flag('--dry')
+const STALE_OK = flag('--stale-ok')
 const OUT_ROOT = resolve(ROOT, opts['--out'] ?? 'public')
 const QUALITY = num('--quality', 0.92)
 const FORCE_SHEET = opts['--sheet'] ?? null
@@ -176,6 +207,10 @@ Slice repainted contact sheets back into drop-in bitmaps.
   --frames <n>     Accept a walk sheet that came back with n panels instead of
                    the 8 it was asked for, and play them as one cycle. Must
                    match the grid the slicer measured.
+  --stale-ok       Slice a painting whose reference has been REDRAWN since it
+                   was painted. Off by default: the receipt in
+                   painted/.sliced.json is what stops a re-cut rune quietly
+                   getting its old silhouette back on the next unrelated run.
   --size <px>      See above. 256 is the rule (LOADING.md, payload sizing).
   --dry            Print the plan and write nothing.
 `)
@@ -381,6 +416,88 @@ const safeTarget = (target) => {
   return rel && !rel.startsWith('..') && !rel.startsWith(sep) ? full : null
 }
 
+// ─── The receipt ────────────────────────────────────────────────────────────
+//
+// One line per painted file: the revision of the REFERENCE it was cut against.
+// A revision is the first 12 hex of a sha1 over the clean sheet's bytes, so it
+// changes exactly when the drawing does and not when a file is copied, cloned
+// or re-dated.
+//
+// It lives beside the paintings rather than in `art-sheets/`, because it
+// describes them and not the manifest, and a `painted/` folder someone shares
+// carries its own provenance with it.
+
+const RECEIPT = join(PAINTED, '.sliced.json')
+
+const readReceipt = () => {
+  if (!existsSync(RECEIPT)) return {}
+  try {
+    const r = JSON.parse(readFileSync(RECEIPT, 'utf-8'))
+    return r && typeof r === 'object' ? (r.files ?? {}) : {}
+  } catch {
+    // A corrupt receipt must never stop a slice — it only ever ADDS a refusal,
+    // so the safe failure is to behave as if nobody had sliced anything yet.
+    return {}
+  }
+}
+
+const receipt = readReceipt()
+/** What this run proved: written back only when it actually wrote something. */
+const receiptNext = { ...receipt }
+
+/** The clean reference a painting was made from, if it is still on disk. */
+const referenceOf = (sheet) => {
+  const stem = sheet.stems?.[0]
+  if (!stem) return null
+  for (const p of [join(ROOT, 'art-sheets', `${stem}.png`), join(ROOT, 'art-sheets', 'singles', `${stem}.png`)]) {
+    if (existsSync(p)) return p
+  }
+  return null
+}
+
+const revOf = (file) => createHash('sha1').update(readFileSync(file)).digest('hex').slice(0, 12)
+
+/**
+ * Is this painting a painting of the CURRENT drawing?
+ *
+ * `{ ok }` to go ahead, `{ ok: false, why }` to refuse, and a `warn` either
+ * way. The receipt is the only hard evidence: without one, an older mtime is
+ * worth saying out loud and nothing more, because a checkout rewrites mtimes
+ * and refusing a whole folder after a clone would be its own bug.
+ */
+const freshness = (file, sheet) => {
+  const ref = referenceOf(sheet)
+  if (!ref) return { ok: true }
+  const rev = revOf(ref)
+  const own = revOf(file)
+  let seen = receipt[basename(file)]
+  // A receipt line describes the PAINTING it was written for, not the name it
+  // had. A re-roll saved over the old file is a new painting under the same
+  // name; judging it by the old line refused every fresh repaint of a re-cut
+  // drawing as "redrawn after this was painted". Lines from before `painting`
+  // was recorded carry no hash, and keep the strict reading.
+  if (seen?.painting && seen.painting !== own) seen = undefined
+  if (seen?.rev && seen.rev !== rev) {
+    return {
+      ok: false,
+      rev,
+      why: `the reference was REDRAWN after this was painted (${seen.rev} → ${rev}).`
+        + `\n    ${relative(ROOT, ref)} is not the picture this file was painted over any more.`
+        + '\n    Repaint it from the new sheet, or pass --stale-ok to cut it anyway.'
+    }
+  }
+  if (!seen && statSync(ref).mtimeMs > statSync(file).mtimeMs + 60_000) {
+    return {
+      ok: true,
+      rev,
+      own,
+      warn: `no receipt for this one yet, and ${basename(ref)} is newer than it.`
+        + ' If the drawing changed since it was painted, this cuts the OLD one — check it, or repaint.'
+    }
+  }
+  return { ok: true, rev, own }
+}
+
 let written = 0
 let skipped = 0
 let failed = 0
@@ -444,6 +561,18 @@ try {
       continue
     }
 
+    // A painting of a drawing that has since moved is not this drawing's
+    // painting. See "WHAT IT REFUSES TO DO TWICE" at the top of this file.
+    const fresh = freshness(file, sheet)
+    if (!fresh.ok && !STALE_OK) {
+      console.error(`\n✗ ${basename(file)} — ${fresh.why}`)
+      failed++
+      continue
+    }
+    if (!fresh.ok) console.warn(`\n  ! ${basename(file)} — ${fresh.why.split('\n')[0]} Slicing anyway (--stale-ok).`)
+    if (fresh.warn) console.warn(`  ! ${fresh.warn}`)
+    if (fresh.rev) receiptNext[basename(file)] = { sheet: sheet.id, rev: fresh.rev, painting: fresh.own, at: new Date().toISOString() }
+
     // The sheet may come back at a different resolution than it left at, which
     // is fine and expected. What is NOT fine is a different SHAPE: that means
     // the grid was re-composed, and every rect in the index is then a lie.
@@ -485,11 +614,26 @@ try {
       // by the same factor, and each is resampled back to its nominal box on the
       // way out. Refusing a good generation over arithmetic we can do ourselves
       // is the more expensive mistake when a generation costs a re-roll.
-      if (!['strip', 'walk'].includes(sheet.kind) || drift > 0.15) {
-        console.error(`  ✗ aspect ratio changed (${sx.toFixed(3)} vs ${sy.toFixed(3)}).`)
+      // How far a UNIFORM drift may go before it stops being a drift.
+      //
+      // A strip or a walk is one row, so it is forgiven generously: the panels
+      // still divide the frame evenly, every one is distorted by the same
+      // factor, and each is resampled back to its nominal box on the way out.
+      //
+      // A lattice sheet gets a tighter but real allowance for the same reason,
+      // because the rects are read PER AXIS: `c.x * sx`, `c.y * sy`. A return
+      // that came back 1.1% out of proportion still lands every panel on its
+      // own content — refusing it threw away five painted enemy sheets over
+      // arithmetic already written here. A grid that was genuinely re-composed
+      // misses by far more: the glyph sheet re-laid from 3 columns to 5 came
+      // back 19% off, and is still refused, with the reason.
+      const allow = ['strip', 'walk'].includes(sheet.kind) ? 0.15 : 0.06
+      if (drift > allow) {
+        console.error(`  ✗ aspect ratio changed (${sx.toFixed(3)} vs ${sy.toFixed(3)}, ${(drift * 100).toFixed(1)}%).`)
         console.error(['strip', 'walk'].includes(sheet.kind)
           ? '    Too far off to correct — ask for it again at the stated size.'
-          : '    The model re-composed the grid; the cell rects no longer apply.')
+          : '    The model re-composed the grid; the cell rects no longer apply.'
+            + '\n    If the SHEET was re-laid since this was painted, repaint it from the new reference.')
         failed++
         continue
       }
@@ -1564,6 +1708,12 @@ try {
       }
       written++
     }
+  }
+
+  // The receipt records what was actually cut, so a dry run leaves it alone.
+  if (written && !DRY) {
+    mkdirSync(PAINTED, { recursive: true })
+    writeFileSync(RECEIPT, `${JSON.stringify({ note: 'written by tools/slice-sheets.mjs — the reference revision each painting was cut against', files: receiptNext }, null, 2)}\n`, 'utf-8')
   }
 
   console.log(`\n${DRY ? 'would write' : 'wrote'} ${written} file(s)`

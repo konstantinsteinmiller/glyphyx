@@ -33,3 +33,41 @@ html, body
   50%
     background-color: #f7a000 !important
     opacity: 0.7
+
+// 5. The HUD motion budget — `perf-lite`
+//
+// Stamped on <body> by `useHudMotion` once the quality ladder settles on `low`
+// or `min`, i.e. on a device that is already being given a reduced canvas DPR
+// and no mote field. It stops the always-on decorative animations, which
+// measured ~17 % of a core in style recalculation, layerization and paint at
+// 4x CPU throttle (`PERF-LEDGER.md`).
+//
+// The list is DELIBERATELY enumerated rather than a blanket `animation: none`.
+// Most animation in this game is transient and load-bearing — the chest
+// ceremony, modal entrances, the reward stage, the conquest pulse — and killing
+// those would turn a performance setting into a broken-looking game. Only the
+// seven that run continuously through ordinary play are listed here. A new
+// always-on HUD animation belongs in this block too.
+body.perf-lite
+  .coin-badge::before,      // coin-shine
+  .forge__glow,             // forge-glow
+  .forge__spark,            // forge-spark
+  .is-ready .forge__svg,    // forge-bob
+  .enemy__strip,            // enemy-walk
+  .control-hint__pill,      // hint-breathe
+  .shop-button__gift,       // shop-gift-pulse
+  .conquest__plate.is-reached  // conquest-ready
+    animation: none !important
+
+  // The forge's glow and spark are keyframed from opacity; with the animation
+  // gone they must not be left parked at whatever the first keyframe said.
+  .forge__glow
+    opacity: 1
+
+  .forge__spark
+    opacity: 0.85
+
+  // The gold plaque still has to read as "one move from winning" with the
+  // pulse gone, so it keeps the bright end of the animation as a static glow.
+  .conquest__plate.is-reached
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 10px rgba(255, 210, 63, 0.8)

@@ -9,7 +9,8 @@ export default {
       'cleave': '初手から正面の三マスを一度に薙ぎ倒す。',
       'roller': '初手から二体を弾き飛ばしてから止まる。',
       'bombard': '初手から遠い列と中間のマスを砲撃する。',
-      'nuker': 'Lv 3 で着弾し、更地にした盤をそのまま保てる。初手から。'
+      'nuker': 'Lv 3 で着弾し、更地にした盤をそのまま保てる。初手から。',
+      'crown': 'Lv3で着地 — 最初のターンから、積んだルーンさえ奪う。'
     },
     'watchAd': '広告を見る',
     'armed': '装備中 ×{n}',
@@ -45,7 +46,7 @@ export default {
   },
 
   'hud': {
-    'stage': 'ステージ {c}-{n}',
+    'stage': 'レベル {c}-{n}',
     'conquest': '制圧',
     'tiles': '{n} / {total}',
     'turn': 'ターン {n}',
@@ -78,7 +79,8 @@ export default {
       'cleave': '斧',
       'roller': '岩',
       'bombard': '臼砲',
-      'nuker': '起爆石'
+      'nuker': '起爆石',
+      'crown': '王冠'
     },
     'descriptions': {
       'melee': '正面のマスを攻撃。Lv 2 は対象を押し返す。',
@@ -89,7 +91,8 @@ export default {
       'cleave': '正面の 3 マスを薙ぎ払う。正面と両隣。',
       'roller': 'ルーンが耐えるまで転がる。味方も巻き込む。Lv 2 はもう 1 体先へ。',
       'bombard': '3 列先の 3 マスを壁越しに砲撃。Lv 2 は中間も撃つ。',
-      'nuker': '落ちた場所で起爆。盤上の Lv 1 ルーンはすべて消滅、味方も。Lv 2 以上は耐える。'
+      'nuker': '落ちた場所で起爆。盤上の Lv 1 ルーンはすべて消滅、味方も。Lv 2 以上は耐える。',
+      'crown': '正面のルーンを奪い、そのまま消える — 奪ったルーンはすぐ味方として戦う。Lv2は積んだルーンも奪う。'
     }
   },
 
@@ -99,8 +102,8 @@ export default {
       'desktop': 'ルーンを盤面へドラッグ'
     },
     'aim': {
-      'touch': 'スワイプで狙い、離して決定',
-      'desktop': 'ドラッグか矢印キー / WASD で狙いを定め、離して確定'
+      'touch': '向けたい辺で指を離す',
+      'desktop': '向けたい辺に動かしてクリック'
     },
     'archer': {
       'touch': '弓は 1 マス飛ばして次を撃つ',
@@ -153,6 +156,10 @@ export default {
     'nuker': {
       'touch': '起爆石は Lv 1 のルーンをすべて消す — 味方も',
       'desktop': '起爆石は Lv 1 のルーンをすべて消す — 味方も'
+    },
+    'crown': {
+      'touch': '王冠は正面のルーンを奪う — もう味方だ',
+      'desktop': '王冠は正面のルーンを奪う — もう味方だ'
     }
   },
 
@@ -184,7 +191,7 @@ export default {
     'defeat': '敗北',
     'turns': 'ターン数',
     'playAgain': 'もう一度',
-    'nextStage': '次のステージ',
+    'nextStage': '次のレベル',
     'newRecord': '新記録！',
     'streakBonus': '連勝 ×{n}',
     'tripleCoins': '3×',
@@ -224,8 +231,8 @@ export default {
     'reward': '報酬',
     'play': 'プレイ',
     'replay': 'もう一度',
-    'nextUnlock': 'ステージ {c}-{n} クリアで獲得:',
-    'nextUnlockAria': 'ステージ {c}-{n} をクリアして {rune} を解放'
+    'nextUnlock': 'レベル {c}-{n} クリアで獲得:',
+    'nextUnlockAria': 'レベル {c}-{n} をクリアして {rune} を解放'
   },
 
   'skins': {
@@ -240,7 +247,10 @@ export default {
       'jade': '翡翠',
       'amber': '琥珀',
       'marble': '大理石',
-      'ember': '残り火'
+      'ember': '残り火',
+      'sapphire': 'サファイア',
+      'ruby': 'ルビー',
+      'diamond': 'ダイヤモンド'
     },
     'tagline': '置くルーンすべてがこの姿になる。',
     'needMore': 'あと{n}コイン',
@@ -250,7 +260,10 @@ export default {
       'jade': '磨かれた緑の翡翠に、金で象嵌した紋様。',
       'amber': 'カットされた琥珀の宝石。内側から輝く。',
       'marble': '白い大理石。深く彫られ、影を落とす。',
-      'ember': '冷えた溶岩の板。ひび割れから紋様が燃える。'
+      'ember': '冷えた溶岩の板。ひび割れから紋様が燃える。',
+      'sapphire': '深い青のサファイア。ステップカットのテーブルの下に白い星が宿る。',
+      'ruby': 'ドーム状のルビー・カボション。その下でグリフが赤く燃える。',
+      'diamond': 'ブリリアントカットのダイヤモンド。グリフが虹色に分かれる。'
     }
   },
 
@@ -269,7 +282,12 @@ export default {
     'freeIn': '次の贈り物まで {t}',
     'freeTaken': '次の機会にまたどうぞ',
     'nukerUnlock': '起爆石を開放',
-    'nukerLocked': 'またはステージ 4-1 をクリア'
+    'nukerLocked': 'またはレベル 4-1 をクリア',
+    'mystery': '？？？',
+    'mysteryHint': '勝ち進むと分かる',
+    'mysteryAria': 'まだ解放していないルーン',
+    'nextUp': '次はこれ',
+    'winsAt': 'レベル {c}-{n} で獲得'
   },
 
   'forge': {
@@ -284,7 +302,7 @@ export default {
     'title': 'ランキング',
     'rank': '#',
     'player': 'プレイヤー',
-    'stage': 'ステージ',
+    'stage': 'レベル',
     'streak': '連勝',
     'empty': 'まだ記録がありません。最初の一人になろう。',
     'failed': 'ランキングに接続できません。',
@@ -304,6 +322,7 @@ export default {
     'music': '音楽',
     'musicTrack': 'BGM',
     'musicTracks': {
+      'emberlight': 'Emberlight',
       'cozy': '静かな石',
       'trance': 'ルーンの鼓動'
     },

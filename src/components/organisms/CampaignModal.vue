@@ -28,7 +28,7 @@ const battle = useBattle()
 
 const GLYPH: Record<RuneType, GameIconName> = {
   melee: 'sword', archer: 'bow', mage: 'orb', defense: 'shield', support: 'cross',
-  cleave: 'cleave', roller: 'roller', bombard: 'bombard', nuker: 'nuker'
+  cleave: 'cleave', roller: 'roller', bombard: 'bombard', nuker: 'nuker', crown: 'crown'
 }
 
 const chapter = computed(() => chapterOf(currentNode.value))

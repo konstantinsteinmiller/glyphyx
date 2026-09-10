@@ -127,6 +127,21 @@ const percentile = (buf: Float64Array, n: number, p: number): number => {
 
 export interface PerfSummary {
   frames: number
+  /**
+   * Mean ms per frame inside the `draw` phase, and inside `step`.
+   *
+   * Promoted out of `phases` to the top level because these — not `workP95` —
+   * are the metrics an A/B between two implementations of the same draw path
+   * should be judged on. A p95 is a TAIL statistic: it is set by the rare
+   * stalls (a GC, a background process, a compositor hiccup) that this
+   * project's runner cannot control, so an A-versus-A null test on `workP95`
+   * reports swings of ±25 % between two identical arms. The mean over ~900
+   * frames averages those out and moves only when the per-frame work actually
+   * changes. Keep watching the p95 as a stutter signal; judge draw-path work
+   * on `drawMean`.
+   */
+  drawMean: number
+  stepMean: number
   workP50: number
   workP95: number
   workP99: number
@@ -142,6 +157,8 @@ export interface PerfSummary {
 
 export const perfSummary = (variants: string[] = []): PerfSummary => ({
   frames: count,
+  drawMean: +(phaseTotal[1]! / Math.max(1, count)).toFixed(4),
+  stepMean: +(phaseTotal[0]! / Math.max(1, count)).toFixed(4),
   workP50: +percentile(work, count, 0.5).toFixed(4),
   workP95: +percentile(work, count, 0.95).toFixed(4),
   workP99: +percentile(work, count, 0.99).toFixed(4),
@@ -174,11 +191,24 @@ export const installPerfProbe = (variants: string[] = [], frames = 600): void =>
   if (!enabled) return
   const w = window as unknown as Record<string, unknown>
   w.__perfProbe = { summary: () => perfSummary(variants), reset: perfReset }
+  /**
+   * PUBLISH CADENCE — 1 s, not 250 ms.
+   *
+   * `perfSummary` is not cheap: five percentiles, each of which copies the ring
+   * buffer into a fresh `Array` and sorts it. Once the buffer is full that is
+   * five 10 000-element allocations and sorts per publish, and at 250 ms it
+   * cost ~3 % of total CPU in a profiled 25 s run — measurement overhead that
+   * lands inside the very numbers the runner then compares, and that GROWS with
+   * run length, so a longer run looks worse than a short one.
+   *
+   * The A/B runner polls `window.__perf` every 500 ms and only ever uses the
+   * final value, so a 1 s cadence loses it nothing.
+   */
   const tick = (): void => {
     const s = perfSummary(variants)
     w.__perf = s
     if (s.frames >= frames) w.__perfDone = true
-    else setTimeout(tick, 250)
+    else setTimeout(tick, 1000)
   }
-  setTimeout(tick, 250)
+  setTimeout(tick, 1000)
 }

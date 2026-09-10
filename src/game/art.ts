@@ -93,16 +93,27 @@ const probes = new Map<string, Probe>()
 // look and keeps it for the life of the page unless it is told otherwise.
 // A canvas cannot bind to a value, so it has to be told.
 
-const artListeners = new Set<() => void>()
+/**
+ * What changed: the ONE painting that just decoded, or `null` for "anything
+ * may have" — the flag flipped, or the probes were refreshed.
+ *
+ * Arrivals are the common case by far (every painting on disk, one by one,
+ * through the first seconds of play), and a listener that treats each as
+ * "everything changed" re-bakes the whole scene per painting. Say which one,
+ * and a listener can drop only the bakes that painting is part of.
+ */
+export type ArtChange = { kind: ArtKind; id: string } | null
+
+const artListeners = new Set<(change: ArtChange) => void>()
 
 /** Repaint when drop-in art arrives or the flag flips. Returns an unsubscribe. */
-export const onArtChanged = (fn: () => void): (() => void) => {
+export const onArtChanged = (fn: (change: ArtChange) => void): (() => void) => {
   artListeners.add(fn)
   return () => { artListeners.delete(fn) }
 }
 
-const artChanged = (): void => {
-  for (const fn of artListeners) fn()
+const artChanged = (change: ArtChange = null): void => {
+  for (const fn of artListeners) fn(change)
 }
 
 /**
@@ -234,8 +245,9 @@ export const spriteFor = (
       if (img.naturalWidth > 0) {
         probe!.state = 'ready'
         probe!.img = img
-        // The whole point: whoever painted before this arrived gets to repaint.
-        artChanged()
+        // The whole point: whoever painted before this arrived gets to repaint
+        // — and is told WHICH painting, so it repaints only what used it.
+        artChanged({ kind, id })
       } else probe!.state = 'missing'
       done()
     }, { once: true })

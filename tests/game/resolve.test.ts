@@ -725,6 +725,142 @@ describe('stacking beyond Lv 2', () => {
   })
 })
 
+describe('the crown', () => {
+  /** The single crown event of a resolution. */
+  const crownOf = (events: ResolveEvent[]) => {
+    const list = events.filter((e) => e.kind === 'crown') as Extract<ResolveEvent, { kind: 'crown' }>[]
+    expect(list).toHaveLength(1)
+    return list[0]!
+  }
+
+  it('takes the Lv 1 rune it faces: same body, same hit points, new side', () => {
+    const b = boardWith(p('enemy', 'melee', 1, 1, 'down'))
+    at(b, 1, 1).hp = 2
+    const { board, events } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], fullPower)
+    const taken = at(board, 1, 1)
+    expect(taken).toMatchObject({ type: 'melee', side: 'player', level: 1, hp: 2, faction: null })
+    // It turns around: a stolen sword still pointing at your own line would be
+    // a punishment for winning.
+    expect(taken.dir).toBe('up')
+    const ev = crownOf(events)
+    expect(ev.was).toBe('enemy')
+    expect(ev.turned).toMatchObject({ id: taken.id, side: 'player' })
+    // The tile comes with it.
+    expect(ownerOf(board, 1, 1)).toBe('player')
+  })
+
+  it('is spent doing it, and its going is nobody\'s kill', () => {
+    const b = boardWith(p('enemy', 'archer', 2, 1, 'down'))
+    const { board, events, playerKills, enemyKills } = resolveTurn(b, [mv('player', 'crown', 2, 2, 'up')], fullPower)
+    // The crown is gone from the board and its tile with it…
+    expect(empty(board, 2, 2)).toBe(true)
+    expect(ownerOf(board, 2, 2)).toBe('neutral')
+    expect(Object.values(board.runes).map((r) => r.type)).toEqual(['archer'])
+    // …and it shattered, so the renderer has something to play.
+    expect(kinds(events, 'shatter')).toHaveLength(1)
+    // But nobody BROKE it. A self-spent rune counted as a kill would move the
+    // combo counter, the coin payout and the adaptive relief, none of which
+    // anybody earned.
+    expect(playerKills).toBe(0)
+    expect(enemyKills).toBe(0)
+  })
+
+  it('the stone it takes fights for its new owner on the very turn it changes hands', () => {
+    // The whole reason to spend a rune taking one rather than breaking it: the
+    // crown step runs before every attack, so the sword swings for the player
+    // this resolution. Behind it, a 2-HP bow it now faces.
+    const b = boardWith(p('enemy', 'melee', 1, 1, 'down'), p('enemy', 'archer', 1, 0, 'down', { hp: 2 }))
+    const { board, events, playerKills } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(at(board, 1, 1)).toMatchObject({ type: 'melee', side: 'player' })
+    // The bow is gone, killed by the rune that was defending it a moment ago.
+    expect(empty(board, 1, 0)).toBe(true)
+    expect(playerKills).toBe(1)
+    expect(kinds(events, 'crown')).toHaveLength(1)
+  })
+
+  it('cannot turn a stack: a Lv 1 crown facing a Lv 2 rune does nothing, and is not spent', () => {
+    // A Lv 2 SHIELD, so nothing swings back — a Lv 2 sword would knock the
+    // crown off its tile and the assertion below would be about the wrong rule.
+    const b = boardWith(p('enemy', 'defense', 1, 1, 'omni', { level: 2 }))
+    const { board, events } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(at(board, 1, 1).side).toBe('enemy')
+    expect(kinds(events, 'crown')).toHaveLength(0)
+    // Nothing happened, so nothing was paid: the crown is still standing.
+    expect(at(board, 1, 2)).toMatchObject({ type: 'crown', side: 'player', hp: 2 })
+  })
+
+  it('a Lv 2 crown takes a Lv 2 stack, which is the only way to have a tower off somebody', () => {
+    const b = boardWith(p('player', 'crown', 1, 2, 'up'), p('enemy', 'melee', 1, 1, 'down', { level: 2 }))
+    // Stacked in place, and it fires as it lands.
+    const { board, events } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(kinds(events, 'merge')).toHaveLength(1)
+    const taken = at(board, 1, 1)
+    expect(taken).toMatchObject({ type: 'melee', side: 'player', level: 2 })
+    expect(crownOf(events).was).toBe('enemy')
+    expect(empty(board, 1, 2)).toBe(true)
+  })
+
+  it('facing nothing, a friend, or the board\'s edge, it just stands there', () => {
+    for (const [board0, where] of [
+      [boardWith(), 'an empty tile'],
+      [boardWith(p('player', 'melee', 1, 1, 'up')), 'a friendly rune']
+    ] as const) {
+      const { board, events } = resolveTurn(board0, [mv('player', 'crown', 1, 2, 'up')], dummies)
+      expect(kinds(events, 'crown'), where).toHaveLength(0)
+      expect(at(board, 1, 2), where).toMatchObject({ type: 'crown', side: 'player' })
+    }
+    // Off the board: the top rank, facing up.
+    const { board, events } = resolveTurn(boardWith(), [mv('player', 'crown', 1, 0, 'up')], dummies)
+    expect(kinds(events, 'crown')).toHaveLength(0)
+    expect(at(board, 1, 0).type).toBe('crown')
+  })
+
+  it('takes what it faces and nothing else: the neighbours are not touched', () => {
+    const b = boardWith(
+      p('enemy', 'melee', 1, 1, 'down'),
+      p('enemy', 'melee', 0, 2, 'down'),
+      p('enemy', 'melee', 2, 2, 'down'),
+      p('enemy', 'melee', 1, 3, 'down')
+    )
+    const { board } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(at(board, 1, 1).side).toBe('player')
+    for (const [c, r] of [[0, 2], [2, 2], [1, 3]] as const) expect(at(board, c, r).side, `${c},${r}`).toBe('enemy')
+  })
+
+  it('an enemy crown works exactly the same way: the rule has no favourite side', () => {
+    // No shipped faction deck holds one (see `campaign.test.ts`), but the rule
+    // is written side-agnostic and is asserted that way rather than left for
+    // whoever changes that to discover.
+    const b = boardWith(p('player', 'melee', 1, 2, 'up'))
+    const { board, events } = resolveTurn(b, [mv('enemy', 'crown', 1, 1, 'down')], dummies)
+    const taken = at(board, 1, 2)
+    expect(taken).toMatchObject({ type: 'melee', side: 'enemy', faction: 'goblin', dir: 'down' })
+    expect(crownOf(events).was).toBe('player')
+    expect(ownerOf(board, 1, 2)).toBe('enemy')
+  })
+
+  it('drops the shield and the attack buff the old side had put on the stone', () => {
+    // Both are rebuilt from zero every resolution anyway; what this pins is
+    // that nothing carried IN on the rune survives the change of hands.
+    const b = boardWith(p('enemy', 'melee', 1, 1, 'down'))
+    at(b, 1, 1).shield = 3
+    at(b, 1, 1).atkBonus = 2
+    const { board } = resolveTurn(b, [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(at(board, 1, 1)).toMatchObject({ side: 'player', shield: 0, atkBonus: 0 })
+  })
+
+  it('fires on the placement only: a crown left standing never takes anything later', () => {
+    // Turn one: it lands facing an empty tile and stays.
+    const first = resolveTurn(boardWith(), [mv('player', 'crown', 1, 2, 'up')], dummies)
+    expect(at(first.board, 1, 2).type).toBe('crown')
+    // Turn two: an enemy walks into the tile it faces. The crown is inert.
+    const second = resolveTurn(first.board, [mv('enemy', 'melee', 1, 1, 'down')], dummies)
+    expect(kinds(second.events, 'crown')).toHaveLength(0)
+    expect(at(second.board, 1, 1).side).toBe('enemy')
+    expect(at(second.board, 1, 2).type).toBe('crown')
+  })
+})
+
 describe('the nuke', () => {
   /** The single nuke event of a resolution. */
   const nukeOf = (events: ResolveEvent[]) => {

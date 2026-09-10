@@ -161,6 +161,7 @@ import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import javascriptObfuscator from 'vite-plugin-javascript-obfuscator'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import { buildCsp } from './src/platforms/csp'
+import { KEEPER_INLINE_MAX, bakeKeeperSplash } from './src/game/keeperSplash'
 
 // ─── Art-sheet export sink ───────────────────────────────────────────────
 //
@@ -489,6 +490,21 @@ export default defineConfig(({ mode, command }) => {
           ? ''
           : `<meta http-equiv="Content-Security-Policy" content="${cspValue}" />`
       )
+    }
+  })
+
+  // The painted Keeper, baked into the static splash when the build ships art —
+  // see src/game/keeperSplash.ts. Read per request, so in dev a fresh slice
+  // shows on the next reload.
+  const KEEPER_ART = fileURLToPath(new URL('./public/images/heroes/keeper.webp', import.meta.url))
+  plugins.push({
+    name: 'bake-keeper-splash',
+    transformIndexHtml(html: string) {
+      const painted = env.VITE_ENABLE_ART_OVERRIDES === 'true' && existsSync(KEEPER_ART) ? readFileSync(KEEPER_ART) : null
+      if (painted && painted.length > KEEPER_INLINE_MAX) {
+        console.warn(`[keeper] ${KEEPER_ART} is ${(painted.length / 1024).toFixed(0)} kB — too big to inline in index.html; the splash fades it in at runtime instead.`)
+      }
+      return bakeKeeperSplash(html, painted)
     }
   })
 

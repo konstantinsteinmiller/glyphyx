@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nodeConfig } from '@/game/campaign'
+import { LATE_LESSON_NODES, nodeConfig } from '@/game/campaign'
 import { rewardOf } from '@/use/useCampaign'
 import { beginPlanning, commitPlayerMove, createMatch, resolveCurrentTurn } from '@/game/match'
 import { runesOf } from '@/game/board'
@@ -67,10 +67,13 @@ describe('the lessons', () => {
 })
 
 describe('the late lessons', () => {
-  // 2-2, 2-6, 3-2 and 4-2 — one node after the chest that hands each rune over.
-  // Each is won by the ghost's single placement, which is the point: the shape
-  // of the attack is the whole lesson, so it has to land in ONE turn.
-  const LATE = [10, 14, 18, 26]
+  // 2-2, 2-6, 3-2, 4-2 and 4-6 — one node after the chest that hands each rune
+  // over. Each is won by the ghost's single placement, which is the point: the
+  // shape of the move is the whole lesson, so it has to land in ONE turn.
+  //
+  // Read off the campaign's own table rather than listed here, so a lesson
+  // added later is held to this contract without anybody remembering to add it.
+  const LATE = Object.keys(LATE_LESSON_NODES).map(Number)
 
   it('are lessons at all: clockless, scripted, against dummies that never place', () => {
     for (const id of LATE) {
@@ -131,8 +134,15 @@ describe('the first real fights', () => {
   })
 })
 
-describe('1-1 teaches the re-aim, not just the drop', () => {
-  /** One turn of 1-1: the sword on the ghost's tile, facing `dir`. */
+describe('1-1 teaches the aim, not just the drop', () => {
+  /**
+   * One turn of 1-1: the sword on the ghost's tile, facing `dir`.
+   *
+   * The lesson is ONE gesture — the side of the tile the pebble is released on
+   * is the side it faces — so `dir` here is what the player's release chose,
+   * not a correction made afterwards. Both facings still have to be pinned:
+   * the point of the lesson is that the choice decides the turn.
+   */
   const oneTurn = (dir: Dir, seed = 1) => {
     const config = nodeConfig(1, 'medium')
     const g = config.ghost!
@@ -141,7 +151,7 @@ describe('1-1 teaches the re-aim, not just the drop', () => {
     return resolveCurrentTurn(s).state
   }
 
-  it('a sword dropped and left with its default facing hits nothing: the skeleton stands', () => {
+  it('a sword released in the middle of the tile keeps its default facing and hits nothing', () => {
     for (let seed = 1; seed <= 5; seed++) {
       const s = oneTurn('up', seed)
       expect(runesOf(s.board, 'enemy'), `seed ${seed}`).toHaveLength(1)
@@ -149,7 +159,7 @@ describe('1-1 teaches the re-aim, not just the drop', () => {
     }
   })
 
-  it('…turned the way the ghost flicks, it shatters the skeleton on turn 1', () => {
+  it('…released on the side the ghost shows, it shatters the skeleton on turn 1', () => {
     for (let seed = 1; seed <= 5; seed++) {
       const s = oneTurn('left', seed)
       expect(runesOf(s.board, 'enemy'), `seed ${seed}`).toHaveLength(0)

@@ -51,43 +51,91 @@ edge to edge.
 
 Ids: `<type>` ∈ `melee` (Sword), `archer` (Bow), `mage` (Orb), `defense`
 (Shield), `support` (Cross), `cleave` (Axe), `roller` (Boulder), `bombard`
-(Mortar), `nuker` (Warhead). Skins: `river`, `obsidian`, `jade`, `amber`,
-`marble`, `ember`. Factions: `skeleton`, `goblin`, `orc`, `undead`.
+(Mortar), `nuker` (Warhead), `crown` (Crown). Skins: `river`, `obsidian`,
+`jade`, `amber`, `marble`, `ember`. Factions: `skeleton`, `goblin`, `orc`,
+`undead`.
 
-The last FOUR are the campaign's late unlocks and were added after the first
-art pass, so **every one of their 84 files is still un-painted** (21 each: 12
+The last FIVE are the campaign's late unlocks and were added after the first
+art pass, so **every one of their 105 files is still un-painted** (21 each: 12
 player stones, 8 enemy stones, 1 glyph) — they are the
 largest single gap in this manifest. Their glyphs, in the same words the
 prompts use: the Axe is a broad crescent bit with drooping horns on a short
 haft; the Boulder is a chipped round rock mid-roll with two cracks and speed
 bars behind it; the Mortar is a squat tube canted up-right on a base plate with
-its shell already in the air; and the Warhead is a three-bladed hazard trefoil,
+its shell already in the air; the Warhead is a three-bladed hazard trefoil,
 a solid round core with three heavy wedges around it and a clear ring of empty
 space between — the one rune drawn as a SIGN rather than a weapon, because it
-is the one rune nobody aims.
+is the one rune nobody aims; and the Crown is a three-peaked crown on a heavy
+band, the middle peak tallest, with one diamond gem cut clean out of the band —
+regalia rather than an implement, because it is the one rune that does not
+break a stone but takes it.
+
+**The silhouette moved from the SKIN to the RUNE, so every painted stone is
+stale.** A rune says what it is twice — in its glyph and in its outline — and
+until now only the glyph did any of that work: a skin owned the shape, so all
+ten runes of a skin were one stone with ten different marks cut into it. Now
+each rune type has an outline of its own (a shield is blocky and points DOWN, a
+bow is a slim spindle, an axe is a bit with two horns; see `RUNE_PROFILES` in
+`arenaPainters.ts`) and a skin decides only how that outline is finished —
+carved and bordered, knapped, worn round, faceted, quarried, blunted into a
+slab, step cut, domed, brilliant cut.
+
+Three more skins arrived with it — **sapphire, ruby and diamond**, the gem tier
+— so a stone sheet is nine skins × two levels on a 6×3 grid (1536×768) where it
+was six on 4×3. Every `sheet-runes-*` painting is therefore a picture of a
+different grid AND a different stone, and every one of them has to be repainted
+from the re-exported reference.
+
+**The Bow's painted stones were REMOVED and have to be repainted.** The bow was
+re-cut (a crescent of even thickness instead of a filled belly — see
+`glyphs.ts`), because the old drawing only read as a bow while a skin OUTLINED
+its glyph: every skin that fills one — jade's inlay, marble's carved ink,
+amber's lit interior, obsidian's neon — turned the belly into a solid sail, and
+the painted returns copied that faithfully, so the same rune was a bow on two
+materials and a blob on four.
+
+So the twelve `public/images/runes/archer-*.webp` are gone (the renderer falls
+back to the drawing, which is the corrected bow), and the three paintings that
+are pictures of the old drawing — the bow's player and enemy sheets, and the
+glyph sheet, whose lattice was re-laid from 3 columns to 5 for the tenth rune —
+are parked in `art-sheets/painted/stale/`, which the slicer does not read. The
+note in that folder says what happened to each.
+
+**Which sheets still need painting is now a generated file**: `pnpm art:prompts`
+writes `art-sheets/PAINT-STATUS.md` — sliced / repaint / painted-but-unreceipted
+/ outstanding, per sheet, with the prompt block to paste for each. And a
+re-cut drawing can no longer be silently re-installed from an old painting: the
+slicer records the revision of the reference it cut against and refuses a
+painting whose reference has moved since (`--stale-ok` overrides).
 
 | Path | Subject | Size | Stays live over it |
 | --- | --- | --- | --- |
-| `public/images/runes/<type>-<skin>-lv1.webp` | the player's stone: the rune's glyph cut into that skin's material and silhouette (54 files) | 256² | direction arrow, HP pips, glow pulse |
-| `public/images/runes/<type>-<skin>-lv2.webp` | the same, level 2: a little larger and heavier, a gold rim, a small gold crest on the shoulder, a stronger glow — **no wreath** (54 files) | 256² | same; the wreath is `fx/laurel.webp` |
+| `public/images/runes/<type>-<skin>-lv1.webp` | the player's stone: the rune's own silhouette, worked in that skin's material, its glyph cut in (90 files) | 256² | direction arrow, HP pips, glow pulse |
+| `public/images/runes/<type>-<skin>-lv2.webp` | the same, level 2: a little larger and heavier, a gold rim, a small gold crest on the shoulder, a stronger glow — **no wreath** (90 files) | 256² | same; the wreath is `fx/laurel-<rune>.webp` |
 | `public/images/runes/<type>-e-<faction>-lv1.webp` | the enemy's stone in the faction's red-tinted rock, the faction's accent on the rim (36 files) | 256² | same |
 | `public/images/runes/<type>-e-<faction>-lv2.webp` | level 2 of the above (36 files) | 256² | same |
 | `public/images/runes/<type>.webp` | the glyph ALONE on transparency — the unlock card, the campaign map, the shop | 256² | the stone under it |
 
 Every stone is a single square still, the stone centred and spanning roughly
-80 % of the file. A skin decides the stone's **shape** (pebble / shard / oval /
-hex / disc / slab) and how the glyph is **cut** (engraved / neon / inlay / gem /
-carved / ember) — see `SKINS` in `src/game/rules.ts` for the exact colours.
+80 % of the file. The RUNE decides the stone's **silhouette** (`RUNE_PROFILES`
+in `src/use/arenaPainters.ts`); a skin decides how that silhouette is
+**finished** (carved / knapped / polished / faceted / quarried / slab / step /
+cabochon / brilliant) and how the glyph is **cut** into it (engraved / neon /
+inlay / gem / carved / ember / starcut / blood / prism) — see `SKINS` in
+`src/game/rules.ts` for the exact colours.
 
 **A level-2 stone carries NO wreath of its own.** It differs from level 1 by a
 gold rim, a small gold crest on the shoulder and a stronger glow, and that is
-all. The laurel is `images/fx/laurel.webp`, one file the renderer lays over
-every upgraded stone — painted into a stone that already has one, it ends up
-under a second.
+all. The laurel is `images/fx/laurel-<rune>.webp` — ten files, one per RUNE,
+the renderer lays the matching one over every upgraded stone. It is keyed by
+the rune and not by the skin because the wreath hugs the stone's FOOT, and the
+foot is the rune's: a bow tapers to a needle where a mortar stands on a flat
+plate. Painted into a stone that already has one, it ends up under a second.
 
-Reference sheets: `sheet-runes-<type>.png` (six skins × two levels, 4×3) and
-`sheet-runes-enemy-<type>.png` (four factions × two levels, 4×2), prompts in
-`art-sheets/PROMPTS-RUNES.md`.
+Reference sheets: `sheet-runes-<type>.png` (nine skins × two levels, 6×3) and
+`sheet-runes-enemy-<type>.png` (four factions × two levels, 4×2), the wreaths on
+`sheet-laurels.png` (5×2), prompts in `art-sheets/PROMPTS-RUNES.md` and
+`PROMPTS-BOARD.md`.
 
 ## Board
 
@@ -114,7 +162,7 @@ Reference sheets: `sheet-tiles.png`, `sheet-frame.png`; prompts in `PROMPTS-BOAR
 | `public/images/fx/muzzle.webp` | the flash at an archer's release | 128² | reused today |
 | `public/images/rounds/bolt.webp` | the archer's arrow: ONE arrow lying flat, flying RIGHT — ash shaft, iron head, emerald vanes, a short streak | 256×64 | a single still, NOT a strip: the renderer rotates it to the heading |
 | `public/images/rounds/spark.webp` | the mage beam's travelling spark (additive) | 128² | drawn today |
-| `public/images/fx/laurel.webp` | the gold laurel wreath the game lays around a **level-2 stone** — two branches, open at the top, nothing inside it | 256² | ONE file for all 180 stones; drawn in the stone's own box, so it is blitted straight over the pebble |
+| `public/images/fx/laurel-<rune>.webp` | the gold laurel wreath the game lays around a **level-2 stone** — two branches, open at the top, nothing inside it (10 files, one per rune) | 256² | ONE file for all nine skins of a rune; it hugs the rune's own foot, and it is drawn in the stone's own box, so it is blitted straight over the pebble |
 
 Glows must stay tight to their shape: a halo over the key colour cannot be
 removed. Reference sheet `sheet-fx.png`; prompts in `PROMPTS-BOARD.md`.
@@ -126,11 +174,12 @@ removed. Reference sheet `sheet-fx.png`; prompts in `PROMPTS-BOARD.md`.
 | `public/images/ui/forge.webp` | the Rune Forge chip (anvil with a glowing rune) | 256² | drawn today; drain overlay and countdown drawn over it |
 | `public/images/ui/reroll.webp` | the reroll chip (a blank pebble with two chasing arrows) | 256² | drawn today |
 | `public/images/ui/chest.webp` | the reward chest | 256² | reused today (128²) |
-| `public/images/ui/crown.webp` | the elite crown | 256² | reused today |
+| `public/images/ui/elite.webp` | the elite mark (a small gold crown badge) | 256² | reused today; renamed from `crown.webp` when the CROWN RUNE arrived — a cell id is a filename stem, and two `crown`s would have collided |
 | `public/images/ui/coin.webp` | the wallet coin | 256² | reused today |
 | `public/images/ui/ribbon.webp` | the result banner, nine-sliced by CSS at the outer 17 %, the middle a plain band | 597×256 | reused today; keep the middle EMPTY |
-| `public/images/logo/logo_512x512.png` (+192) | **the Glyphyx logo** — the PWA/portal icons still carry the previous game's mark | 512² PNG | replace before any store listing |
-| `public/favicon.ico` | derive from the new logo | 48² | — |
+| `public/images/logo/logo_512x512.png` (+192, +256 webp) | the Glyphyx mark — a carved stone slab with the name in hot runic letters. **Done**: copied from `src/assets/promotion/logo/`, which is where the press kit lives | 512² PNG | — |
+| `public/images/logo/wordmark.webp` (+png) | the same mark trimmed to the slab's own alpha bounds, for the LOADING SCREEN. The press-kit files are square canvases with 60 % transparent air, which sized by width would push the splash card apart | 640 × 232 | the loading percentage under it |
+| `public/favicon.ico` | **Done**: the new mark | 48² | — |
 
 Reference sheet `sheet-ui.png`; prompts in `PROMPTS-BOARD.md`.
 
@@ -143,6 +192,7 @@ Reference sheet `sheet-ui.png`; prompts in `PROMPTS-BOARD.md`.
 | `public/images/monsters/snaggletusk.webp` | Orc Berserkers commander | 8 × 228×256 | — |
 | `public/images/monsters/marrowknight.webp` | Undead Mages commander | 8 × 228×256 | — |
 | `public/images/heroes/teal.webp` | the player's commander run cycle | 8 × 192² | — |
+| `public/images/heroes/keeper.webp` | **the Keeper** — the hooded figure holding a rune up on the loading screen, and the game's mascot. The file here is the splash's own inline SVG *baked*, so the pipeline has something to hand a painter; the splash keeps drawing its own, because it paints in the first frame before any request could return. A painting of him is for the campaign map, the result screen and the store tiles — and the splash can adopt it later behind a fade. Prompt: `PROMPTS-BOARD.md`, "The Keeper" | 256² | nothing — he is one picture |
 | `public/images/bg/sky.webp` | the night sky the whole arena stands in: indigo to near-black, a moon high on the RIGHT, an aurora over the upper left, stars, a violet haze along the bottom | 1024×576 | **fills the file, no magenta** — it IS the background. Drawn at the screen's WIDTH from the top, so keep the interest in the top third and the middle quiet: the board covers it |
 | `public/images/bg/ridge-far.webp` | the far ridge: hazy blue peaks with three tall stone pinnacles, moonlight on the top edge | 1024×256 | base on the bottom edge, magenta above |
 | `public/images/bg/ridge-near.webp` | the near ridge: broken black rock carrying five standing rune monoliths, two lit with a violet glyph | 1024×256 | base on the bottom edge, magenta above |

@@ -171,10 +171,13 @@ the corners) and the hint pill moves to the free column left of the board.
    arrows as quadrants) aim the carried pebble, the selection's pending facing,
    or the rune in the window (`aimKey`); during the window every other legal
    facing is a tappable chevron `LOCK_CHEVRON_TILES` out from the tile centre.
-8. **The lesson's held window** (1-1): the ghost drops the sword WITHOUT a swipe
-   and then presses it and flicks left (`GhostSpec.reaim`); the player's own
-   first window holds (`lock.held`, ghost `mode: 'reaim'`) until the sword faces
-   left, capped by `LESSON_REAIM_HOLD_MS`.
+8. **The lesson's held window** (`GhostSpec.reaim`): a lesson may hold the
+   player's first window open (`lock.held`, ghost `mode: 'reaim'`) until the
+   rune faces the way the ghost shows, capped by `LESSON_REAIM_HOLD_MS`. 1-1
+   used it and no longer does — with the compass it drilled the FALLBACK
+   gesture — so nothing shipped arms it today; it stays for a later lesson that
+   wants to teach the correction, and `tests/use/battle.test.ts` covers it on a
+   synthetic node (`REAIM_LESSON`).
 9. **Short phones**: below 40 px of strip the control pill borrows the stage
    badge's slot like the rune card does (the card outranks it), so nothing ever
    sits on the top row of tiles.
@@ -185,7 +188,7 @@ Chapter 1 is authored (onboarding), later chapters generated:
 
 | Node | Lesson (ghost script) | Board | Chest |
 | --- | --- | --- | --- |
-| 1-1 | `drag` — sword → (1,2), dropped facing up, then re-aimed LEFT (the held window teaches the correction) | 1-HP skeleton at (0,2) | 15 coins + Bow |
+| 1-1 | `drag` — sword carried to (1,2) and RELEASED on its left side, so it lands facing the skeleton: one gesture, no correction step. Cut from obsidian whatever the save wears | 1-HP skeleton at (0,2) | 15 coins + Bow |
 | 1-2 | `archer` — bow → (1,3) up shoots OVER your sword preset at (1,2) | archer at (1,0), 3-HP skeleton the sword finishes next turn | 20 coins |
 | 1-3 | `stack` — sword ONTO your sword preset at (2,1) → Lv 2 | 5-HP brute on the top edge | 25 coins + Arcane Orb |
 | 1-4 | `mage` — orb → (1,2) ur, one beam sweeps both | skeleton dummies (2,1) / (3,0), hp 3 | 30 coins + Shield |
@@ -261,7 +264,7 @@ skins on 2-4, 2-8, 3-4. The difficulty setting only feeds the AI's dice.
 ### Round 3 — controls, stacking, shop, goal, VFX (2026-09-09)
 
 - [x] Stacking to Lv 8 (linear stats, "each pebble adds its body" merge, specials at ≥ 2)
-- [x] 1-1 teaches the re-aim: ghost drops + flicks left, the window holds until the player turns it
+- [x] 1-1 teaches the placement gesture itself: the ghost carries the sword into the tile's LEFT region — lighting the same compass the player's own finger lights (`drawGhostCompass`) — and lets go there; no held window, no second gesture
 - [x] Tap-to-place (select → tile, 2.5 s window), arrows / WASD / Q E Z C, tappable chevrons
 - [x] Chest step stays: tap or 8 s auto-continue with a draining bar; lessons hand over from it
 - [x] Roomy desktop enemy preview; rune tooltip while held/selected, retired after 6 uses (`gx_rune_uses`)
@@ -270,7 +273,7 @@ skins on 2-4, 2-8, 3-4. The difficulty setting only feeds the AI's dice.
 - [x] The goal explained without text: conquest rail with a crown at 8 + tap tooltip; `GoalIntro` once on the first conquest match (`gx_goal_seen`)
 - [x] Ads: 121 s paced interstitials (`showPacedInterstitial` at match end, next node, the map), `watchRewarded(reason)`
 - [x] VFX: `arenaFx.ts` baked-sprite effects wired into the resolution, no per-frame `shadowBlur`
-- [x] e2e: held 1-1 window (key on desktop, flick on touch), loot stays, tap-to-place + chevron, goal intro
+- [x] e2e: 1-1 won with one aimed drop (real pointer events, desktop + phone), loot stays, tap-to-place + chevron, goal intro
 - [x] The Lv 2 laurel follows each stone's silhouette (a ray-cast of the outline, `laurelRimAt`)
       and is one painted drawable PER SHAPE (`fx/laurel-<shape>`, six panels on a 6-column fx sheet)
 - [x] "Watch ad" buttons in the shop are the blue secondary style, never green
@@ -307,7 +310,7 @@ and every screen the player rests on names what is coming.
       the coins the fight it replaced would have paid and opening no chest. Three dummies abreast for
       the axe, three down one lane for the boulder, three on the far rank behind the player's own
       shield for the mortar. New `TutorialBeat`s, control hints and `hints.*` keys in all 21 locales
-- [x] **The teaser** (`NextUnlockTeaser`, `nextRuneUnlock`): "Win Stage 2-1 for" + the stone itself
+- [x] **The teaser** (`NextUnlockTeaser`, `nextRuneUnlock`): "Win Level 2-1 for" + the stone itself
       at mid size, on the result screen (win AND loss) and above the campaign map. It scans forward
       from `bestNode + 1`, never `currentNode` — a replayed node pays no chest, so it can never be
       the answer — and renders nothing once the roster is complete
@@ -329,7 +332,7 @@ buy. Round 5 gives it a floor-less sink and hangs the game's D1–D7 hook off it
       **+1 maximum HP** (`RANK_HP_PER_RANK`) on the player's runes of that type and nothing
       else. `statsWithRank` is the only function that knows a rank exists; `statsFor` stays
       the roster's own table, shared with the enemy — who never has ranks. Ladder
-      70/140/240/380/560 (`RANK_PRICES`): 1390 a rune, 12 510 for the roster.
+      70/140/240/380/560 (`RANK_PRICES`): 1390 a rune, 13 900 for the roster of ten.
   - **The balance argument, in one line:** attack is the dangerous currency here (2–5
         against bodies of 2–9, so +1 attack on a sword is a 50 % buff), hit points are the
         safe one, and the SAME number for every rune means no rune can pull ahead of
@@ -365,6 +368,370 @@ buy. Round 5 gives it a floor-less sink and hangs the game's D1–D7 hook off it
       per-call-site `v-if` gets forgotten. A derived source-scan test holds the invariant
 - [x] New `RewardedReason`s (`runeRank`, `nukerUnlock`), glyph/icons/art words for the nuker,
       the nuke's VFX and cue, and `ranks.*` + nuker strings in all 21 locales
+
+### Round 6 — the tile is a compass, and the shop keeps a secret (2026-09-09)
+
+- [x] **Position aiming.** A tile now carves into one region per facing the rune actually
+      has — four triangles cut by the diagonals for a cardinal rune, four corner quadrants
+      for the orb, one whole tile for a shield — and the pointer's POSITION picks the
+      facing (`aimRegionShape` / `dirFromCellPoint` / `aimRegionPolygon` in `rules.ts`,
+      pure, swept over every point of every tile for every rune). The region under the
+      cursor lights and grows inward from the edge it faces, with every other option drawn
+      beside it, so the player chooses by moving instead of by committing and correcting.
+  - **A dead zone at the centre, and only there** (`AIM_CENTRE_DEAD_ZONE`, 18 %) — every
+        point still NAMES a region, because the renderer has to draw something everywhere,
+        but inside that radius the player has not CHOSEN: the facing holds whatever it
+        already was. So nothing flickers as a pointer crosses the middle, a key pressed
+        before the click is not silently overridden by it, and a stone dropped dead-centre
+        does not count as aimed and keep its window. The four-way TIE at the exact centre
+        falls on the player's own `defaultDir`: the middle of a tile is where a pebble
+        snaps and where an unaimed drop lands, so the accidental answer must not be the
+        one that points a fresh rune at the player's own base.
+- [x] **And therefore no correction window on a mouse.** The 1 s window exists because a
+      stroke can be misread and a finger cannot see what it covers. A player who watched
+      the region light up before clicking has already confirmed the facing, so an aimed
+      precise placement goes straight to the reveal. The window is KEPT for touch, for
+      tap-to-place with no direction, for a pebble released outside every region — and
+      always on a node whose ghost script has a `reaim` — a lesson that drills the
+      correction must not vanish on a desktop. (1-1 no longer asks for one: it teaches
+      the release-side gesture itself, in one move.)
+- [x] **Touch gets the compass too** — sliding a thumb toward the edge you want beats a
+      flick with a distance threshold in it — but KEEPS its window and its chevrons,
+      because a fingertip covers the middle of the tile it is aiming and the window is the
+      cheap insurance against that. The renderer leans a touch compass's marks outward,
+      away from the contact patch. The flick survives on both as the correction gesture.
+      `precise` therefore no longer gates aiming or drawing: it decides one thing only,
+      whether the window may be skipped
+- [x] **The mystery ladder.** The rank tab shows the runes you own, then exactly ONE
+      silhouette — the rune the campaign hands over next, named, with the stage that gives
+      it — then question marks for everything after. One concrete goal plus a visible COUNT
+      of unknowns: a fully hidden item cannot be wanted specifically, and a fully revealed
+      list is a chore. It also reuses the reveal the result screen already makes through
+      `nextRuneUnlock`, so the two surfaces reinforce each other
+  - Deliberately **not** applied to the skins panel: every skin is buyable with coins
+        at any moment, so a mystery card there would hide something the player could act on
+        right now and suppress the exact intent the shop exists for
+
+### Round 7 — the reward is a gift on its own plane (2026-09-09)
+
+The chest opened and the loot faded in under it, on a screen that scrolled. It
+is now the game's set piece.
+
+- [x] **`RewardStage`** — the plane behind the prize: a sunburst of alternating
+      LIT and SHADOWED wedges (not lit-and-transparent — on a dark backdrop a
+      transparent gap is just more backdrop, and the contrast is the effect),
+      two counter-rotating layers masked empty at the centre so no spoke runs
+      behind the prize, a bloom in the prize's own colour, and a vignette. Pure
+      CSS, two composited transforms, no canvas and no per-frame JS
+- [x] **`RewardConfetti`** — a pooled canvas burst in front of the prize: one
+      preallocated pool, a RAF that exists only while pieces are alive and stops
+      itself, DPR capped at 2, fewer pieces on a small screen, and nothing at all
+      under `prefers-reduced-motion`
+- [x] **The choreography** (`ChestReveal`): the tap is an event, not a fade —
+      the chest takes the hit and the lid flies, a shockwave leaves it, the
+      prize is born at the chest's MOUTH and climbs out onto its own plane
+      overshooting as it comes, the chest shrinks and dims (giving up its
+      SPACE as well as its brightness, which is what leaves room on a phone),
+      and the gift lands on a floor of light
+- [x] **`RuneUnlockCard` is a trophy, not a datasheet**: the stone stands on a
+      lit plinth, rim-lit in its own neon, floating, with a slow gloss across
+      it. The HP/ATK chips are gone — they were the tallest thing on the card
+      that nobody reads at the moment of winning, and the stats are taught
+      where they are used (the in-hand tooltip, the shop). Cutting them also
+      makes both prize kinds ONE shape, which is what lets the card promise a
+      bounded height
+- [x] **It fits, and that is measured.** Every dimension is `vmin`/`vh` — the
+      SHORT axis, the one that runs out in both orientations — the card is
+      capped and its description clamped to two lines so a long translation
+      cannot grow it, and `FReward` gained an opt-in no-scroll mode (the result
+      screen keeps its scrolling default). Checked in a real browser at
+      320×658, 390×844, 412×839, 667×375, 844×390 and 1440×900
+- [x] Every decorative layer is `pointer-events: none`, because a tap anywhere
+      on the plane is what continues — a beautiful layer that swallows it reads
+      to the player as the game freezing on the reward screen
+
+### Round 8 — the tutorial teaches the gesture the game is played with (2026-09-09)
+
+The compass shipped in round 6 and 1-1 was still drilling what it replaced: drop
+a sword facing nothing, then press it and flick it round, with the correction
+window HELD open until the player copied it. That is two gestures and a second
+of waiting to teach the slower way to play — the first thing a new player learns
+was the fallback.
+
+- [x] **1-1 is one move now**: the ghost carries the sword onto (1,2) and
+      releases it on the LEFT side of that tile, where the skeleton stands. The
+      script lost its `reaim` (`campaign.ts`, chapter 1, case 1), so no window
+      is held and nothing waits for a second gesture
+- [x] **The demonstration uses the player's own compass** (`drawGhostCompass`):
+      the ghost's finger travels from the tile's middle to the region anchor
+      `regionAnchors` reports — the same point the hit test reads, so the lesson
+      and the rule cannot drift — and lights all four wedges with
+      `paintAimRegion`, the chosen one grown in from its edge, leaned outward
+      and rimmed heavy because the ghost is a FINGER. One painter, one look
+- [x] **The touch aim hint follows the gesture**: `hints.aim.touch` was "Swipe
+      to aim, release to lock" — the fallback — and now says where to let go, in
+      all 21 locales
+- [x] **The held window survives as a capability, not as dead weight**: the
+      rule, `LESSON_REAIM_HOLD_MS` and the `mode: 'reaim'` ghost beat are all
+      still there for a lesson that wants to drill the correction, and
+      `tests/use/battle.test.ts` keeps its five cases by patching a synthetic
+      node (`REAIM_LESSON`) instead of pretending 1-1 still does it
+- [x] **Pinned**: `tests/use/ghostDemo.test.ts` (a source scan — the ghost is
+      painted onto a canvas jsdom will not rasterise), the rewritten battle and
+      floor cases, and the e2e onboarding flow driven with REAL pointer events,
+      green on desktop and phone. 1176 unit tests, 10 e2e
+
+### Round 9 — the tenth rune takes a stone instead of breaking it (2026-09-09)
+
+Nine runes, nine ways of killing something — on a board that is won by HOLDING
+EIGHT OF SIXTEEN TILES. The last rune plays the objective instead of the fight.
+
+- [x] **The Crown** (`crown`, royal indigo, cardinal, HP 2 / Atk 0). On the
+      placement itself, the Lv 1 rune it faces changes side — same body, same
+      hit points, turned to face the way its new owner's runes face — and the
+      crown is spent doing it. A stack, a friendly, an empty tile or the board's
+      edge: nothing happens and nothing is paid, and the aim preview shows which
+      of those it is before the pebble is released
+  - **A body for a body.** Its tile empties as theirs changes hands, so the
+        swing is ONE tile, not two, and nothing is left standing to crown a
+        second stone. That is what keeps the last rune in the game from being
+        the only rune in the game
+  - **`crownTurns` reads LEVELS**, like the nuke's rule: a Lv 1 crown takes Lv 1
+        stones, and only a crown stacked to Lv 2 takes a Lv 2 stack — so "can
+        they steal the tower I built?" answers "only by building one themselves"
+  - **The stolen stone fights the same turn.** The crown step sits before the
+        blast and before every attack (`RESOLVE_TIMELINE.crown`, at 150 ms),
+        which is the whole reason to spend a rune taking one rather than
+        breaking it. Its going is nobody's KILL, either: no combo, no coins, no
+        adaptive relief for a rune its owner chose to spend
+- [x] **Never in an enemy deck**, at any chapter, and the campaign test pins it:
+      having a stone you built taken and turned on you is the sourest thing
+      these rules can express, and there is no counter-play to it
+- [x] **4-5 gives it, 4-6 teaches it** — one chapter's play after the nuke,
+      because those two are the opposite answers to a board that has gone wrong
+      and meeting them together would blur both. The lesson is the only one that
+      does not clear the board by breaking it: a sword with a 2-HP bow behind it
+      in one file, so the crown takes the sword and the sword kills the bow in
+      the same resolution. One drop, both halves of the rune, one turn, every
+      seed (`tests/game/floor.test.ts`, which now reads its list off
+      `LATE_LESSON_NODES` rather than a hard-coded four)
+- [x] **The art**: a three-peaked crown over a heavy band with one gem cut clean
+      out of it — regalia, not an implement, the way the nuker is a sign and not
+      a weapon. One path, nonzero, in both the canvas glyph and the DOM icon.
+      The manifest's `ui/crown` (the elite badge) became `ui/elite`: a cell id is
+      a filename stem, and the manifest's own uniqueness test caught the
+      collision before it could overwrite a prompt
+- [x] The glyph sheet went from 3 across to 5 (two rows of ten, 1280 × 512).
+      Ten tiles no tidy ratio, and of "no blank panels" and "a pretty aspect",
+      the blank is the one that ruins a sheet — an image model fills it in
+- [x] `runes.names.crown`, its description, its shop boost and its tutorial hint
+      in all 21 locales; a rising three-note fanfare for the cue, because every
+      other combat voice in the game is an impact and this one is a GAIN
+- [x] **Verified in a real browser**: dragged onto 4-6's board with real pointer
+      events, released on the up wedge — the skeleton changed sides at full
+      health, killed the bow behind it, the crown was spent, the node was won in
+      one turn, no console errors
+
+### Round 10 — the bow, re-cut, and the art pipeline caught up (2026-09-09)
+
+- [x] **The Bow's limb is a crescent of even thickness**, not a filled belly.
+      The old one read as a bow only while a skin OUTLINED its glyph; every
+      skin that FILLS one — jade's gold inlay, marble's carved ink, amber's lit
+      interior, obsidian's neon — turned the belly into a solid sail with a
+      stick through it, so the same rune was a bow on two materials and a blob
+      on four. A stroke of steady width survives all six ways this game carves
+      a glyph, which is the only test a glyph has to pass
+  - **One bow, not two.** The canvas glyph and the DOM icon had drifted into
+        different drawings — the icon was already a proper crescent, the stone
+        was not. `glyphs.ts` now carries the icon's geometry at 100 units and
+        `iconPaths.ts` the same at 24, so the stone in the hand and the icon on
+        the unlock card are the same object
+  - The arrow crosses the WHOLE box, diamond flight to broad head. That
+        horizontal axis is what says "this one flies past the tile in front of
+        it", and it stops the bow reading as a letter D
+- [x] **Prompts and reference sheets regenerated and exported** — 25 sheets, 238
+      singles. Ten new files for the late runes (a player sheet and an enemy
+      sheet each for the axe, boulder, mortar, warhead and crown), the archer's
+      two sheets redrawn, and the glyph sheet re-laid at 5 across
+- [x] The Bow's prompt now names the shape explicitly ("a crescent of EVEN
+      thickness bulging right, never a filled belly"), because the returns
+      copied the ambiguity faithfully the first time
+
+- [x] **The stale paintings cannot ship or come back.** The twelve
+      `archer-*.webp` stones were removed — the renderer falls back to the
+      drawing, which is the corrected bow — and the three paintings that are
+      pictures of a drawing that has since moved (the bow's player and enemy
+      sheets, and the glyph sheet at its old 3×3 lattice) are parked in
+      `painted/stale/`, which the slicer does not read. Proved with `?art=on`:
+      painted tiles, frame and swords, a DRAWN bow, no console errors
+- [x] **The slicer will not re-install a painting of a drawing that moved.** A
+      successful slice writes `painted/.sliced.json` — the revision of the
+      reference each file was cut against, a sha1 over the clean sheet — and a
+      painting whose reference has changed since is refused with the reason.
+      `--stale-ok` cuts it anyway. Without a receipt (a clone, a first run)
+      nothing is refused: a checkout rewrites mtimes, so an older-looking file
+      is a warning and the slice goes ahead
+  - This is the bug the bow found. Nothing in the pipeline noticed that a
+        drawing had been re-cut under a painting, so the next `art:slice` for
+        an unrelated sheet would have put the old silhouette back, silently
+- [x] **A uniform drift is no longer thrown away.** A lattice sheet's rects are
+        read per axis (`c.x * sx`, `c.y * sy`), so a return whose proportions
+        came back 1.1% out still lands every panel on its own content — and was
+        being refused as "the model re-composed the grid", which cost five
+        painted enemy sheets. Sheets now get a 6% allowance (strips and walks
+        keep their 15%), and a grid that really was re-composed still fails: the
+        re-laid glyph sheet misses by 19%. The dry run went from 9 refusals to 1
+- [x] **`pnpm art:prompts` writes `PAINT-STATUS.md`** — every sheet, the prompt
+      file its block lives in, its reference revision, and which of four states
+      it is in (sliced / repaint / painted-but-unreceipted / outstanding). What
+      to paint next was detective work before; it is a table now
+
+**What is left for the image model** (nobody can generate art here): repaint the
+bow's two sheets and the glyph sheet from the new references in `art-sheets/`,
+drop the returns in `painted/`, and run `pnpm art:slice`. `PAINT-STATUS.md`
+names them, and the ten late-rune sheets that have never been painted at all.
+
+### Round 11 — the audio has a room, a key and a band (2026-09-09)
+
+Forty synthesised cues, each mixed on its own, each connected straight to
+`ctx.destination`, each tuned by ear in raw hertz. Every one of them was fine
+alone. Together they were a pile.
+
+- [x] **One room, one master** (`src/use/audioBus.ts`). A convolution reverb on
+      an impulse built in a millisecond (noise under an exponential decay,
+      darkened as it falls, behind an 18 ms pre-delay), a 3:1 glue compressor
+      and a `tanh` soft clip across the sum, and a −3.5 dB shelf over 6 kHz.
+      Every voice sends a little of itself to the room — a click almost none, a
+      bell a lot — so a slate crack and a cello sound like they are in the same
+      place. Missing a node type on an old browser costs that stage and nothing
+      else: a dry mix, never silence
+- [x] **Everything is in one key.** The music is D minor, so every pitched cue
+      is now drawn from `NOTE()` — a degree of that scale — instead of a
+      hand-picked frequency. Before: `merge` was a C major arpeggio, `capture` a
+      G major triad fired up to eight times in a settle wave, `victory` in G,
+      `crown` in C. Any one is fine; underneath a track in D they are a chord
+      nobody wrote, and that is what "the sounds are annoying" means when a
+      player cannot say why
+  - The harsh ones went with it: `aim` was a square wave at 2.4 kHz — where a
+        phone speaker is worst and the ear most sensitive — and is a triangle on
+        the top D; `tickFinal`, `hover`, `shield`, `heal` and `merge` are struck
+        BELLS now (one shared `bellTone`), which is what makes "something was
+        gained" one recognisable family
+  - `tick` climbs the SCALE over the last seconds (A, B♭, C, D) rather than
+        sliding: the countdown is a melody the player learns
+- [x] **"Emberlight"** — a 60-second loop for piano, violin, cello and hand
+      percussion, written as a SCORE (`src/game/music.ts`) and performed by
+      `useMusicEngine`. 16 bars of 4/4 at 64 BPM is exactly 60.000 s
+  - **Seamless because nothing restarts.** A look-ahead scheduler walks the
+        beat count forever and wraps it, so the piano's decay, the cello's
+        release and the reverb tail all cross the join. The composition does the
+        rest: bar 16 is the dominant (A) and bar 1 the tonic it resolves to, the
+        violin is gone by bar 15, and the last two bars are the quietest in the
+        piece
+  - **The instruments are built, not sampled**: a piano of three partials at
+        1 / 2.01 / 3.03 (a struck string is stiff — that inharmonicity IS the
+        piano) with a noise hammer; bowed strings of two saws six cents apart
+        under a filter that opens as the note speaks, with vibrato that fades in
+        after a quarter second; a shaker, a frame drum and a wood tick
+  - **One borrowed chord**: bars 12 and 16 are A major, whose C♯ is outside D
+        minor. That single accidental is the whole mystical colour — a loop that
+        never leaves its own scale is cozy but flat
+  - It is the default track; the two inherited `.ogg` loops are still there for
+        anyone who prefers them, and the mute gates apply to both (the
+        procedural one was the easier one to forget — a test now says so)
+- [x] **Measured, not asserted.** A browser harness (`__audioBus` / `__music`,
+      DEV-only seams) taps both buses before the limiter and reports numbers:
+      70 s of music at 10 Hz — **0 silent samples, 0 clipped**, peak 0.082, and
+      the join at 60 s carries MORE energy than the piece's quietest moment, so
+      there is no hole in it. The ten-second profile shows the arrangement's own
+      arc (0.0075 alone at the top → 0.0104 under the violin → 0.0082 as it
+      falls away). Then every cue fired one at a time: nuke 0.32, place 0.24,
+      down to hover 0.013 — a 25× range, nothing silent, nothing clipped
+
+### Round 12 — the first frame gets a mark and a mascot (2026-09-10)
+
+- [x] **The logo, not the word.** The splash showed `t('gameName')` set in the
+      UI font; it shows the painted mark now — a carved slab with the name in
+      hot runic letters. The press kit's files are SQUARE canvases with 60 % of
+      their pixels transparent, which sized by width would have pushed the card
+      apart, so `wordmark.webp` is that mark trimmed to its own alpha bounds
+      (640 × 232, 34 kB) and the square icons went to `public/images/logo/`,
+      where the PWA manifest has been naming the PREVIOUS game's mark all along
+- [x] **The Keeper.** The greeting was an ellipse with a sword glyph on it. It
+      is a character now: a hooded figure in a torn cloak, one hand on a staff
+      whose rune stone is the only light in the picture, a second rune at the
+      belt, eyes that blink on a long clock, three embers off the stone
+  - It is inline SVG in BOTH the component and `index.html`, because the
+        static splash paints before a single request returns — and the two are
+        translated from one source rather than typed twice, which is how they
+        stayed identical through a redesign this size
+  - The one bitmap on the card is the logo, which may arrive a beat late: the
+        hero is already lighting the screen, and both splashes name the same URL
+        so the browser has it cached before Vue mounts
+- [x] **He is in the art pipeline** (`sheet-splash.png`, prompt in
+      `PROMPTS-BOARD.md`): the SVG baked to `public/images/heroes/keeper.webp`
+      is the reference a painter restyles. The splash will keep drawing its own
+      — a painting of him is for the campaign map, the result screen and the
+      store tiles, and the splash can adopt it later behind a fade
+
+### Round 13 — the stones are carved plaques (2026-09-10)
+
+- [x] **A new silhouette, `plaque`**, and it is what a new player now holds: a
+      rounded triangle with its point at the TOP and a wide round base, exactly
+      symmetric, drawn from three Bézier segments and mirrored. The first
+      control point is the whole shape — at x = 0.12 the curve leaves the apex
+      almost vertically and the top is a point; the first attempt had it at
+      0.40 and the plaque came back an egg
+  - It draws no random numbers at all. Every plaque is the same plaque, which
+        is what makes it read as MANUFACTURED where the pebble, the shard and
+        the slab read as found — and those five keep their own irregular cuts
+- [x] **A carved border with a sunken field** (`paintFrame`), the structure the
+      reference is really about. It is drawn as the INVERSE of the body's own
+      bevel: the stone has a light edge at its top-left and a dark one at its
+      bottom-right, and the field gets a dark edge at ITS top-left (the rim
+      casting a shadow into the hollow) and a light one at its bottom-right
+      (light bouncing off the far wall). Four strokes, and a flat sprite has
+      depth
+  - Plus one honest cheat: a faint even lightening of the rim band all the
+        way round, because a border the eye can only follow for half its length
+        is not a border
+  - The glyph is refitted for it — 0.90 R instead of 1.14, and a tenth of a
+        radius lower, because the apex takes the top of the box and the field's
+        optical centre is below the geometric one
+- [x] **The knock-ons, all of which were silent until a test said otherwise:**
+      the Lv 2 laurel hugs the stone's silhouette, so the set of wreaths is the
+      set of shapes the SKINS cut — it was a hand-written list containing
+      `pebble`, and is now read off the roster in the manifest, the preloader
+      and the test. The river prompt's shape sentence, `LAUREL_STONE`, the art
+      catalogue and the GDD's stone diagram all moved with it
+- [x] **The six stale river paintings were removed** (`melee`, `mage`,
+      `defense` × Lv 1/Lv 2) so the game draws the new shape; the river pair of
+      those three sheets needs a repaint, and `art-todo.md` says so. The other
+      ten panels of each sheet are untouched — the change was one skin
+- [x] Verified in a real browser: every player stone on the board and in the
+      hand tray is the plaque, the HP pips and the facing arrow still clear it,
+      and the Lv 2 gold rim and laurel follow the new outline. (A first look
+      showed painted pebbles beside drawn plaques — an earlier probe had left
+      `?art=on` remembered in that profile. Very convincing, not a bug.)
+- [x] **…and then three more skins joined it.** Jade, amber and marble were an
+      oval, a hex and a disc; they are cuts of the same plaque now, which makes
+      the four of them a FAMILY — one geometry, four sets of numbers, so a
+      player reads them as relatives and still tells them apart in the tray:
+  - **jade** a polished pendant (the point softened, the edges worn round);
+  - **amber** the same silhouette CUT rather than polished — the outline is
+        sampled at 3/5/2 points instead of 9/14/8, so the curve comes back as
+        visible FLATS and the light breaks along an edge. Same maths, different
+        resolution: the cheapest facet in the business;
+  - **marble** a quarried tablet, the broadest and heaviest, a shallow point
+        over a nearly flat base.
+  - Obsidian and ember stay RAW — a knapped shard and a cracked slab, no
+        border at all. A roster where every stone is carved has nothing left to
+        say about the two that were never carved
+- [x] Twenty-four more painted stones removed (the river, jade, amber and
+      marble pairs of `melee`, `mage` and `defense`), leaving only their
+      obsidian and ember panels standing. Those three sheets are worth
+      repainting whole — eight of twelve panels changed — and `art-todo.md`
+      says so
 
 ## 3. Known trade-offs / follow-ups
 
