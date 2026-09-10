@@ -7,8 +7,9 @@ import {
 import { SKINS, type GlyphStyle } from '@/game/rules'
 import {
   paintPebble, paintGlyph, paintTile, paintBoardFrame, paintForge, paintRerollChip, paintLaurel, paintSky, paintRidge, paintBolt,
-  paintCounterPlate
+  paintCounterPlate, paintRibbon
 } from '@/use/arenaPainters'
+import { RIBBON_PLATE } from '@/game/artCatalogue'
 import { prependBaseUrl } from '@/utils/function'
 
 /**
@@ -147,6 +148,19 @@ const paintCell = (ctx: CanvasRenderingContext2D, art: CellArt, w: number, h: nu
         ctx.save()
         ctx.translate((w - pw) / 2, (h - ph) / 2)
         paintCounterPlate(ctx, pw, ph, art.side)
+        ctx.restore()
+        break
+      }
+      case 'ribbon': {
+        // Letterboxed like the plaque: drawn at the plate's own proportions
+        // (`RIBBON_PLATE`), centred in its 3:1 panel, so the slice restores
+        // the shape the result screen's 9-slice cuts.
+        const ratio = RIBBON_PLATE.w / RIBBON_PLATE.h
+        const pw = Math.min(w, h * ratio)
+        const ph = pw / ratio
+        ctx.save()
+        ctx.translate((w - pw) / 2, (h - ph) / 2)
+        paintRibbon(ctx, pw, ph)
         ctx.restore()
         break
       }

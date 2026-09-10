@@ -90,3 +90,7 @@ __screenshots__/
 # Playwright e2e output
 /test-results
 /playwright-report
+
+# Portal preview videos rendered by tools/preview-video (pnpm preview:video).
+# Regenerable from the scenarios, and a lossless 10 s 720p clip is tens of MB.
+/preview-videos/

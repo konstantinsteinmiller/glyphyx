@@ -33,6 +33,7 @@ import {
 } from '@/game/rules'
 import { glyphPath } from '@/game/glyphs'
 import { rand, seedFrom } from '@/game/rng'
+import { RIBBON_PLATE } from '@/game/artCatalogue'
 
 export interface PebbleOpts {
   type: RuneType
@@ -2377,6 +2378,140 @@ export const paintCounterPlate = (
   roundRect(ctx, h * 0.13, h * 0.11, w - h * 0.26, h * 0.4, r * 0.7)
   ctx.fillStyle = gloss
   ctx.fill()
+
+  ctx.restore()
+}
+
+/**
+ * ─── The result ribbon ──────────────────────────────────────────────────────
+ *
+ * The banner behind "VICTORY!", "DEFEAT" and "REWARDS". Like the counter
+ * plate it is never rendered in play: the DOM stretches the PAINTING of it
+ * through a 9-slice (`FReward.vue`), and a missing painting falls back to a
+ * CSS plate cut to the same silhouette in the same colours. This painter is
+ * the reference a model repaints, and the design of record for that fallback.
+ *
+ * The shape is dictated by the 9-slice, and by what came back wrong:
+ *
+ *   · ONE band, a swallow-tail notch cut into each end — no separate tails.
+ *     The first painting was a swagged ribbon, band high and tails hung low,
+ *     and every caption sat on its lower rim. A reference with tails tucked in
+ *     BEHIND the band came back straight but with the tails hung low again, a
+ *     model's idea of what a ribbon is, and the slicer registers the whole
+ *     silhouette, so a low tail lifts the band off centre. With nothing behind
+ *     the band there is nothing to hang: the silhouette's box IS the band.
+ *   · Mirror-symmetric in both axes, the band's centre line on the image's,
+ *     because that is where a caption centred in its box lands.
+ *   · The ends and their fold creases sit inside `RIBBON_PLATE.cap`, the part
+ *     the 9-slice keeps at true size; everything between the caps is one plain
+ *     band of constant height that stretches without a seam.
+ *
+ * Night-indigo, not crimson: red is the FOE's colour everywhere in this game
+ * (its tiles, its plaque, its stones), and this banner reads over a victory as
+ * much as a loss. Gold is the reward colour. The caption is NOT painted — the
+ * game ships twenty-one languages.
+ *
+ * Draws into (0, 0, w, h) and assumes the plate's proportions; a caller with a
+ * different box letterboxes first (the bench does).
+ */
+export const paintRibbon = (ctx: CanvasRenderingContext2D, w: number, h: number): void => {
+  const cy = h / 2
+  const cap = w * RIBBON_PLATE.cap
+  const ink = '#1b1206'
+  const gold = '#e6b84a', goldDeep = '#9a6a12', goldLight = '#ffe7a0'
+  const line = Math.max(1.5, h * 0.022)
+  const top = h * 0.1, bottom = h * 0.9, bandH = bottom - top
+  const inset = line / 2 + h * 0.01
+  const notch = bandH * 0.42
+  // Where each end turns back on itself — inside the cap, so it is never stretched.
+  const fold = cap * 0.62
+  ctx.save()
+  ctx.lineJoin = 'round'
+
+  const outline = (): void => {
+    ctx.beginPath()
+    ctx.moveTo(inset, top)
+    ctx.lineTo(w - inset, top)
+    ctx.lineTo(w - inset - notch, cy)
+    ctx.lineTo(w - inset, bottom)
+    ctx.lineTo(inset, bottom)
+    ctx.lineTo(inset + notch, cy)
+    ctx.closePath()
+  }
+
+  // The cloth, lit from above.
+  outline()
+  const body = ctx.createLinearGradient(0, top, 0, bottom)
+  body.addColorStop(0, '#565f9c')
+  body.addColorStop(0.5, '#3c4379')
+  body.addColorStop(1, '#282d57')
+  ctx.fillStyle = body
+  ctx.fill()
+
+  ctx.save()
+  ctx.clip()
+  // The ends a shade darker, as the cloth that has turned back.
+  const endShade = (from: number, to: number): void => {
+    const g = ctx.createLinearGradient(from, 0, to, 0)
+    g.addColorStop(0, rgba('#0b0d22', 0.5))
+    g.addColorStop(1, rgba('#0b0d22', 0.18))
+    ctx.fillStyle = g
+  }
+  endShade(0, fold)
+  ctx.fillRect(0, top, fold, bandH)
+  endShade(w, w - fold)
+  ctx.fillRect(w - fold, top, fold, bandH)
+  // One sweep of light across the upper cloth.
+  const gloss = ctx.createLinearGradient(0, top, 0, cy)
+  gloss.addColorStop(0, rgba('#ffffff', 0.12))
+  gloss.addColorStop(1, rgba('#ffffff', 0))
+  ctx.fillStyle = gloss
+  ctx.fillRect(0, top, w, bandH / 2)
+  // Gold trim: two straight, parallel rails the whole length.
+  const railH = bandH * 0.1
+  const rail = (y: number): void => {
+    const g = ctx.createLinearGradient(0, y, 0, y + railH)
+    g.addColorStop(0, goldLight)
+    g.addColorStop(0.5, gold)
+    g.addColorStop(1, goldDeep)
+    ctx.fillStyle = g
+    ctx.fillRect(0, y, w, railH)
+  }
+  rail(top)
+  rail(bottom - railH)
+  // The fold creases: a gold seam between two lines of ink.
+  const seam = h * 0.02
+  for (const x of [fold, w - fold]) {
+    ctx.fillStyle = gold
+    ctx.fillRect(x - seam, top, seam * 2, bandH)
+    ctx.strokeStyle = rgba(ink, 0.8)
+    ctx.lineWidth = line * 0.6
+    ctx.beginPath()
+    ctx.moveTo(x - seam, top)
+    ctx.lineTo(x - seam, bottom)
+    ctx.moveTo(x + seam, top)
+    ctx.lineTo(x + seam, bottom)
+    ctx.stroke()
+  }
+  // A hairline of ink under each rail, so the trim reads as sewn ON.
+  ctx.strokeStyle = rgba(ink, 0.7)
+  ctx.lineWidth = line * 0.55
+  ctx.beginPath()
+  ctx.moveTo(0, top + railH)
+  ctx.lineTo(w, top + railH)
+  ctx.moveTo(0, bottom - railH)
+  ctx.lineTo(w, bottom - railH)
+  ctx.stroke()
+  ctx.restore()
+
+  // The edge: gold binding, then the ink line.
+  outline()
+  ctx.strokeStyle = gold
+  ctx.lineWidth = h * 0.04
+  ctx.stroke()
+  ctx.strokeStyle = ink
+  ctx.lineWidth = line
+  ctx.stroke()
 
   ctx.restore()
 }

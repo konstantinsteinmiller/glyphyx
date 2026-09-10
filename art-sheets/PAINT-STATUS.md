@@ -4,45 +4,45 @@ A report, not a contract: it is a picture of `art-sheets/painted/` and the
 slicer's receipt at the moment it was written. Re-run `pnpm art:prompts`
 after painting or slicing anything.
 
-**0 sliced · 14 need a repaint · 11 painted, unreceipted · 10 outstanding**
+**34 sliced · 1 need a repaint · 0 painted, unreceipted · 0 outstanding**
 
 | | Sheet | Prompt block in | Reference | State |
 | --- | --- | --- | --- | --- |
-| ! | **Sword stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-melee.png` (rev `13a111f767e8`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Bow stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-archer.png` (rev `bc1b3aa9e346`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Orb stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-mage.png` (rev `17d9ee033fa8`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Shield stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-defense.png` (rev `0f8232d1c264`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Cross stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-support.png` (rev `7367f6ad9245`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Axe stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-cleave.png` (rev `680f6943f2f6`) | REPAINT — the old one is parked in `painted/stale/` |
-| · | **Boulder stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-roller.png` (rev `b28688046291`) | not painted yet |
-| · | **Mortar stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-bombard.png` (rev `b2547f37faf7`) | not painted yet |
-| · | **Warhead stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-nuker.png` (rev `eb93abda7026`) | not painted yet |
-| · | **Crown stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-crown.png` (rev `f2b552fabc86`) | not painted yet |
-| ! | **Sword stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-melee.png` (rev `c4ce0f5c861e`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Bow stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-archer.png` (rev `dd22fb0dc3a0`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Orb stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-mage.png` (rev `587fe41d8e44`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Shield stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-defense.png` (rev `a5d3e39325d1`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **Cross stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-support.png` (rev `99274f7d6267`) | REPAINT — the old one is parked in `painted/stale/` |
-| · | **Axe stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-cleave.png` (rev `9993736f5bee`) | not painted yet |
-| · | **Boulder stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-roller.png` (rev `4ba74599c0d3`) | not painted yet |
-| · | **Mortar stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-bombard.png` (rev `17756d51811f`) | not painted yet |
-| · | **Warhead stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-nuker.png` (rev `e5a7c464a7f6`) | not painted yet |
-| · | **Crown stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-crown.png` (rev `862f3384e807`) | not painted yet |
-| ! | **Glyph icons — the ten runes, no stone** | `PROMPTS-RUNES.md` | `sheet-glyphs.png` (rev `bb168dce32ec`) | REPAINT — the old one is parked in `painted/stale/` |
-| ! | **The Keeper — the game's mascot** | `PROMPTS-BOARD.md` | `sheet-splash.png` (rev `5121176422fb`) | REPAINT — the reference changed (d7cab4ab04d4 → 5121176422fb) |
-| ? | **Board tiles — player, enemy, neutral** | `PROMPTS-BOARD.md` | `sheet-tiles.png` (rev `79703b78a1cd`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **The board frame** | `PROMPTS-BOARD.md` | `sheet-frame.png` (rev `820671f54b59`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques** | `PROMPTS-BOARD.md` | `sheet-ui.png` (rev `3ab77c102c8d`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ! | **Effects — rings, dome, smoke, scorch, flashes, the beam spark and the arrow** | `PROMPTS-BOARD.md` | `sheet-fx.png` (rev `64c7694938e4`) | REPAINT — the old one is parked in `painted/stale/` |
-| · | **Laurels — the Lv 2 wreath, one per rune** | `PROMPTS-BOARD.md` | `sheet-laurels.png` (rev `7ba394d96817`) | not painted yet |
-| ? | **Bone Dummies commander** | `PROMPTS-CAST.md` | `walk-bonecap.png` (rev `5f29d26eaf60`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **Goblin Archers commander** | `PROMPTS-CAST.md` | `walk-nibbler.png` (rev `2f2e131e28fc`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **Orc Berserkers commander** | `PROMPTS-CAST.md` | `walk-snaggletusk.png` (rev `e11733ce09a2`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **Undead Mages commander** | `PROMPTS-CAST.md` | `walk-marrowknight.png` (rev `41e3e6e3cf35`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **The player's commander** | `PROMPTS-CAST.md` | `walk-teal.png` (rev `1cba36c2e785`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **The night sky** | `PROMPTS-CAST.md` | `bg-sky.png` (rev `b650e9246fe6`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **The far ridge** | `PROMPTS-CAST.md` | `bg-ridge-far.png` (rev `65c827f69d8e`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
-| ? | **The near ridge** | `PROMPTS-CAST.md` | `bg-ridge-near.png` (rev `e7027838dfc1`) | painted; no receipt yet — `pnpm art:slice -- --dry` to check it |
+| ✓ | **Sword stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-melee.png` (rev `13a111f767e8`) | sliced 2026-09-10 |
+| ✓ | **Bow stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-archer.png` (rev `bc1b3aa9e346`) | sliced 2026-09-10 |
+| ✓ | **Orb stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-mage.png` (rev `17d9ee033fa8`) | sliced 2026-09-10 |
+| ✓ | **Shield stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-defense.png` (rev `0f8232d1c264`) | sliced 2026-09-10 |
+| ✓ | **Cross stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-support.png` (rev `7367f6ad9245`) | sliced 2026-09-10 |
+| ✓ | **Axe stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-cleave.png` (rev `680f6943f2f6`) | sliced 2026-09-10 |
+| ✓ | **Boulder stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-roller.png` (rev `b28688046291`) | sliced 2026-09-10 |
+| ✓ | **Mortar stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-bombard.png` (rev `b2547f37faf7`) | sliced 2026-09-10 |
+| ✓ | **Warhead stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-nuker.png` (rev `eb93abda7026`) | sliced 2026-09-10 |
+| ✓ | **Crown stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-crown.png` (rev `f2b552fabc86`) | sliced 2026-09-10 |
+| ✓ | **Sword stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-melee.png` (rev `c4ce0f5c861e`) | sliced 2026-09-10 |
+| ✓ | **Bow stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-archer.png` (rev `dd22fb0dc3a0`) | sliced 2026-09-10 |
+| ✓ | **Orb stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-mage.png` (rev `587fe41d8e44`) | sliced 2026-09-10 |
+| ✓ | **Shield stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-defense.png` (rev `a5d3e39325d1`) | sliced 2026-09-10 |
+| ✓ | **Cross stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-support.png` (rev `99274f7d6267`) | sliced 2026-09-10 |
+| ✓ | **Axe stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-cleave.png` (rev `9993736f5bee`) | sliced 2026-09-10 |
+| ✓ | **Boulder stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-roller.png` (rev `4ba74599c0d3`) | sliced 2026-09-10 |
+| ✓ | **Mortar stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-bombard.png` (rev `17756d51811f`) | sliced 2026-09-10 |
+| ✓ | **Warhead stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-nuker.png` (rev `e5a7c464a7f6`) | sliced 2026-09-10 |
+| ✓ | **Crown stones — the four enemy factions** | `PROMPTS-RUNES.md` | `sheet-runes-enemy-crown.png` (rev `862f3384e807`) | sliced 2026-09-10 |
+| ✓ | **Glyph icons — the ten runes, no stone** | `PROMPTS-RUNES.md` | `sheet-glyphs.png` (rev `bb168dce32ec`) | sliced 2026-09-10 |
+| ✓ | **The Keeper — the game's mascot** | `PROMPTS-BOARD.md` | `sheet-splash.png` (rev `5121176422fb`) | sliced 2026-09-10 |
+| ✓ | **Board tiles — player, enemy, neutral** | `PROMPTS-BOARD.md` | `sheet-tiles.png` (rev `79703b78a1cd`) | sliced 2026-09-10 |
+| ✓ | **The board frame** | `PROMPTS-BOARD.md` | `sheet-frame.png` (rev `820671f54b59`) | sliced 2026-09-10 |
+| ! | **HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques** | `PROMPTS-BOARD.md` | `sheet-ui.png` (rev `49535b551ba6`) | REPAINT — the reference changed (3ab77c102c8d → 49535b551ba6) |
+| ✓ | **Effects — rings, dome, smoke, scorch, flashes, the beam spark and the arrow** | `PROMPTS-BOARD.md` | `sheet-fx.png` (rev `64c7694938e4`) | sliced 2026-09-10 |
+| ✓ | **Laurels — the Lv 2 wreath, one per rune** | `PROMPTS-BOARD.md` | `sheet-laurels.png` (rev `7ba394d96817`) | sliced 2026-09-10 |
+| ✓ | **Bone Dummies commander** | `PROMPTS-CAST.md` | `walk-bonecap.png` (rev `5f29d26eaf60`) | sliced 2026-09-10 |
+| ✓ | **Goblin Archers commander** | `PROMPTS-CAST.md` | `walk-nibbler.png` (rev `2f2e131e28fc`) | sliced 2026-09-10 |
+| ✓ | **Orc Berserkers commander** | `PROMPTS-CAST.md` | `walk-snaggletusk.png` (rev `e11733ce09a2`) | sliced 2026-09-10 |
+| ✓ | **Undead Mages commander** | `PROMPTS-CAST.md` | `walk-marrowknight.png` (rev `41e3e6e3cf35`) | sliced 2026-09-10 |
+| ✓ | **The player's commander** | `PROMPTS-CAST.md` | `walk-teal.png` (rev `1cba36c2e785`) | sliced 2026-09-10 |
+| ✓ | **The night sky** | `PROMPTS-CAST.md` | `bg-sky.png` (rev `b650e9246fe6`) | sliced 2026-09-10 |
+| ✓ | **The far ridge** | `PROMPTS-CAST.md` | `bg-ridge-far.png` (rev `65c827f69d8e`) | sliced 2026-09-10 |
+| ✓ | **The near ridge** | `PROMPTS-CAST.md` | `bg-ridge-near.png` (rev `e7027838dfc1`) | sliced 2026-09-10 |
 
 ## What the marks mean
 

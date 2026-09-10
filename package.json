@@ -39,6 +39,7 @@
     "leaderboard:snapshot": "node scripts/leaderboard-snapshot.mjs",
     "perf:ab": "node scripts/perf-ab.mjs",
     "qa:portal": "node scripts/portal-qa.mjs",
+    "preview:video": "node tools/preview-video/record.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test -c tests/e2e/playwright.config.ts"
@@ -65,6 +66,7 @@
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
     "autoprefixer": "^10.4.27",
+    "ffmpeg-static": "^5.3.0",
     "jsdom": "^28.1.0",
     "npm-run-all2": "^8.0.4",
     "postcss": "^8.5.8",
@@ -83,5 +85,10 @@
   },
   "engines": {
     "node": "^25.5.0 || >=22.12.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "ffmpeg-static"
+    ]
   }
 }

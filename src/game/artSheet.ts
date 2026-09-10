@@ -2,7 +2,7 @@ import {
   FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, SKIN_IDS,
   type Faction, type Owner, type RuneType, type SkinId
 } from './rules'
-import { ART_CATALOGUE, artTarget, type ArtKind } from './artCatalogue'
+import { ART_CATALOGUE, RIBBON_PLATE, artTarget, type ArtKind } from './artCatalogue'
 
 /**
  * ─── Art sheet manifest ─────────────────────────────────────────────────────
@@ -62,6 +62,7 @@ export type CellArt =
   | { kind: 'forge' }
   | { kind: 'reroll' }
   | { kind: 'counter'; side: 'you' | 'foe' }
+  | { kind: 'ribbon' }
   | { kind: 'spark' }
   | { kind: 'laurel'; type: RuneType }
   | { kind: 'sky' }
@@ -614,8 +615,27 @@ const uiSheet = (): SheetSpec => ({
       colour: 'river sandstone around #b39b73, arrows in pale teal around #4fd6ff',
       col: 0, row: 1, cw: 1, ch: 1, target: artTarget('ui', 'reroll'), art: { kind: 'reroll' }
     },
-    bitmap('ribbon', 'ui', 'Ribbon', 'result banner', 'a wide heraldic ribbon banner, its ends folded and notched, the middle a plain band (a caption is printed over it in play — leave it EMPTY)',
-      'deep crimson cloth around #a8232f with gold edging around #e6b84a', 1, 1, 3, 1, { w: 597, h: 256 }),
+    // The result ribbon. It USED to be a `bitmap` cell — its reference was
+    // whatever file shipped — and the first painting came back a swagged
+    // ribbon (band high, tails hung low), which the next repaint would have
+    // faithfully restyled. It has a painter of its own now (`paintRibbon`),
+    // drawn to the shape the CSS 9-slice needs; see `RIBBON_PLATE`. ONE band
+    // with notched ends, because a reference with tails behind the band came
+    // back with the tails hung low again.
+    {
+      id: 'ribbon', label: 'Ribbon', sub: 'result banner',
+      blurb: 'a flat swallow-tailed banner: ONE straight band of cloth, trimmed in gold along its top and bottom edges, with a '
+        + 'V-shaped swallow-tail notch cut into each end and a fold crease a little way in from each end. There are NO separate '
+        + 'tails, loops or streamers behind it, above it or below it. It is DEAD LEVEL — not draped, not sagging, not arched, not '
+        + 'waving, no swag, no curl, no end rolled under: the top and bottom edges are two straight, parallel, horizontal lines '
+        + 'from one notch to the other. Mirror-symmetric left to right AND top to bottom. Between the two fold creases it is a '
+        + 'plain band of ONE constant height, the same at every point along it (a caption is printed over it in play and the '
+        + 'middle is stretched to fit the word — leave it EMPTY: no emblem, no rune, no seal, no pattern that changes along its length)',
+      colour: 'muted night-indigo cloth around #3c4379, the folded ends a shade darker around #262b55, trimmed in worn gold around #e6b84a',
+      col: 1, row: 1, cw: 3, ch: 1,
+      letterboxed: { w: RIBBON_PLATE.w, h: RIBBON_PLATE.h },
+      target: artTarget('ui', 'ribbon'), art: { kind: 'ribbon' }
+    },
     // The two conquest plaques, on the bottom row. Two panels each, because
     // they are wide: the game draws them at roughly 2.3:1 and a 1:1 panel would
     // come back a square plaque that the DOM then stretches.

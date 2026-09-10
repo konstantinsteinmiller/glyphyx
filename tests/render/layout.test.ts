@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeArenaLayout } from '@/use/useArenaArt'
+import { CLEAN_BOARD_SHARE, computeArenaLayout } from '@/use/useArenaArt'
 import { GRID, HAND_SIZE } from '@/game/rules'
 
 /**
@@ -81,5 +81,44 @@ describe('computeArenaLayout', () => {
     const r = g.tileRect(2, 1)
     expect(r.x).toBeCloseTo(g.board.x + 2 * g.tile, 5)
     expect(r.y).toBeCloseTo(g.board.y + 1 * g.tile, 5)
+  })
+})
+
+/**
+ * The clean feed (`?clean=1`, for scripted gameplay capture) draws the arena
+ * and nothing else, so its layout owes the HUD nothing: the board is centred
+ * in the whole canvas whatever the insets say, and everything that is not the
+ * board is parked off screen — a clean frame that still showed a sliver of the
+ * hand tray would fail the very spec the mode exists for.
+ */
+describe('computeArenaLayout — clean feed', () => {
+  const CAPTURE: Array<[number, number]> = [[360, 640], [540, 960], [800, 450], [640, 360], ...VIEWPORTS]
+
+  it('centres a square board in the whole canvas and ignores the HUD insets', () => {
+    for (const [w, h] of CAPTURE) {
+      const g = computeArenaLayout(w, h, insets, true)
+      expect(g.board.w).toBeCloseTo(g.board.h, 5)
+      expect(g.board.x + g.board.w / 2).toBeCloseTo(w / 2, 5)
+      expect(g.board.y + g.board.h / 2).toBeCloseTo(h / 2, 5)
+      expect(inside(g.frame, w, h)).toBe(true)
+      expect(computeArenaLayout(w, h, { top: 0, bottom: 0, left: 0, right: 0 }, true).board).toEqual(g.board)
+    }
+  })
+
+  it('sizes the board frame as a fixed share of the short side', () => {
+    for (const [w, h] of CAPTURE) {
+      const share = w > h ? CLEAN_BOARD_SHARE.landscape : CLEAN_BOARD_SHARE.portrait
+      expect(computeArenaLayout(w, h, insets, true).frame.w).toBeCloseTo(Math.min(w, h) * share, 5)
+    }
+  })
+
+  it('parks the hand, reroll, timer and counters entirely off screen', () => {
+    for (const [w, h] of CAPTURE) {
+      const g = computeArenaLayout(w, h, insets, true)
+      expect(g.hand).toHaveLength(HAND_SIZE)
+      for (const r of [...g.hand, g.reroll, g.timer, g.counters.you, g.counters.foe]) {
+        expect(r.y).toBeGreaterThanOrEqual(h)
+      }
+    }
   })
 })

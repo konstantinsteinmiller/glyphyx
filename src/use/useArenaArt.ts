@@ -15,6 +15,7 @@ import {
   paintTile, resolveGlow
 } from '@/use/arenaPainters'
 import { onArtChanged, spriteFor, type ArtKind } from '@/game/art'
+import { CLEAN_FEED } from '@/game/cleanFeed'
 import {
   blit, glowSprite, paintAimRefused, paintAimRegion, paintArrow, paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave,
   paintCleaveArc, paintClashFlash, paintCrossBurst, paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing,
@@ -204,6 +205,40 @@ export interface ArenaGeometry extends ArenaLayout {
 
 const rect = (x: number, y: number, w: number, h: number): Rect => ({ x, y, w, h })
 
+/** How much of the canvas's short side the board's FRAME takes in a clean feed. */
+export const CLEAN_BOARD_SHARE = { portrait: 0.88, landscape: 0.82 } as const
+
+/**
+ * The clean-feed layout (`CLEAN_FEED`): the board alone, centred in the whole
+ * canvas. Nothing but the arena is drawn, so nothing else gets room — the HUD
+ * insets are ignored, and the hand, reroll chip, timer and counters are parked
+ * past the bottom edge. The hand slots sit just below it rather than far away,
+ * so a scripted placement's pebble still lifts from somewhere sensible and
+ * flies up into frame; none of the four is ever on screen.
+ */
+const cleanArenaLayout = (cssW: number, cssH: number): ArenaGeometry => {
+  const landscape = cssW > cssH
+  const F = 0.035 // the frame margin, as in computeArenaLayout
+  const share = landscape ? CLEAN_BOARD_SHARE.landscape : CLEAN_BOARD_SHARE.portrait
+  const s = Math.max(80, (Math.min(cssW, cssH) * share) / (1 + 2 * F))
+  const f = s * F
+  const x0 = (cssW - s) / 2
+  const y0 = (cssH - s) / 2
+  const tile = s / GRID
+  const slot = Math.max(44, s * 0.2)
+  const slotGap = s * 0.04
+  const hx0 = cssW / 2 - (HAND_SIZE * slot + (HAND_SIZE - 1) * slotGap) / 2
+  const hand: Rect[] = []
+  for (let i = 0; i < HAND_SIZE; i++) hand.push(rect(hx0 + i * (slot + slotGap), cssH + slot * 0.5, slot, slot))
+  const parked = rect(cssW / 2, cssH + s, 1, 1)
+  return {
+    cssW, cssH, orientation: landscape ? 'landscape' : 'portrait',
+    board: rect(x0, y0, s, s), tile, frame: rect(x0 - f, y0 - f, s + 2 * f, s + 2 * f),
+    tileRect: (col, row) => rect(x0 + col * tile, y0 + row * tile, tile, tile),
+    hand, reroll: parked, timer: parked, counters: { you: parked, foe: parked }, swipeThreshold: tile * 0.3
+  }
+}
+
 /**
  * Fit the arena into what the HUD leaves.
  *
@@ -213,7 +248,8 @@ const rect = (x: number, y: number, w: number, h: number): Rect => ({ x, y, w, h
  * board side, so nothing here is a pixel constant except the 44 px floor a
  * finger needs. Pure, so a test can assert it without a canvas.
  */
-export const computeArenaLayout = (cssW: number, cssH: number, insets: Insets): ArenaGeometry => {
+export const computeArenaLayout = (cssW: number, cssH: number, insets: Insets, clean = false): ArenaGeometry => {
+  if (clean) return cleanArenaLayout(cssW, cssH)
   const availW = Math.max(120, cssW - insets.left - insets.right)
   const availH = Math.max(120, cssH - insets.top - insets.bottom)
   const landscape = cssW > cssH
@@ -421,7 +457,8 @@ const bakePebble = (
   if (painted) ctx.drawImage(painted, 0, 0, sideLen, sideLen)
   else {
     paintPebble(ctx, sideLen, sideLen, {
-      type, level, owner: side, faction, skin: SKINS[skin] ?? SKINS.river, label: levelLabel, laurel: false
+      // A clean feed bakes no word into a stone: the crest falls back to its mark.
+      type, level, owner: side, faction, skin: SKINS[skin] ?? SKINS.river, label: CLEAN_FEED ? '' : levelLabel, laurel: false
     })
   }
   if (level >= 2) {
@@ -627,6 +664,7 @@ const socketSprite = (w: number, h: number, size: number, dpr: number): HTMLCanv
 const captionSprite = (
   text: string, px: number, fill: string, dpr: number
 ): { sprite: HTMLCanvasElement; w: number; h: number; pad: number } | null => {
+  if (CLEAN_FEED) return null
   const size = Math.max(6, Math.round(px))
   const key = `${text}|${size}|${fill}`
   const hit = captionCache.get(key)
@@ -931,7 +969,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   const ctx = canvas.getContext('2d')
   const { triggerShake } = useScreenshake()
 
-  let geom = computeArenaLayout(360, 640, { top: 0, bottom: 0, left: 0, right: 0 })
+  let geom = computeArenaLayout(360, 640, { top: 0, bottom: 0, left: 0, right: 0 }, CLEAN_FEED)
   let dpr = 1
   let cssW = 0
   let cssH = 0
@@ -1057,7 +1095,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     canvas.style.height = `${h}px`
     ctx?.setTransform(dpr, 0, 0, dpr, 0, 0)
     if (ctx) ctx.imageSmoothingQuality = 'high'
-    geom = computeArenaLayout(w, h, insets)
+    geom = computeArenaLayout(w, h, insets, CLEAN_FEED)
     for (let row = 0; row < GRID; row++) {
       for (let col = 0; col < GRID; col++) {
         const i = cellIndex(col, row)
@@ -1362,7 +1400,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     text: string, x: number, y: number, px: number, fill: string,
     align: CanvasTextAlign = 'center', outline = true, alpha = 1
   ): void => {
-    if (!ctx || alpha <= 0.01) return
+    if (!ctx || alpha <= 0.01 || CLEAN_FEED) return
     ctx.save()
     ctx.globalAlpha = alpha
     ctx.font = font(px)
@@ -2760,6 +2798,9 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     drawShadow(x, y, size, pulse, 0.4)
     const spr = pebbleSprite(lock.type, level, 'player', view.skin, null, size)
     blitPebble(spr, x, y - size * 0.05, size, pulse, pulse)
+    // A clean feed keeps the stone and its aim; the countdown ring and the
+    // chevron tap targets are interface.
+    if (CLEAN_FEED) return
     // The ring: a baked ring sprite carries the glow, the stroke carries the count.
     const r = size * 0.47
     const breathe = lock.held ? 0.5 + 0.5 * Math.sin(age * 0.005) : 0
@@ -3414,13 +3455,15 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     drawDrag(view)
     drawTexts()
 
-    // ── HUD on canvas ──
-    drawTimer(view)
-    // The conquest counters are DOM now (`ConquestCounters.vue`) — redrawing
-    // two numbers here sixty times a second was 39 % of render time.
-    drawHand(view)
-    drawGhost(view)
-    drawBanners(view)
+    // ── HUD on canvas ── (none of it in a clean feed; see `CLEAN_FEED`)
+    if (!CLEAN_FEED) {
+      drawTimer(view)
+      // The conquest counters are DOM now (`ConquestCounters.vue`) — redrawing
+      // two numbers here sixty times a second was 39 % of render time.
+      drawHand(view)
+      drawGhost(view)
+      drawBanners(view)
+    }
     drawResetWave(view)
   }
 

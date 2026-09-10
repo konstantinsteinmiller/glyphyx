@@ -81,6 +81,7 @@ import { computed, onBeforeUnmount, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { isMobileLandscape, isShortViewport } from '@/use/useUser'
 import { useArtImage } from '@/use/useArtImage'
+import { RIBBON_PLATE } from '@/game/artCatalogue'
 // Sink the reward overlay below the ad layer whenever an interstitial/rewarded
 // is on screen. GameMonetize (and several other portals) inject their ad
 // container at a z-index lower than this modal's z-[100], so without this the
@@ -210,12 +211,15 @@ onBeforeUnmount(stopObserving)
 
 // ─── The banner's picture ────────────────────────────────────────────────────
 //
-// `images/ui/ribbon.webp` is a 597×256 plate whose detail sits in the outer 17 %
-// of its width; the middle is a plain band precisely because it gets stretched
-// to the caption. The three numbers below bind the painting to the CSS cut, and
-// they are declared HERE (not read off the file) because the file's size is a
-// payload decision and the slice must be a FRACTION of whatever arrived.
-const BANNER = { w: 597, h: 256, cap: 0.171 } as const
+// `images/ui/ribbon.webp` is a level, mirror-symmetric plate whose ends sit in
+// the outer `cap` of its width; the middle is a plain band of one height
+// precisely because it gets stretched to the caption, and its centre line is
+// the image's so a caption centred by flex sits ON it. `RIBBON_PLATE` binds the
+// painting to the CSS cut. It is declared (not read off the file) because the
+// file's size is a payload decision and the slice must be a FRACTION of
+// whatever arrived — and it is the same number `paintRibbon` draws the
+// reference to, so the painter, the slicer and this cut cannot drift apart.
+const BANNER = RIBBON_PLATE
 
 const paintedBanner = useArtImage('ui', 'ribbon')
 const bannerStyle = computed(() => paintedBanner.value
@@ -407,20 +411,21 @@ onUnmounted(() => {
   margin-bottom: clamp(0.4rem, 2vh, 1.1rem)
   border-style: solid
   border-color: transparent
-  border-width: 0 calc(2.5em * var(--banner-cap, 0.4))
+  border-width: 0 calc(2.5em * var(--banner-cap, 0.58))
   border-image-source: var(--banner-src)
-  border-image-slice: 0 var(--banner-slice, 17%) 0 var(--banner-slice, 17%) fill
-  border-image-width: 0 calc(2.5em * var(--banner-cap, 0.4))
+  border-image-slice: 0 var(--banner-slice, 25%) 0 var(--banner-slice, 25%) fill
+  border-image-width: 0 calc(2.5em * var(--banner-cap, 0.58))
   border-image-repeat: stretch
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55))
 
-  // No painting yet: a plate of blackened iron bound in gold, drawn in CSS.
-  // The same silhouette the painting is made to — a swallow-tailed ribbon —
-  // so the swap changes the material and nothing else.
+  // No painting yet: a band of night-indigo cloth trimmed in gold, drawn in
+  // CSS in `paintRibbon`'s own colours. The same silhouette the painting is
+  // made to — a level, swallow-tailed ribbon — so the swap changes the brush
+  // and nothing else.
   &.is-drawn
     border-width: 0
     padding-inline: clamp(1.2rem, 5vw, 2.2rem)
-    background: linear-gradient(to bottom, #3a3f4c 0%, #24272f 55%, #15171d 100%)
+    background: linear-gradient(to bottom, #565f9c 0%, #3c4379 50%, #282d57 100%)
     box-shadow: inset 0 0.18em 0 #c9a44a, inset 0 -0.18em 0 #8a6c2a, 0 0 0 0.12em #0b0c10
     clip-path: polygon(0 0, 100% 0, calc(100% - 0.9em) 50%, 100% 100%, 0 100%, 0.9em 50%)
 

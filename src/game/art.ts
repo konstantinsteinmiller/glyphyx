@@ -1,5 +1,6 @@
 import { prependBaseUrl } from '@/utils/function'
 import { ART_FOLDERS, type ArtKind } from './artCatalogue'
+import { devParam } from './cleanFeed'
 
 /**
  * ─── Art contract ───────────────────────────────────────────────────────────
@@ -69,6 +70,22 @@ const readParam = (): boolean | null => {
     return ['1', 'on', 'true', 'yes'].includes(raw.toLowerCase())
   } catch { return null }
 }
+
+/**
+ * `?artdeny=fx/laurel-,rune/support-obsidian-` — DEV only. A painting whose
+ * `kind/id` starts with any listed prefix is treated as absent for this page
+ * load, so its drawable falls back to the procedural painter while every
+ * other painting stays on.
+ *
+ * It exists for scripted capture (`tools/preview-video`): a returned painting
+ * can carry a defect a clip must not show — a caption the image model copied
+ * off the reference sheet, a cell number the slicer kept — and this keeps it
+ * out of the frame without a re-slice, a rebuild, or `?art=off` taking the
+ * whole painted look down with it. Resolved once, at module load.
+ */
+const DENIED: readonly string[] = import.meta.env.DEV
+  ? (devParam('artdeny') ?? '').split(',').map((p) => p.trim()).filter(Boolean)
+  : []
 
 let enabled = BUILD_DEFAULT
 /** Bumped on every explicit refresh, to bust the HTTP cache. See `spriteFor`. */
@@ -228,6 +245,8 @@ export const spriteFor = (
   if (!enabled) return null
 
   const cacheKey = `${kind}/${id}`
+  // Denied for this capture (see `DENIED`): never probed, so never "ready" either.
+  if (DENIED.length !== 0 && DENIED.some((p) => cacheKey.startsWith(p))) return null
   let probe = probes.get(cacheKey)
 
   if (!probe) {

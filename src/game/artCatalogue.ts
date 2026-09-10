@@ -94,6 +94,22 @@ export const ART_CATALOGUE: Record<ArtKind, readonly string[]> = {
 /** The path under `public/` a `(kind, id)` painting is probed at. */
 export const artTarget = (kind: ArtKind, id: string): string => `${ART_FOLDERS[kind]}/${id}.webp`
 
+/**
+ * The result ribbon (`ui/ribbon`), shared by the three things that must agree
+ * on it: the painter that draws its reference (`arenaPainters.paintRibbon`),
+ * the size the slice is restored to (`artSheet.ts`), and the CSS 9-slice that
+ * stretches it to a caption (`FReward.vue`).
+ *
+ * `cap` is the fraction of the width each END piece takes. The 9-slice keeps
+ * the two ends at true size and stretches everything between them, so that
+ * middle must be a plain, level band of one height the whole way along — and
+ * its centre line must be the image's, or a caption centred in the box sits
+ * off the band. The first painting was a swagged ribbon whose band sat at 36 %
+ * of the height and whose tails hung at 62 %; every caption landed on its
+ * lower rim.
+ */
+export const RIBBON_PLATE = { w: 597, h: 256, cap: 0.25 } as const
+
 /** Every `(kind, id)` the catalogue names, flattened, in catalogue order. */
 export const allArtIds = (): (readonly [ArtKind, string])[] =>
   (Object.entries(ART_CATALOGUE) as [ArtKind, readonly string[]][])

@@ -145,18 +145,6 @@
       "painting": "e39967e54eb8",
       "at": "2026-09-10T15:42:13.799Z"
     },
-    "sheet-ui.jpg": {
-      "sheet": "ui",
-      "rev": "3ab77c102c8d",
-      "painting": "697848231fd1",
-      "at": "2026-09-10T15:44:36.684Z"
-    },
-    "sheet-frame.jpg": {
-      "sheet": "frame",
-      "rev": "820671f54b59",
-      "painting": "69bf5b61b16a",
-      "at": "2026-09-10T15:45:04.327Z"
-    },
     "walk-bonecap.jpg": {
       "sheet": "bonecap",
       "rev": "5f29d26eaf60",
@@ -210,6 +198,18 @@
       "rev": "e7027838dfc1",
       "painting": "ef8145b6ba54",
       "at": "2026-09-10T15:46:00.520Z"
+    },
+    "sheet-frame.jpg": {
+      "sheet": "frame",
+      "rev": "820671f54b59",
+      "painting": "8e1105c960b1",
+      "at": "2026-09-10T15:47:19.059Z"
+    },
+    "sheet-ui.jpg": {
+      "sheet": "ui",
+      "rev": "49535b551ba6",
+      "painting": "7a16f3c3d561",
+      "at": "2026-09-10T21:36:59.961Z"
     }
   }
 }

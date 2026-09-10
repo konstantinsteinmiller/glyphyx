@@ -25246,7 +25246,7 @@ Repaint ONE HUD chip, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: a wide heraldic ribbon banner, its ends folded and notched, the middle a plain band (a caption is printed over it in play — leave it EMPTY). Colour identity (keep the HUE, muted and paper-toned): deep crimson cloth around #a8232f with gold edging around #e6b84a
+WHAT IT IS: a flat swallow-tailed banner: ONE straight band of cloth, trimmed in gold along its top and bottom edges, with a V-shaped swallow-tail notch cut into each end and a fold crease a little way in from each end. There are NO separate tails, loops or streamers behind it, above it or below it. It is DEAD LEVEL — not draped, not sagging, not arched, not waving, no swag, no curl, no end rolled under: the top and bottom edges are two straight, parallel, horizontal lines from one notch to the other. Mirror-symmetric left to right AND top to bottom. Between the two fold creases it is a plain band of ONE constant height, the same at every point along it (a caption is printed over it in play and the middle is stretched to fit the word — leave it EMPTY: no emblem, no rune, no seal, no pattern that changes along its length). Colour identity (keep the HUE, muted and paper-toned): muted night-indigo cloth around #3c4379, the folded ends a shade darker around #262b55, trimmed in worn gold around #e6b84a
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -25283,7 +25283,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 71%
+Do not enlarge it to fill the frame. In the reference it spans about 78%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
