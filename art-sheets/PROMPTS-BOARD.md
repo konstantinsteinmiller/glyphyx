@@ -592,7 +592,7 @@ clear of all four panel edges with flat magenta around it, exactly as the
 reference has it. Never let anything cross into a neighbouring panel.
 
 SIZE — measure it against the PANEL, not against the paper. In the
-reference the widest effect spans about 96% of its panel's width
+reference the widest effect spans about 100% of its panel's width
 and never touches the edges. If yours reaches the panel edge it is too big;
 if it is under half the panel it is too small. Bigger is not clearer here.
 

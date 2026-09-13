@@ -4,13 +4,16 @@ A report, not a contract: it is a picture of `art-sheets/painted/` and the
 slicer's receipt at the moment it was written. Re-run `pnpm art:prompts`
 after painting or slicing anything.
 
-**35 sliced · 0 need a repaint · 0 painted, unreceipted · 0 outstanding**
+**38 sliced · 0 need a repaint · 0 painted, unreceipted · 0 outstanding**
 
 | | Sheet | Prompt block in | Reference | State |
 | --- | --- | --- | --- | --- |
 | ✓ | **Sword stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-melee.png` (rev `13a111f767e8`) | sliced 2026-09-11 |
 | ✓ | **Bow stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-archer.png` (rev `bc1b3aa9e346`) | sliced 2026-09-11 |
-| ✓ | **Orb stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-mage.png` (rev `17d9ee033fa8`) | sliced 2026-09-13 |
+| ✓ | **Orb stones — River, Obsidian, Jade, Amber** | `PROMPTS-RUNES.md` | `sheet-runes-mage-a.png` (rev `f54b1dc36565`) | sliced 2026-09-13 |
+| ✓ | **Orb stones — Marble, Ember** | `PROMPTS-RUNES.md` | `sheet-runes-mage-b.png` (rev `8237d8f7447f`) | sliced 2026-09-13 |
+| ✓ | **Orb stones — Sapphire, Ruby** | `PROMPTS-RUNES.md` | `sheet-runes-mage-c.png` (rev `add387860b45`) | sliced 2026-09-13 |
+| ✓ | **Orb stones — Diamond** | `PROMPTS-RUNES.md` | `sheet-runes-mage-d.png` (rev `f8d67058c69c`) | sliced 2026-09-13 |
 | ✓ | **Shield stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-defense.png` (rev `0f8232d1c264`) | sliced 2026-09-11 |
 | ✓ | **Cross stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-support.png` (rev `7367f6ad9245`) | sliced 2026-09-11 |
 | ✓ | **Axe stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-cleave.png` (rev `680f6943f2f6`) | sliced 2026-09-11 |

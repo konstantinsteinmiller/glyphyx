@@ -3711,106 +3711,6 @@ captions or watermarks.
 
 ---
 
-## River — Lv 2  (single-mage-river-lv2.png → images/runes/mage-river-lv2.webp)
-
-```text
-Repaint ONE rune stone, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the Orb rune as a River stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, CARVED SMOOTH and bordered: the outline is clean and unbroken, with a raised bevelled border running all the way around it and a shallow sunken field inside that border. An amulet somebody cut a rune into, not a rock they found — the two sides are exactly equal and the border is even the whole way round, the glyph is CUT INTO the stone, a dark engraved groove lit from inside by its own colour; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): warm river sandstone, tan and beige, faintly banded: lit face around #d9c9a6, body #b39b73, shadow side #7d6547, rim light #f2e6c8. Glyph ink #2c2218, its glow the rune's own amethyst violet (#b57bff).
-
-THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
-Keep that outline exactly. Every rune in this game has an outline of its own,
-and it is how a player tells one rune from another across the board — do not
-tidy it toward a plain oval or a rounded rectangle.
-
-THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
-
-WHAT IT IS NOT:
-· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
-  around the stone. The game lays its own gold wreath around a level-2
-  stone afterwards; one painted into the picture ends up under a second.
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 71%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
-  shape closes around an empty middle — a ring, an arch, a horseshoe, a
-  closed loop, an open crescent — the magenta inside it is the SAME ground as
-  the magenta outside it: one continuous colour that happens to be
-  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
-  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
-  wash of the object's own colour. If you cannot see the panel's flat
-  magenta straight through the middle of the shape, that panel is wrong and
-  the whole sheet has to be painted again.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
 ## Obsidian — Lv 1  (single-mage-obsidian-lv1.png → images/runes/mage-obsidian-lv1.webp)
 
 ```text
@@ -3868,106 +3768,6 @@ AVOID — this is exactly how earlier attempts went wrong:
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
 Do not enlarge it to fill the frame. In the reference it spans about 60%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
-  shape closes around an empty middle — a ring, an arch, a horseshoe, a
-  closed loop, an open crescent — the magenta inside it is the SAME ground as
-  the magenta outside it: one continuous colour that happens to be
-  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
-  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
-  wash of the object's own colour. If you cannot see the panel's flat
-  magenta straight through the middle of the shape, that panel is wrong and
-  the whole sheet has to be painted again.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
-## Obsidian — Lv 2  (single-mage-obsidian-lv2.png → images/runes/mage-obsidian-lv2.webp)
-
-```text
-Repaint ONE rune stone, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the Orb rune as a Obsidian stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, KNAPPED: the same outline struck off in long straight flats instead of curves, its edges a little uneven, no border and no sunken field — raw worked glass, the glyph is a cold neon line drawn on the dark glass; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): black volcanic glass, knapped, with glassy conchoidal chips catching a cold rim light: lit face around #4a4f6a, body #1b1d2b, shadow side #0a0b12, rim light #9fb0ff. Glyph ink #05060a, its glow around #8ff0ff.
-
-THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
-Keep that outline exactly. Every rune in this game has an outline of its own,
-and it is how a player tells one rune from another across the board — do not
-tidy it toward a plain oval or a rounded rectangle.
-
-THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
-
-WHAT IT IS NOT:
-· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
-  around the stone. The game lays its own gold wreath around a level-2
-  stone afterwards; one painted into the picture ends up under a second.
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 70%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -4111,14 +3911,214 @@ captions or watermarks.
 
 ---
 
-## Jade — Lv 2  (single-mage-jade-lv2.png → images/runes/mage-jade-lv2.webp)
+## Amber — Lv 1  (single-mage-amber-lv1.png → images/runes/mage-amber-lv1.webp)
 
 ```text
 Repaint ONE rune stone, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the Orb rune as a Jade stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, WORN SMOOTH and bordered: every corner and point of the outline rounded off, as though carried in a pocket for years, with a raised bevelled border all the way round and a shallow sunken field inside it. Polished, not cut — no facet anywhere, the glyph is INLAID in gold, a thin bevelled gold line set flush into the jade; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): polished green jade, translucent at the edges, faint cloudy veins: lit face around #6fcf9a, body #2f8a5f, shadow side #16503a, rim light #c8ffe4. Glyph ink #0d3324, its glow around #ffd76a.
+WHAT IT IS: the Orb rune as a Amber stone at level 1: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, CUT and bordered: the same outline taken in flat planes rather than curves — a few facets down each side — so the light breaks along an edge instead of sliding round. A raised bevelled border all the way round and a shallow sunken field inside it, the glyph glows from INSIDE the gem, a warm light trapped in the amber. Colour identity (keep the HUE, muted and paper-toned): cut amber, honey to orange, with small dark inclusions trapped inside: lit face around #ffcf6b, body #d98a1e, shadow side #7a3f08, rim light #fff0b0. Glyph ink #3d1e05, its glow around #ffe28a.
+
+THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
+Keep that outline exactly. Every rune in this game has an outline of its own,
+and it is how a player tells one rune from another across the board — do not
+tidy it toward a plain oval or a rounded rectangle.
+
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
+
+WHAT IT IS NOT:
+· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
+  around the stone. The game lays its own gold wreath around a level-2
+  stone afterwards; one painted into the picture ends up under a second.
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 59%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## River — Lv 2  (single-mage-river-lv2.png → images/runes/mage-river-lv2.webp)
+
+```text
+Repaint ONE rune stone, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the Orb rune as a River stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, CARVED SMOOTH and bordered: the outline is clean and unbroken, with a raised bevelled border running all the way around it and a shallow sunken field inside that border. An amulet somebody cut a rune into, not a rock they found — the two sides are exactly equal and the border is even the whole way round, the glyph is CUT INTO the stone, a dark engraved groove lit from inside by its own colour; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): warm river sandstone, tan and beige, faintly banded: lit face around #d9c9a6, body #b39b73, shadow side #7d6547, rim light #f2e6c8. Glyph ink #2c2218, its glow the rune's own amethyst violet (#b57bff).
+
+THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
+Keep that outline exactly. Every rune in this game has an outline of its own,
+and it is how a player tells one rune from another across the board — do not
+tidy it toward a plain oval or a rounded rectangle.
+
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
+
+WHAT IT IS NOT:
+· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
+  around the stone. The game lays its own gold wreath around a level-2
+  stone afterwards; one painted into the picture ends up under a second.
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 71%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## Obsidian — Lv 2  (single-mage-obsidian-lv2.png → images/runes/mage-obsidian-lv2.webp)
+
+```text
+Repaint ONE rune stone, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the Orb rune as a Obsidian stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, KNAPPED: the same outline struck off in long straight flats instead of curves, its edges a little uneven, no border and no sunken field — raw worked glass, the glyph is a cold neon line drawn on the dark glass; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): black volcanic glass, knapped, with glassy conchoidal chips catching a cold rim light: lit face around #4a4f6a, body #1b1d2b, shadow side #0a0b12, rim light #9fb0ff. Glyph ink #05060a, its glow around #8ff0ff.
 
 THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
 Keep that outline exactly. Every rune in this game has an outline of its own,
@@ -4211,14 +4211,14 @@ captions or watermarks.
 
 ---
 
-## Amber — Lv 1  (single-mage-amber-lv1.png → images/runes/mage-amber-lv1.webp)
+## Jade — Lv 2  (single-mage-jade-lv2.png → images/runes/mage-jade-lv2.webp)
 
 ```text
 Repaint ONE rune stone, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the Orb rune as a Amber stone at level 1: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, CUT and bordered: the same outline taken in flat planes rather than curves — a few facets down each side — so the light breaks along an edge instead of sliding round. A raised bevelled border all the way round and a shallow sunken field inside it, the glyph glows from INSIDE the gem, a warm light trapped in the amber. Colour identity (keep the HUE, muted and paper-toned): cut amber, honey to orange, with small dark inclusions trapped inside: lit face around #ffcf6b, body #d98a1e, shadow side #7a3f08, rim light #fff0b0. Glyph ink #3d1e05, its glow around #ffe28a.
+WHAT IT IS: the Orb rune as a Jade stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, WORN SMOOTH and bordered: every corner and point of the outline rounded off, as though carried in a pocket for years, with a raised bevelled border all the way round and a shallow sunken field inside it. Polished, not cut — no facet anywhere, the glyph is INLAID in gold, a thin bevelled gold line set flush into the jade; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): polished green jade, translucent at the edges, faint cloudy veins: lit face around #6fcf9a, body #2f8a5f, shadow side #16503a, rim light #c8ffe4. Glyph ink #0d3324, its glow around #ffd76a.
 
 THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
 Keep that outline exactly. Every rune in this game has an outline of its own,
@@ -4267,7 +4267,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 59%
+Do not enlarge it to fill the frame. In the reference it spans about 70%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -4511,106 +4511,6 @@ captions or watermarks.
 
 ---
 
-## Marble — Lv 2  (single-mage-marble-lv2.png → images/runes/mage-marble-lv2.webp)
-
-```text
-Repaint ONE rune stone, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the Orb rune as a Marble stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, QUARRIED HEAVY and bordered: the same outline, broader and thicker, its sides filled part of the way out toward the block it was cut from, with a raised bevelled border all the way round and a shallow sunken field inside it. The heaviest of the set, the glyph is CARVED deep, a shadowed groove with no glow at all; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): white marble with grey veins, softly polished: lit face around #ffffff, body #d7dbe3, shadow side #8f97a6, rim light #ffffff. Glyph ink #3a4150, its glow the rune's own amethyst violet (#b57bff).
-
-THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
-Keep that outline exactly. Every rune in this game has an outline of its own,
-and it is how a player tells one rune from another across the board — do not
-tidy it toward a plain oval or a rounded rectangle.
-
-THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
-
-WHAT IT IS NOT:
-· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
-  around the stone. The game lays its own gold wreath around a level-2
-  stone afterwards; one painted into the picture ends up under a second.
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 73%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
-  shape closes around an empty middle — a ring, an arch, a horseshoe, a
-  closed loop, an open crescent — the magenta inside it is the SAME ground as
-  the magenta outside it: one continuous colour that happens to be
-  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
-  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
-  wash of the object's own colour. If you cannot see the panel's flat
-  magenta straight through the middle of the shape, that panel is wrong and
-  the whole sheet has to be painted again.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
 ## Ember — Lv 1  (single-mage-ember-lv1.png → images/runes/mage-ember-lv1.webp)
 
 ```text
@@ -4668,6 +4568,106 @@ AVOID — this is exactly how earlier attempts went wrong:
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
 Do not enlarge it to fill the frame. In the reference it spans about 62%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## Marble — Lv 2  (single-mage-marble-lv2.png → images/runes/mage-marble-lv2.webp)
+
+```text
+Repaint ONE rune stone, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the Orb rune as a Marble stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, QUARRIED HEAVY and bordered: the same outline, broader and thicker, its sides filled part of the way out toward the block it was cut from, with a raised bevelled border all the way round and a shallow sunken field inside it. The heaviest of the set, the glyph is CARVED deep, a shadowed groove with no glow at all; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): white marble with grey veins, softly polished: lit face around #ffffff, body #d7dbe3, shadow side #8f97a6, rim light #ffffff. Glyph ink #3a4150, its glow the rune's own amethyst violet (#b57bff).
+
+THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
+Keep that outline exactly. Every rune in this game has an outline of its own,
+and it is how a player tells one rune from another across the board — do not
+tidy it toward a plain oval or a rounded rectangle.
+
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
+
+WHAT IT IS NOT:
+· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
+  around the stone. The game lays its own gold wreath around a level-2
+  stone afterwards; one painted into the picture ends up under a second.
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 73%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -4911,106 +4911,6 @@ captions or watermarks.
 
 ---
 
-## Sapphire — Lv 2  (single-mage-sapphire-lv2.png → images/runes/mage-sapphire-lv2.webp)
-
-```text
-Repaint ONE rune stone, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the Orb rune as a Sapphire stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, STEP CUT: the outline taken in a FEW long hard flats with chamfered corners and squared-off sides, with wide facet bands running parallel to the edge and a flat table across the middle. No border, no sunken field — a cut gem, not a carved stone, the glyph is a polished channel sunk into the table, a hard white edge on its lit side and cold blue light in the groove; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): deep blue sapphire, glassy and cold, its depths almost ink at the shoulders: lit face around #7db4ff, body #1f4bbf, shadow side #0b1c58, rim light #dbe9ff. Glyph ink #04102e, its glow around #bcd8ff.
-
-THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
-Keep that outline exactly. Every rune in this game has an outline of its own,
-and it is how a player tells one rune from another across the board — do not
-tidy it toward a plain oval or a rounded rectangle.
-
-THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
-
-WHAT IT IS NOT:
-· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
-  around the stone. The game lays its own gold wreath around a level-2
-  stone afterwards; one painted into the picture ends up under a second.
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 71%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
-  shape closes around an empty middle — a ring, an arch, a horseshoe, a
-  closed loop, an open crescent — the magenta inside it is the SAME ground as
-  the magenta outside it: one continuous colour that happens to be
-  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
-  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
-  wash of the object's own colour. If you cannot see the panel's flat
-  magenta straight through the middle of the shape, that panel is wrong and
-  the whole sheet has to be painted again.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
 ## Ruby — Lv 1  (single-mage-ruby-lv1.png → images/runes/mage-ruby-lv1.webp)
 
 ```text
@@ -5068,6 +4968,106 @@ AVOID — this is exactly how earlier attempts went wrong:
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
 Do not enlarge it to fill the frame. In the reference it spans about 63%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## Sapphire — Lv 2  (single-mage-sapphire-lv2.png → images/runes/mage-sapphire-lv2.webp)
+
+```text
+Repaint ONE rune stone, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the Orb rune as a Sapphire stone at level 2: the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner, STEP CUT: the outline taken in a FEW long hard flats with chamfered corners and squared-off sides, with wide facet bands running parallel to the edge and a flat table across the middle. No border, no sunken field — a cut gem, not a carved stone, the glyph is a polished channel sunk into the table, a hard white edge on its lit side and cold blue light in the groove; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger. Colour identity (keep the HUE, muted and paper-toned): deep blue sapphire, glassy and cold, its depths almost ink at the shoulders: lit face around #7db4ff, body #1f4bbf, shadow side #0b1c58, rim light #dbe9ff. Glyph ink #04102e, its glow around #bcd8ff.
+
+THE SILHOUETTE is a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it.
+Keep that outline exactly. Every rune in this game has an outline of its own,
+and it is how a player tells one rune from another across the board — do not
+tidy it toward a plain oval or a rounded rectangle.
+
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
+
+WHAT IT IS NOT:
+· NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
+  around the stone. The game lays its own gold wreath around a level-2
+  stone afterwards; one painted into the picture ends up under a second.
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 71%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -27363,7 +27363,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 81%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -27451,7 +27451,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 97%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -27539,7 +27539,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 97%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28067,7 +28067,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 91%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28155,7 +28155,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 89%
+Do not enlarge it to fill the frame. In the reference it spans about 98%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28243,7 +28243,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 88%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28331,7 +28331,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 93%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28419,7 +28419,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 80%
+Do not enlarge it to fill the frame. In the reference it spans about 99%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28507,7 +28507,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 92%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28595,7 +28595,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 96%
+Do not enlarge it to fill the frame. In the reference it spans about 98%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28683,7 +28683,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 94%
+Do not enlarge it to fill the frame. In the reference it spans about 95%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28771,7 +28771,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 94%
+Do not enlarge it to fill the frame. In the reference it spans about 99%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -28859,7 +28859,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 95%
+Do not enlarge it to fill the frame. In the reference it spans about 100%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 

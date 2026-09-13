@@ -348,14 +348,89 @@ const blank = (col: number, row: number, n: number): SheetCell =>
  * the reading order the prompt spends a paragraph on — so the column count is
  * always even.
  */
+
+/**
+ * ─── Runes whose sheet is painted in GROUPS ─────────────────────────────────
+ *
+ * Eighteen panels is too many for some subjects. The orb proved it: four rolls,
+ * three of them refused for a re-composed grid, and the one that sliced came
+ * back with the glyph flattened to a bare ring — no core, no sparks — on all
+ * eighteen panels at once. The ENEMY orb sheet, the same glyph over four
+ * factions on eight panels, has been correct since the first roll. The
+ * difference is not the model or the wording; it is how much of the sheet the
+ * painter is holding in its head.
+ *
+ * So a rune listed here is painted as several smaller sheets instead. The
+ * groups are skin ids, and every group must land on a legal grid: the column
+ * count stays EVEN (a material's two levels sit side by side) and `cols/rows`
+ * has to be an aspect an image tool can be asked for. Four materials is eight
+ * panels at 4 × 2 — the enemy sheet's own shape — and one material is two
+ * panels at 2 × 1. Both are 2:1.
+ *
+ * Splitting costs a generation per group, which is the point: three small
+ * sheets that come back right beat one large one that does not.
+ */
+const STONE_SPLITS: Partial<Record<RuneType, readonly (readonly SkinId[])[]>> = {
+  // Four materials works — group `a` slices. Group `b` did not: twice it came
+  // back re-composed, and the painter said so itself ("the image I've
+  // generated here has 12 objects, rather than the 8-panel grid you
+  // requested"). Same shape as `a`, same prompt, different materials; a third
+  // identical roll would be hoping. Two materials on a 2 × 2 square is smaller
+  // than anything that has ever failed here.
+  mage: [
+    ['river', 'obsidian', 'jade', 'amber'],
+    ['marble', 'ember'],
+    ['sapphire', 'ruby'],
+    ['diamond']
+  ]
+}
+
+/** The groups a rune's stones are painted in — one group of every skin unless split. */
+const stoneGroups = (type: RuneType): readonly (readonly SkinId[])[] =>
+  STONE_SPLITS[type] ?? [SKIN_IDS]
+
+/**
+ * How a SPLIT group is laid out.
+ *
+ * ── Go with the grain of the grid ──
+ *
+ * The first split laid its groups out the way the full sheet does — adjacent
+ * PAIRS, one material at two levels side by side — and the painter ignored it.
+ * Handed four materials at two levels on a 4 × 2 grid, it did the obvious
+ * thing instead: a material per COLUMN, level 1 along the top row and level 2
+ * along the bottom. It also swapped two of the materials while it was at it,
+ * which is what happens when the layout it is reading and the layout it is
+ * looking at disagree.
+ *
+ * That reading is not wrong, it is the natural one — four columns and two rows
+ * for four materials and two levels is a table, and a table's rows mean
+ * something. So the sheet is laid out that way now and the prompt says so, and
+ * the reference the painter copies shows the same thing. Fighting the instinct
+ * cost a generation; agreeing with it costs nothing.
+ *
+ * A one-material group has no ambiguity to resolve — its two panels sit side
+ * by side, which is both a pair and a 2:1 sheet.
+ */
+const splitGrid = (materials: number): { cols: number; byColumn: boolean } =>
+  (materials > 1 ? { cols: materials, byColumn: true } : { cols: 2, byColumn: false })
+
 const STONE_COLS = 6
 
-const stoneSheet = (type: RuneType): SheetSpec => {
+const stoneSheet = (type: RuneType, skins: readonly SkinId[] = SKIN_IDS, part = ''): SheetSpec => {
   const w = RUNE_WORDS[type]
+  const whole = skins.length === SKIN_IDS.length
+  const grid = splitGrid(skins.length)
+  const cols = whole ? STONE_COLS : grid.cols
+  const byColumn = !whole && grid.byColumn
   const cells: SheetCell[] = []
   let i = 0
-  for (const skin of SKIN_IDS) {
-    for (const level of [1, 2] as const) {
+  // By COLUMN, the outer loop is the LEVEL: a whole row of level-1 stones,
+  // then the same materials again at level 2. In pairs it is the other way.
+  const order: Array<[SkinId, 1 | 2]> = byColumn
+    ? ([1, 2] as const).flatMap((level) => skins.map((skin) => [skin, level] as [SkinId, 1 | 2]))
+    : skins.flatMap((skin) => ([1, 2] as const).map((level) => [skin, level] as [SkinId, 1 | 2]))
+  {
+    for (const [skin, level] of order) {
       const id = `${type}-${skin}-lv${level}`
       cells.push({
         id,
@@ -367,28 +442,46 @@ const stoneSheet = (type: RuneType): SheetSpec => {
             ? '; a heavier, slightly larger stone, ringed by a gold rim with a small gold crest on its shoulder, the glyph glowing stronger'
             : ''),
         colour: stoneColour(type, skin),
-        col: i % STONE_COLS, row: Math.floor(i / STONE_COLS), cw: 1, ch: 1,
+        col: i % cols, row: Math.floor(i / cols), cw: 1, ch: 1,
         target: artTarget('rune', id),
         art: { kind: 'pebble', type, level, owner: 'player', skin }
       })
       i++
     }
   }
+  const names = skins.map((s2) => SKIN_WORDS[s2].name)
   return {
-    id: `runes-${type}`,
-    file: `sheet-runes-${type}`,
-    title: `${w.name} stones — the player's ${SKIN_IDS.length} skins`,
+    id: `runes-${type}${part}`,
+    file: `sheet-runes-${type}${part}`,
+    title: whole
+      ? `${w.name} stones — the player's ${SKIN_IDS.length} skins`
+      : `${w.name} stones — ${names.join(', ')}`,
     kind: 'stones',
-    cols: STONE_COLS,
-    brief: `The player's ${w.name} rune, cut into each of the ${SKIN_IDS.length} stone skins the shop sells, at level 1 and level 2. `
+    cols,
+    brief: `The player's ${w.name} rune, cut into ${whole ? `each of the ${SKIN_IDS.length} stone skins the shop sells` : `${names.length === 1 ? 'one' : names.length} of the stone skins the shop sells (${names.join(', ')})`}, at level 1 and level 2. `
       + `EVERY PANEL IS THE SAME STONE SHAPE: ${w.shape}. That silhouette is how a player tells a ${w.name} from every other rune `
       + 'across the board, so it is the one thing that must not vary between panels — the material and the way the stone is '
       + `finished are what change. The glyph is ${w.glyph}, in ${w.hue}; it too is the SAME in every panel.`,
-    panels: 'Read the grid two panels at a time: each PAIR of neighbouring panels is one material, first at level 1 then at level 2. '
-      + `Left to right, top to bottom: ${SKIN_IDS.map((s2) => SKIN_WORDS[s2].name).join(', ')} — each as Lv 1 then Lv 2. `
-      + 'A level-2 stone is the same material and the same glyph, a little larger and heavier, with a gold rim, a small gold crest on its shoulder and a stronger glow.',
+    panels: byColumn
+      ? `Read the grid as a TABLE with ${names.length} columns and 2 rows. Each COLUMN is one material, in this order left to right: `
+        + `${names.join(', ')}. The TOP row is every one of those stones at level 1; the BOTTOM row is the SAME ${names.length} stones, `
+        + 'in the SAME order, at level 2. So the stone directly below another is the same material one level up — never a different '
+        + 'material, and never a different order between the rows. '
+        + 'A level-2 stone is the same material and the same glyph, a little larger and heavier, with a gold rim, a small gold crest on its shoulder and a stronger glow.'
+      : 'Read the grid two panels at a time: each PAIR of neighbouring panels is one material, first at level 1 then at level 2. '
+        + `Left to right, top to bottom: ${names.join(', ')} — each as Lv 1 then Lv 2. `
+        + 'A level-2 stone is the same material and the same glyph, a little larger and heavier, with a gold rim, a small gold crest on its shoulder and a stronger glow.',
     cells
   }
+}
+
+/** Every player-stone sheet for `type` — one, or the groups `STONE_SPLITS` names. */
+const stoneSheetsFor = (type: RuneType): SheetSpec[] => {
+  const groups = stoneGroups(type)
+  if (groups.length === 1) return [stoneSheet(type)]
+  // `-a`, `-b`, `-c`: the suffix is part of the file name and of the sheet id,
+  // so a split rune's references and prompts never collide with each other.
+  return groups.map((g, i) => stoneSheet(type, g, `-${String.fromCharCode(97 + i)}`))
 }
 
 /** One sheet per rune TYPE for the enemy: four factions × two levels on a 4×2 grid (2:1). */
@@ -770,7 +863,7 @@ const laurelSheet = (): SheetSpec => {
 }
 
 export const SHEETS: SheetSpec[] = [
-  ...RUNE_TYPES.map(stoneSheet),
+  ...RUNE_TYPES.flatMap(stoneSheetsFor),
   ...RUNE_TYPES.map(enemyStoneSheet),
   glyphSheet(),
   splashSheet(),
