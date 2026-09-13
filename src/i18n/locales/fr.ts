@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skins',
       'runes': 'Runes de puissance',
+      'ranks': 'Rangs',
     },
     'title': 'Boutique',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Pièces',
   'cancel': 'Annuler',
   'close': 'Fermer',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Niveau {c}-{n}',
     'conquest': 'Conquête',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} restants',
     'turn': 'Tour {n}',
     'you': 'Vous',
     'enemy': 'Ennemi',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Tenez 8 cases pour gagner',
       'desktop': 'Tenez 8 cases pour gagner'
     },
+    'conquestClaim': {
+      'touch': "Chaque rune posée s'empare de sa case",
+      'desktop': "Chaque rune posée s'empare de sa case"
+    },
     'siege': {
       'touch': 'Encerclé ! Percez et tenez 8 cases',
       'desktop': 'Encerclé ! Percez et tenez 8 cases'
+    },
+    'yourMove': {
+      'touch': 'À toi — pose une rune',
+      'desktop': 'À toi — pose une rune'
+    },
+    'busyPlaced': {
+      'touch': 'Une rune par tour',
+      'desktop': 'Une rune par tour'
+    },
+    'busyPhase': {
+      'touch': 'Attends — les runes tirent',
+      'desktop': 'Attends — les runes tirent'
+    },
+    'busyTile': {
+      'touch': "Cette case ne l'accepte pas",
+      'desktop': "Cette case ne l'accepte pas"
     },
     'mage': {
       'touch': "L'orbe tire en diagonale à travers deux cases",
       'desktop': "L'orbe tire en diagonale à travers deux cases"
     },
     'defense': {
-      'touch': 'Le bouclier bloque flèches et rayons',
-      'desktop': 'Le bouclier bloque flèches et rayons'
+      'touch': 'Ton bouclier arrête les flèches et rayons ENNEMIS',
+      'desktop': 'Ton bouclier arrête les flèches et rayons ENNEMIS'
     },
     'support': {
       'touch': 'La croix soigne et renforce ses voisins',
@@ -169,13 +192,15 @@ export default {
     'clash': 'CHOC !',
     'victory': 'VICTOIRE !',
     'defeat': 'DÉFAITE',
-    'reveal': 'RÉVÉLATION',
+    'reveal': 'TIR',
     'suddenDeath': 'MORT SUBITE',
     'turn': 'TOUR {n}',
     'you': 'VOUS',
     'foe': 'ENNEMI',
     'reroll': 'RELANCER',
-    'lastTurn': 'DERNIER TOUR'
+    'lastTurn': 'DERNIER TOUR',
+    'firesIn': 'TIR DANS',
+    'yourTurn': 'À TOI'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Décidé aux cases tenues',
       'suddenDeath': 'Mort subite',
       'siegeHeld': 'Vous avez tenu la ligne',
-      'siegeBroken': 'Le siège vous a brisé'
+      'siegeBroken': 'Le siège vous a brisé',
+      'crumbled': 'Les mannequins se sont effrités'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Rangs',
     'title': 'Rangs de rune',
     'tagline': 'Chaque rang donne +{n} PV max — pareil pour toutes les runes.',
     'rank': 'Rang {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Forge des runes — en cours',
     'full': 'Forge des runes — pleine',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Skin gratuit prêt — touchez pour ouvrir',
+    'waiting': 'Skin gratuit dans {time}',
+    'take': 'Prendre'
   },
 
   'leaderboard': {

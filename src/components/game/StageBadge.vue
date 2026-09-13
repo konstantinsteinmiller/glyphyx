@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import ConquestBar from '@/components/game/ConquestBar.vue'
+import ConquestBar from '@/components/game/ConquestBar.vue'
+import EnemiesLeft from '@/components/game/EnemiesLeft.vue'
 import CampaignModal from '@/components/organisms/CampaignModal.vue'
 import { playFx } from '@/use/useGameAudio'
 
@@ -18,10 +19,20 @@ interface Props {
   node: number
   playerTiles: number
   enemyTiles: number
+  /**
+   * What THIS node is won by. `eliminate` — every lesson — is won by shattering
+   * the enemy's stones, so it gets the count of those instead of the conquest
+   * rail, which on a lesson measures something that decides nothing. See
+   * `EnemiesLeft`.
+   */
+  objective?: 'conquest' | 'eliminate' | 'siege'
+  /** Enemy runes still standing, for the `eliminate` readout. */
+  enemiesLeft?: number
+  enemiesTotal?: number
   /** Disable the tap (mid-resolution, result screen up). */
   locked?: boolean
 }
-const props = withDefaults(defineProps<Props>(), { locked: false })
+const props = withDefaults(defineProps<Props>(), { locked: false, objective: 'conquest', enemiesLeft: 0, enemiesTotal: 0 })
 const emit = defineEmits<{ (e: 'open'): void; (e: 'close'): void }>()
 
 const { t } = useI18n()
@@ -46,7 +57,8 @@ const open = (): void => {
       span.stage__shadow(aria-hidden="true")
       span.stage__body
         span.stage__label {{ t('hud.stage', { c: chapter, n: node }) }}
-    ConquestBar.stage__bar(:player="playerTiles" :enemy="enemyTiles")
+    EnemiesLeft.stage__bar(v-if="objective === 'eliminate'" :left="enemiesLeft" :total="enemiesTotal")
+    ConquestBar.stage__bar(v-else :player="playerTiles" :enemy="enemyTiles")
     CampaignModal(v-model="showMap" @update:model-value="(v) => { if (!v) emit('close') }")
 </template>
 

@@ -1,8 +1,10 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   CELL, MAX_EDGE, SHEETS, WALKS, SCENERY, SINGLES, STONE_SPAN,
   sheetRows, sheetSize, aspectOf, manifestTargets, promptForSheet, promptForWalk, promptForScenery, promptForSingle, promptDocs,
-  NO_LAUREL
+  NO_LAUREL, sheetTarget
 } from '@/game/artSheet'
 import { ART_CATALOGUE, allArtIds, artTarget } from '@/game/artCatalogue'
 import { RUNE_TYPES, SKINS, SKIN_IDS, FACTION_DEFS } from '@/game/rules'
@@ -333,5 +335,34 @@ describe('the prompts are generated, complete and deterministic', () => {
     expect(p).toContain('512 x 512')
     expect(p).toContain('images/runes/melee-river-lv1.webp')
     expect(p).toContain('THE GLYPH is')
+  })
+})
+
+describe('the result ribbon is cut from its single, never from the UI sheet', () => {
+  // Every sheet return painted the ribbon as a draped banner over the key
+  // sheet's grid lines, and one repaint of the chips silently replaced the
+  // level ribbon the result screen's 9-slice needs.
+  const ui = SHEETS.find((s) => s.id === 'ui')!
+  const ribbon = ui.cells.find((c) => c.id === 'ribbon')!
+
+  it('the sheet still draws the panel, gives it no target, and its single keeps one', () => {
+    expect(ribbon.art.kind).toBe('ribbon')
+    expect(ribbon.target).toBe(artTarget('ui', 'ribbon'))
+    expect(sheetTarget(ribbon)).toBeUndefined()
+    expect(SINGLES.find((t) => t.id === 'ribbon')?.cell.target).toBe(artTarget('ui', 'ribbon'))
+    // Every other chip on the sheet is still cut from it.
+    for (const c of ui.cells.filter((x) => x.id !== 'ribbon')) expect(sheetTarget(c), c.id).toBe(c.target)
+  })
+
+  it('the index the slicer reads agrees: no sheet entry writes ui/ribbon.webp', () => {
+    const file = resolve(process.cwd(), 'art-sheets', 'sheet-index.json')
+    if (!existsSync(file)) return
+    const index = JSON.parse(readFileSync(file, 'utf-8')) as {
+      sheets: { id: string; cells: { id: string; target?: string }[]; singles?: { id: string; cells: { target?: string }[] }[] }[]
+    }
+    const writers = index.sheets.flatMap((s) => s.cells.filter((c) => c.target === artTarget('ui', 'ribbon')).map((c) => `${s.id}/${c.id}`))
+    expect(writers).toEqual([])
+    const single = index.sheets.find((s) => s.id === 'ui')?.singles?.find((t) => t.id === 'ribbon')
+    expect(single?.cells[0]?.target).toBe(artTarget('ui', 'ribbon'))
   })
 })

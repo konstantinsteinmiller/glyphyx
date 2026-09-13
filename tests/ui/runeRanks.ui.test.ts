@@ -3,7 +3,7 @@ import { defineComponent, nextTick } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import en from '@/i18n/locales/en'
-import { MAX_RUNE_RANK, RANK_PRICES } from '@/game/rules'
+import { MAX_RUNE_RANK, RANK_PRICES, RUNE_UNLOCK_PRICE } from '@/game/rules'
 
 /**
  * ─── The rank ladder, mounted ───────────────────────────────────────────────
@@ -20,15 +20,22 @@ import { MAX_RUNE_RANK, RANK_PRICES } from '@/game/rules'
 
 const gate = vi.hoisted(() => ({ granted: true, rewardGated: true, calls: [] as string[] }))
 const canOffer = vi.hoisted(() => ({ ref: null as null | { value: boolean } }))
+/** "A real provider can play a video" as a REF, so the gate below re-reads it. */
+const videoPlays = vi.hoisted(() => ({ ref: null as null | { value: boolean } }))
 
 vi.mock('@/use/useAdGate', async () => {
-  const { ref } = await import('vue')
+  const { computed, ref } = await import('vue')
   const r = ref(true)
   canOffer.ref = r
+  const v = ref(gate.rewardGated)
+  videoPlays.ref = v
   return {
     watchRewarded: vi.fn(async (reason: string) => { gate.calls.push(reason); return gate.granted }),
     claimReward: vi.fn(async (grant: () => void) => { if (gate.granted) grant(); return gate.granted }),
     canOfferReward: r,
+    // As the real gate defines it: a video is offered beside a coin price only
+    // where a real provider can play one AND the slot is ready.
+    canOfferVideo: computed(() => v.value && r.value),
     adInFlight: ref(false),
     // `RewardAdIcon` gates ITSELF on this: the film mark is drawn only on a
     // build where a video actually plays. `canOfferReward` is also true on an
@@ -203,6 +210,7 @@ beforeEach(() => {
   // The ledger itself is reset inside `fresh()`, through the proxy.
   gate.rewardGated = true
   if (canOffer.ref) canOffer.ref.value = true
+  if (videoPlays.ref) videoPlays.ref.value = true
 })
 
 describe('a rune rank card', () => {
@@ -244,15 +252,23 @@ describe('a rune rank card', () => {
     expect(wrapper.classes()).toContain('is-maxed')
   })
 
-  it('disables the coin button while the wallet is short, and says nothing more', async () => {
+  it('disables the coin button while the wallet is short, and says how short', async () => {
     const { RuneRankCard, st } = await fresh({ gx_coins: RANK_PRICES[0]! - 10 })
     wrapper = mountCard(RuneRankCard, 'melee')
     const buy = wrapper.find('.rrc__buy')
     expect(buy.text()).toContain(String(RANK_PRICES[0]))
     expect((buy.element as HTMLButtonElement).disabled).toBe(true)
-    // No "10 more coins" sentence any more: a disabled price button says
-    // "not yet" without spending a line on it.
-    expect(wrapper.find('.rrc__need').exists()).toBe(false)
+    // The gap to the next rank, printed the way the power-rune and skin cards
+    // print it. The ladder went without it for a while and was the one tab
+    // that made the player do the subtraction — while the next rank costs 70
+    // on one card and 560 on another, that number is this card's own.
+    const need = wrapper.find('.rrc__need')
+    expect(need.exists()).toBe(true)
+    expect(need.text()).toContain('10')
+    // …and it belongs to the COIN button, not to the row: under the row it
+    // would sit beneath the video half too, which a blind tester read as what
+    // the video would pay out.
+    expect(wrapper.find('.rrc__buycol .rrc__need').exists()).toBe(true)
     await buy.trigger('click')
     expect(st.bought).toEqual([])
   })
@@ -276,6 +292,9 @@ describe('a rune rank card', () => {
     wrapper = mountCard(RuneRankCard, 'defense')
     const ad = wrapper.find('.rrc__ad')
     expect(ad.exists()).toBe(true)
+    // The row lays itself out as a two-half switch (flush halves, the price
+    // sized to the card) only while it holds one.
+    expect(wrapper.find('.rrc__switch').classes()).toContain('has-video')
     // The invariant: the mark is inside the button, before its label.
     expect(ad.find('.ad-icon-stub').exists()).toBe(true)
     // ICON ONLY: the caption would overflow the card in a longer language,
@@ -294,31 +313,29 @@ describe('a rune rank card', () => {
     expect(wrapper.find('.rrc__ad').exists()).toBe(false)
     // The coin route survives a build with no ads at all.
     expect(wrapper.find('.rrc__buy').exists()).toBe(true)
+    expect(wrapper.find('.rrc__switch').classes()).not.toContain('has-video')
   })
 
-  it('draws no film mark on an ad-free build, where the perk is granted without a video', async () => {
-    // The rewarded BUTTON still stands (`canOfferReward` is true — the perk is
-    // reachable), but nothing plays, so the mark must not be drawn. Rendered
-    // with the REAL icon rather than the stub, since that gate lives inside it.
+  it('offers no video half on an ad-free build — the coin price, coin first, is the whole control', async () => {
+    // Local dev, the CrazyGames pre-release build: `canOfferReward` is still
+    // true there (it would grant the perk for nothing), but no video can play,
+    // so the film mark would not be drawn and the half used to stand there
+    // holding a lone arrow. The coin route carries the card instead.
     gate.rewardGated = false
     const { RuneRankCard } = await fresh()
-    const realIcon: Record<string, unknown> = { ...stubs }
-    delete realIcon.RewardAdIcon
-    wrapper = mount(RuneRankCard as never, {
-      props: { type: 'defense' },
-      global: { plugins: [i18n()], stubs: realIcon }
-    })
+    videoPlays.ref!.value = false
+    wrapper = mountCard(RuneRankCard, 'defense')
     await nextTick()
-    const ad = wrapper.find('.rrc__ad')
-    expect(ad.exists()).toBe(true)
-    expect(ad.find('.reward-ad-icon').exists()).toBe(false)
-    // Icon-only either way, so with the mark gone the button is EMPTY of text
-    // and only its label still names the offer.
-    expect(ad.text()).not.toContain('Watch ad')
-    // The label names BOTH halves of the switch — what it does, and what it
-    // costs — because neither is written on the button.
-    expect(ad.attributes('aria-label')).toContain('Watch ad')
-    expect(ad.attributes('aria-label')).toContain('Upgrade')
+    expect(wrapper.find('.rrc__ad').exists()).toBe(false)
+    const buy = wrapper.find('.rrc__buy')
+    expect(buy.exists()).toBe(true)
+    expect(buy.text()).toContain(String(RANK_PRICES[0]))
+    // "🪙 70", not "70 🪙": the coin names the currency before the number.
+    const coin = buy.find('.coin-stub').element
+    const price = buy.find('.rrc__price').element
+    expect(coin.compareDocumentPosition(price) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // …and it is laid out as a whole control, not as the left half of a switch.
+    expect(wrapper.find('.rrc__switch').classes()).not.toContain('has-video')
   })
 
   it('wears the gift ribbon on the window\'s rune, and its FREE button carries no film mark', async () => {
@@ -423,17 +440,32 @@ describe('a mystery rune card', () => {
     expect(wrapper.findAll('button')).toHaveLength(0)
     expect(wrapper.findAll('.fbutton-stub')).toHaveLength(0)
   })
+
+  it('answers a press with a shake, without becoming something that can be opened', async () => {
+    // Inert is right; SILENT is not. A six-year-old in the shop audit pressed
+    // these over and over, got nothing back at all, and read the game as
+    // broken. The shake says "heard you, not this one" and promises nothing.
+    const { MysteryRuneCard } = await fresh()
+    wrapper = mount(MysteryRuneCard as never, { global: { plugins: [i18n()], stubs } })
+    expect(wrapper.classes()).not.toContain('is-nudging')
+    await wrapper.trigger('pointerdown')
+    expect(wrapper.classes()).toContain('is-nudging')
+    // …and it is still not a control.
+    expect(wrapper.element.tagName).toBe('ARTICLE')
+    expect(wrapper.attributes('tabindex')).toBeUndefined()
+  })
 })
 
 describe('the ranks panel', () => {
-  it('lists the whole roster, locked runes included, under its own heading', async () => {
+  it('lists the whole roster, locked runes included, and names the tab nowhere', async () => {
     const { RankShopPanel } = await fresh()
     wrapper = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
     expect(wrapper.findAll('.rrc')).toHaveLength(FULL_ROSTER.length)
-    expect(wrapper.find('.ranks__title').text().length).toBeGreaterThan(0)
-    // The tagline belongs to the SHOP's banner, which already prints it for
-    // whichever tab is open; the panel repeating it three lines below read as
-    // a mistake rather than as emphasis.
+    // Neither the tagline NOR a title of its own. The shop's banner prints the
+    // tagline for whichever tab is open and the tab pill already says RANKS,
+    // so a heading here was the third "you are here" in a dozen lines — this
+    // tab was the only one that repeated itself at all.
+    expect(wrapper.find('.ranks__title').exists()).toBe(false)
     expect(wrapper.find('.ranks__tagline').exists()).toBe(false)
   })
 
@@ -498,6 +530,43 @@ describe('the ranks panel', () => {
     expect(campaign.unlockedRunes.value).toContain('nuker')
     // Granted: the offer is gone, because the rune is now owned.
     expect(wrapper.find('.nuker').exists()).toBe(false)
+  })
+
+  it('sells the nuker for COINS where no video can play — never for free', async () => {
+    // The leak this closes: `canOfferReward` is true on an ad-free build (it
+    // would grant a perk that has no coin price), so this offer used to hand a
+    // campaign-gated rune over for one button press on local dev, itch, plain
+    // web, or any portal whose ad SDK failed to load.
+    gate.rewardGated = false
+    const { RankShopPanel, campaign } = await fresh({ gx_unlocked_runes: ['melee'], gx_coins: 10_000 })
+    videoPlays.ref!.value = false
+    wrapper = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
+    const card = wrapper.find('.nuker')
+    expect(card.exists()).toBe(true)
+    expect(card.find('.nuker__ad').exists()).toBe(false)
+    expect(card.find('.ad-icon-stub').exists()).toBe(false)
+    const buy = card.find('.nuker__buy')
+    expect(buy.exists()).toBe(true)
+    expect(buy.text()).toContain(String(RUNE_UNLOCK_PRICE))
+    expect(buy.find('.coin-stub').exists()).toBe(true)
+
+    await buy.trigger('click')
+    await nextTick()
+    expect(campaign.unlockedRunes.value).toContain('nuker')
+    expect(gate.calls).toEqual([])
+  })
+
+  it('disables that price when the wallet is short, and says how short', async () => {
+    gate.rewardGated = false
+    const { RankShopPanel, campaign } = await fresh({ gx_unlocked_runes: ['melee'], gx_coins: 10 })
+    videoPlays.ref!.value = false
+    wrapper = mount(RankShopPanel, { global: { plugins: [i18n()], stubs } })
+    const buy = wrapper.find('.nuker__buy')
+    expect((buy.element as HTMLButtonElement).disabled).toBe(true)
+    expect(wrapper.find('.nuker__need').text()).toContain(String(RUNE_UNLOCK_PRICE - 10))
+    await buy.trigger('click')
+    await nextTick()
+    expect(campaign.unlockedRunes.value).not.toContain('nuker')
   })
 
   it('grants nothing when the video was not granted', async () => {

@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AIM_LAND_MS, BETWEEN_TURNS_MS, LESSON_REAIM_HOLD_MS, LOCK_WINDOW_MS, LOCK_WINDOW_TAP_MS, NO_HANDICAP,
-  PLANNING_MS, RESET_MS, RESOLVE_MS, REVEAL_MS
+  LESSON_RESOLVE_SCALE, PLANNING_MS, RESET_MS, RESOLVE_MS, REVEAL_MS
 } from '@/game/rules'
+import { runeAt } from '@/game/board'
 
 /**
  * ─── The battle composable, driven like the scene drives it ────────────────
@@ -62,8 +63,18 @@ const load = async (blob: Record<string, unknown> = {}, opts: LoadOptions = {}) 
   return { battle: mod.battle, mod, campaign, economy, streak, state, events, reportMatch, computeHandicap }
 }
 
-/** The first node with a clock and a real opponent: chapter 1's seventh, after the six lessons. */
-const NORMAL = 7
+/**
+ * A node with a clock, a real opponent and NO teaching hand on it.
+ *
+ * This was 7 — the first such node — until 1-7 gained a `guide`: one taught
+ * opening move on a node that is otherwise a real fight, added because
+ * conquest was the one thing the campaign never taught. A guide holds the
+ * planning clock exactly the way a lesson's ghost does (a player being shown a
+ * move must not be timed out mid-lesson), so 7 is no longer the right board to
+ * assert clock behaviour against. 2-1 is the next conquest node and carries no
+ * guide.
+ */
+const NORMAL = 9
 const normalBlob = (extra: Record<string, unknown> = {}) =>
   ({ gx_best_node: NORMAL - 1, gx_node: NORMAL, gx_tutorial_seen: true, ...extra })
 
@@ -276,6 +287,31 @@ describe('the drag protocol', () => {
     expect(drag.over).toEqual({ col: 1, row: 2 })
   })
 
+  it('refuses a drop ON a tile that cannot take the rune, instead of putting it next door', async () => {
+    // The lesson tells the player to "drop a matching rune on yours to level it
+    // up". A blind tester did exactly that onto a stone that could not take it
+    // and the rune landed on the square NEXT DOOR — the last legal tile the
+    // pebble had crossed — silently, every time (2026-09-12). The swipe-through
+    // fallback is for a flick off the BOARD; a deliberate drop onto an illegal
+    // tile has to be told no, because the refusal is the rule.
+    const { battle, mod } = await load()
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(1)
+    const before = battle.rejected.value?.seq ?? 0
+    battle.beginDrag(0, 100, 600)
+    // Across a legal tile first, so the fallback has something to land on —
+    // carried, not landed, because a LANDED pebble keeps its own tile.
+    battle.updateDrag(127, 212, { col: 1, row: 2 })
+    // …then onto the skeleton at (0, 2), which no player rune may occupy.
+    battle.updateDrag(42, 212, { col: 0, row: 2 })
+    battle.endDrag(true)
+    expect(battle.view.drag).toBeNull()
+    expect(battle.hasPlaced.value).toBe(false)
+    expect(runeAt(battle.view.board, 1, 2)).toBeNull()
+    expect(battle.rejected.value?.reason).toBe('tile')
+    expect(battle.rejected.value!.seq).toBeGreaterThan(before)
+  })
+
   it('a small wobble never flips the facing; crossing to the far side does', async () => {
     // The old failure mode this guards was jitter reading as a stroke. Position
     // aiming cannot jitter at all: the answer depends only on where the pointer
@@ -418,14 +454,30 @@ describe('the drag protocol', () => {
     expect(events).not.toContain('placed')
   })
 
-  it('a release on a tile before landing takes the default facing', async () => {
+  it('a release on a tile before landing faces what is in reach, not a fixed default', async () => {
+    // 1-1's skeleton stands at (0,2), immediately LEFT of the tile the pebble
+    // is dropped on. An unaimed drop used to take `defaultDir` ('up', into
+    // empty board) or — worse, once a tile had been crossed — the edge the
+    // pebble came in through. It now points at the thing it can hit.
     const { battle } = await load()
     battle.startNode(1)
     battle.beginDrag(0, 100, 600)
     battle.updateDrag(100, 440, { col: 1, row: 2 })
     battle.endDrag(true)
     expect(battle.hasPlaced.value).toBe(true)
-    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'up' })
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
+  })
+
+  it('an unaimed drop with nothing in reach still takes the default facing', async () => {
+    // Same lesson, a tile the skeleton is nowhere near: no enemy in any of the
+    // sword's four facings, so the answer is the one it always was.
+    const { battle } = await load()
+    battle.startNode(1)
+    battle.beginDrag(0, 100, 600)
+    battle.updateDrag(100, 440, { col: 3, row: 3 })
+    battle.endDrag(true)
+    expect(battle.hasPlaced.value).toBe(true)
+    expect(battle.view.playerMove).toMatchObject({ col: 3, row: 3, dir: 'up' })
   })
 
   it('a fast flick through a tile and off the board commits to that tile, aimed by the flick', async () => {
@@ -589,7 +641,7 @@ describe('the drag protocol', () => {
     // Turn 1: the sword faces up at nothing; the hold expires and the turn resolves.
     placeAt(battle, 0, { col: 1, row: 2 })
     advance(battle, LESSON_REAIM_HOLD_MS + 100)
-    advance(battle, REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 100)
+    advance(battle, REVEAL_MS + (RESOLVE_MS + BETWEEN_TURNS_MS) * LESSON_RESOLVE_SCALE + 100)
     expect(battle.turn.value).toBe(2)
     expect(battle.matchActive.value).toBe(true)
     // Turn 2: a placement gets an ordinary window.
@@ -779,7 +831,10 @@ describe('the turn clock', () => {
     expect(kinds).toContain('shatter')
     expect(events).toContain('resolveStart')
 
-    advance(battle, RESOLVE_MS + BETWEEN_TURNS_MS + 20)
+    // A LESSON's resolution plays at `LESSON_RESOLVE_SCALE` of speed — the
+    // whole turn is otherwise over in 1.2 s, which is not enough for a player
+    // who has never seen a sword swing or an arrow fly.
+    advance(battle, (RESOLVE_MS + BETWEEN_TURNS_MS) * LESSON_RESOLVE_SCALE + 20)
     expect(battle.phase.value).toBe('ended')
     expect(battle.matchActive.value).toBe(false)
     expect(battle.result.value?.won).toBe(true)
@@ -1308,12 +1363,11 @@ describe('aiming by position', () => {
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
   })
 
-  it('the centre of a tile is NOT a choice: the facing holds and the window stays', async () => {
+  it('the centre of a tile is NOT a choice: the facing HOLDS there', async () => {
     // The middle is simply where you click a tile, so nothing is picked there.
     // The case that decides it: a player pre-aims with a key and then clicks
     // the tile centre. If the centre counted as a choice it would silently
-    // overwrite their key with the default AND skip the correction window that
-    // was the only way to fix it.
+    // overwrite their key with the default.
     const { battle, drag } = await swordDrag()
     battle.aimKey('right')
     expect(drag.dir).toBe('right')
@@ -1321,14 +1375,112 @@ describe('aiming by position', () => {
     expect(drag.region).toBeNull()
     expect(drag.dir).toBe('right')
     battle.endDrag(true)
-    expect(battle.lockOpen.value).toBe(true)
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'right' })
+  })
+
+  it('…and a MOUSE gets no correction window afterwards, centre or not', async () => {
+    // The compass is drawn under the cursor the whole time, so a mouse has
+    // already seen the answer. The window used to survive a centre drop — the
+    // most natural placement there is — which put a second back on every turn
+    // for the one input that never needed it.
+    for (const [x, y] of [[127.5, 212.5], [127.5, 180]] as const) {
+      const { battle } = await swordDrag()
+      battle.updateDrag(x, y, { col: 1, row: 2 })
+      battle.endDrag(true)
+      expect(battle.lockOpen.value, `released at ${x},${y}`).toBe(false)
+      expect(battle.phase.value).not.toBe('planning')
+    }
+  })
+
+  it('a FINGER still gets one: it covers the tile it is choosing on', async () => {
+    const { battle, mod } = await load(normalBlob())
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(NORMAL)
+    const slot = battle.view.hand.indexOf('melee')
+    battle.beginDrag(slot, 100, 600, false)
+    battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
+    battle.endDrag(true)
+    expect(battle.lockOpen.value).toBe(true)
+  })
+
+  it('a pebble carried up from the tray and released in the middle does NOT face back down', async () => {
+    // The gesture every blind tester used on a phone (2026-09-11): pick a
+    // pebble out of the tray below the board, carry it straight up onto a tile,
+    // let go in the middle of it. The pebble crosses the tile's bottom region
+    // on the way in, and the dead zone used to HOLD that — so the stone landed
+    // facing down, into the player's own back row, and the lesson that needed
+    // one move took three testers the best part of a minute.
+    //
+    // The dead zone still chooses nothing. What it holds, before anything has
+    // been chosen, is now the useful facing for that tile.
+    const { battle, mod } = await load()
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(1)
+    battle.beginDrag(0, 100, 600)
+    const drag = battle.view.drag as NonNullable<typeof battle.view.drag>
+    // Up through the bottom edge of (1,2) …
+    battle.updateDrag(127.5, 250, { col: 1, row: 2 })
+    expect(drag.region).toBe('down')
+    // … and to rest in the middle of it.
+    battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
+    expect(drag.region).toBeNull()
+    expect(drag.dir).toBe('left')
+    battle.endDrag(true)
+    // 1-1's skeleton is at (0,2): left of the tile, and now on the receiving end.
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
+    // Unaimed, so the correction window is still there to change it with.
+    expect(battle.lockOpen.value).toBe(true)
+  })
+
+  it('survives the input layer handing it the SAME cell object every move', async () => {
+    // `useArenaInput` owns one mutable `Cell` and rewrites it on every pointer
+    // move — so a drag that stores it by reference watches its own `over`
+    // follow the finger across the board. That is what happened: once the
+    // pebble had landed anywhere, `updateDrag` returned early every frame,
+    // the tile-change bookkeeping never ran again, and the facing stayed
+    // pinned to the first tile. Every test here passed throughout, because
+    // they all hand over a fresh object; a probe of the real browser is what
+    // caught it. So this one lies the way the input layer does.
+    const { battle, mod } = await load()
+    mod.setDragMetrics(tileMetrics())
+    battle.startNode(1)
+    const scratch = { col: 0, row: 0 }
+    const at = (x: number, y: number) => {
+      if (x < 0 || x >= 320 || y < 0 || y >= 320) return null
+      scratch.col = Math.floor(x / 80)
+      scratch.row = Math.floor(y / 80)
+      return scratch
+    }
+    battle.beginDrag(0, 100, 600)
+    // Up the board from the tray, through (1,3), to rest in the middle of (1,2).
+    for (let i = 1; i <= 30; i++) {
+      const x = 100 + (120 - 100) * (i / 30)
+      const y = 600 + (200 - 600) * (i / 30)
+      battle.updateDrag(x, y, at(x, y))
+      advance(battle, 16)
+    }
+    const drag = battle.view.drag as NonNullable<typeof battle.view.drag>
+    // The pebble knows which tile it is actually on, not wherever the finger is.
+    expect(drag.over).toEqual({ col: 1, row: 2 })
+    battle.endDrag(true)
+    // 1-1's skeleton is at (0,2), left of the tile it was dropped on.
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
   })
 
   it('crossing the dead zone changes nothing, then choosing again does', async () => {
     // Not a flicker: the absence of one. The facing simply holds while the
     // pointer is near the middle.
+    //
+    // The pebble has to have LANDED first — the pointer stopped on this tile —
+    // because that is what separates a facing the player chose from a region
+    // the pebble merely crossed on its way in. See the tray-drop test above.
     const { battle, drag } = await swordDrag()
+    // In through the bottom edge — where a pebble from the tray arrives, and
+    // not a facing anybody picked — and then ACROSS to the left region, which
+    // is. Only that second move is a choice, and it is the one the dead zone
+    // has to keep hold of.
+    battle.updateDrag(127.5, 250, { col: 1, row: 2 })
+    expect(drag.region).toBe('down')
     battle.updateDrag(92, 212.5, { col: 1, row: 2 })
     expect(drag.dir).toBe('left')
     battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
@@ -1472,3 +1624,4 @@ describe('aiming by position', () => {
     expect(battle.view.drag!.region).toBeNull()
   })
 })
+

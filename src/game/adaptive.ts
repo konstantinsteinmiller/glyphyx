@@ -55,12 +55,48 @@ const DEFICIT_TIERS: ReadonlyArray<readonly [number, number, number]> = [
   [5, 0.35, 0.35],
   [3, 0.2, 0.2]
 ]
-/** Relief per losses on this node: `[fails, attackCut, extraRandom, skipChance, timerBonusMs]`, largest tier wins. */
+/**
+ * Relief per losses on this node: `[fails, attackCut, extraRandom, skipChance,
+ * timerBonusMs]`, largest tier wins.
+ *
+ * ─── Why these numbers moved one tier earlier ───────────────────────────────
+ *
+ * The shape of this curve was right and its PHASE was wrong. Measured on node
+ * 1-7 — the first conquest node, and the first thing after six tutorial wins —
+ * with the `careless` policy, which is the scripted stand-in for a tester who
+ * has not understood the controls yet:
+ *
+ *     attempt 1 (0 fails)   25 %
+ *     attempt 2 (1 fail)    28 %   ← the relief had not arrived
+ *     attempt 3 (2 fails)   75 %
+ *     attempt 4 (3 fails)   93 %
+ *
+ * Flat across the first retry, because the old one-fail tier granted no
+ * `skipChance` at all and the skip is what actually decides these matches.
+ * Two blind testers lost 1-7 twice and stopped there — in the window where
+ * the relief did not exist yet. Neither ever played the attempt that would
+ * have been 75 %; one of them ran out of session in the middle of it
+ * (2026-09-12 round 4).
+ *
+ * So each tier now gives what the tier above it used to. A player who loses
+ * once gets the old two-loss relief, which is the one that visibly works. The
+ * ceiling is unchanged in kind — three losses is still the most the game ever
+ * holds back — and none of this touches a tutorial node, which gets no relief
+ * by construction (the ghost hand is the relief there).
+ */
 const FAIL_TIERS: ReadonlyArray<readonly [number, number, number, number, number]> = [
-  [3, 0.35, 0.4, 0.3, 3000],
-  [2, 0.25, 0.3, 0.2, 2000],
-  [1, 0.15, 0.15, 0, 1000]
+  [3, 0.4, 0.45, 0.35, 3500],
+  [2, 0.35, 0.4, 0.3, 3000],
+  [1, 0.25, 0.3, 0.2, 2000]
 ]
+/**
+ * How many windows a player may let run out before the pass mirror stops
+ * answering. Generous — a beginner reading the board is the case it exists
+ * for — but finite, because an enemy that mirrors an absent player for ever
+ * hands them a win they never played for.
+ */
+export const MIRROR_PATIENCE = 3
+
 /** Two losses in a row, anywhere: a little more randomness and a longer clock. */
 const LOSS_STREAK_AT = 2
 const LOSS_STREAK_EXTRA_RANDOM = 0.1
@@ -138,7 +174,22 @@ const baseHandicap = (input: HandicapInput): Handicap => {
   const timerMs = Math.min(PLANNING_MAX_MS, PLANNING_MS + Math.round(timerBonus * scale))
 
   // The mirror sits on top of the relief; sudden death switches every skip off.
-  if (input.playerPassedLastTurn === true && !input.suddenDeath) skip = Math.max(skip, PASS_MIRROR[difficulty])
+  //
+  // …but it mirrors a player who is THINKING, not one who is absent. On easy
+  // the mirror is a certainty, so a player who passes every single window
+  // faces an enemy who does the same, and the match becomes a staring contest
+  // that the siege's "hold out" objective then awards to the player: a
+  // zero-input run took node 1-8 100 % of the time at full relief. That is the
+  // game playing itself, which teaches nothing and is worth nothing.
+  //
+  // So the mirror expires. Up to `MIRROR_PATIENCE` passes it is a courtesy for
+  // someone who ran out of time; past that the player is not playing, and the
+  // enemy stops waiting for them. Measured in passes, never in wall clock —
+  // see the same rule in the onboarding traps.
+  const absent = num(input.passesThisMatch) > MIRROR_PATIENCE
+  if (input.playerPassedLastTurn === true && !input.suddenDeath && !absent) {
+    skip = Math.max(skip, PASS_MIRROR[difficulty])
+  }
   if (input.suddenDeath) skip = 0
 
   return { skipChance: skip, extraRandom, atkMul, timerMs }

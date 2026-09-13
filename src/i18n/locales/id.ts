@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skin',
       'runes': 'Rune Kekuatan',
+      'ranks': 'Pangkat',
     },
     'title': 'Toko',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Koin',
   'cancel': 'Batal',
   'close': 'Tutup',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Level {c}-{n}',
     'conquest': 'Penaklukan',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Sisa {n}',
     'turn': 'Giliran {n}',
     'you': 'Kamu',
     'enemy': 'Musuh',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Kuasai 8 petak untuk menang',
       'desktop': 'Kuasai 8 petak untuk menang'
     },
+    'conquestClaim': {
+      'touch': 'Setiap rune yang kamu taruh merebut petaknya',
+      'desktop': 'Setiap rune yang kamu taruh merebut petaknya'
+    },
     'siege': {
       'touch': 'Terkepung! Tembus dan kuasai 8 petak',
       'desktop': 'Terkepung! Tembus dan kuasai 8 petak'
+    },
+    'yourMove': {
+      'touch': 'Giliranmu: letakkan rune',
+      'desktop': 'Giliranmu: letakkan rune'
+    },
+    'busyPlaced': {
+      'touch': 'Satu rune per giliran',
+      'desktop': 'Satu rune per giliran'
+    },
+    'busyPhase': {
+      'touch': 'Tunggu — rune sedang menyerang',
+      'desktop': 'Tunggu — rune sedang menyerang'
+    },
+    'busyTile': {
+      'touch': 'Petak itu tidak menerimanya',
+      'desktop': 'Petak itu tidak menerimanya'
     },
     'mage': {
       'touch': 'Orb menembak diagonal menembus dua petak',
       'desktop': 'Orb menembak diagonal menembus dua petak'
     },
     'defense': {
-      'touch': 'Perisai menahan panah dan sinar',
-      'desktop': 'Perisai menahan panah dan sinar'
+      'touch': 'Perisaimu menahan panah dan sinar MUSUH',
+      'desktop': 'Perisaimu menahan panah dan sinar MUSUH'
     },
     'support': {
       'touch': 'Salib menyembuhkan dan memperkuat tetangganya',
@@ -169,13 +192,15 @@ export default {
     'clash': 'TABRAKAN!',
     'victory': 'MENANG!',
     'defeat': 'KALAH',
-    'reveal': 'BUKA',
+    'reveal': 'MENYERANG',
     'suddenDeath': 'SUDDEN DEATH',
     'turn': 'GILIRAN {n}',
     'you': 'KAMU',
     'foe': 'MUSUH',
     'reroll': 'KOCOK',
-    'lastTurn': 'GILIRAN TERAKHIR'
+    'lastTurn': 'GILIRAN TERAKHIR',
+    'firesIn': 'MENEMBAK DALAM',
+    'yourTurn': 'GILIRANMU'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Ditentukan oleh petak yang dikuasai',
       'suddenDeath': 'Sudden death',
       'siegeHeld': 'Kamu bertahan',
-      'siegeBroken': 'Pengepungan mematahkanmu'
+      'siegeBroken': 'Pengepungan mematahkanmu',
+      'crumbled': 'Boneka latihan hancur'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Pangkat',
     'title': 'Pangkat rune',
     'tagline': 'Tiap pangkat +{n} HP maks — sama untuk semua rune.',
     'rank': 'Pangkat {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Tempa Rune — menempa',
     'full': 'Tempa Rune — penuh',
     'perHour': '+{n} / jam'
+  },
+  'skinChest': {
+    'ready': 'Skin gratis siap — ketuk untuk membuka',
+    'waiting': 'Skin gratis dalam {time}',
+    'take': 'Ambil'
   },
 
   'leaderboard': {

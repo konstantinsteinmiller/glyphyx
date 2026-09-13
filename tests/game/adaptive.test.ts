@@ -79,15 +79,20 @@ describe('falling behind on tiles', () => {
 })
 
 describe('losing the same node again', () => {
-  it('once: softer hits, a few random moves, a second more on the clock', () => {
-    expect(computeHandicap(fine({ nodeFails: 1 }))).toEqual({ skipChance: 0, extraRandom: 0.15, atkMul: 0.85, timerMs: 6000 })
+  // ── Re-based when the curve moved one tier earlier (2026-09-12) ──
+  // The first loss now gives what the second used to. Measured cause: on the
+  // first conquest node a `careless` player cleared 25 % on attempt 1 and
+  // 28 % on attempt 2 — the relief had not arrived — and two blind testers
+  // quit inside that window. See `FAIL_TIERS` for the numbers and the why.
+  it('once: a pass now and then, softer hits, two seconds more on the clock', () => {
+    expect(computeHandicap(fine({ nodeFails: 1 }))).toEqual({ skipChance: 0.2, extraRandom: 0.3, atkMul: 0.75, timerMs: 7000 })
   })
-  it('twice: more of everything and a pass now and then', () => {
-    expect(computeHandicap(fine({ nodeFails: 2 }))).toEqual({ skipChance: 0.2, extraRandom: 0.3, atkMul: 0.75, timerMs: 7000 })
+  it('twice: more of everything', () => {
+    expect(computeHandicap(fine({ nodeFails: 2 }))).toEqual({ skipChance: 0.3, extraRandom: 0.4, atkMul: 0.65, timerMs: 8000 })
   })
   it('three or more: the most a node ever gives', () => {
     const three = computeHandicap(fine({ nodeFails: 3 }))
-    expect(three).toEqual({ skipChance: 0.3, extraRandom: 0.4, atkMul: 0.65, timerMs: 8000 })
+    expect(three).toEqual({ skipChance: 0.35, extraRandom: 0.45, atkMul: 0.6, timerMs: 8500 })
     expect(computeHandicap(fine({ nodeFails: 7 }))).toEqual(three)
   })
   it('is monotonic: one more loss never means less relief', () => {
@@ -110,15 +115,19 @@ describe('a losing streak', () => {
   })
   it('adds to the node\'s own relief', () => {
     const h = computeHandicap(fine({ lossStreak: 3, nodeFails: 1 }))
-    expect(h.extraRandom).toBeCloseTo(0.25)
-    expect(h.timerMs).toBe(7000)
+    expect(h.extraRandom).toBeCloseTo(0.4)
+    expect(h.timerMs).toBe(8000)
   })
 })
 
 describe('the difficulty setting', () => {
   const struggling = (difficulty: HandicapInput['difficulty']) =>
     // Below every clamp on easy, so the scaling is visible in each field.
-    computeHandicap(fine({ difficulty, nodeFails: 1, tileDeficit: 3, lossStreak: 2 }))
+    // The tile-deficit tier left this fixture when `FAIL_TIERS` moved a tier
+    // earlier: one fail plus a 3-tile deficit plus a streak now sums past
+    // `EXTRA_RANDOM_MAX`, and a clamped field shows no scaling at all — easy
+    // and medium both land on 0.6, which is exactly what this asserts against.
+    computeHandicap(fine({ difficulty, nodeFails: 1, lossStreak: 2 }))
 
   it('hard halves every relief, easy adds a quarter', () => {
     expect(RELIEF_SCALE).toEqual({ easy: 1.25, medium: 1, hard: 0.5 })

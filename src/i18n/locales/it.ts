@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skin',
       'runes': 'Rune del potere',
+      'ranks': 'Gradi',
     },
     'title': 'Negozio',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Monete',
   'cancel': 'Annulla',
   'close': 'Chiudi',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Livello {c}-{n}',
     'conquest': 'Conquista',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} rimasti',
     'turn': 'Turno {n}',
     'you': 'Tu',
     'enemy': 'Nemico',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Tieni 8 caselle per vincere',
       'desktop': 'Tieni 8 caselle per vincere'
     },
+    'conquestClaim': {
+      'touch': 'Ogni runa che posi conquista la sua casella',
+      'desktop': 'Ogni runa che posi conquista la sua casella'
+    },
     'siege': {
       'touch': 'Circondato! Sfonda e tieni 8 caselle',
       'desktop': 'Circondato! Sfonda e tieni 8 caselle'
+    },
+    'yourMove': {
+      'touch': 'Tocca a te: posa una runa',
+      'desktop': 'Tocca a te: posa una runa'
+    },
+    'busyPlaced': {
+      'touch': 'Una runa per turno',
+      'desktop': 'Una runa per turno'
+    },
+    'busyPhase': {
+      'touch': 'Aspetta: le rune stanno colpendo',
+      'desktop': 'Aspetta: le rune stanno colpendo'
+    },
+    'busyTile': {
+      'touch': 'Quella casella non la accetta',
+      'desktop': 'Quella casella non la accetta'
     },
     'mage': {
       'touch': 'La sfera spara in diagonale attraverso due caselle',
       'desktop': 'La sfera spara in diagonale attraverso due caselle'
     },
     'defense': {
-      'touch': 'Lo scudo blocca frecce e raggi',
-      'desktop': 'Lo scudo blocca frecce e raggi'
+      'touch': 'Il tuo scudo ferma frecce e raggi NEMICI',
+      'desktop': 'Il tuo scudo ferma frecce e raggi NEMICI'
     },
     'support': {
       'touch': 'La croce cura e rinforza i vicini',
@@ -169,13 +192,15 @@ export default {
     'clash': 'SCONTRO!',
     'victory': 'VITTORIA!',
     'defeat': 'SCONFITTA',
-    'reveal': 'RIVELA',
+    'reveal': 'ATTACCO',
     'suddenDeath': 'MORTE IMPROVVISA',
     'turn': 'TURNO {n}',
     'you': 'TU',
     'foe': 'NEMICO',
     'reroll': 'RIPESCA',
-    'lastTurn': 'ULTIMO TURNO'
+    'lastTurn': 'ULTIMO TURNO',
+    'firesIn': 'SPARA TRA',
+    'yourTurn': 'TOCCA A TE'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Deciso dalle caselle tenute',
       'suddenDeath': 'Morte improvvisa',
       'siegeHeld': 'Hai tenuto la linea',
-      'siegeBroken': 'L’assedio ti ha spezzato'
+      'siegeBroken': 'L’assedio ti ha spezzato',
+      'crumbled': 'I fantocci si sono sgretolati'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Gradi',
     'title': 'Gradi delle rune',
     'tagline': 'Ogni grado dà +{n} PV max: uguale per ogni runa.',
     'rank': 'Grado {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Forgia delle rune — al lavoro',
     'full': 'Forgia delle rune — piena',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Skin gratis pronta — tocca per aprire',
+    'waiting': 'Skin gratis tra {time}',
+    'take': 'Prendi'
   },
 
   'leaderboard': {

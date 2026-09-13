@@ -21,8 +21,10 @@ interface Props {
   foe: string
   /** The sudden-death variant: one line, red, urgent. */
   suddenDeath?: boolean
+  /** What winning THIS match means. Named here because nowhere else named it. */
+  objective?: 'conquest' | 'eliminate' | 'siege' | null
 }
-withDefaults(defineProps<Props>(), { suddenDeath: false })
+withDefaults(defineProps<Props>(), { suddenDeath: false, objective: null })
 </script>
 
 <template lang="pug">
@@ -35,6 +37,11 @@ withDefaults(defineProps<Props>(), { suddenDeath: false })
         div.turn-banner__mode
           span.turn-banner__mode-name {{ mode === 'siege' ? t('banner.siege') : t('banner.duel') }}
           span.turn-banner__vs {{ t('banner.vs', { name: foe }) }}
+        //- The rule of the match, in words. Three blind testers cleared the
+        //- whole tutorial without ever being told what winning meant — one
+        //- found "destroy every enemy rune" only by backing out to the
+        //- campaign map (2026-09-12). The map's own string, said here.
+        div.turn-banner__goal(v-if="objective") {{ t(`campaign.objectives.${objective}`) }}
 </template>
 
 <style scoped lang="sass">
@@ -52,6 +59,14 @@ withDefaults(defineProps<Props>(), { suddenDeath: false })
   pointer-events: none
   z-index: 45
   text-align: center
+
+.turn-banner__goal
+  font-weight: 800
+  font-size: clamp(0.72rem, 3.4vmin, 1.05rem)
+  letter-spacing: 0.06em
+  text-transform: uppercase
+  color: #ffd93c
+  text-shadow: 2px 2px 0 #000
 
 .turn-banner__stage
   font-weight: 900

@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Görünümler',
       'runes': 'Güç Rünleri',
+      'ranks': 'Rütbe',
     },
     'title': 'Mağaza',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Altın',
   'cancel': 'İptal',
   'close': 'Kapat',
   'ok': 'Tamam',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Seviye {c}-{n}',
     'conquest': 'Fetih',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} kaldı',
     'turn': 'Tur {n}',
     'you': 'Sen',
     'enemy': 'Düşman',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Kazanmak için 8 kare tut',
       'desktop': 'Kazanmak için 8 kare tut'
     },
+    'conquestClaim': {
+      'touch': 'Yerleştirdiğin her rün kendi karesini alır',
+      'desktop': 'Yerleştirdiğin her rün kendi karesini alır'
+    },
     'siege': {
       'touch': 'Kuşatıldın! Yarıp çık ve 8 kare tut',
       'desktop': 'Kuşatıldın! Yarıp çık ve 8 kare tut'
+    },
+    'yourMove': {
+      'touch': 'Sıra sende — bir rün yerleştir',
+      'desktop': 'Sıra sende — bir rün yerleştir'
+    },
+    'busyPlaced': {
+      'touch': 'Tur başına bir rün',
+      'desktop': 'Tur başına bir rün'
+    },
+    'busyPhase': {
+      'touch': 'Bekle — rünler ateşliyor',
+      'desktop': 'Bekle — rünler ateşliyor'
+    },
+    'busyTile': {
+      'touch': 'O kare bunu kabul etmiyor',
+      'desktop': 'O kare bunu kabul etmiyor'
     },
     'mage': {
       'touch': 'Küre çapraz iki kare boyunca ışın atar',
       'desktop': 'Küre çapraz iki kare boyunca ışın atar'
     },
     'defense': {
-      'touch': 'Kalkan okları ve ışınları engeller',
-      'desktop': 'Kalkan okları ve ışınları engeller'
+      'touch': 'Kalkanın DÜŞMAN oklarını ve ışınlarını durdurur',
+      'desktop': 'Kalkanın DÜŞMAN oklarını ve ışınlarını durdurur'
     },
     'support': {
       'touch': 'Haç komşularını iyileştirir ve güçlendirir',
@@ -169,13 +192,15 @@ export default {
     'clash': 'ÇARPIŞMA!',
     'victory': 'ZAFER!',
     'defeat': 'YENİLGİ',
-    'reveal': 'AÇILIŞ',
+    'reveal': 'ATEŞ',
     'suddenDeath': 'ANİ ÖLÜM',
     'turn': 'TUR {n}',
     'you': 'SEN',
     'foe': 'DÜŞMAN',
     'reroll': 'YENİLE',
-    'lastTurn': 'SON TUR'
+    'lastTurn': 'SON TUR',
+    'firesIn': 'ATEŞE',
+    'yourTurn': 'SIRA SENDE'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Tutulan karelere göre belirlendi',
       'suddenDeath': 'Ani ölüm',
       'siegeHeld': 'Hattı tuttun',
-      'siegeBroken': 'Kuşatma seni kırdı'
+      'siegeBroken': 'Kuşatma seni kırdı',
+      'crumbled': 'Kuklalar ufalandı'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Rütbe',
     'title': 'Rün rütbeleri',
     'tagline': 'Her rütbe +{n} maks. CAN verir — her rün için aynı.',
     'rank': 'Rütbe {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Rün Ocağı — işliyor',
     'full': 'Rün Ocağı — dolu',
     'perHour': '+{n} / sa'
+  },
+  'skinChest': {
+    'ready': 'Ücretsiz kaplama hazır — açmak için dokun',
+    'waiting': 'Ücretsiz kaplama {time} sonra',
+    'take': 'Al'
   },
 
   'leaderboard': {

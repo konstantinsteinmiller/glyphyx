@@ -11,8 +11,9 @@
  */
 
 import {
-  GRID, MAX_LEVEL, TILE_COUNT, cellIndex, inBounds, rankOf, statsFor, statsWithRank,
-  type BoardState, type Cell, type EnemySetup, type NodeConfig, type Owner,
+  GRID, MAX_LEVEL, TILE_COUNT, cellIndex, defaultDir, dirsFor, inBounds, rankOf, statsFor, statsWithRank,
+  strikeCells,
+  type BoardState, type Cell, type Dir, type EnemySetup, type NodeConfig, type Owner,
   type PresetRune, type RankTable, type Rune, type RuneType, type Side, type Tile
 } from './rules'
 import type { PlacementKind } from './view'
@@ -124,6 +125,49 @@ export const runeAt = (b: BoardState, col: number, row: number): Rune | null => 
   return id === null ? null : (b.runes[id] ?? null)
 }
 
+/**
+ * ─── Which way a pebble should point when nobody has said ───────────────────
+ *
+ * The facing of a rune that is dropped without being aimed. `defaultDir` alone
+ * answers "towards the other side of the board", which is right in a duel and
+ * wrong in a siege, where the other side is three sides. This asks the board
+ * instead: of the facings this rune HAS, which one puts an enemy stone in its
+ * line? Ties, and a tile with nothing in reach at all, keep `defaultDir`.
+ *
+ * It exists because of what a first-time player actually does: they carry a
+ * pebble to a tile and let go in the middle of it. The middle chooses nothing
+ * (`AIM_CENTRE_DEAD_ZONE`), so that placement is decided entirely by this — and
+ * in the 2026-09-11 playtest, when it was decided by the tile edge the pebble
+ * had been carried in through, three of four testers spent a one-move lesson
+ * shooting at their own back row. A stone that lands pointing at an enemy is
+ * not playing the game for them: aiming it somewhere better is still the whole
+ * skill, and every aim gesture still overrides this.
+ */
+export const usefulDir = (
+  b: BoardState, side: Side, type: RuneType, at: Cell, level = 1
+): Dir => {
+  const base = defaultDir(type, side)
+  if (base === 'omni') return 'omni'
+  const dirs = dirsFor(type)
+  // The default goes first so that a tie — nothing in reach, or two facings
+  // with equally much in reach — keeps the facing the game has always used.
+  const ordered = [base, ...dirs.filter((d) => d !== base)]
+  let best: Dir = base
+  let bestScore = 0
+  for (const dir of ordered) {
+    let score = 0
+    for (const cell of strikeCells(type, level, dir, at)) {
+      const rune = runeAt(b, cell.col, cell.row)
+      if (rune && rune.side !== side) score++
+    }
+    if (score > bestScore) {
+      best = dir
+      bestScore = score
+    }
+  }
+  return best
+}
+
 /** The four orthogonal neighbours inside the board. */
 export const neighbors = (c: Cell): Cell[] => {
   const out: Cell[] = []
@@ -162,6 +206,18 @@ export const legalPlacements = (
     if (kind !== 'invalid') out.push({ cell: { col: t.col, row: t.row }, kind })
   }
   return out
+}
+
+/**
+ * Total health standing for `side` — the one number that says whether a turn
+ * did anything. A kill, a scratch and a knock-back all move it; a turn where
+ * every shot missed, hit a friend or flew off the board does not. See
+ * `MatchState.stallTurns`.
+ */
+export const sideHp = (b: BoardState, side: Side): number => {
+  let hp = 0
+  for (const rune of Object.values(b.runes)) if (rune.side === side) hp += rune.hp
+  return hp
 }
 
 export const countTiles = (b: BoardState, owner: Owner): number => {

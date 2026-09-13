@@ -6,6 +6,7 @@ import { createI18n } from 'vue-i18n'
 import {
   loadLocaleMessages,
   resolveInitialLocale,
+  applyDocumentLocale,
   setI18nLocale,
   isSupportedLocale
 } from '@/i18n'
@@ -375,6 +376,11 @@ const bootstrap = async () => {
     missingWarn: false,
     fallbackWarn: false
   })
+
+  // The first paint gets the stamp too, not only later switches: a portal can
+  // report its language before the player has touched anything, and a document
+  // with no `lang` and no `dir` is what shipped until the release audit.
+  applyDocumentLocale(initial)
 
   // Apply the player's saved language once hydrate finishes. The portal
   // locale (CG / Yandex) is used ONLY to seed first-time players — it

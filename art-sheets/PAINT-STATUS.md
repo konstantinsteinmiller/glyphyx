@@ -4,7 +4,7 @@ A report, not a contract: it is a picture of `art-sheets/painted/` and the
 slicer's receipt at the moment it was written. Re-run `pnpm art:prompts`
 after painting or slicing anything.
 
-**34 sliced · 1 need a repaint · 0 painted, unreceipted · 0 outstanding**
+**35 sliced · 0 need a repaint · 0 painted, unreceipted · 0 outstanding**
 
 | | Sheet | Prompt block in | Reference | State |
 | --- | --- | --- | --- | --- |
@@ -32,7 +32,7 @@ after painting or slicing anything.
 | ✓ | **The Keeper — the game's mascot** | `PROMPTS-BOARD.md` | `sheet-splash.png` (rev `5121176422fb`) | sliced 2026-09-10 |
 | ✓ | **Board tiles — player, enemy, neutral** | `PROMPTS-BOARD.md` | `sheet-tiles.png` (rev `79703b78a1cd`) | sliced 2026-09-10 |
 | ✓ | **The board frame** | `PROMPTS-BOARD.md` | `sheet-frame.png` (rev `820671f54b59`) | sliced 2026-09-10 |
-| ! | **HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques** | `PROMPTS-BOARD.md` | `sheet-ui.png` (rev `49535b551ba6`) | REPAINT — the reference changed (3ab77c102c8d → 49535b551ba6) |
+| ✓ | **HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques** | `PROMPTS-BOARD.md` | `sheet-ui.png` (rev `49535b551ba6`) | sliced 2026-09-10 |
 | ✓ | **Effects — rings, dome, smoke, scorch, flashes, the beam spark and the arrow** | `PROMPTS-BOARD.md` | `sheet-fx.png` (rev `64c7694938e4`) | sliced 2026-09-10 |
 | ✓ | **Laurels — the Lv 2 wreath, one per rune** | `PROMPTS-BOARD.md` | `sheet-laurels.png` (rev `7ba394d96817`) | sliced 2026-09-10 |
 | ✓ | **Bone Dummies commander** | `PROMPTS-CAST.md` | `walk-bonecap.png` (rev `5f29d26eaf60`) | sliced 2026-09-10 |
@@ -42,7 +42,7 @@ after painting or slicing anything.
 | ✓ | **The player's commander** | `PROMPTS-CAST.md` | `walk-teal.png` (rev `1cba36c2e785`) | sliced 2026-09-10 |
 | ✓ | **The night sky** | `PROMPTS-CAST.md` | `bg-sky.png` (rev `b650e9246fe6`) | sliced 2026-09-10 |
 | ✓ | **The far ridge** | `PROMPTS-CAST.md` | `bg-ridge-far.png` (rev `65c827f69d8e`) | sliced 2026-09-10 |
-| ✓ | **The near ridge** | `PROMPTS-CAST.md` | `bg-ridge-near.png` (rev `e7027838dfc1`) | sliced 2026-09-10 |
+| ✓ | **The near ridge** | `PROMPTS-CAST.md` | `bg-ridge-near.png` (rev `e7027838dfc1`) | sliced 2026-09-11 |
 
 ## What the marks mean
 

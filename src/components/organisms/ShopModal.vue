@@ -46,7 +46,7 @@ watch(() => props.initialTab, (v) => { if (model.value) tab.value = v })
 const tabs = computed<TabOption[]>(() => [
   { label: t('shop.tabs.runes'), value: 'runes' },
   // Deliberately short in every locale: three tabs have to fit a 320 px strip.
-  { label: t('ranks.tab'), value: 'ranks' },
+  { label: t('shop.tabs.ranks'), value: 'ranks' },
   { label: t('shop.tabs.skins'), value: 'skins' }
 ])
 const onTab = (v: string | number): void => {
@@ -81,6 +81,10 @@ const hasLocked = computed(() => offered.value.length < RUNE_TYPES.length)
         div.shop__banner-text
           span.shop__title {{ t('shop.title') }}
           span.shop__tagline {{ tagline }}
+        //- `shop.tabs.*` for all three labels, `coins` for the wallet: both
+        //- keys ship in every locale. The wallet used to name a key that
+        //- existed in none of them, and with missing-key warnings off it read
+        //- out the raw string "coins" in all 21 languages.
         div.shop__wallet(:aria-label="t('coins')")
           IconCoin.shop__wallet-icon
           span.shop__wallet-value {{ coins }}

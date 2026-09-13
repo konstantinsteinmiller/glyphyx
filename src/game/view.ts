@@ -175,6 +175,10 @@ export interface CanvasLabels {
   foe: string
   reroll: string
   lastTurn: string
+  /** What the planning ring is counting down TO. */
+  firesIn: string
+  /** Why the planning ring is NOT counting down. */
+  yourTurn: string
 }
 
 export interface ArenaView {

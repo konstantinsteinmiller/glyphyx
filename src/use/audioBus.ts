@@ -46,7 +46,8 @@ import { getAudioContext } from '@/use/useAssets'
  */
 
 export interface AudioBus {
-  ctx: AudioContext
+  /** The context it was built on — the shared one, or an offline render's. */
+  ctx: BaseAudioContext
   /** Where a synthesised or sampled EFFECT goes. */
   sfx: GainNode
   /** Where the music engine goes — its own fader, so the two sliders are real. */
@@ -57,7 +58,7 @@ export interface AudioBus {
   noise: AudioBuffer
 }
 
-const buses = new WeakMap<AudioContext, AudioBus>()
+const buses = new WeakMap<BaseAudioContext, AudioBus>()
 
 /**
  * The impulse: 1.9 s of noise, decaying exponentially and getting darker as it
@@ -65,7 +66,7 @@ const buses = new WeakMap<AudioContext, AudioBus>()
  * the same noise in both ears is a mono room, and a mono room around a stereo
  * board is worse than no room at all.
  */
-const impulse = (ctx: AudioContext): AudioBuffer => {
+const impulse = (ctx: BaseAudioContext): AudioBuffer => {
   const sr = ctx.sampleRate
   const len = Math.floor(sr * 1.9)
   const pre = Math.floor(sr * 0.018)
@@ -88,7 +89,7 @@ const impulse = (ctx: AudioContext): AudioBuffer => {
 }
 
 /** A soft saturation curve — linear until it is not, and never past ±1. */
-const softClip = (ctx: AudioContext): WaveShaperNode | null => {
+const softClip = (ctx: BaseAudioContext): WaveShaperNode | null => {
   if (typeof ctx.createWaveShaper !== 'function') return null
   const n = 1024
   const curve = new Float32Array(n)
@@ -102,7 +103,7 @@ const softClip = (ctx: AudioContext): WaveShaperNode | null => {
   return ws
 }
 
-const build = (ctx: AudioContext): AudioBus => {
+const build = (ctx: BaseAudioContext): AudioBus => {
   const master = ctx.createGain()
   master.gain.value = 1
 
@@ -167,15 +168,24 @@ const build = (ctx: AudioContext): AudioBus => {
   return { ctx, sfx, music, reverb, noise }
 }
 
-/** The bus for the shared context, built on first use. `null` before unlock. */
-export const bus = (): AudioBus | null => {
-  const ctx = getAudioContext()
-  if (!ctx) return null
+/**
+ * The bus for ANY context, built on first use and cached per context: the
+ * shared one (`bus()`), or an `OfflineAudioContext` a test or the FX bench
+ * renders a cue into — the same room, the same glue, the same shelf, so what
+ * a render measures is what a player hears.
+ */
+export const busFor = (ctx: BaseAudioContext): AudioBus => {
   const hit = buses.get(ctx)
   if (hit && hit.noise.sampleRate === ctx.sampleRate) return hit
   const made = build(ctx)
   buses.set(ctx, made)
   return made
+}
+
+/** The bus for the shared context, built on first use. `null` before unlock. */
+export const bus = (): AudioBus | null => {
+  const ctx = getAudioContext()
+  return ctx ? busFor(ctx) : null
 }
 
 /**

@@ -87,6 +87,37 @@ const DENIED: readonly string[] = import.meta.env.DEV
   ? (devParam('artdeny') ?? '').split(',').map((p) => p.trim()).filter(Boolean)
   : []
 
+// ─── What is actually on disk ───────────────────────────────────────────────
+//
+// A build bakes the list of paintings that exist (`__PAINTED_ART__`, defined in
+// `vite.config.ts`); a dev server defines nothing and this stays null, which
+// means "probe everything" — the paint → slice → reload loop depends on a file
+// that did not exist at boot being found on the next load.
+//
+// In a build the set is already decided, and every id NOT in it is a request
+// that can only 404. With paintings parked for a repaint that was ~70 failed
+// requests per load, each one a line in CrazyGames' QA console ("Missing
+// resource detected: …") and in Poki's error scanner. Asking for nothing keeps
+// the fallback exactly as it was: no painting, keep drawing it.
+
+let painted: Set<string> | null =
+  typeof __PAINTED_ART__ === 'undefined' || __PAINTED_ART__ === null
+    ? null
+    : new Set(__PAINTED_ART__)
+
+/** Test seam: pin (or clear, with `null`) the baked manifest. */
+export const __setPaintedManifestForTests = (list: readonly string[] | null): void => {
+  painted = list === null ? null : new Set(list)
+  probes.clear()
+}
+
+/**
+ * Could `(kind, id)` possibly be on disk? True whenever there is no baked
+ * manifest — a dev server, a test — so nothing about the art pipeline changes.
+ */
+const couldExist = (kind: ArtKind, id: string): boolean =>
+  painted === null || painted.has(`${ART_FOLDERS[kind]}/${id}`)
+
 let enabled = BUILD_DEFAULT
 /** Bumped on every explicit refresh, to bust the HTTP cache. See `spriteFor`. */
 let probeGeneration = 0
@@ -247,6 +278,8 @@ export const spriteFor = (
   const cacheKey = `${kind}/${id}`
   // Denied for this capture (see `DENIED`): never probed, so never "ready" either.
   if (DENIED.length !== 0 && DENIED.some((p) => cacheKey.startsWith(p))) return null
+  // Not in this build's manifest: there is no file, so there is no request.
+  if (!couldExist(kind, id)) return null
   let probe = probes.get(cacheKey)
 
   if (!probe) {

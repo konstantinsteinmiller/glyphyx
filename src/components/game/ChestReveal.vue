@@ -100,6 +100,18 @@ const onTap = (e: MouseEvent): void => {
           circle(cx="32" cy="40" r="2" fill="#5a3408")
           rect(x="6" y="38" width="52" height="3" fill="#3a1d09" opacity="0.6")
           rect(x="6" y="50" width="52" height="3" fill="#3a1d09" opacity="0.6")
+      //- ── Show it, don't only say it ──────────────────────────────────
+      //- The same hand the arena's ghost uses (`fingerSprite`'s path), tapping
+      //- the lid on a loop. A line of text is a instruction to read; a finger
+      //- coming down on the box is the instruction performed, and it needs no
+      //- language at all — which matters on a screen that ships in 21 of them.
+      span.chest__hand(v-if="!opened" aria-hidden="true")
+        span.chest__hand-ring
+        svg.chest__hand-svg(viewBox="0 0 24 24")
+          path(
+            d="M9 11V6a2 2 0 1 1 4 0v5 M13 8a2 2 0 1 1 4 0v6a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.3-2.4L4 15a1.6 1.6 0 0 1 2.6-1.9L8 15"
+            fill="none"
+          )
       span.chest__tap(v-if="!opened") {{ t('result.chestTap') }}
 
     //- ── The gift, on its own plane ──────────────────────────────────────
@@ -230,6 +242,71 @@ const onTap = (e: MouseEvent): void => {
   &.is-late
     animation-delay: 190ms
     border-color: rgba(255, 255, 255, 0.7)
+
+// ─── The tapping hand ────────────────────────────────────────────────────────
+//
+// Sits low and right of the lid, where a real hand would come from, and is
+// deliberately OUTSIDE the button's hit area in spirit — it points at the
+// chest, it is not a second thing to press (the whole box is the button, and
+// this is `aria-hidden`, so a screen reader hears the button's own label once).
+//
+// The loop is one gesture: down onto the lid, a ring pushed out where it
+// lands, back up, a beat of rest. Slower than a pulse, because a gesture that
+// repeats too fast reads as an animation rather than as an instruction.
+.chest__hand
+  position: absolute
+  // Placed by the FINGERTIP, which is the top of the glyph's box: the tip has
+  // to land on the lid, not merely near the chest. The button is a square and
+  // the painted chest sits inside it with air above and below, so anchoring to
+  // the button's bottom edge put the hand under the box, over the caption.
+  right: 16%
+  top: 34%
+  width: clamp(1.9rem, 8vmin, 3rem)
+  height: clamp(1.9rem, 8vmin, 3rem)
+  pointer-events: none
+  z-index: 3
+  animation: chest-tap 1.8s ease-in-out infinite
+
+.chest__hand-svg
+  display: block
+  width: 100%
+  height: 100%
+  stroke: #ffffff
+  stroke-width: 2
+  stroke-linecap: round
+  stroke-linejoin: round
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6))
+
+// The contact ring, pushed out of the fingertip at the bottom of the tap.
+.chest__hand-ring
+  position: absolute
+  left: 18%
+  top: 6%
+  width: 42%
+  aspect-ratio: 1
+  border: 2px solid rgba(255, 217, 60, 0.9)
+  border-radius: 50%
+  opacity: 0
+  animation: chest-tap-ring 1.8s ease-out infinite
+
+@keyframes chest-tap
+  0%, 100%
+    transform: translate(0, 0) rotate(-8deg)
+  38%
+    transform: translate(-6%, -16%) rotate(-8deg)
+  52%, 70%
+    transform: translate(0, 4%) rotate(-4deg)
+
+@keyframes chest-tap-ring
+  0%, 48%
+    opacity: 0
+    scale: 0.4
+  56%
+    opacity: 0.9
+    scale: 0.8
+  78%, 100%
+    opacity: 0
+    scale: 1.6
 
 .chest__tap
   color: #ffd93c
@@ -443,8 +520,15 @@ const onTap = (e: MouseEvent): void => {
   .chest__flash,
   .chest__ring,
   .chest__light,
-  .chest__tap
+  .chest__tap,
+  .chest__hand-ring
     animation: none
+
+  // The hand still SHOWS — it is the instruction, not decoration — it simply
+  // stops moving, resting on the lid where the tap lands.
+  .chest__hand
+    animation: none
+    transform: translate(0, 4%) rotate(-4deg)
 
   .chest__btn
     transition: none

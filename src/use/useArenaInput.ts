@@ -3,6 +3,7 @@ import {
   isAimChosen,
   type Cell, type Dir, type RuneType
 } from '@/game/rules'
+import { runeAt } from '@/game/board'
 import type { BattleApi, HitTarget } from '@/game/view'
 import type { ArenaRenderer } from '@/use/useArenaArt'
 import type { DragMetrics } from '@/use/useBattle'
@@ -288,6 +289,13 @@ export const attachArenaInput = (
     if (battle.view.lock) {
       const chevron = chevronAt(x, y)
       if (chevron) battle.aimKey(chevron)
+      // "Press anywhere" means anywhere EMPTY. A press that starts on another
+      // stone is about that stone as far as the player is concerned, and
+      // turning the newly placed one instead is a move they did not make and
+      // cannot see — a blind tester spent the end of their session dragging an
+      // old stone, watching the aim beam answer, and finding the stone
+      // unchanged next turn (2026-09-11).
+      if (!chevron && onAnotherStone(x, y)) return
       if (battle.beginCorrection(x, y)) {
         dragging = true
         return
@@ -300,8 +308,44 @@ export const attachArenaInput = (
         battle.updateDrag(x, y, tileUnder(x, y))
         // The compass belongs to the pebble now in hand, not the one before it.
         updateHover(x, y)
+      } else {
+        // Refused — almost always because the turn is still resolving. The
+        // press is REMEMBERED rather than dropped: the pebble comes into the
+        // hand the moment planning opens, without the player pressing again.
+        pendingHand = downTarget.index
       }
     }
+  }
+
+  /** Is there a rune under (x, y) that is NOT the one inside its correction window? */
+  const onAnotherStone = (x: number, y: number): boolean => {
+    const lock = battle.view.lock
+    const hit = renderer.hitTest(x, y)
+    if (!lock || !hit || hit.kind !== 'tile') return false
+    if (hit.col === lock.cell.col && hit.row === lock.cell.row) return false
+    return runeAt(battle.view.board, hit.col, hit.row) !== null
+  }
+
+  /**
+   * A hand slot pressed while the game could not take it. Held until the
+   * pointer goes up, so the pickup can be retried the instant planning opens —
+   * see `retryPending`.
+   */
+  let pendingHand: number | null = null
+
+  /** The wait is over: take the pebble the player already asked for. */
+  const retryPending = (x: number, y: number): void => {
+    if (pendingHand === null || dragging || battle.view.drag) return
+    // Asked quietly: `beginDrag` says no out loud (a thud and a line in the
+    // pill), which is right for a press and wrong for a retry running on every
+    // pointer move.
+    if (battle.view.phase !== 'planning' || battle.view.resetting) return
+    if (!battle.beginDrag(pendingHand, x, y, downPrecise)) return
+    pendingHand = null
+    dragging = true
+    playFx('pickup', 0.7)
+    battle.updateDrag(x, y, tileUnder(x, y))
+    updateHover(x, y)
   }
 
   const onMove = (e: PointerEvent): void => {
@@ -311,13 +355,18 @@ export const attachArenaInput = (
     // carrying anything still costs nothing here.
     const precise = isPrecisePointer(e.pointerType)
     const active = pointerId === e.pointerId && dragging
-    if (!precise && !active) return
+    // A finger that is holding a pebble the game has not handed over yet is
+    // the third case: not carrying anything, not a mouse, still worth a look.
+    if (!precise && !active && pendingHand === null) return
     const [x, y] = local(e)
     // …but a finger DRAGGING is aiming, every millimetre of the way, and the
     // renderer cannot draw the region under the thumb without being told
     // which one it is. The rect maths is only paid on the path that already
     // hit-tests a tile per move.
     updateHover(x, y)
+    // A pebble pressed during the resolution is still under the finger: the
+    // moment the board is ready it is picked up, mid-gesture.
+    if (pendingHand !== null && pointerId === e.pointerId) retryPending(x, y)
     if (!active) return
     e.preventDefault()
     if (!battle.view.drag) { dragging = false; return }
@@ -336,6 +385,10 @@ export const attachArenaInput = (
     const [x, y] = local(e)
     try { canvas.releasePointerCapture(e.pointerId) } catch { /* ignore */ }
     pointerId = null
+    // The press that arrived too early: one last try, so a quick tap during the
+    // resolution still becomes the move it was meant to be.
+    if (pendingHand !== null && !cancelled) retryPending(x, y)
+    pendingHand = null
     // A tap: down and up in place, quickly.
     const moved = Math.hypot(x - downX, y - downY)
     const isTap = !cancelled && moved <= TAP_SLOP_PX && e.timeStamp - downAt <= TAP_MAX_MS
@@ -403,6 +456,7 @@ export const attachArenaInput = (
   const onCancel = (e: PointerEvent): void => release(e, true)
   const onBlur = (): void => {
     clearHover()
+    pendingHand = null
     if (pointerId === null) return
     pointerId = null
     if (dragging) { dragging = false; battle.endDrag(false) }

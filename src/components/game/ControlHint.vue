@@ -24,8 +24,18 @@ import { mobileCheck } from '@/utils/function'
  *   siege     — the first time the player is surrounded
  */
 export type HintId =
-  | 'drag' | 'tap' | 'aim' | 'archer' | 'stack' | 'mage' | 'defense' | 'support' | 'correct' | 'conquest' | 'siege'
+  | 'drag' | 'tap' | 'aim' | 'archer' | 'stack' | 'mage' | 'defense' | 'support' | 'correct' | 'conquest'
+  // The conquest pair: the GOAL, then the RULE that gets you there.
+  | 'conquestClaim' | 'siege'
   | 'cleave' | 'roller' | 'bombard'
+  // …and the three that say why nothing happened (`useBattle.RejectReason`).
+  // Not primers: they answer an action the player just took and expire on
+  // their own. A refused drag used to be completely silent, which reads as a
+  // broken game rather than as a rule.
+  | 'busyPlaced' | 'busyPhase' | 'busyTile'
+  // …and the one that says the game is waiting for YOU: a lesson has no clock,
+  // so a board that has stopped moving is a board waiting for a move.
+  | 'yourMove'
 
 interface Props {
   hint: HintId | null

@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': '皮肤',
       'runes': '强化符文',
+      'ranks': '品阶',
     },
     'title': '商店',
   },
   'gameName': 'Glyphyx',
+  'coins': '金币',
   'cancel': '取消',
   'close': '关闭',
   'ok': '好',
@@ -49,6 +51,7 @@ export default {
     'stage': '关卡 {c}-{n}',
     'conquest': '征服',
     'tiles': '{n} / {total}',
+    'runesLeft': '剩 {n}',
     'turn': '第 {n} 回合',
     'you': '你',
     'enemy': '敌方',
@@ -117,17 +120,37 @@ export default {
       'touch': '占据 8 格即可获胜',
       'desktop': '占据 8 格即可获胜'
     },
+    'conquestClaim': {
+      'touch': '放置的符文会占据它的格子',
+      'desktop': '放置的符文会占据它的格子'
+    },
     'siege': {
       'touch': '被包围了！突围并占据 8 格',
       'desktop': '被包围了！突围并占据 8 格'
+    },
+    'yourMove': {
+      'touch': '轮到你了 — 放一枚符文',
+      'desktop': '轮到你了 — 放一枚符文'
+    },
+    'busyPlaced': {
+      'touch': '每回合只能放一枚',
+      'desktop': '每回合只能放一枚'
+    },
+    'busyPhase': {
+      'touch': '稍等 — 符文正在攻击',
+      'desktop': '稍等 — 符文正在攻击'
+    },
+    'busyTile': {
+      'touch': '那格放不下',
+      'desktop': '那格放不下'
     },
     'mage': {
       'touch': '法球沿对角线射穿两格',
       'desktop': '法球沿对角线射穿两格'
     },
     'defense': {
-      'touch': '盾牌挡下箭矢与光束',
-      'desktop': '盾牌挡下箭矢与光束'
+      'touch': '你的盾牌挡住敌方箭矢和光束',
+      'desktop': '你的盾牌挡住敌方箭矢和光束'
     },
     'support': {
       'touch': '十字治疗并强化相邻符文',
@@ -169,13 +192,15 @@ export default {
     'clash': '碰撞！',
     'victory': '胜利！',
     'defeat': '失败',
-    'reveal': '揭示',
+    'reveal': '开火',
     'suddenDeath': '骤死赛',
     'turn': '第{n}回合',
     'you': '你',
     'foe': '敌',
     'reroll': '重抽',
-    'lastTurn': '最后回合'
+    'lastTurn': '最后回合',
+    'firesIn': '发射倒计时',
+    'yourTurn': '轮到你了'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': '按占据格数判定',
       'suddenDeath': '骤死赛',
       'siegeHeld': '你守住了阵线',
-      'siegeBroken': '围攻击溃了你'
+      'siegeBroken': '围攻击溃了你',
+      'crumbled': '训练木桩碎裂了'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': '品阶',
     'title': '符文品阶',
     'tagline': '每一阶 +{n} 最大生命 — 所有符文一视同仁。',
     'rank': '品阶 {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': '符石熔炉 — 锻造中',
     'full': '符石熔炉 — 已满',
     'perHour': '+{n} / 小时'
+  },
+  'skinChest': {
+    'ready': '免费皮肤已就绪 — 点击开启',
+    'waiting': '免费皮肤还需 {time}',
+    'take': '领取'
   },
 
   'leaderboard': {

@@ -4,7 +4,7 @@ import {
   domeSprite, glintSprite, glowSprite, glyphShardSprite, hash01, hexRgb, hexSprite, mix, moteSprite, paintArrow,
   paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave, paintCleaveArc,
   paintClashFlash, paintCrossBurst,
-  paintAimRefused, paintAimRegion,
+  paintAimRefused, paintAimRegion, paintAimScrim,
   paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing, paintPopText, paintRing,
   paintNukeFlash, paintNukeWave,
   paintShellArc, paintShellBurst, paintShieldDome, paintShockwave, paintSlash, qualityMul, rgba, ringSprite,
@@ -17,7 +17,7 @@ import {
   TIER_CAPACITY, __clearSpriteRegistry, __setQualityTier, clearParticles, particleCount, registeredSpriteCount
 } from '@/use/useVfx'
 import {
-  RUNE_TYPES, aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, type Dir, type RuneType
+  DIR_VEC, RUNE_TYPES, aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, type Dir, type RuneType
 } from '@/game/rules'
 
 /**
@@ -293,6 +293,8 @@ describe('the aim compass', () => {
         }
         if (key === 'fill') return () => { fills++ }
         if (key === 'stroke') return () => { strokes++; widths.push(width) }
+        // The lit wedge is filled with a gradient rather than a flat colour.
+        if (key === 'createLinearGradient') return () => ({ addColorStop: () => {} })
         return () => {}
       },
       set(_t, key: string, v: unknown) {
@@ -331,48 +333,87 @@ describe('the aim compass', () => {
     }
   })
 
-  it('grows the lit region inward from its own edge to the tile centre', () => {
-    // The point of the control: the wedge arrives from the side you are aiming
-    // at. At grow 0 it is flat against that edge, at 1 it has reached the middle.
-    const inner = (type: RuneType, dir: Dir, grow: number): [number, number] => {
+  it('grows the lit region OUTWARD, from the stone to the edge it fires through', () => {
+    // The direction of the growth is the direction of the attack. It used to
+    // run the other way — the outer edge fixed, the apex walking in from it —
+    // which on a board where the enemy shoots at you reads as something
+    // incoming, i.e. as the opposite of the facing it is announcing.
+    const outer = (type: RuneType, dir: Dir, grow: number): [number, number] => {
       const ctx = pathCtx()
       paintAimRegion(ctx, R, type, dir, SIZE, { color: '#ffffff', lit: true, grow })
-      // The fill path is drawn first (the edge highlight repeats two of its
-      // points afterwards). The vertex that TRAVELS is whichever one is nearest
-      // the tile's middle — the apex of a triangle, the inner corner of a
-      // quadrant — so read that rather than a fixed index.
+      // The region path is laid first; the chevron after it repeats points of
+      // its own. The vertex that TRAVELS is whichever one is FURTHEST from the
+      // tile's middle — a triangle's outer edge, a quadrant's outer corner.
       const poly = ctx.__pts().slice(0, aimRegionPolygon(type, dir).length).map(unit)
       const d2 = ([x, y]: [number, number]): number => (x - 0.5) ** 2 + (y - 0.5) ** 2
-      return poly.reduce((a, b) => (d2(b) < d2(a) ? b : a))
+      return poly.reduce((a, b) => (d2(b) > d2(a) ? b : a))
     }
-    // A cardinal triangle: the apex starts on the top edge and ends at (0.5, 0.5).
-    expect(inner('melee', 'up', 0)).toEqual([0.5, 0])
-    expect(inner('melee', 'up', 1)).toEqual([0.5, 0.5])
-    expect(inner('melee', 'left', 0)).toEqual([0, 0.5])
-    expect(inner('melee', 'left', 1)).toEqual([0.5, 0.5])
+    // A cardinal triangle: at 0 the whole region is under the stone, at 1 its
+    // outer edge has reached the side of the tile it names.
+    expect(outer('melee', 'up', 0)).toEqual([0.5, 0.5])
+    expect(outer('melee', 'up', 1)).toEqual([0, 0])
+    expect(outer('melee', 'left', 0)).toEqual([0.5, 0.5])
+    expect(outer('melee', 'left', 1)).toEqual([0, 1])
     // …and it travels monotonically, so the growth reads as one movement.
-    let last = -1
+    let last = 1.1
     for (const g of [0, 0.25, 0.5, 0.75, 1]) {
-      const [, uy] = inner('melee', 'up', g)
-      expect(uy).toBeGreaterThan(last)
+      const [, uy] = outer('melee', 'up', g)
+      expect(uy).toBeLessThan(last)
       last = uy
     }
-    // A quadrant scales about its own corner instead: (0,0) for `ul`.
-    expect(inner('mage', 'ul', 0)).toEqual([0, 0])
-    expect(inner('mage', 'ul', 1)).toEqual([0.5, 0.5])
+    // A quadrant grows out of the same centre toward its own corner.
+    expect(outer('mage', 'ul', 0)).toEqual([0.5, 0.5])
+    expect(outer('mage', 'ul', 1)).toEqual([0, 0])
+  })
+
+  it('never outlines the lit wedge - a closed triangle is an arrow pointing the wrong way', () => {
+    // A cardinal region has its apex at the tile's CENTRE, so stroking it
+    // closed draws a hard arrowhead aimed back at the stone. The chosen facing
+    // is shown as light instead: one gradient fill, and the only hard strokes
+    // on it are the outward chevron (drawn twice - keyline, then white).
+    const lit = pathCtx()
+    paintAimRegion(lit, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1 })
+    expect(lit.__fills()).toBe(1)
+    expect(lit.__strokes()).toBe(2)
+    // Both of those strokes are the chevron, and the chevron's peak is OUTSIDE
+    // the tile - past the edge the rune fires through, never behind it.
+    const pts = lit.__pts().map(unit)
+    const peak = pts[pts.length - 2]!
+    expect(peak[0]).toBeCloseTo(0.5, 5)
+    expect(peak[1]).toBeLessThan(0)
+  })
+
+  it('points the chevron out of the tile for every facing of every rune', () => {
+    // The one mark the eye goes to first has to be readable as a direction,
+    // and as the RIGHT direction, on every (type, facing) pair there is.
+    for (const type of RUNE_TYPES) {
+      if (aimRegionShape(type) === 'whole') continue
+      for (const dir of aimRegions(type)) {
+        const ctx = pathCtx()
+        paintAimRegion(ctx, R, type, dir, SIZE, { color: '#ffffff', lit: true, grow: 1 })
+        const pts = ctx.__pts().map(unit)
+        const peak = pts[pts.length - 2]!
+        // The peak sits past the tile's edge, along the facing's own vector.
+        const [dx, dy] = DIR_VEC[dir]
+        const n = Math.hypot(dx, dy) || 1
+        const dot = (peak[0] - 0.5) * (dx / n) + (peak[1] - 0.5) * (dy / n)
+        expect(dot, type + '/' + dir + ' chevron').toBeGreaterThan(0.5)
+      }
+    }
   })
 
   it('fills only the lit region, so a tile can never show two answers', () => {
     const lit = pathCtx()
     paintAimRegion(lit, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 1 })
     expect(lit.__fills()).toBe(1)
-    // …and the lit one alone gets the white outer edge, so it is the only
-    // region on the tile stroked twice.
-    expect(lit.__strokes()).toBe(2)
     const dim = pathCtx()
     paintAimRegion(dim, R, 'melee', 'up', SIZE, { color: '#ffffff' })
     expect(dim.__fills()).toBe(0)
-    expect(dim.__strokes()).toBe(1)
+    // An offered region is outlined over a dark keyline, so it reads on any
+    // tile the art happens to put under it rather than on the lucky ones.
+    expect(dim.__strokes()).toBe(2)
+    const widths = dim.__widths()
+    expect(widths[0]).toBeGreaterThan(widths[1]!)
   })
 
   it('shows a HELD facing softly — filled, but never as the chosen one', () => {
@@ -382,7 +423,10 @@ describe('the aim compass', () => {
     const held = pathCtx()
     paintAimRegion(held, R, 'melee', 'up', SIZE, { color: '#ffffff', held: true })
     expect(held.__fills()).toBe(1)
-    expect(held.__strokes()).toBe(1)
+    // Keyline then outline, like every offered region - and NO chevron, which
+    // is the mark reserved for a facing the player actually chose.
+    expect(held.__strokes()).toBe(2)
+    expect(held.__pts()).toHaveLength(3)
     // It is drawn at FULL size: nothing is travelling toward an unmade choice.
     const lit0 = pathCtx()
     paintAimRegion(lit0, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, grow: 0 })
@@ -403,22 +447,44 @@ describe('the aim compass', () => {
 
     expect(finger.__fills()).toBe(1)
     expect(finger.__strokes()).toBe(2)
-    // The region itself is in exactly the same place — only its edge is louder.
-    expect(finger.__pts()).toEqual(cursor.__pts())
+    // The region itself is in exactly the same place - only its chevron is
+    // louder, and reaches further out past the tile's edge.
+    expect(finger.__pts().slice(0, 3)).toEqual(cursor.__pts().slice(0, 3))
     const rimWidth = (c: ReturnType<typeof pathCtx>): number => c.__widths()[c.__widths().length - 1]!
     expect(rimWidth(finger)).toBeGreaterThan(rimWidth(cursor))
+    const peakY = (c: ReturnType<typeof pathCtx>): number => c.__pts()[c.__pts().length - 2]![1]!
+    expect(peakY(finger)).toBeLessThan(peakY(cursor))
 
     // …and it still reads as lit rather than as one of the offered regions.
     const offered = pathCtx()
     paintAimRegion(offered, R, 'melee', 'up', SIZE, { color: '#ffffff', rim: 1.7 })
     expect(offered.__fills()).toBe(0)
-    expect(offered.__strokes()).toBe(1)
+    expect(offered.__pts()).toHaveLength(3)
   })
 
   it('lit beats held when both are asked for, so the tile has one answer', () => {
     const both = pathCtx()
     paintAimRegion(both, R, 'melee', 'up', SIZE, { color: '#ffffff', lit: true, held: true, grow: 1 })
     expect(both.__strokes()).toBe(2)
+  })
+
+  it('darkens the tile before anything is drawn on it', () => {
+    // The compass is a green overlay on painted slate. Without this wash its
+    // marks were technically present and practically invisible, which is how a
+    // player drops a rune facing a direction they never chose.
+    const ctx = mockCtx()
+    paintAimScrim(ctx, R)
+    expect(ctx.__calls().get('fillRect')).toBe(1)
+    expect(ctx.__depth()).toBe(0)
+    // …and it obeys the one rule of this module.
+    expect(ctx.__sets().has('shadowBlur')).toBe(false)
+    expect(ctx.__sets().has('filter')).toBe(false)
+  })
+
+  it('draws no scrim at all when it is fully transparent', () => {
+    const ctx = mockCtx()
+    paintAimScrim(ctx, R, 0)
+    expect(ctx.__calls().get('fillRect') ?? 0).toBe(0)
   })
 
   it('a refused tile is a cross, not a set of choices', () => {

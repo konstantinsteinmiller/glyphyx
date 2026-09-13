@@ -1,6 +1,6 @@
 import { glyphPath } from '@/game/glyphs'
-import { aimRegionPolygon, aimRegionShape, type Dir, type RuneType } from '@/game/rules'
-import { emit as emitParticle, qualityTier, registerSprite, type QualityTier } from '@/use/useVfx'
+import { aimRegionOuterEdge, aimRegionPolygon, aimRegionShape, type Dir, type RuneType } from '@/game/rules'
+import { emit as emitParticle, qualityTier, registerSprite, type EmitOptions, type QualityTier } from '@/use/useVfx'
 
 /**
  * ─── Arena effects: baked light, painted per frame ──────────────────────────
@@ -95,7 +95,9 @@ export const hash01 = (n: number): number => {
 // colours. These sprites depend on nothing but a colour and a size bucket.
 
 const bakes = new Map<string, HTMLCanvasElement | null>()
-const BAKE_LIMIT = 320
+// Ten rune modules bake their own light now: 18 bench scenarios alone fill
+// ~200 slots before the board's glows and previews add theirs.
+const BAKE_LIMIT = 480
 
 /** Bake `draw` into a `px`×`px` canvas under `key`, once. `null` where there is no 2D context. */
 export const bakeSprite = (
@@ -111,7 +113,14 @@ export const bakeSprite = (
     const t = c.getContext('2d')
     if (t) { draw(t, px); made = c }
   } catch { made = null }
-  if (bakes.size >= BAKE_LIMIT) bakes.clear()
+  if (bakes.size >= BAKE_LIMIT) {
+    // Drop the OLDEST quarter (a Map iterates in insertion order), never the
+    // lot: clearing everything re-baked every effect's light mid-match, a
+    // frame hitch per sprite. Anything a module or the particle pool still
+    // holds keeps working — they own their own references.
+    let n = Math.floor(BAKE_LIMIT / 4)
+    for (const k of bakes.keys()) { bakes.delete(k); if (--n <= 0) break }
+  }
   bakes.set(key, made)
   return made
 }
@@ -370,7 +379,7 @@ export const glyphShardSprite = (type: RuneType, stone: string, ink: string, i: 
 const spriteIds = new Map<string, number>()
 
 /** The pool's id for a baked sprite (registered once), or -1 when it could not be baked. */
-const poolSprite = (key: string, make: () => HTMLCanvasElement | null): number => {
+export const poolSprite = (key: string, make: () => HTMLCanvasElement | null): number => {
   const hit = spriteIds.get(key)
   if (hit !== undefined) return hit
   const spr = make()
@@ -451,18 +460,41 @@ interface SpawnOpts {
   grow?: 0 | 1 | 2
 }
 
-/** One particle, CSS coordinates (y down); the pool's y is flipped on the way in. */
+/**
+ * The ONE emit record every `spawn` fills and hands to the pool. `emit` copies
+ * each field into its typed arrays and keeps nothing, so reusing it is safe —
+ * and a burst of forty sparks used to be forty objects and forty colour arrays
+ * for the collector, on every effect in the game.
+ */
+const EMIT: EmitOptions = {
+  x: 0, y: 0, vx: 0, vy: 0, life: 0, size: 0, color: [255, 255, 255], additive: true, shape: 0,
+  gravity: 0, drag: 0, alpha: 1, rot: 0, vrot: 0, sprite: -1, fade: 0, grow: 0
+}
+const NO_SPAWN_OPTS: SpawnOpts = {}
+
+/** One particle, CSS coordinates (y down); the pool's y is flipped on the way in. Allocates nothing. */
 export const spawn = (
-  x: number, y: number, vx: number, vy: number, life: number, size: number, color: string, o: SpawnOpts = {}
+  x: number, y: number, vx: number, vy: number, life: number, size: number, color: string, o: SpawnOpts = NO_SPAWN_OPTS
 ): void => {
-  const [r, g, b] = hexRgb(color)
-  emitParticle({
-    x, y: -y, vx, vy: -vy, life, size, color: [r, g, b],
-    additive: o.additive ?? true, shape: o.shape ?? 0,
-    gravity: o.gravity ?? 0, drag: o.drag ?? 0, alpha: o.alpha ?? 1,
-    rot: o.rot ?? Math.random() * Math.PI * 2, vrot: o.vrot ?? 0,
-    sprite: o.sprite ?? -1, fade: o.fade ?? 0, grow: o.grow ?? 0
-  })
+  EMIT.x = x
+  EMIT.y = -y
+  EMIT.vx = vx
+  EMIT.vy = -vy
+  EMIT.life = life
+  EMIT.size = size
+  // The cached tuple itself: the pool reads its three numbers and lets go.
+  EMIT.color = hexRgb(color)
+  EMIT.additive = o.additive ?? true
+  EMIT.shape = o.shape ?? 0
+  EMIT.gravity = o.gravity ?? 0
+  EMIT.drag = o.drag ?? 0
+  EMIT.alpha = o.alpha ?? 1
+  EMIT.rot = o.rot ?? Math.random() * Math.PI * 2
+  EMIT.vrot = o.vrot ?? 0
+  EMIT.sprite = o.sprite ?? -1
+  EMIT.fade = o.fade ?? 0
+  EMIT.grow = o.grow ?? 0
+  emitParticle(EMIT)
 }
 
 const count = (n: number, min = 2): number => Math.max(min, Math.round(n * qualityMul()))
@@ -1294,64 +1326,129 @@ const regionPoly = (type: RuneType, dir: Dir): readonly (readonly [number, numbe
 /**
  * Lay a region's polygon into `rect`, grown by `g`. Returns the point count.
  *
- * A triangle keeps its outer edge and walks the APEX in from that edge's
- * midpoint; a quadrant scales about its outer CORNER. Both read as the shape
- * growing inward from the side it names, which is the whole point of it.
+ * Every shape scales about the TILE'S CENTRE, so at `g` 0 the region is a
+ * speck under the stone and at 1 it has reached the edge it names. One rule
+ * for all three shapes: a cardinal triangle has its apex at the centre and a
+ * diagonal quadrant has one corner there, so scaling about that point grows
+ * each of them out of the middle along its own axis.
+ *
+ * ── Why OUT and not in ──
+ *
+ * It used to grow the other way: the outer edge stayed put and the apex walked
+ * in from it, so the wedge arrived from the side the player was aiming at.
+ * That is backwards, and it was the single worst thing on the tile. A rune
+ * throws its attack AWAY from itself, and a shape sweeping inward says the
+ * opposite — it reads as something incoming, and on a board where the enemy
+ * genuinely does shoot at you that is the one wrong answer. Growing outward is
+ * the attack leaving the stone, which is what the facing means.
  */
 const layoutAimRegion = (
   type: RuneType, dir: Dir, rect: { x: number; y: number; w: number; h: number }, g: number
 ): number => {
   const poly = regionPoly(type, dir)
   const n = poly.length < 8 ? poly.length : 8
-  const shape = aimRegionShape(type)
   const k = clamp01(g)
-  if (shape === 'diagonals' && n === 3) {
-    const a = poly[0]!
-    const b = poly[1]!
-    const c = poly[2]!
-    const mx = (a[0] + b[0]) / 2
-    const my = (a[1] + b[1]) / 2
-    regionScratch[0] = rect.x + a[0] * rect.w; regionScratch[1] = rect.y + a[1] * rect.h
-    regionScratch[2] = rect.x + b[0] * rect.w; regionScratch[3] = rect.y + b[1] * rect.h
-    regionScratch[4] = rect.x + (mx + (c[0] - mx) * k) * rect.w
-    regionScratch[5] = rect.y + (my + (c[1] - my) * k) * rect.h
-    return 3
-  }
-  if (shape === 'quadrants' && n === 4) {
-    const o = poly[0]!
-    for (let i = 0; i < 4; i++) {
-      const pt = poly[i]!
-      regionScratch[i * 2] = rect.x + (o[0] + (pt[0] - o[0]) * k) * rect.w
-      regionScratch[i * 2 + 1] = rect.y + (o[1] + (pt[1] - o[1]) * k) * rect.h
-    }
-    return 4
-  }
   for (let i = 0; i < n; i++) {
     const pt = poly[i]!
-    regionScratch[i * 2] = rect.x + pt[0] * rect.w
-    regionScratch[i * 2 + 1] = rect.y + pt[1] * rect.h
+    regionScratch[i * 2] = rect.x + (0.5 + (pt[0] - 0.5) * k) * rect.w
+    regionScratch[i * 2 + 1] = rect.y + (0.5 + (pt[1] - 0.5) * k) * rect.h
   }
   return n
 }
 
 /**
+ * The outward-pointing chevron over a region's outward feature, laid into
+ * `chevScratch`: two arms ending on the region itself, and a peak pushed out
+ * past the tile's edge.
+ *
+ * This replaces the flat white bar the lit region used to wear. The bar was
+ * the loudest mark on the tile and it said nothing — a line is a line whether
+ * the rune fires up or down, so the brightest thing the player looked at was
+ * the one thing that carried no direction. A chevron is the same stroke, in
+ * the same place, that can only be read one way round.
+ *
+ * WHICH part of the region faces out is `rules.aimRegionOuterEdge`, so the
+ * chevron and the arrow the renderer leans toward the rim agree by
+ * construction — on a diagonal quadrant they are not the same two points, and
+ * neither of them is the polygon's first vertex.
+ */
+const chevScratch = new Float64Array(6)
+const outerCache = new Map<string, ReturnType<typeof aimRegionOuterEdge>>()
+const layoutAimChevron = (
+  type: RuneType, dir: Dir, rect: { x: number; y: number; w: number; h: number },
+  size: number, grow: number, depth: number
+): void => {
+  const key = `${type}|${dir}`
+  let edge = outerCache.get(key)
+  if (!edge) { edge = aimRegionOuterEdge(type, dir); outerCache.set(key, edge) }
+  const ax = regionScratch[edge.a * 2]!
+  const ay = regionScratch[edge.a * 2 + 1]!
+  const bx = regionScratch[edge.b * 2]!
+  const by = regionScratch[edge.b * 2 + 1]!
+  // The peak grows out of the region's own outward point, scaled by the same
+  // `grow` the polygon was laid with so the chevron travels with its wedge.
+  const k = clamp01(grow)
+  const cx = rect.x + rect.w / 2
+  const cy = rect.y + rect.h / 2
+  const px = cx + (edge.ax - 0.5) * rect.w * k
+  const py = cy + (edge.ay - 0.5) * rect.h * k
+  const ox = px - cx
+  const oy = py - cy
+  const n = Math.hypot(ox, oy) || 1
+  chevScratch[0] = ax; chevScratch[1] = ay
+  chevScratch[2] = px + (ox / n) * size * depth
+  chevScratch[3] = py + (oy / n) * size * depth
+  chevScratch[4] = bx; chevScratch[5] = by
+}
+
+/**
+ * A dark wash over a hovered tile, under everything the compass draws on it.
+ *
+ * The compass is a green overlay on a painted slate board that is already
+ * mid-value and already carries its own coloured edge glow, and green on that
+ * is green on grey-blue-teal: the marks were technically present and
+ * practically invisible, which is how a player ends up dropping a rune facing
+ * a direction they never chose. One flat darkening buys every mark after it
+ * about two stops of contrast for one fill, and costs nothing on a phone —
+ * and because it is a WASH rather than a tint, the tile underneath still reads
+ * as the same tile, just in shadow with a light on it.
+ */
+export const paintAimScrim = (
+  ctx: CanvasRenderingContext2D, rect: { x: number; y: number; w: number; h: number }, alpha = 1
+): void => {
+  const a = clamp01(alpha)
+  if (a <= 0) return
+  ctx.save()
+  ctx.fillStyle = rgba('#05070f', 0.52 * a)
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
+  ctx.restore()
+}
+
+/**
  * One region of the compass, in one of three weights.
  *
- *   `lit`  — the player has CHOSEN this facing: it fills, grows in from its own
- *            edge, and that edge is stroked white. Exactly one region per tile
- *            is ever lit.
+ *   `lit`  — the player has CHOSEN this facing: it fills with a gradient that
+ *            is brightest at the edge it names and fades to nothing at the
+ *            stone, grows outward from the middle, and wears an outward
+ *            CHEVRON on that edge. Exactly one region per tile is ever lit.
  *   `held` — the facing the rune would take right now, without the player
  *            having picked it (the pointer is in the tile's centre dead zone,
- *            so this is a pre-aimed key or the default). A soft fill and no
- *            white edge: the tile still says which way it points, but it does
+ *            so this is a pre-aimed key or the default). A soft even fill and
+ *            no chevron: the tile still says which way it points, but it does
  *            not claim the choice was made.
- *   plain  — a thin outline. Present, so the player can see there IS a choice;
- *            quiet enough not to compete with the board.
+ *   plain  — an outline over a dark keyline. Present, so the player can see
+ *            there IS a choice; quiet enough not to compete with the board.
  *
- * `rim` widens the lit region's white outer edge. Under a FINGERTIP that edge
- * is the only cue that is not covered — it lies on the tile's border, and the
- * contact patch is in the middle — so the touch path draws it heavier and the
- * caller leans the arrows out to meet it.
+ * Every weight is drawn over a dark keyline of its own. A single-stroke
+ * overlay is at the mercy of whatever tile it lands on — the offered wedges
+ * used to vanish completely against a lit enemy tile — and a dark line under a
+ * bright one is how every readable HUD in the business survives an arbitrary
+ * background.
+ *
+ * `rim` widens the lit region's chevron. Under a FINGERTIP that edge is the
+ * only cue that is not covered — it lies on the tile's border, and the contact
+ * patch is in the middle — so the touch path draws it heavier and the caller
+ * leans the arrows out to meet it.
  */
 export const paintAimRegion = (
   ctx: CanvasRenderingContext2D,
@@ -1370,40 +1467,68 @@ export const paintAimRegion = (
   const a = clamp01(o.alpha ?? 1)
   if (a <= 0) return
   ctx.save()
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
   ctx.beginPath()
   ctx.moveTo(regionScratch[0]!, regionScratch[1]!)
   for (let i = 1; i < n; i++) ctx.lineTo(regionScratch[i * 2]!, regionScratch[i * 2 + 1]!)
   ctx.closePath()
   if (lit) {
+    // ── The lit wedge is NOT outlined, and that is the fix ──
+    //
+    // A cardinal region is a triangle with its apex at the tile's centre, so
+    // outlining it draws a hard, high-contrast arrowhead pointing at the
+    // stone — i.e. one pointing the opposite way to the facing it is there to
+    // announce. It was the loudest shape on the tile and it was backwards.
+    //
+    // So the chosen region is shown as LIGHT rather than as a shape: a
+    // gradient that is nothing at the stone and full strength at the edge the
+    // rune fires through, which has no apex to misread because it has faded
+    // out long before it gets there. Every hard edge left on the tile — the
+    // chevron below, the arrow the caller puts on top — points outward.
+    const cx = rect.x + rect.w / 2
+    const cy = rect.y + rect.h / 2
+    const ex = (regionScratch[0]! + regionScratch[2]!) / 2
+    const ey = (regionScratch[1]! + regionScratch[3]!) / 2
+    const grad = ctx.createLinearGradient(cx, cy, ex, ey)
+    grad.addColorStop(0, rgba(o.color, 0))
+    grad.addColorStop(0.45, rgba(o.color, 0.16 * a))
+    grad.addColorStop(1, rgba(o.color, 0.7 * a))
     ctx.globalCompositeOperation = 'lighter'
-    ctx.fillStyle = rgba(o.color, 0.3 * a)
+    ctx.fillStyle = grad
     ctx.fill()
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = rgba(o.color, 0.85 * a)
-    ctx.lineWidth = size * 0.035
-    ctx.stroke()
-    // The outer edge — the side the rune will face — carries the weight.
-    ctx.beginPath()
-    ctx.moveTo(regionScratch[0]!, regionScratch[1]!)
-    ctx.lineTo(regionScratch[2]!, regionScratch[3]!)
+    // The outer edge — the side the rune will face — carries the weight, and
+    // carries it as an arrow rather than as a bar. See `layoutAimChevron`.
     const rim = o.rim === undefined ? 1 : Math.max(0, o.rim)
-    ctx.strokeStyle = rgba('#ffffff', Math.min(1, 0.6 * rim) * a)
-    ctx.lineWidth = size * 0.05 * rim
-    ctx.lineCap = 'round'
+    if (dir === 'omni') { ctx.restore(); return }
+    layoutAimChevron(type, dir, rect, size, o.grow ?? 1, 0.1 + 0.04 * rim)
+    ctx.beginPath()
+    ctx.moveTo(chevScratch[0]!, chevScratch[1]!)
+    ctx.lineTo(chevScratch[2]!, chevScratch[3]!)
+    ctx.lineTo(chevScratch[4]!, chevScratch[5]!)
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.strokeStyle = rgba('#000000', 0.7 * a)
+    ctx.lineWidth = size * 0.085 * rim
     ctx.stroke()
-  } else if (held) {
-    ctx.globalCompositeOperation = 'lighter'
-    ctx.fillStyle = rgba(o.color, 0.11 * a)
-    ctx.fill()
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = rgba(o.color, 0.45 * a)
-    ctx.lineWidth = size * 0.025
+    ctx.strokeStyle = rgba('#ffffff', Math.min(1, 0.92 * rim) * a)
+    ctx.lineWidth = size * 0.05 * rim
     ctx.stroke()
   } else {
-    ctx.globalAlpha = a
-    ctx.strokeStyle = rgba(o.color, 0.28)
-    ctx.lineWidth = size * 0.02
-    ctx.lineJoin = 'round'
+    // The offered regions ARE drawn as shapes: they are a menu, and a menu has
+    // to show where its items begin and end. Each goes over a dark keyline, so
+    // the mark owns its contrast instead of borrowing whatever the tile art is
+    // doing underneath it.
+    ctx.strokeStyle = rgba('#000000', 0.42 * a)
+    ctx.lineWidth = size * 0.038
+    ctx.stroke()
+    if (held) {
+      ctx.globalCompositeOperation = 'lighter'
+      ctx.fillStyle = rgba(o.color, 0.16 * a)
+      ctx.fill()
+      ctx.globalCompositeOperation = 'source-over'
+    }
+    ctx.strokeStyle = rgba(o.color, 0.7 * a)
+    ctx.lineWidth = size * (held ? 0.028 : 0.022)
     ctx.stroke()
   }
   ctx.restore()

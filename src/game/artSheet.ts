@@ -100,9 +100,25 @@ export interface SheetCell {
   maxEdge?: number
   /** A native size the slice must be restored to (a non-square bitmap letterboxed into its panel). */
   letterboxed?: { w: number; h: number }
+  /**
+   * Cut from its own single only, never from the sheet. The sheet still DRAWS
+   * the panel — so the sheet's reference, its revision and every painting of it
+   * are untouched — but the sheet's index entry carries no target, so slicing a
+   * sheet painting cannot write this drop-in. For a drop-in whose shape a sheet
+   * return cannot be trusted with; see `sheetTarget`.
+   */
+  singleOnly?: true
   note?: string
   art: CellArt
 }
+
+/**
+ * The target a SHEET's index gives a cell — none for a `singleOnly` one. The
+ * slicer cuts exactly the index cells that carry a target, so this is the one
+ * place that decides what a sheet painting may write. The manifest keeps the
+ * cell's own `target`: its single, its measured fit and its prompt still need it.
+ */
+export const sheetTarget = (c: SheetCell): string | undefined => (c.singleOnly ? undefined : c.target)
 
 export type SheetKind = 'stones' | 'enemyStones' | 'glyphs' | 'tiles' | 'frame' | 'ui' | 'fx'
 
@@ -622,6 +638,11 @@ const uiSheet = (): SheetSpec => ({
     // drawn to the shape the CSS 9-slice needs; see `RIBBON_PLATE`. ONE band
     // with notched ends, because a reference with tails behind the band came
     // back with the tails hung low again.
+    //
+    // `singleOnly`: the UI sheet still draws this panel, but a sheet painting
+    // never writes `ui/ribbon.webp`. Every sheet return so far painted it as a
+    // draped ribbon over the key sheet's grid lines, and one repaint of the
+    // chips silently replaced the level ribbon the result screen needs.
     {
       id: 'ribbon', label: 'Ribbon', sub: 'result banner',
       blurb: 'a flat swallow-tailed banner: ONE straight band of cloth, trimmed in gold along its top and bottom edges, with a '
@@ -634,7 +655,7 @@ const uiSheet = (): SheetSpec => ({
       colour: 'muted night-indigo cloth around #3c4379, the folded ends a shade darker around #262b55, trimmed in worn gold around #e6b84a',
       col: 1, row: 1, cw: 3, ch: 1,
       letterboxed: { w: RIBBON_PLATE.w, h: RIBBON_PLATE.h },
-      target: artTarget('ui', 'ribbon'), art: { kind: 'ribbon' }
+      target: artTarget('ui', 'ribbon'), singleOnly: true, art: { kind: 'ribbon' }
     },
     // The two conquest plaques, on the bottom row. Two panels each, because
     // they are wide: the game draws them at roughly 2.3:1 and a 1:1 panel would

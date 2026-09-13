@@ -16,7 +16,8 @@
  */
 
 import {
-  NO_HANDICAP, RUNE_TYPES, defaultDir, dirsFor, type Faction, type Handicap, type MatchState, type Move, type RuneType
+  NO_HANDICAP, RUNE_TYPES, defaultDir, dirsFor,
+  type Dir, type Faction, type Handicap, type MatchState, type Move, type RuneType
 } from '@/game/rules'
 import { beginPlanning, commitPlayerMove, createMatch, nextTurn, resolveCurrentTurn } from '@/game/match'
 import { countTiles, legalPlacements } from '@/game/board'
@@ -113,6 +114,31 @@ export const greedy: Policy = (s) => {
     }
   }
   return best
+}
+
+/**
+ * The player the blind playtest actually produced (2026-09-11).
+ *
+ * `careless` commits `defaultDir` — a facing no first-timer ever chooses,
+ * because choosing one is the part they have not learned yet. What a real
+ * first-timer does is carry a pebble from the tray onto a tile and let go in
+ * the middle of it, which means the facing is decided for them: by the tile
+ * edge nearest the tray, which is BELOW the board on a phone and to the RIGHT
+ * of it on a desktop.
+ *
+ * So this policy places at random, like `careless`, and points every stone the
+ * way the hand it came from points: away from the enemy. It is the floor the
+ * lessons have to survive, and the reason `usefulDir` exists — with the old
+ * input layer it is what four of five testers played.
+ */
+export const inputBiased = (seed: number, from: 'tray-below' | 'tray-right' = 'tray-below'): Policy => {
+  const random = careless(seed)
+  const facing: Dir = from === 'tray-below' ? 'down' : 'right'
+  return (s) => {
+    const move = random(s)
+    if (!move) return null
+    return dirsFor(move.type).includes(facing) ? { ...move, dir: facing } : move
+  }
 }
 
 /** Turn 1 is what the ghost hand shows; every turn after is `after`'s. */

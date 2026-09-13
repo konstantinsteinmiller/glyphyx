@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 /**
@@ -24,16 +25,37 @@ import { useI18n } from 'vue-i18n'
  * The card therefore keeps the FOOTPRINT of a real one. It is a rung with the
  * light off, not a hole in the ladder: the player can count what is left.
  *
- * It is deliberately inert — not a button, not focusable, nothing to press.
- * There is no way to act on it, and pretending otherwise would be a dead tap.
+ * It is deliberately not a BUTTON — not focusable, nothing to activate, no
+ * promise of an action, because there is none to offer.
+ *
+ * It does answer a tap, though. A six-year-old in the shop audit pressed these
+ * cards over and over and got nothing back at all, and read the whole game as
+ * broken: "it just sits there". Silence is not the same as honesty. So a press
+ * gives it a small shake — the universal "not this one, not yet" — which says
+ * the game heard you without pretending the card can be opened.
  */
 const { t } = useI18n()
+
+const nudging = ref(false)
+let nudgeTimer: ReturnType<typeof setTimeout> | null = null
+
+const nudge = (): void => {
+  if (nudging.value) return
+  nudging.value = true
+  nudgeTimer = setTimeout(() => { nudging.value = false; nudgeTimer = null }, 420)
+}
+onBeforeUnmount(() => { if (nudgeTimer !== null) clearTimeout(nudgeTimer) })
 </script>
 
 <template lang="pug">
   //- `role="img"` with one whole-sentence label: a screen reader should hear
   //- "a rune you have not unlocked yet", not "question mark, question mark".
-  article.mrc(role="img" :aria-label="t('ranks.mysteryAria')")
+  article.mrc(
+    role="img"
+    :aria-label="t('ranks.mysteryAria')"
+    :class="{ 'is-nudging': nudging }"
+    @pointerdown="nudge"
+  )
     div.mrc__stage(aria-hidden="true")
       span.mrc__plate
       span.mrc__sheen
@@ -73,6 +95,14 @@ const { t } = useI18n()
   cursor: default
   user-select: none
   -webkit-user-select: none
+
+  // Pressed: a shake, and the hint brightens for the length of it. Nothing
+  // opens, and nothing pretends to.
+  &.is-nudging
+    animation: mrc-nudge 0.42s ease-in-out
+
+  &.is-nudging .mrc__hint
+    color: #a9c0e6
 
 .mrc__stage
   position: relative
@@ -130,8 +160,22 @@ const { t } = useI18n()
   55%, 100%
     background-position: -30% 0
 
+@keyframes mrc-nudge
+  0%, 100%
+    translate: 0 0
+  20%
+    translate: -3% 0
+  45%
+    translate: 2.4% 0
+  70%
+    translate: -1.4% 0
+
 @media (prefers-reduced-motion: reduce)
   .mrc__sheen
     animation: none
     opacity: 0.5
+
+  // The shake goes; the hint still brightens, so a press is still answered.
+  .mrc.is-nudging
+    animation: none
 </style>

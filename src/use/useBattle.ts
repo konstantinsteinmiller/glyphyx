@@ -1,8 +1,10 @@
 import { ref, watch, type Ref } from 'vue'
 import {
   AIM_LAND_MS, AIM_STROKE_PX, AIM_STROKE_WINDOW_MS, AIM_UNLOCK_TILES, BETWEEN_TURNS_MS, GRID,
-  LESSON_REAIM_HOLD_MS, LOCK_WINDOW_MS, LOCK_WINDOW_TAP_MS, LOSS_COINS_FRACTION, PLANNING_MAX_MS, PLANNING_MS,
-  RESET_MS, RESOLVE_MS, REVEAL_MS, RUNES, RUNE_TYPES,
+  LESSON_HINT_TURNS, LESSON_REAIM_HOLD_MS, LESSON_RESOLVE_SCALE, LOCK_WINDOW_MS, LOCK_WINDOW_TAP_MS,
+  LOSS_COINS_FRACTION,
+  PLANNING_MAX_MS, PLANNING_MS,
+  MAX_LEVEL, RESET_MS, RESOLVE_MS, REVEAL_MS, RUNES, RUNE_TYPES,
   TURN_LIMIT, WIN_COINS_BASE, WIN_COINS_PER_KILL, WIN_COINS_PER_TILE, defaultDir, dirFromCellPoint, dirsFor,
   isAimChosen, snapDir,
   streakMultiplier,
@@ -12,9 +14,9 @@ import {
 import type { ArenaView, BattleApi, CanvasLabels, DragState, GhostHint, LockState, PlacementKind } from '@/game/view'
 import {
   beginPlanning, canReaim, commitPlayerMove, createMatch, evaluateResult, nextTurn, placementKindFor,
-  reaimPlayerMove, rerollHand, resolveCurrentTurn
+  reaimPlayerMove, rerollHand, rescueMove, resolveCurrentTurn
 } from '@/game/match'
-import { cloneBoard, countTiles, runesOf } from '@/game/board'
+import { cloneBoard, countTiles, runeAt, runesOf, usefulDir } from '@/game/board'
 import { seedFrom } from '@/game/rng'
 import { getState, setState } from '@/use/useGlyphyxState'
 import { flushSaveNow } from '@/use/useSaveStatus'
@@ -131,6 +133,8 @@ export interface BattleRefs {
   turnLimit: Ref<number>
   suddenDeath: Ref<boolean>
   playerTiles: Ref<number>
+  /** Enemy runes still standing — what an `eliminate` node is counting down. */
+  enemyRunes: Ref<number>
   enemyTiles: Ref<number>
   rerollsLeft: Ref<number>
   /** Throttled to ~10 Hz — for a DOM readout, not the canvas ring. */
@@ -153,6 +157,8 @@ export interface BattleRefs {
   /** True while the ghost hand is being shown. */
   ghostActive: Ref<boolean>
   lastSummary: Ref<MatchSummary | null>
+  /** The last refusal, for the pill that explains it. See `RejectReason`. */
+  rejected: Ref<{ reason: RejectReason; seq: number } | null>
 }
 
 export interface Battle extends BattleApi, BattleRefs {
@@ -249,7 +255,9 @@ const defaultLabels = (): CanvasLabels => ({
   you: 'YOU',
   foe: 'FOE',
   reroll: 'REROLL',
-  lastTurn: 'LAST TURN'
+  lastTurn: 'LAST TURN',
+  firesIn: 'FIRES IN',
+  yourTurn: 'YOUR MOVE'
 })
 
 const view: ArenaView = {
@@ -287,6 +295,7 @@ const turn = ref(1)
 const turnLimit = ref(TURN_LIMIT)
 const suddenDeath = ref(false)
 const playerTiles = ref(0)
+const enemyRunes = ref(0)
 const enemyTiles = ref(0)
 const rerollsLeft = ref(0)
 const timerLeftMs = ref(PLANNING_MS)
@@ -302,6 +311,36 @@ const selectedHand = ref(-1)
 const activeRune = ref<RuneType | null>(null)
 const ghostActive = ref(false)
 const lastSummary = ref<MatchSummary | null>(null)
+
+/**
+ * ─── Why nothing happened ───────────────────────────────────────────────────
+ *
+ * Every refusal used to be silent. The hand looks the same whether it can be
+ * played or not, so a drag that arrived a beat early — during the correction
+ * window, the reveal or the resolution, about two to three seconds after every
+ * placement — simply did nothing, and the same drag a second later worked.
+ * Three of the five blind testers read that as a broken game; one of them
+ * counted it as "about half" of all their drags (2026-09-11).
+ *
+ * So a refusal now says which of the three things it was, once, and the scene
+ * puts it in the hint pill:
+ *
+ *   placed  one rune per turn, and this turn's is already down
+ *   phase   the runes are firing; the hand comes back when they stop
+ *   tile    that tile will not take this rune
+ *
+ * `seq` only exists so the scene can tell two identical refusals apart.
+ */
+export type RejectReason = 'placed' | 'phase' | 'tile'
+const rejected = ref<{ reason: RejectReason; seq: number } | null>(null)
+let rejectSeq = 0
+
+/** Refuse an action out loud: the reason for the pill, the thud for the ear. */
+const refuse = (reason: RejectReason): false => {
+  rejected.value = { reason, seq: ++rejectSeq }
+  playFx('uiReject', 0.4)
+  return false
+}
 
 // ─── Internal state ─────────────────────────────────────────────────────────
 
@@ -350,6 +389,34 @@ let landRefY = 0
  * (strokes always aim the landed pebble directly).
  */
 let keyDir: Dir | null = null
+/**
+ * The region of the current tile the pebble was carried IN through — the edge
+ * nearest the hand it came from, which is a fact about where the tray is and
+ * not a facing anybody chose.
+ *
+ * SPENT (set to null) the moment the player does choose something: a different
+ * region of the same tile, a stroke, a key. While it is unspent it is the only
+ * thing that has ever aimed this pebble, and the dead zone in the middle of the
+ * tile — which holds the facing rather than choosing one — must not hold IT.
+ * That is how a pebble carried up from the tray and released in the middle of a
+ * tile came to face DOWN, into the player's own back row, on every phone: three
+ * of four blind testers spent a one-move lesson shooting backwards (2026-09-11).
+ */
+let entryRegion: Dir | null = null
+/**
+ * Has the player aimed this pebble ON THE TILE IT IS OVER — a region they moved
+ * into, a stroke, a key?
+ *
+ * `entryRegion` alone was not enough, and the way it failed is worth keeping.
+ * A pebble carried across the board LANDS on the tiles it crosses, and
+ * un-landing is deliberately late (`AIM_UNLOCK_TILES`), so the pointer is
+ * often already in the next tile's DEAD ZONE by the time the drag notices it
+ * changed tiles at all. There is no entry region to record at that point — and
+ * with only "is the entry region unspent" to go on, the facing left over from
+ * the tile before was held, which is exactly the backwards-facing drop this is
+ * all about. Reset on every tile change; set by any deliberate aim.
+ */
+let chosenOnTile = false
 /** ms a lesson's held window has been waiting for the player's correction. */
 let holdMs = 0
 /** Once the lesson's facing is right, the held window drains this quickly: the arrow has been seen turning. */
@@ -398,6 +465,11 @@ const syncCounts = (): void => {
   view.enemyTiles = countTiles(view.board, 'enemy')
   playerTiles.value = view.playerTiles
   enemyTiles.value = view.enemyTiles
+  // The number a LESSON is actually about. Its objective is `eliminate`, so
+  // tiles held say nothing about winning it — and the HUD showing tiles is why
+  // four testers came away with four different readings of what YOU and FOE
+  // meant (2026-09-11).
+  enemyRunes.value = runesOf(view.board, 'enemy').length
 }
 
 // ─── The stroke buffer ──────────────────────────────────────────────────────
@@ -465,6 +537,8 @@ const clearDrag = (): void => {
   lastValidCell = null
   lastValidKind = null
   dragOverKey = -1
+  entryRegion = null
+  chosenOnTile = false
   landMs = 0
   keyDir = null
   clearStrokes()
@@ -497,7 +571,25 @@ const clearSelection = (): void => {
  */
 const ghostFor = (s: MatchState): GhostHint | null => {
   const beat = s.config.tutorial
-  if (!beat || placedThisMatch) return null
+  // Not a lesson, but the node may still open with one taught move — see
+  // `NodeConfig.guide`. Turn 1 only, and gone the moment the player places.
+  if (!beat) return guideFor(s)
+  // ── The rescue's first step ──
+  //
+  // A lesson that has gone `LESSON_HINT_TURNS` without hurting the enemy has
+  // stopped teaching and started trapping, and the player has usually placed
+  // long ago — so this outranks both "only until the first placement" and the
+  // retired-for-good check below. It shows a move that would actually land
+  // (`rescueMove`), not the scripted one, which by now is often on a tile that
+  // is no longer free.
+  if (s.stallTurns >= LESSON_HINT_TURNS) {
+    const rescue = rescueMove(s)
+    const slot = rescue ? s.hand.indexOf(rescue.type) : -1
+    if (rescue && slot >= 0) {
+      return { handIndex: slot, to: { col: rescue.col, row: rescue.row }, dir: rescue.dir, mode: 'place' }
+    }
+  }
+  if (placedThisMatch) return null
   if (beat === 'drag' && getState<boolean>(TUTORIAL_KEY, false) === true) return null
   const script = s.config.ghost
   // Every beat but `drag` and `stack` is NAMED after the rune it teaches, so
@@ -518,6 +610,40 @@ const ghostFor = (s: MatchState): GhostHint | null => {
     if (mine) to = { col: mine.col, row: mine.row }
   }
   return { handIndex, to, dir: defaultDir(type, 'player'), mode: 'place' }
+}
+
+/**
+ * The opening move a non-lesson node offers, if it offers one. Shown until the
+ * player places anything, on the first turn only: a fight that keeps pointing
+ * at the same square on turn 6 is not guiding, it is nagging.
+ *
+ * The script's rune is a PREFERENCE, not a requirement. A real node deals a
+ * real hand — unlike a lesson, whose deck is authored — so the named rune is
+ * often not in it: on the first browser run of 1-7's guide the hand came up
+ * `archer, support, defense` and the guide simply never appeared. That is the
+ * worst possible outcome for the one lesson the mode has. And it is
+ * unnecessary, because the rule being taught — a rune you place takes the tile
+ * it stands on — is true of every rune in the game. So it teaches with
+ * whatever is in hand, and only the FACING falls back: a rune the script did
+ * not choose gets the facing that actually threatens something
+ * (`usefulDir`), so the taught move is a good move as well as a legal one.
+ */
+const guideFor = (s: MatchState): GhostHint | null => {
+  const script = s.config.guide
+  if (!script || placedThisMatch || s.turn > 1 || s.hand.length === 0) return null
+  const wanted = s.hand.indexOf(script.type)
+  const handIndex = wanted >= 0 ? wanted : 0
+  const type = s.hand[handIndex]!
+  const to: Cell = { col: script.to.col, row: script.to.row }
+  // Never point at a tile this rune cannot take (the board changes under a
+  // guide the way it does under anything else).
+  if (!isValidKind(placementKindFor(s, type, to))) return null
+  return {
+    handIndex,
+    to,
+    dir: wanted >= 0 ? script.dir : usefulDir(s.board, 'player', type, to),
+    mode: 'place'
+  }
 }
 
 /** The planning window this turn: the relief's number, inside the rules' bounds. */
@@ -746,7 +872,11 @@ const nextNode = (): void => {
 }
 
 const beginDrag = (index: number, x: number, y: number, precise = false): boolean => {
-  if (!state || view.phase !== 'planning' || hasPlaced.value || view.resetting || view.drag) return false
+  if (!state || view.resetting || view.drag) return false
+  // Two different noes, and the player cannot tell them apart from the hand:
+  // "you have already played this turn" and "the runes are firing, wait".
+  if (view.phase !== 'planning') return refuse(hasPlaced.value ? 'placed' : 'phase')
+  if (hasPlaced.value) return refuse('placed')
   const type = state.hand[index]
   if (!type) return false
   // A drag is the other way in: whatever was selected by tap is let go.
@@ -764,6 +894,8 @@ const beginDrag = (index: number, x: number, y: number, precise = false): boolea
   lastValidCell = null
   lastValidKind = null
   dragOverKey = -1
+  entryRegion = null
+  chosenOnTile = false
   landMs = 0
   clearStrokes()
   return true
@@ -794,12 +926,31 @@ const setHoverState = (type: RuneType, cell: Cell, dir: Dir, chosen: boolean, pr
 
 /**
  * The facing a pebble with no region under it would be placed with: whatever a
- * key chose for it, else the default. `placeSelected` and `setHover` BOTH read
- * this, so what the compass promises inside the dead zone is exactly what a
- * click there delivers.
+ * key chose for it, else the most useful facing on that tile. `placeSelected`
+ * and `setHover` BOTH read this, so what the compass promises inside the dead
+ * zone is exactly what a click there delivers.
+ *
+ * `cell` is optional only for the callers that have no tile yet; without one
+ * the answer is the plain default, as it always was.
  */
-const heldFacing = (type: RuneType): Dir =>
-  keyDir !== null && dirsFor(type).includes(keyDir) ? keyDir : defaultDir(type, 'player')
+const heldFacing = (type: RuneType, cell?: Cell | null): Dir => {
+  if (keyDir !== null && dirsFor(type).includes(keyDir)) return keyDir
+  if (!state || !cell) return defaultDir(type, 'player')
+  return usefulDir(state.board, 'player', type, cell, placedLevel(type, cell))
+}
+
+/**
+ * The level the pebble would stand at once placed — one higher when it is being
+ * stacked onto a matching stone, which is what decides an archer's range and a
+ * bombard's footprint, and therefore what "useful" means on that tile.
+ */
+const placedLevel = (type: RuneType, cell: Cell): number => {
+  if (!state) return 1
+  const under = runeAt(state.board, cell.col, cell.row)
+  return under && under.side === 'player' && under.type === type
+    ? Math.min(MAX_LEVEL, under.level + 1)
+    : 1
+}
 
 /** Mirror a drag's own tile and region into the compass. */
 const syncHoverFromDrag = (drag: DragState): void => {
@@ -877,6 +1028,8 @@ const reaim = (drag: DragState, dir: Dir): void => {
 }
 
 const applyAim = (drag: DragState, dir: Dir): void => {
+  // A stroke or a key is unambiguously a choice, whatever the pointer is over.
+  chosenOnTile = true
   if (drag.mode === 'correct') reaim(drag, dir)
   else drag.dir = dir
 }
@@ -946,10 +1099,34 @@ const aimFromPosition = (drag: DragState, cell: Cell, x: number, y: number): boo
   // the centre is simply where you click a tile. So the facing HOLDS there,
   // which is what lets a pre-aimed arrow key survive a click in the middle
   // instead of being silently overwritten by the default.
-  if (!isAimChosen(f.fx, f.fy)) { drag.region = null; return true }
+  //
+  // "Holds" means holds a CHOICE. Before the player has made one, what it used
+  // to hold was the region the pebble happened to cross on its way in — the
+  // edge nearest the hand — so a drop in the middle of a tile faced down on a
+  // phone and right on a desktop, away from the enemy either way. Until
+  // something is chosen the unaimed facing is `heldFacing`'s answer instead.
+  if (!isAimChosen(f.fx, f.fy)) {
+    drag.region = null
+    // "Holds" means holds a CHOICE — a key, a stroke, a region the player moved
+    // into. While `entryRegion` is unspent, the only thing that has aimed this
+    // pebble is the edge it was carried in through, and holding that is what
+    // pointed a centre drop back at the player's own side.
+    if (!chosenOnTile) drag.dir = heldFacing(drag.type, cell)
+    return true
+  }
   const dir = dirFromCellPoint(drag.type, f.fx, f.fy)
   if (!dirsFor(drag.type).includes(dir)) { drag.region = null; return true }
   drag.region = dir
+  if (dir === entryRegion && !chosenOnTile) {
+    // The edge it was carried in through, SHOWN — the pebble points that way
+    // while the pointer is there, and the compass says so — but not CHOSEN, so
+    // the dead zone in the middle will not hold it. Set directly rather than
+    // through `applyAim`, which is what spends the entry region.
+    drag.dir = dir
+    return true
+  }
+  // Anywhere else in the tile is a choice: the pointer went there.
+  chosenOnTile = true
   if (dir !== drag.dir) applyAim(drag, dir)
   return true
 }
@@ -987,14 +1164,40 @@ const updateDrag = (x: number, y: number, over: Cell | null): void => {
   if (key !== dragOverKey) {
     dragOverKey = key
     landMs = 0
-    drag.over = over
+    // COPIED, never held by reference. `useArenaInput` hands the same mutable
+    // `Cell` object to every `updateDrag` — it is scratch, rewritten on each
+    // pointer move — so storing it made `drag.over` silently follow the finger
+    // across tiles. Everything downstream then misread the board: the landed
+    // pebble's own tile was always "the tile under the pointer", so
+    // `aimFromPosition` always said the pointer was inside it, `updateDrag`
+    // returned early every frame, and THIS block never ran again for the rest
+    // of the drag. The facing bookkeeping stayed pinned to the first tile the
+    // pebble ever landed on, which is what kept a centre drop pointing the way
+    // it had been carried in. Found by probing a real drag in the browser
+    // after the unit tests — which pass a fresh object each call — all passed.
+    drag.over = over ? { col: over.col, row: over.row } : null
     drag.kind = over ? placementKindFor(state, drag.type, over) : null
     if (over && isValidKind(drag.kind)) {
-      lastValidCell = over
+      lastValidCell = { col: over.col, row: over.row }
       lastValidKind = drag.kind
       lastValidEnterX = x
       lastValidEnterY = y
+      // Which edge the pebble crossed to get here. Not a choice — see `entryRegion`.
+      const f = cellFraction(over, x, y)
+      const at = f !== null && isAimChosen(f.fx, f.fy) ? dirFromCellPoint(drag.type, f.fx, f.fy) : null
+      entryRegion = at !== null && dirsFor(drag.type).includes(at) ? at : null
+    } else {
+      entryRegion = null
     }
+    // A facing is chosen ON a tile, and it stays there. Carrying the pebble to
+    // another tile re-bases it, because un-landing is distance-gated
+    // (`AIM_UNLOCK_TILES`): a pebble carried briskly onto a new tile can be
+    // released before one pointer event has arrived to re-aim it, and it then
+    // commits whatever the tile BELOW pointed at. Measured in a real browser —
+    // 1-4's orb, dropped dead centre, kept the facing it crossed the tile below
+    // with and its one taught move missed both skeletons (2026-09-12).
+    if (chosenOnTile && over) drag.dir = heldFacing(drag.type, over)
+    chosenOnTile = false
   }
 
   // Still travelling: the tile under the pointer aims the pebble as soon as it
@@ -1135,11 +1338,14 @@ const selectHand = (index: number): boolean => {
  * facing a key chose for it, else its default — and gets the longer window.
  */
 const placeSelected = (cell: Cell, dir?: Dir): boolean => {
-  if (handBusy()) return false
+  if (handBusy()) {
+    if (!state || view.resetting || view.drag) return false
+    return refuse(hasPlaced.value ? 'placed' : view.phase !== 'planning' ? 'phase' : 'placed')
+  }
   const index = view.selected
   const type = index >= 0 ? state!.hand[index] : undefined
   if (!type) return false
-  if (!isValidKind(placementKindFor(state!, type, cell))) return false
+  if (!isValidKind(placementKindFor(state!, type, cell))) return refuse('tile')
   // A `dir` is the region the pointer CLICKED in — only a precise pointer has
   // one, and only after `setHover` has been drawing that region under the
   // cursor. Both halves are required: the skip is earned by the player having
@@ -1148,7 +1354,7 @@ const placeSelected = (cell: Cell, dir?: Dir): boolean => {
   const hover = view.hover
   const aimed = named && hover !== null && hover.precise
     && hover.cell.col === cell.col && hover.cell.row === cell.row
-  const facing = named ? dir! : heldFacing(type)
+  const facing = named ? dir! : heldFacing(type, cell)
   return commitMove(type, cell, facing, 'tap', aimed)
 }
 
@@ -1169,7 +1375,7 @@ const setHover = (cell: Cell | null, fx = 0.5, fy = 0.5): void => {
   // Inside the dead zone nothing has been picked, so the compass promises the
   // facing the pebble is ALREADY carrying — the same one a click there commits.
   const chosen = isAimChosen(fx, fy)
-  const held = drag && drag.mode === 'place' ? drag.dir : heldFacing(type)
+  const held = drag && drag.mode === 'place' ? drag.dir : heldFacing(type, cell)
   setHoverState(type, cell, chosen ? dirFromCellPoint(type, fx, fy) : held, chosen, true)
 }
 
@@ -1242,9 +1448,25 @@ const endDrag = (commit: boolean): void => {
   }
   if (!commit || view.phase !== 'planning' || hasPlaced.value) { clearDrag(); return }
 
-  // Aimed by POSITION on a precise pointer: the player saw the facing lit under
-  // the cursor before they let go, so there is nothing to correct afterwards.
-  const aimed = drag.precise && drag.region !== null
+  // ─── A mouse never gets a correction window ───────────────────────────────
+  //
+  // The tile's compass is drawn under the cursor the whole time a pebble is in
+  // hand: every region outlined with the arrow it would produce, the one being
+  // pointed at lit. A player with a mouse can SEE the answer before they let
+  // go, so correcting afterwards is a second of their time spent on a question
+  // that was already answered — every single turn.
+  //
+  // This used to be `drag.precise && drag.region !== null`, which skipped the
+  // window only when the release landed inside one of the triangles. Dropping
+  // in the MIDDLE of a tile is the natural thing to do, the middle is a
+  // deliberate dead zone that chooses nothing, and so the window came back on
+  // exactly the placement people make most. Pointing is the desktop gesture;
+  // the middle of the tile is simply not where you aim from, and a first drop
+  // that goes the wrong way teaches that faster than a correction window hides
+  // it.
+  //
+  // A finger still gets the window: it covers the tile it is choosing on.
+  const aimed = drag.precise
   // The pebble has landed on a tile and the strokes are its facing.
   if (drag.aiming && drag.over && isValidKind(drag.kind)) {
     commitMove(drag.type, drag.over, drag.dir, 'drag', aimed)
@@ -1254,10 +1476,22 @@ const endDrag = (commit: boolean): void => {
   // there is one, else the facing a key chose on the way, else the default
   // (toward the enemy).
   if (drag.over && isValidKind(drag.kind)) {
-    const dir = drag.region !== null ? drag.region
-      : keyDir !== null && dirsFor(drag.type).includes(keyDir) ? keyDir
-        : defaultDir(drag.type, 'player')
+    const dir = drag.region !== null ? drag.region : heldFacing(drag.type, drag.over)
     commitMove(drag.type, drag.over, dir, 'drag', aimed)
+    return
+  }
+  // Released ON a tile this rune cannot go to — an enemy's stone, a friendly
+  // one of the wrong type, or one already at the cap. The swipe-through
+  // fallback below would quietly put it on the last LEGAL tile the pebble
+  // crossed, which is a tile the player did not aim at. A blind tester
+  // followed the lesson's own "drop a matching rune on yours to level it up",
+  // dropped onto a rune that could not take it, and watched the stone go to
+  // the square next door instead — over and over, never once merging, with
+  // nothing said (2026-09-12). An aimed drop that cannot happen has to be
+  // REFUSED, because the refusal is the only thing that teaches the rule.
+  if (drag.over && !isValidKind(drag.kind)) {
+    clearDrag()
+    refuse('tile')
     return
   }
   // A fast flick THROUGH a tile and off the board — the GDD's "touch release +
@@ -1366,7 +1600,14 @@ const tick = (nowMs: number, dtMs: number): void => {
     case 'resolve': {
       const tl = view.timeline
       if (!tl) { endResolve(Date.now()); return }
-      tl.elapsedMs += dt
+      // A lesson's resolution runs at `LESSON_RESOLVE_SCALE` of speed. The
+      // whole turn — swords, arrows, beams, a stone shattering — is over in
+      // 1.2 s, and a first-time player is still reading the board when it
+      // starts: "combat is basically invisible … units just silently vanish"
+      // was the strategy tester's whole complaint (2026-09-11). Slowing the
+      // CLOCK rather than the timeline keeps the resolver's own ordering
+      // exactly as it is, and it returns to full speed at the first real duel.
+      tl.elapsedMs += dt / (state?.config.tutorial ? LESSON_RESOLVE_SCALE : 1)
       // The renderer plays `before` + events until the window closes, then the
       // settled board takes over.
       if (tl.elapsedMs >= RESOLVE_MS && view.board !== tl.after) {
@@ -1401,8 +1642,9 @@ watch(activeSkin, (skin) => { if (!state?.config.skin) view.skin = skin })
 export const battle: Battle = {
   view,
   beginDrag, updateDrag, setAim, endDrag, beginCorrection, selectHand, placeSelected, setHover, aimKey, reroll, tick,
-  phase, turn, turnLimit, suddenDeath, playerTiles, enemyTiles, rerollsLeft, timerLeftMs, timerPaused,
+  phase, turn, turnLimit, suddenDeath, playerTiles, enemyTiles, enemyRunes, rerollsLeft, timerLeftMs, timerPaused,
   result, node, matchActive, hasPlaced, isDragging, isAiming, lockOpen, selectedHand, activeRune, ghostActive, lastSummary,
+  rejected,
   startNode, retryNode, nextNode, setLabels, onEvent, setPaused
 }
 
@@ -1413,13 +1655,16 @@ export const __matchState = (): MatchState | null => state
 export const __relief = (): Readonly<MatchRelief> => relief
 
 /**
- * Cheat / test seam: end the current match as a win right now.
+ * Cheat / test seam: end the current match right now — won by default, lost
+ * when asked. The losing side is what the RESULT flow is hardest to reach by
+ * playing (a defeat takes a deliberately bad match), and the post-defeat ad
+ * ordering has to be watched in a real browser.
  *
  * Goes through the same `finishMatch` as a real verdict so the streak, the
  * chest, the coins and the leaderboard post all happen exactly as they would
  * — the only thing skipped is the fighting.
  */
-export const __winMatchNow = (): void => {
+export const __winMatchNow = (won = true): void => {
   if (!state || !matchActive.value) return
   const now = Date.now()
   clearDrag()
@@ -1431,7 +1676,7 @@ export const __winMatchNow = (): void => {
     ...state,
     phase: 'ended',
     result: {
-      won: true, reason: 'conquest', turns: state.turn,
+      won, reason: 'conquest', turns: state.turn,
       playerTiles: countTiles(state.board, 'player'), enemyTiles: countTiles(state.board, 'enemy'),
       maxCombo: state.maxCombo, kills: state.kills, durationMs: Math.max(0, now - state.startedAt)
     }

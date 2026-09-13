@@ -15,10 +15,12 @@ const routes: RouteRecordRaw[] = [
 //   /#/art-sheets  bakes every drawable onto the reference lattice and exports
 //                  the sheets, prompts and index into art-sheets/
 //   /#/playground  every drawable in motion, painted-vs-drawn on one button
+//   /#/fx-bench    one rune's attack or defence on a staged board, frame by frame (tools/fx-bench)
 if (import.meta.env.DEV) {
   routes.push(
     { path: '/art-sheets', name: 'art-sheets', component: () => import('@/views/ArtSheets.vue') },
-    { path: '/playground', name: 'playground', component: () => import('@/views/Playground.vue') }
+    { path: '/playground', name: 'playground', component: () => import('@/views/Playground.vue') },
+    { path: '/fx-bench', name: 'fx-bench', component: () => import('@/views/FxBench.vue') }
   )
 }
 

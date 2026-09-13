@@ -119,8 +119,8 @@ const ALL_CUES: readonly FxSound[] = [
   'pickup', 'hover', 'invalid', 'aim', 'place', 'reroll',
   'tick', 'tickFinal', 'reveal',
   'arrow', 'arrowHit', 'beam', 'beamHit', 'slash', 'slashHit',
-  'cleave', 'cleaveHit', 'roll', 'rollHit', 'shell', 'shellHit', 'explode', 'nuke',
-  'shield', 'heal', 'buff', 'shatter', 'clash', 'knockback', 'capture', 'merge', 'combo',
+  'cleave', 'cleaveHit', 'roll', 'rollHit', 'shell', 'shellHit', 'explode', 'nuke', 'crown',
+  'shield', 'aura', 'intercept', 'heal', 'buff', 'shatter', 'clash', 'knockback', 'capture', 'merge', 'combo',
   'victory', 'defeat', 'suddenDeath', 'reset',
   'chestPop', 'chestOpen', 'unlock', 'coin', 'countUp', 'streak', 'forge', 'skinBuy', 'uiOpen', 'uiReject'
 ]
@@ -239,5 +239,64 @@ describe('playFx', () => {
     }
     // Every one of those is built on noise; not one of them allocated another.
     expect(spy).toHaveBeenCalledTimes(afterWarm)
+  })
+})
+
+// ─── The rune voices (`runeSfx/`) ───────────────────────────────────────────
+//
+// Each rune owns its attack / defence cues in its own file. The renderer calls
+// them with a PLACEMENT (`pan`, `level`, `side`), so every one must cope with
+// the whole range — and because a reveal fires every rune on the board inside
+// a second, each recipe is held to a node budget.
+
+/** Nodes one cue may build. A reveal is up to ~16 of these at once. */
+const NODE_BUDGET = 48
+
+describe('rune voices', () => {
+  it('each rune owns at least one cue, and no cue belongs to two runes or shadows a base cue', async () => {
+    const { RUNE_SFX_BY_RUNE } = await import('@/use/runeSfx')
+    const seen = new Map<string, string>()
+    for (const [rune, table] of Object.entries(RUNE_SFX_BY_RUNE)) {
+      const cues = Object.keys(table)
+      expect(cues.length, `${rune} has no voice`).toBeGreaterThan(0)
+      for (const c of cues) {
+        expect(seen.get(c), `${c} is claimed by ${seen.get(c)} and ${rune}`).toBeUndefined()
+        seen.set(c, rune)
+        expect(ALL_CUES as readonly string[], `${c} (${rune}) is not an FxSound`).toContain(c)
+      }
+    }
+  })
+
+  it('plays every rune cue at every level and pan without throwing, inside the node budget', async () => {
+    const audio = await import('@/use/useGameAudio')
+    const { RUNE_SFX_BY_RUNE } = await import('@/use/runeSfx')
+    audio.warmAudio()
+    for (const table of Object.values(RUNE_SFX_BY_RUNE)) {
+      for (const id of Object.keys(table) as FxSound[]) {
+        for (const level of [1, 2, 4, 8]) {
+          for (const pan of [-0.8, 0, 0.8]) {
+            for (const side of ['player', 'enemy'] as const) {
+              audio.__resetThrottles()
+              const before = nodesBuilt
+              expect(() => audio.playFx(id, 0.8, { pan, level, side })).not.toThrow()
+              const built = nodesBuilt - before
+              expect(built, `${id} Lv ${level} pan ${pan} built nothing`).toBeGreaterThan(0)
+              expect(built, `${id} Lv ${level} built ${built} nodes`).toBeLessThanOrEqual(NODE_BUDGET)
+            }
+          }
+        }
+      }
+    }
+  })
+
+  it('tells the bench tap about every cue asked for, before any gating', async () => {
+    const audio = await import('@/use/useGameAudio')
+    const heard: string[] = []
+    audio.__setSfxTap((id) => { heard.push(id) })
+    audio.__resetThrottles()
+    audio.playFx('slash', 1, { pan: 0.5, level: 2 })
+    audio.playFx('slash', 1, { pan: 0.5, level: 2 }) // throttled — still tapped
+    audio.__setSfxTap(null)
+    expect(heard).toEqual(['slash', 'slash'])
   })
 })

@@ -1,6 +1,10 @@
 <template lang="pug">
   Transition(name="splash-fade")
     div.splash-backdrop.no-os-ui(v-if="!backdropHidden")
+      //- The panning rune tile — the same layer the static splash draws, on
+      //- the same clock (see `adoptAnimationClock`), so it keeps drifting
+      //- through the handover instead of jumping back to where it started.
+      div.backdrop-tiles(:style="tileStyle" aria-hidden="true")
 
   //- The loading read-out only renders during the loading sequence. Once `done`
   //- flips true (progress = 100% OR the 8s fallback fires) it fades out and
@@ -127,6 +131,14 @@ const { t } = useI18n()
 const logoSrc = prependBaseUrl('images/logo/wordmark.webp')
 
 /**
+ * The backdrop's rune tile, named the same way and for the same reason: the
+ * static splash has already fetched and decoded it, so the layer that takes
+ * over is drawn from the cache in its first frame. Generated from the game's
+ * stones by `pnpm art:splash-tile`.
+ */
+const tileStyle = { backgroundImage: `url(${prependBaseUrl('images/bg/splash-tile.svg')})` }
+
+/**
  * The painted Keeper, or null while the drawing stands in.
  *
  * When the build shipped art, the static splash already carries the painting
@@ -171,17 +183,28 @@ let settleFallbackId: number | null = null
  * The two are the same picture at the same size, and for the 400 ms the static
  * splash spends fading out they are both on screen — so if their animations
  * are at different points the crossfade shows the pebble breathing against
- * itself. `getAnimations()` hands back the live CSS animations and
- * `currentTime` is writable, so the new one is set to wherever the old one had
- * got to. Wrapped because a stripped-down portal webview can lack the API.
+ * itself. `getAnimations()` hands back the live CSS animations, paired here by
+ * index — so both sides must list their animations in the same order.
+ *
+ * The new one takes the old one's START TIME, not its current time. An
+ * animation created this frame is still play-pending, and a current time set on
+ * it is only held until it actually starts — which, with the game booting on
+ * the main thread, was measured at 700 ms later on a phone profile, by when the
+ * static splash had moved on and the drifting tile showed doubled through the
+ * crossfade. A shared start time puts both on the document timeline's one clock
+ * whatever either is waiting for; the current time is only the fallback for an
+ * old animation that has not started either. Wrapped because a stripped-down
+ * portal webview can lack the API.
  */
 const adoptAnimationClock = (from: Element | null | undefined, to: Element | null): void => {
   if (!from || !to || typeof from.getAnimations !== 'function') return
   const was = from.getAnimations()
   const now = to.getAnimations()
   for (let i = 0; i < Math.min(was.length, now.length); i++) {
+    const start = was[i]?.startTime
     const t = was[i]?.currentTime
-    if (t !== null && t !== undefined) now[i]!.currentTime = t
+    if (start !== null && start !== undefined) now[i]!.startTime = start
+    else if (t !== null && t !== undefined) now[i]!.currentTime = t
   }
 }
 
@@ -191,6 +214,12 @@ onMounted(() => {
     adoptAnimationClock(
       staticSplash.querySelector('.splash-hero'),
       document.querySelector('.greet-hero')
+    )
+    // The tile, too: a layer starting its drift from zero would show the
+    // pattern doubled and sliding against itself through the crossfade.
+    adoptAnimationClock(
+      staticSplash.querySelector('.splash-tiles'),
+      document.querySelector('.backdrop-tiles')
     )
     staticSplash.classList.add('hidden')
     setTimeout(() => staticSplash.remove(), 500)
@@ -425,13 +454,53 @@ $greet-w: clamp(200px, 58vmin, 340px)
   .greet-hero, .greet-glow, .greet-eye, .greet-mote
     animation: none
 
+// --- The backdrop -----------------------------------------------------------
+//
+// The same ground, tile, haze and drift as the inline splash in index.html —
+// read the long comment on `.splash-tiles` there. Change one, change both
+// (`tests/ui/staticSplash.test.ts` holds them to it).
+
+$tile: 320px
+
 .splash-backdrop
   position: fixed
   inset: 0
   z-index: 150
-  // Matches the inline splash in index.html AND the arena's night sky, so the
-  // handover is one continuous colour with no flash between the three.
-  background: radial-gradient(circle at 50% 38%, #1b2b52 0%, #0a1224 70%)
+  overflow: hidden
+  background: radial-gradient(circle at 50% 40%, #2a3474 0%, #161d4c 45%, #0c1030 88%)
+
+  // The haze behind the card, over the tiles.
+  &::after
+    content: ''
+    position: absolute
+    inset: 0
+    pointer-events: none
+    background: radial-gradient(ellipse 60% 44% at 50% 45%, rgba(34, 42, 98, 0.72) 0%, rgba(30, 38, 90, 0.35) 55%, rgba(22, 29, 76, 0) 100%)
+
+.backdrop-tiles
+  position: absolute
+  top: -$tile
+  left: -$tile
+  right: 0
+  bottom: 0
+  background-position: 0 0
+  background-size: $tile $tile
+  background-repeat: repeat
+  opacity: 0.15
+  will-change: transform
+  animation: backdrop-tiles-in 0.6s ease-out both, backdrop-tiles-pan 32s linear infinite
+
+@keyframes backdrop-tiles-in
+  from
+    opacity: 0
+
+@keyframes backdrop-tiles-pan
+  to
+    transform: translate3d($tile, $tile, 0)
+
+@media (prefers-reduced-motion: reduce)
+  .backdrop-tiles
+    animation: none
 
 .splash-fade-leave-active
   transition: opacity 0.4s ease-out

@@ -167,6 +167,28 @@ export const unlockRune = (type: RuneType): boolean => {
 }
 
 /**
+ * Coins → a rune the campaign has not handed over yet.
+ *
+ * The shop's early-unlock offer used to be a rewarded video and nothing else,
+ * which meant that on any build where no provider resolves — local dev, itch,
+ * plain web, or a portal whose ad SDK simply failed to load — the ad gate's
+ * "no video to play, so grant it" rule handed a campaign-gated rune over for
+ * one button press. A price is the honest form of that offer: the rune stays
+ * reachable everywhere, and nowhere is it free.
+ *
+ * Spends FIRST and unlocks only if the wallet paid, so a refused purchase
+ * cannot leak the rune; flushed like every other hard checkpoint.
+ */
+export const buyRuneUnlock = (type: RuneType, price: number): boolean => {
+  if (!isRuneType(type) || unlockedRunes.value.includes(type)) return false
+  if (!Number.isFinite(price) || price < 0) return false
+  if (!useEconomy().spendCoins(price)) return false
+  unlockRune(type)
+  void flushSaveNow()
+  return true
+}
+
+/**
  * Record a cleared node: pays the chest (once), unlocks, advances `currentNode`.
  *
  * The chest is paid ONLY the first time the node is beaten — `first` — and that

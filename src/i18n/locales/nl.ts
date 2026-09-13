@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skins',
       'runes': 'Krachtrunen',
+      'ranks': 'Rangen',
     },
     'title': 'Winkel',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Munten',
   'cancel': 'Annuleren',
   'close': 'Sluiten',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Level {c}-{n}',
     'conquest': 'Verovering',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Nog {n}',
     'turn': 'Beurt {n}',
     'you': 'Jij',
     'enemy': 'Vijand',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Houd 8 vakken om te winnen',
       'desktop': 'Houd 8 vakken om te winnen'
     },
+    'conquestClaim': {
+      'touch': 'Elke rune die je plaatst neemt zijn vakje',
+      'desktop': 'Elke rune die je plaatst neemt zijn vakje'
+    },
     'siege': {
       'touch': 'Omsingeld! Breek uit en houd 8 vakken',
       'desktop': 'Omsingeld! Breek uit en houd 8 vakken'
+    },
+    'yourMove': {
+      'touch': 'Jouw beurt — plaats een rune',
+      'desktop': 'Jouw beurt — plaats een rune'
+    },
+    'busyPlaced': {
+      'touch': 'Eén rune per beurt',
+      'desktop': 'Eén rune per beurt'
+    },
+    'busyPhase': {
+      'touch': 'Wacht — de runen vuren',
+      'desktop': 'Wacht — de runen vuren'
+    },
+    'busyTile': {
+      'touch': 'Dat vak neemt hem niet',
+      'desktop': 'Dat vak neemt hem niet'
     },
     'mage': {
       'touch': 'De bol schiet diagonaal door twee vakjes',
       'desktop': 'De bol schiet diagonaal door twee vakjes'
     },
     'defense': {
-      'touch': 'Het schild blokkeert pijlen en stralen',
-      'desktop': 'Het schild blokkeert pijlen en stralen'
+      'touch': 'Je schild stopt VIJANDELIJKE pijlen en stralen',
+      'desktop': 'Je schild stopt VIJANDELIJKE pijlen en stralen'
     },
     'support': {
       'touch': 'Het kruis geneest en versterkt zijn buren',
@@ -169,13 +192,15 @@ export default {
     'clash': 'BOTSING!',
     'victory': 'OVERWINNING!',
     'defeat': 'VERLOREN',
-    'reveal': 'ONTHULLING',
+    'reveal': 'VUUR',
     'suddenDeath': 'SUDDEN DEATH',
     'turn': 'BEURT {n}',
     'you': 'JIJ',
     'foe': 'VIJAND',
     'reroll': 'HERPAK',
-    'lastTurn': 'LAATSTE BEURT'
+    'lastTurn': 'LAATSTE BEURT',
+    'firesIn': 'VUURT OVER',
+    'yourTurn': 'JOUW BEURT'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Beslist op gehouden vakken',
       'suddenDeath': 'Sudden death',
       'siegeHeld': 'Je hield stand',
-      'siegeBroken': 'Het beleg brak je'
+      'siegeBroken': 'Het beleg brak je',
+      'crumbled': 'De oefenpoppen vielen uiteen'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Rangen',
     'title': 'Runerangen',
     'tagline': 'Elke rang geeft +{n} max LP — voor elke rune gelijk.',
     'rank': 'Rang {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Runensmederij — aan het smeden',
     'full': 'Runensmederij — vol',
     'perHour': '+{n} / u'
+  },
+  'skinChest': {
+    'ready': 'Gratis skin klaar — tik om te openen',
+    'waiting': 'Gratis skin over {time}',
+    'take': 'Pak'
   },
 
   'leaderboard': {

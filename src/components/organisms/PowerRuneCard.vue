@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FButton from '@/components/atoms/FButton.vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
@@ -10,7 +10,7 @@ import usePowerRunes, { POWER_RUNE_LEVEL, POWER_RUNE_PRICE } from '@/use/usePowe
 import useSkins from '@/use/useSkins'
 import { isNative } from '@/use/useUser'
 import { coins } from '@/use/useEconomy'
-import { adInFlight, canOfferReward } from '@/use/useAdGate'
+import { adInFlight, canOfferVideo } from '@/use/useAdGate'
 import { playFx } from '@/use/useGameAudio'
 
 /**
@@ -20,8 +20,8 @@ import { playFx } from '@/use/useGameAudio'
  * card shows exactly what will hit the board, inside an aura in the rune's
  * colour (gradients and a turning ring — no blur filters, this grid can hold
  * five of them on a phone). Under it: the name, what the boost buys, the
- * numbers it lands with, and the two ways to pay — coins, or one video while
- * the ads layer says one can play. An "armed ×N" badge says how many are in
+ * numbers it lands with, and the two ways to pay — coins, or one video where
+ * a video can really play (`canOfferVideo`). An "armed ×N" badge says how many are in
  * stock; the first placement of this type in the next match spends one.
  */
 interface Props {
@@ -45,8 +45,28 @@ const style = computed(() => ({ '--glow': RUNES[props.type].color }))
 /** A video is on its way for this card; both buttons wait for it. */
 const busy = ref(false)
 
+/**
+ * Set for one beat after a rune is armed, so the card can CELEBRATE it.
+ *
+ * Without this the only thing a purchase changed was a small badge appearing
+ * at the stone's shoulder: the price stayed, the "N more coins" stayed, and
+ * both testers in the shop audit — one of them six years old — came away
+ * unsure whether the tap had done anything. The rank card has bounced on a
+ * purchase all along; this is that same beat, on the same 700 ms clock.
+ */
+const landed = ref(false)
+let landedTimer: ReturnType<typeof setTimeout> | null = null
+
+const celebrate = (): void => {
+  playFx('skinBuy')
+  landed.value = true
+  if (landedTimer !== null) clearTimeout(landedTimer)
+  landedTimer = setTimeout(() => { landed.value = false; landedTimer = null }, 700)
+}
+onBeforeUnmount(() => { if (landedTimer !== null) clearTimeout(landedTimer) })
+
 const onBuy = (): void => {
-  if (buyPowerRune(props.type)) playFx('skinBuy')
+  if (buyPowerRune(props.type)) celebrate()
   else playFx('uiReject')
 }
 
@@ -54,7 +74,7 @@ const onWatch = async (): Promise<void> => {
   if (busy.value || adInFlight.value) return
   busy.value = true
   try {
-    if (await earnPowerRuneByAd(props.type)) playFx('skinBuy')
+    if (await earnPowerRuneByAd(props.type)) celebrate()
   } finally {
     busy.value = false
   }
@@ -62,7 +82,7 @@ const onWatch = async (): Promise<void> => {
 </script>
 
 <template lang="pug">
-  article.prc(:style="style" :class="{ 'is-armed': armed > 0 }" :data-type="type")
+  article.prc(:style="style" :class="{ 'is-armed': armed > 0, 'is-landed': landed }" :data-type="type")
     div.prc__stage
       span.prc__aura(aria-hidden="true")
       span.prc__ring(aria-hidden="true")
@@ -80,16 +100,25 @@ const onWatch = async (): Promise<void> => {
           span.prc__stat-key {{ t('runes.atk') }}
           span.prc__stat-val {{ stats.atk }}
       div.prc__pay
-        FButton.prc__buy(
-          size="sm"
-          type="warning"
-          :is-disabled="!canAffordPowerRune || busy"
-          @click="onBuy"
-        )
-          IconCoin.prc__coin
-          span {{ POWER_RUNE_PRICE }}
+        //- The price and what is still missing from it are ONE thing. They
+        //- were not: the shortfall sat on its own line under the whole row,
+        //- directly beneath the video button, and a blind tester read
+        //- "130 more coins" as what the video would PAY him (2026-09-11). It
+        //- belongs to the coin button, so it lives with the coin button.
+        div.prc__buycol
+          FButton.prc__buy(
+            size="sm"
+            type="warning"
+            :is-disabled="!canAffordPowerRune || busy"
+            @click="onBuy"
+          )
+            IconCoin.prc__coin
+            span {{ POWER_RUNE_PRICE }}
+          span.prc__need(v-if="!canAffordPowerRune") {{ t('skins.needMore', { n: shortfall }) }}
+        //- Only where a video can really play; elsewhere the coin price above
+        //- is the whole offer (`canOfferVideo`).
         FButton.prc__ad(
-          v-if="canOfferReward"
+          v-if="canOfferVideo"
           :aria-label="t('shop.watchAd')"
           size="sm"
           type="secondary"
@@ -100,7 +129,6 @@ const onWatch = async (): Promise<void> => {
           //- Less text, same offer — see `RuneRankCard`'s upgrade switch, which
           //- set this style after "Werbung ansehen" tore a card open.
           span.prc__adword(v-if="showAdWord") {{ t('shop.watchAd') }}
-      span.prc__need(v-if="!canAffordPowerRune") {{ t('skins.needMore', { n: shortfall }) }}
 </template>
 
 <style scoped lang="sass">
@@ -121,6 +149,11 @@ const onWatch = async (): Promise<void> => {
 
   &.is-armed
     border-color: color-mix(in srgb, var(--glow) 75%, #fff)
+
+  // The beat after a purchase: the same bounce the rank card uses, so arming a
+  // rune and taking a rank feel like one shop.
+  &.is-landed
+    animation: prc-land 0.7s ease-out
 
 // ─── The stage: aura, ring, stone ───────────────────────────────────────────
 
@@ -242,6 +275,12 @@ const onWatch = async (): Promise<void> => {
   width: 1.3em
   height: 1em
 
+.prc__buycol
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 0.1rem
+
 .prc__need
   color: #ff9a8f
   font-weight: 900
@@ -260,7 +299,38 @@ const onWatch = async (): Promise<void> => {
   to
     rotate: 360deg
 
+@keyframes prc-land
+  0%
+    scale: 1
+  35%
+    scale: 1.045
+  100%
+    scale: 1
+
 @media (prefers-reduced-motion: reduce)
-  .prc__aura, .prc__ring
+  .prc__aura, .prc__ring, .prc.is-landed
     animation: none
+// ─── Landscape phone: the card has to fit the frame, not scroll out of it ────
+//
+// A 844x390 screen leaves the modal ~354 px of content, and this card stood
+// 275 px tall with its shortfall line 11 px past the fold — the price was on
+// screen and what it still needed was not. Same treatment the skins hero got:
+// the picture gives up the room, the words keep theirs.
+@media (orientation: landscape) and (max-height: 30rem)
+  .prc
+    gap: 0.2rem
+    padding: 0.4rem 0.45rem
+
+  .prc__stage
+    width: clamp(2.6rem, 12vh, 3.8rem)
+
+  .prc__boost
+    font-size: clamp(0.5rem, 1.8vh, 0.66rem)
+    line-height: 1.2
+
+  .prc__name
+    font-size: clamp(0.62rem, 2.2vh, 0.85rem)
+
+  .prc__body
+    gap: 0.12rem
 </style>

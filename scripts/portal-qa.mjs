@@ -548,8 +548,21 @@ try {
   }
 
   // ── Pause: the control case FIRST, or the rest means nothing ─────────────
+  //
+  // And the control case only means something if the observable EXISTS. This
+  // harness was carried over from a donor project whose progress rail was
+  // `.run-hud__rail-fill`; that selector matches nothing here, so
+  // `qa.progress()` returned null and every check below compared `null` to
+  // `null` and PASSED — the playbook's trap 3, testing nothing, in the file
+  // written to avoid exactly that. Fail loudly instead of quietly (found by
+  // the Poki release audit, 2026-09-12).
   await steer()
   await sleep(800)
+  const probe = await ev('window.__qa.progress()')
+  if (probe === null || probe === undefined || probe === '') {
+    check('progress observable is wired to THIS game', false,
+      'qa.progress() returned nothing — re-point it at a value that changes only while the simulation advances')
+  }
   const before = await ev('window.__qa.progress()')
   await sleep(1200)
   const moving = await ev('window.__qa.progress()')

@@ -11,7 +11,8 @@ import useRuneRanks, { freeRankAvailable, freeRankRune } from '@/use/useRuneRank
 import useSkins from '@/use/useSkins'
 import { nextRuneUnlock, unlockedRunes } from '@/use/useCampaign'
 import { RUNE_UNLOCK_NODES, chapterOf, indexInChapter } from '@/game/campaign'
-import { adInFlight, canOfferReward } from '@/use/useAdGate'
+import { adInFlight, canOfferVideo } from '@/use/useAdGate'
+import { coins } from '@/use/useEconomy'
 import { isNative } from '@/use/useUser'
 import { playFx } from '@/use/useGameAudio'
 
@@ -23,10 +24,16 @@ import { playFx } from '@/use/useGameAudio'
  * player meets a wall of numbers if you let it.
  *
  * Everything that used to sit here — "Rank 2/5" under the meter, the current
- * hit points, the "+2 HP" already earned, the "Next: +1 HP", the
- * coins-still-needed line — either repeated something the stars already say,
- * or restated a rule that is the SAME for every rune. A rule that never varies
- * belongs in the tab's header once, not on nine cards.
+ * hit points, the "+2 HP" already earned, the "Next: +1 HP" — either repeated
+ * something the stars already say, or restated a rule that is the SAME for
+ * every rune. A rule that never varies belongs in the tab's header once, not
+ * on nine cards.
+ *
+ * The coins-still-needed line was cut with them and has been PUT BACK, because
+ * it is not one of those: the next rank costs 70 on one card and 560 on
+ * another, so the gap to it is this card's own number. The power-rune and skin
+ * cards had kept printing it all along, which left the ladder as the one tab
+ * that asked the player to do the subtraction.
  *
  * The stars carry the progress: five of them, lit as they are earned, a shape
  * that reads as "two of five" without reading a number at all. The number
@@ -34,14 +41,19 @@ import { playFx } from '@/use/useGameAudio'
  *
  * ── The three ways to pay ──
  *
- *   COINS  — the price, and nothing else. A wallet that is short leaves the
- *            button disabled, which says "not yet" without a sentence.
- *   VIDEO  — the other half of the same switch, only while the ads layer says
- *            one can actually play (`canOfferReward`), and ALWAYS behind the
- *            film mark. It carries no sentence either: "Watch ad" is two short
- *            words in English and "Werbung ansehen" in German, which pushed
- *            this button clean out of its card. Only a NATIVE build, which has
- *            the width, spells the words out beside the frame.
+ *   COINS  — the coin and the price, and nothing else. A wallet that is short
+ *            leaves the button disabled, which says "not yet" without a
+ *            sentence. Where no video can play it is the whole control.
+ *   VIDEO  — the other half of the same switch, only where a video can
+ *            actually play (`canOfferVideo`: a real ad provider AND a ready
+ *            slot), and ALWAYS behind the film mark. On local dev and the
+ *            CrazyGames pre-release build there is no such half at all: it
+ *            used to stand there showing only an arrow, because the film mark
+ *            rightly refuses to promise a video that cannot play.
+ *            It carries no sentence either: "Watch ad" is two short words in
+ *            English and "Werbung ansehen" in German, which pushed this button
+ *            clean out of its card. Only a NATIVE build, which has the width,
+ *            spells the words out beside the frame.
  *   FREE   — when this is the rune the rotating gift has landed on. No price
  *            and NO film mark: it costs nothing, and an ad icon on a free
  *            button would be a lie. The gift's countdown lives on the tab's
@@ -80,6 +92,13 @@ const owned = computed(() => unlockedRunes.value.includes(props.type))
 
 const price = computed(() => nextRankPrice(props.type))
 const affordable = computed(() => canAffordRank(props.type))
+/**
+ * What the wallet is still short. The power-rune and skin cards have always
+ * printed this under a disabled price; the ladder made the player do the
+ * subtraction themselves, one tab away from where the same feature is spelled
+ * out — the single most-repeated note in the shop audit.
+ */
+const shortfall = computed(() => Math.max(0, (price.value ?? 0) - coins.value))
 
 /** `--rank-frac` drives the halo: 0 on an untouched rune, 1 on a maxed one. */
 const style = computed(() => ({
@@ -215,20 +234,26 @@ const onFree = (): void => {
         //- the same thing — the half you press only says which currency.
         //- Neither half carries a sentence: "Watch ad" is two words in English
         //- and "Werbung ansehen" in German, which is what tore this card open.
-        div.rrc__pay.rrc__switch(v-else)
-          FButton.rrc__buy(
-            size="sm"
-            type="warning"
-            :is-disabled="!affordable || busy"
-            :aria-label="t('ranks.upgrade')"
-            @click="onBuy"
-          )
-            span.rrc__price {{ price }}
-            IconCoin.rrc__coin
-            //- First thing to go on a narrow rung — see the container query.
-            GameIcon.rrc__up.is-buy(name="up")
+        div.rrc__pay.rrc__switch(v-else :class="{ 'has-video': canOfferVideo }")
+          //- The price and what is still missing from it are ONE block, the
+          //- shape the power-rune and skin cards use: a shortfall under the
+          //- whole row would sit beneath the VIDEO half too, and a blind
+          //- tester read exactly that as what the video would pay out.
+          div.rrc__buycol
+            FButton.rrc__buy(
+              size="sm"
+              type="warning"
+              :is-disabled="!affordable || busy"
+              :aria-label="t('ranks.upgrade')"
+              @click="onBuy"
+            )
+              IconCoin.rrc__coin
+              span.rrc__price {{ price }}
+              //- First thing to go on a narrow rung — see the container queries.
+              GameIcon.rrc__up.is-buy(name="up")
+            span.rrc__need(v-if="!affordable") {{ t('skins.needMore', { n: shortfall }) }}
           FButton.rrc__ad(
-            v-if="canOfferReward"
+            v-if="canOfferVideo"
             size="sm"
             type="secondary"
             :is-disabled="busy || adInFlight"
@@ -306,7 +331,10 @@ $tap-target: 2.75rem
 .rrc__ribbon
   position: absolute
   left: 50%
-  top: -0.55rem
+  // Anchored by its FOOT, a little over the card's top edge: a ribbon that
+  // needs a second line then grows upward, into the gap the grid leaves for
+  // it, instead of down over the stone.
+  bottom: calc(100% - 0.55rem)
   translate: -50% 0
   z-index: 2
   padding: 0.1em 0.7em
@@ -316,8 +344,19 @@ $tap-target: 2.75rem
   font-weight: 900
   text-transform: uppercase
   letter-spacing: 0.04em
-  white-space: nowrap
-  font-size: clamp(0.42rem, 9cqw, 0.56rem)
+  // Sized and capped against the CARD, not against the word: Russian's
+  // "Бесплатное улучшение!" is 21 characters to English's 13 and ran past both
+  // edges of the rung it belongs to. The ribbon may hang a little over the
+  // card's corners — that is the look — but never into its neighbour.
+  //
+  // It WRAPS rather than truncating. Capping it alone left the narrowest
+  // phone reading "БЕСПЛАТНОЕ УЛУЧШЕ…", and this ribbon exists to advertise a
+  // free gift — the one label in the shop that must not lose its own noun.
+  max-width: 112%
+  white-space: normal
+  text-wrap: balance
+  line-height: 1.12
+  font-size: clamp(0.36rem, 7cqw, 0.56rem)
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45)
   animation: rrc-bob 1.8s ease-in-out infinite
 
@@ -404,7 +443,10 @@ $tap-target: 2.75rem
 // needs and the video is a square beside it.
 .rrc__pay
   display: flex
-  align-items: stretch
+  // The halves line up at their TOPS, not by stretching: the coin half carries
+  // a shortfall line under its button, and stretching would have dragged the
+  // video half down to match a line that is not its own.
+  align-items: flex-start
   justify-content: center
   gap: clamp(0.15rem, 2cqw, 0.3rem)
   width: 100%
@@ -414,30 +456,73 @@ $tap-target: 2.75rem
 // The upgrade SWITCH: two halves of one control. They sit flush, share a
 // height, and each ends in the same up-arrow — the choice is only which
 // currency, so nothing else about them should differ.
+//
+// The inner corners are squared on the parts `FButton` actually PAINTS — its
+// body and its depth plate. They used to be squared on the button's root
+// element, which draws nothing, so the two halves came out as two whole pills
+// butting into each other. With no video on offer the coin half is the whole
+// control and keeps every corner.
 .rrc__switch
   gap: 0
 
-  .rrc__buy
-    border-top-right-radius: 0
-    border-bottom-right-radius: 0
+  &.has-video
+    .rrc__buy :deep(.f-button__body),
+    .rrc__buy :deep(.f-button__shadow)
+      border-top-right-radius: 0
+      border-bottom-right-radius: 0
 
-  .rrc__ad
-    border-top-left-radius: 0
-    border-bottom-left-radius: 0
+    .rrc__ad :deep(.f-button__body),
+    .rrc__ad :deep(.f-button__shadow)
+      border-top-left-radius: 0
+      border-bottom-left-radius: 0
+
     // A hairline so the two halves read as a switch rather than one wide button.
-    box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.45)
+    .rrc__ad :deep(.f-button__body)
+      box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.45)
 
-  // …and when there is no video to offer, the coin half is the whole control.
-  .rrc__buy:only-child
-    border-radius: inherit
+// The coin half may grow but never shrinks under its own content: the price is
+// the one thing on this card that must be read whole. It used to be free to
+// shrink (`flex: 1 1 auto; min-width: 0`), and beside a video half it did —
+// to 46 px, with "140" clipped at both ends under the coin.
+.rrc__buycol
+  display: flex
+  flex-direction: column
+  align-items: stretch
+  flex: 1 0 auto
+  min-width: 0
 
-.rrc__buy,
+.rrc__buycol .rrc__buy
+  width: 100%
+
+// Small, quiet, and the same sentence the other two tabs print.
+.rrc__need
+  color: #ff9a8f
+  font-weight: 900
+  text-align: center
+  line-height: 1.15
+  font-size: clamp(0.4rem, 8cqw, 0.58rem)
+  text-shadow: 1px 1px 0 #000
+
 .rrc__free
   flex: 1 1 auto
   min-width: 0
 
 .rrc__ad
   flex: 0 0 auto
+
+// Two halves share the row, so their words come down to the card's size. The
+// size rule on `.f-button__body` below never reached them: `FButton` sets the TEXT
+// span's own size from its variable, so the price stayed at full button size
+// however narrow the card was — which is what pushed it out of its half. Only
+// here, with a video beside it: a coin half that is the whole row keeps the
+// button's own, bigger price. Capped at that same size (`--fbtn-font`, set on
+// the button), so a roomy card never gets a price bigger than a normal button.
+// …and the gift button, for the same reason in a different language: "Free" is
+// four characters in English and "Бесплатно" is nine, which ran clean out of
+// the green pill on a 320 px phone. Same rule, same cap.
+.rrc__switch.has-video :deep(.f-button__text),
+.rrc__free :deep(.f-button__text)
+  font-size: clamp(0.46rem, 11cqw, var(--fbtn-font))
 
 // A rung is only ~110 px wide on a packed grid, so the switch's own text and
 // padding are cut to fit rather than left to wrap — a wrapped button grows the
@@ -522,6 +607,30 @@ $tap-target: 2.75rem
 @container (max-width: 8.2rem)
   .rrc__up.is-buy
     display: none
+
+// Narrower still — a 320 px phone packing the grid three across — and the two
+// halves cannot BOTH keep a 44 px target and a whole three-digit price side by
+// side. They stack rather than clip: the coin half on top, the video half under
+// it, each the full width of the card. A taller card beats a price nobody can
+// read. (The query measures the card's CONTENT box: 5.6rem is a ~106 px card.)
+@container (max-width: 5.6rem)
+  .rrc__switch.has-video
+    flex-direction: column
+    gap: 0.35rem
+    // Back to stretch for the stacked case. The row above aligns to the TOP so
+    // the shortfall under the coin button cannot drag the video half down with
+    // it — but in a column that same rule leaves both halves at their content
+    // width, floating against the left edge of the card instead of spanning it.
+    align-items: stretch
+
+    .rrc__buy :deep(.f-button__body),
+    .rrc__buy :deep(.f-button__shadow),
+    .rrc__ad :deep(.f-button__body),
+    .rrc__ad :deep(.f-button__shadow)
+      border-radius: var(--fbtn-radius)
+
+    .rrc__ad :deep(.f-button__body)
+      box-shadow: none
 
 @keyframes rrc-land
   0%

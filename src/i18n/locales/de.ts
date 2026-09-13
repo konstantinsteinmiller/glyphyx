@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skins',
       'runes': 'Kraftrunen',
+      'ranks': 'Ränge',
     },
     'title': 'Shop',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Münzen',
   'cancel': 'Abbrechen',
   'close': 'Schließen',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Level {c}-{n}',
     'conquest': 'Eroberung',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} übrig',
     'turn': 'Zug {n}',
     'you': 'Du',
     'enemy': 'Gegner',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Halte 8 Felder, um zu gewinnen',
       'desktop': 'Halte 8 Felder, um zu gewinnen'
     },
+    'conquestClaim': {
+      'touch': 'Jede Rune, die du setzt, nimmt ihr Feld',
+      'desktop': 'Jede Rune, die du setzt, nimmt ihr Feld'
+    },
     'siege': {
       'touch': 'Umzingelt! Brich aus und halte 8 Felder',
       'desktop': 'Umzingelt! Brich aus und halte 8 Felder'
+    },
+    'yourMove': {
+      'touch': 'Du bist dran — setze eine Rune',
+      'desktop': 'Du bist dran — setze eine Rune'
+    },
+    'busyPlaced': {
+      'touch': 'Eine Rune pro Zug',
+      'desktop': 'Eine Rune pro Zug'
+    },
+    'busyPhase': {
+      'touch': 'Warte — die Runen feuern',
+      'desktop': 'Warte — die Runen feuern'
+    },
+    'busyTile': {
+      'touch': 'Dieses Feld nimmt sie nicht',
+      'desktop': 'Dieses Feld nimmt sie nicht'
     },
     'mage': {
       'touch': 'Die Kugel feuert diagonal durch zwei Felder',
       'desktop': 'Die Kugel feuert diagonal durch zwei Felder'
     },
     'defense': {
-      'touch': 'Der Schild blockt Pfeile und Strahlen',
-      'desktop': 'Der Schild blockt Pfeile und Strahlen'
+      'touch': 'Dein Schild stoppt GEGNERISCHE Pfeile und Strahlen',
+      'desktop': 'Dein Schild stoppt GEGNERISCHE Pfeile und Strahlen'
     },
     'support': {
       'touch': 'Das Kreuz heilt und stärkt seine Nachbarn',
@@ -169,13 +192,15 @@ export default {
     'clash': 'CLASH!',
     'victory': 'SIEG!',
     'defeat': 'NIEDERLAGE',
-    'reveal': 'AUFDECKEN',
+    'reveal': 'FEUER',
     'suddenDeath': 'SUDDEN DEATH',
     'turn': 'ZUG {n}',
     'you': 'DU',
     'foe': 'FEIND',
     'reroll': 'NEU',
-    'lastTurn': 'LETZTER ZUG'
+    'lastTurn': 'LETZTER ZUG',
+    'firesIn': 'FEUERT IN',
+    'yourTurn': 'DU BIST DRAN'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Entschieden nach gehaltenen Feldern',
       'suddenDeath': 'Sudden Death',
       'siegeHeld': 'Du hast die Stellung gehalten',
-      'siegeBroken': 'Die Belagerung hat dich gebrochen'
+      'siegeBroken': 'Die Belagerung hat dich gebrochen',
+      'crumbled': 'Die Übungspuppen zerfielen'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Ränge',
     'title': 'Runenränge',
     'tagline': 'Jeder Rang gibt +{n} max. LP — für jede Rune gleich.',
     'rank': 'Rang {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Runenschmiede — schmiedet',
     'full': 'Runenschmiede — voll',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Gratis-Skin bereit — zum Öffnen tippen',
+    'waiting': 'Gratis-Skin in {time}',
+    'take': 'Holen'
   },
 
   'leaderboard': {

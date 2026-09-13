@@ -4,6 +4,8 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import en from '@/i18n/locales/en'
 import FReward from '@/components/atoms/FReward.vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 /**
  * ─── The reward overlay's frame ─────────────────────────────────────────────
@@ -197,5 +199,52 @@ describe('the reward frame', () => {
     expect(wrapper.find('.continue-hint').exists()).toBe(false)
     await wrapper.setProps({ showContinue: true })
     expect(wrapper.find('.continue-hint').exists()).toBe(true)
+  })
+})
+
+/**
+ * ─── The prize is never cut off ─────────────────────────────────────────────
+ *
+ * jsdom has no layout, so this is a SOURCE scan — and the bug it guards is
+ * precisely the one a layout-free check missed the first time round.
+ *
+ * `fit` mode scales the prize down to the window, and the scale is written by
+ * `measureFit` AFTER the loot has been laid out. For the frame between the card
+ * mounting and the ResizeObserver answering, the content sits at scale 1 and is
+ * taller than its box. While that box clipped, the overflow came off the
+ * bottom: measured on the shipped build at 294px of box holding 332px of card,
+ * cutting 26px off the rune's description — the single line that says what the
+ * rune DOES, at the one moment a player is reading it. Two blind testers hit it
+ * on every unlock they saw; one zoomed in to check it was not his screen
+ * (2026-09-12).
+ *
+ * The first fix clamped the description to two lines and was verified with
+ * `scrollHeight > clientHeight` on the description itself — which cannot see an
+ * ANCESTOR clipping it, so it passed while the bug was still there. Hence a
+ * test against the rule that actually did the clipping.
+ */
+describe("the fitted body's overflow", () => {
+  const source = readFileSync(resolve(__dirname, '../../src/components/atoms/FReward.vue'), 'utf8')
+  /** The `&.is-fit` block inside `.reward-body`, up to the next top-level rule. */
+  const fitBlock = (): string => {
+    const at = source.indexOf('  &.is-fit')
+    expect(at).toBeGreaterThan(-1)
+    const rest = source.slice(at + 10)
+    const end = rest.search(/\n[.&@]/)
+    return rest.slice(0, end === -1 ? undefined : end)
+  }
+
+  it('does not clip the content it is about to make room for', () => {
+    expect(fitBlock()).not.toMatch(/overflow:\s*hidden/)
+  })
+
+  it('still centres what it is fitting', () => {
+    expect(fitBlock()).toMatch(/justify-content:\s*center/)
+  })
+
+  it('keeps the scrolling body for the screens that need it', () => {
+    // The result screen is the DEFAULT mode and genuinely has more to say than
+    // a short window holds. Only `fit` gave up its clip.
+    expect(source).toMatch(/overflow-y:\s*auto/)
   })
 })

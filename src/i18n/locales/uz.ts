@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skinlar',
       'runes': 'Kuch runalari',
+      'ranks': 'Martaba',
     },
     'title': 'Do\'kon',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Tangalar',
   'cancel': 'Bekor qilish',
   'close': 'Yopish',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': '{c}-{n} daraja',
     'conquest': 'Istilo',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} qoldi',
     'turn': '{n}-yurish',
     'you': 'Siz',
     'enemy': 'Dushman',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Gʻalaba uchun 8 katakni ushlab turing',
       'desktop': 'Gʻalaba uchun 8 katakni ushlab turing'
     },
+    'conquestClaim': {
+      'touch': "Qo'ygan har bir runa o'z katagini egallaydi",
+      'desktop': "Qo'ygan har bir runa o'z katagini egallaydi"
+    },
     'siege': {
       'touch': 'Qurshovdasiz! Yorib chiqing va 8 katakni ushlab turing',
       'desktop': 'Qurshovdasiz! Yorib chiqing va 8 katakni ushlab turing'
+    },
+    'yourMove': {
+      'touch': "Sizning navbatingiz — runa qo'ying",
+      'desktop': "Sizning navbatingiz — runa qo'ying"
+    },
+    'busyPlaced': {
+      'touch': 'Har yurishda bitta runa',
+      'desktop': 'Har yurishda bitta runa'
+    },
+    'busyPhase': {
+      'touch': 'Kuting — runalar zarba bermoqda',
+      'desktop': 'Kuting — runalar zarba bermoqda'
+    },
+    'busyTile': {
+      'touch': 'Bu katak uni qabul qilmaydi',
+      'desktop': 'Bu katak uni qabul qilmaydi'
     },
     'mage': {
       'touch': "Shar diagonal bo'ylab ikki katak orqali nur otadi",
       'desktop': "Shar diagonal bo'ylab ikki katak orqali nur otadi"
     },
     'defense': {
-      'touch': "Qalqon o'q va nurlarni to'sadi",
-      'desktop': "Qalqon o'q va nurlarni to'sadi"
+      'touch': "Qalqoning DUSHMAN o'qlari va nurlarini to'xtatadi",
+      'desktop': "Qalqoning DUSHMAN o'qlari va nurlarini to'xtatadi"
     },
     'support': {
       'touch': "Xoch qo'shnilarini davolaydi va kuchaytiradi",
@@ -169,13 +192,15 @@ export default {
     'clash': 'TOʻQNASHUV!',
     'victory': 'GʻALABA!',
     'defeat': 'MAGʻLUBIYAT',
-    'reveal': 'OCHISH',
+    'reveal': 'OTISH',
     'suddenDeath': 'TOʻSATDAN OʻLIM',
     'turn': '{n}-YURISH',
     'you': 'SIZ',
     'foe': 'DUSHMAN',
     'reroll': 'ALMASHTIRISH',
-    'lastTurn': 'SOʻNGGI YURISH'
+    'lastTurn': 'SOʻNGGI YURISH',
+    'firesIn': 'OTISHGACHA',
+    'yourTurn': 'SIZNING NAVBATINGIZ'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Ushlangan kataklar boʻyicha hal qilindi',
       'suddenDeath': 'Toʻsatdan oʻlim',
       'siegeHeld': 'Siz chiziqni ushlab turdingiz',
-      'siegeBroken': 'Qamal sizni sindirdi'
+      'siegeBroken': 'Qamal sizni sindirdi',
+      'crumbled': "Qo'g'irchoqlar qulab tushdi"
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Martaba',
     'title': 'Runa martabalari',
     'tagline': 'Har martaba +{n} maks. HY beradi — barcha runaga bir xil.',
     'rank': 'Martaba {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Runa ustaxonasi — ishlamoqda',
     'full': 'Runa ustaxonasi — toʻla',
     'perHour': '+{n} / soat'
+  },
+  'skinChest': {
+    'ready': 'Bepul skin tayyor — ochish uchun bosing',
+    'waiting': 'Bepul skin {time} dan keyin',
+    'take': 'Olish'
   },
 
   'leaderboard': {

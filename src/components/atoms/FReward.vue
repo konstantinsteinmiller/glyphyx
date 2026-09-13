@@ -226,7 +226,10 @@ const bannerStyle = computed(() => paintedBanner.value
   ? {
       '--banner-src': `url("${paintedBanner.value}")`,
       '--banner-slice': `${(BANNER.cap * 100).toFixed(2)}%`,
-      '--banner-cap': ((BANNER.cap * BANNER.w) / BANNER.h).toFixed(3)
+      '--banner-cap': ((BANNER.cap * BANNER.w) / BANNER.h).toFixed(3),
+      // Lift the caption onto the cloth — see `RIBBON_PLATE.mid`. Half of it
+      // as padding under the text moves the flex centre up by the whole shift.
+      '--banner-lift': (0.5 - BANNER.mid).toFixed(4)
     }
   : {})
 
@@ -380,9 +383,19 @@ onUnmounted(() => {
   // Fitted: nothing scrolls, because nothing is ever out of view. The wrapper
   // overflows its box symmetrically before the scale is applied and is scaled
   // about its own centre, so what lands on screen is centred and whole.
+  //
+  // `overflow: visible`, NOT hidden. The scale is applied by `measureFit`, and
+  // the loot arrives one layout AFTER the overlay opens — so for the frame
+  // between the card mounting and the ResizeObserver answering, the content is
+  // at scale 1 and taller than this box. Clipping it there cut the bottom off
+  // the prize: measured at 294px of box holding 332px of card, taking 26px off
+  // the rune's description — the one line that says what the rune DOES, at the
+  // one moment the player is reading it. Two testers hit it on every unlock
+  // they saw and both called it a bug (2026-09-12). Nothing scrolls either
+  // way once the scale lands; the only thing `hidden` bought was the clip.
   &.is-fit
     justify-content: center
-    overflow: hidden
+    overflow: visible
 
 .reward-body__fit
   flex: 0 0 auto
@@ -417,6 +430,11 @@ onUnmounted(() => {
   border-image-width: 0 calc(2.5em * var(--banner-cap, 0.58))
   border-image-repeat: stretch
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55))
+  // The caption belongs on the CLOTH, and the cloth is not the middle of the
+  // picture (see `RIBBON_PLATE.mid`). Padding under the text moves the flex
+  // centre up by half of it, so the lift is applied doubled. Zero by default,
+  // which is what the CSS-drawn ribbon below wants — that one IS symmetric.
+  padding-bottom: calc(2.5em * var(--banner-lift, 0) * 2)
 
   // No painting yet: a band of night-indigo cloth trimmed in gold, drawn in
   // CSS in `paintRibbon`'s own colours. The same silhouette the painting is

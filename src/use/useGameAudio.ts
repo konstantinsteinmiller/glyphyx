@@ -1,9 +1,10 @@
 import { getAudioContext, isAudioSuspended } from '@/use/useAssets'
-import { bus, space } from '@/use/audioBus'
+import { bus } from '@/use/audioBus'
 import { isMobileAudioMuted } from '@/use/useMobileAudioMute'
-import useUser from '@/use/useUser'
 import useSounds from '@/use/useSound'
-import type { FxSound } from '@/game/cues'
+import type { FxSound, SfxOpts } from '@/game/cues'
+import { NOTE, beginVoice, bellTone, endVoice, getNoise, noiseBurst, tone, vol, type Synth } from '@/use/sfxKit'
+import { RUNE_SFX } from '@/use/runeSfx'
 
 /**
  * ─── Glyphyx audio ──────────────────────────────────────────────────────────
@@ -40,9 +41,9 @@ import type { FxSound } from '@/game/cues'
 // minimum gap AND a per-window voice cap; the renderer staggers same-step
 // events by a few ms, so the caps are set to let a whole board through.
 
-interface Throttle { minGapMs: number; maxPerWindow: number; windowMs: number }
+export interface Throttle { minGapMs: number; maxPerWindow: number; windowMs: number }
 
-const THROTTLES: Partial<Record<FxSound, Throttle>> = {
+export const THROTTLES: Partial<Record<FxSound, Throttle>> = {
   // input
   pickup: { minGapMs: 60, maxPerWindow: 4, windowMs: 300 },
   hover: { minGapMs: 60, maxPerWindow: 8, windowMs: 300 },
@@ -77,6 +78,8 @@ const THROTTLES: Partial<Record<FxSound, Throttle>> = {
   nuke: { minGapMs: 900, maxPerWindow: 1, windowMs: 1200 },
   crown: { minGapMs: 250, maxPerWindow: 2, windowMs: 700 },
   shield: { minGapMs: 40, maxPerWindow: 6, windowMs: 300 },
+  aura: { minGapMs: 60, maxPerWindow: 4, windowMs: 400 },
+  intercept: { minGapMs: 45, maxPerWindow: 6, windowMs: 300 },
   heal: { minGapMs: 40, maxPerWindow: 6, windowMs: 300 },
   buff: { minGapMs: 40, maxPerWindow: 6, windowMs: 300 },
   shatter: { minGapMs: 70, maxPerWindow: 5, windowMs: 400 },
@@ -114,226 +117,16 @@ export const __resetThrottles = (): void => {
   for (const k of Object.keys(windowHits)) delete windowHits[k as FxSound]
 }
 
-// ─── Volume ─────────────────────────────────────────────────────────────────
-
-const { userSoundVolume } = useUser()
-
-/** Master gain for a synthesised voice, folding in the player's SFX slider. */
-const vol = (base: number): number =>
-  Math.max(0, Math.min(1, base * (userSoundVolume.value ?? 0.7)))
+// ─── Gating ─────────────────────────────────────────────────────────────────
 
 const canPlay = (): boolean => !isAudioSuspended() && !isMobileAudioMuted.value
 
 // ─── Synthesis primitives ───────────────────────────────────────────────────
-
-/**
- * Shared white noise. The bus owns one for the life of the context and the
- * music engine uses the same one — rebuilding noise per event would be a
- * second of `Math.random()` per resolution, and two copies of it would be two.
- * The local fallback is for a context the bus could not be built on.
- */
-let noiseBuffer: AudioBuffer | null = null
-const getNoise = (ctx: AudioContext): AudioBuffer => {
-  const b = bus()
-  if (b && b.ctx === ctx && b.noise.sampleRate === ctx.sampleRate) return b.noise
-  if (noiseBuffer && noiseBuffer.sampleRate === ctx.sampleRate) return noiseBuffer
-  const len = Math.floor(ctx.sampleRate * 1.2)
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate)
-  const data = buf.getChannelData(0)
-  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1
-  noiseBuffer = buf
-  return buf
-}
-
-/**
- * ─── The palette ────────────────────────────────────────────────────────────
- *
- * Two rules turn a pile of beeps into a sound DESIGN, and both are here rather
- * than in any one cue.
- *
- * 1. EVERYTHING IS IN THE SAME KEY. The music is D minor (`@/game/music`), so
- *    every pitched cue in the game is built on a note of D minor — `NOTE`
- *    below is the only place a melodic frequency comes from. Before this, cues
- *    were tuned by ear in raw hertz: 620, 880, 2400. Any one of them sounds
- *    fine alone; underneath a track in D they are a chord nobody wrote, and the
- *    listening fatigue that produces is the thing players describe as "the
- *    sounds are annoying" without being able to say why. In key, forty cues an
- *    encounter sit INSIDE the music instead of fighting it.
- *
- * 2. EVERYTHING IS IN THE SAME ROOM. Each voice sends a little of itself to the
- *    shared reverb in `audioBus.ts` — a click almost none, a bell a lot — so
- *    the board sounds like a place rather than a mixing desk. The same file
- *    puts a compressor and a soft-clip across the sum, which is what lets a
- *    nuke be LOUD on top of a full board instead of clipped.
- *
- * The families are deliberately distinct, so a player can name what happened
- * with their eyes closed. Wood and stone are the BOARD (placing, ticking,
- * capturing); metal is a BLADE; a plucked string is the bow; glass is the orb
- * and anything magical; a struck bell is a GAIN (heal, merge, coin); a low
- * drum is a LOSS (shatter, defeat); and the two board-wide events — the nuke
- * and the crown — are the only voices allowed a sub-bass and a fanfare
- * respectively.
- */
-
-/** D minor, three octaves, as MIDI. The scale every pitched cue is drawn from. */
-const D_MINOR = [50, 52, 53, 55, 57, 58, 60, 62, 64, 65, 67, 69, 70, 72, 74, 76, 77, 79, 81, 82, 84, 86]
-
-/**
- * A degree of the scale, in hertz. `d` is an index into `D_MINOR` (0 = D3), so
- * a cue asks for "the fifth above the tonic" rather than for 293 Hz, and the
- * whole game transposes if the music ever does.
- */
-const NOTE = (d: number): number => {
-  const midi = D_MINOR[Math.max(0, Math.min(D_MINOR.length - 1, Math.round(d)))]!
-  return 440 * Math.pow(2, (midi - 69) / 12)
-}
-
-/**
- * An optional stereo placement. `pan` is where the voice starts (-1 left …
- * +1 right) and `panTo` where it ends by the time the voice is over — the
- * board-wipe whoosh travels across the screen. Browsers without a panner
- * (rare, and every test runtime) simply play it centred.
- */
-const withPan = (
-  ctx: AudioContext, node: AudioNode, pan: number | undefined, panTo: number | undefined,
-  now: number, duration: number
-): AudioNode => {
-  if (pan === undefined || typeof ctx.createStereoPanner !== 'function') return node
-  try {
-    const p = ctx.createStereoPanner()
-    p.pan.setValueAtTime(pan, now)
-    if (panTo !== undefined && panTo !== pan) p.pan.linearRampToValueAtTime(panTo, now + duration)
-    node.connect(p)
-    return p
-  } catch {
-    return node
-  }
-}
-
-interface NoiseOpts {
-  duration: number
-  gain: number
-  /** Filter sweep, Hz. Either direction: a rising cutoff is a whoosh opening up. */
-  filterFrom: number
-  filterTo: number
-  type?: BiquadFilterType
-  q?: number
-  delay?: number
-  /** Playback-rate jitter centre; 1 = as recorded. */
-  rate?: number
-  pan?: number
-  panTo?: number
-  /** How much of this voice goes to the shared room, 0…1. Default: a little. */
-  space?: number
-}
-
-/**
- * Where a voice lands: the sfx bus, with a send to the room. Falls back to the
- * raw destination if the bus could not be built (a context without a
- * convolver, a test double), so a missing node type is a dry cue and never a
- * silent one.
- */
-const land = (ctx: AudioContext, node: AudioNode, amount: number): void => {
-  const b = bus()
-  if (!b || b.ctx !== ctx) {
-    node.connect(ctx.destination)
-    return
-  }
-  space(b, node, b.sfx, amount)
-}
-
-/** A filtered noise burst — the backbone of impacts, debris and air. */
-const noiseBurst = (ctx: AudioContext, o: NoiseOpts): void => {
-  const src = ctx.createBufferSource()
-  src.buffer = getNoise(ctx)
-  src.playbackRate.value = (o.rate ?? 1) * (0.85 + Math.random() * 0.3)
-
-  const filter = ctx.createBiquadFilter()
-  filter.type = o.type ?? 'lowpass'
-  filter.Q.value = o.q ?? 1
-  const now = ctx.currentTime + (o.delay ?? 0)
-  filter.frequency.setValueAtTime(Math.max(40, o.filterFrom), now)
-  filter.frequency.exponentialRampToValueAtTime(Math.max(40, o.filterTo), now + o.duration)
-
-  const gain = ctx.createGain()
-  gain.gain.setValueAtTime(o.gain, now)
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + o.duration)
-
-  src.connect(filter).connect(gain)
-  land(ctx, withPan(ctx, gain, o.pan, o.panTo, now, o.duration), o.space ?? 0.1)
-  src.start(now)
-  src.stop(now + o.duration + 0.02)
-}
-
-interface ToneOpts {
-  freq: number
-  toFreq?: number
-  duration: number
-  gain: number
-  type?: OscillatorType
-  delay?: number
-  /** Optional lowpass to take the edge off a raw saw/square. */
-  filter?: number
-  /** Attack, seconds. 4 ms by default — the click-free minimum. A swell wants more. */
-  attack?: number
-  pan?: number
-  panTo?: number
-  /** How much of this voice goes to the shared room, 0…1. Default: a little. */
-  space?: number
-}
-
-/** A single pitched voice with an exponential envelope. */
-const tone = (ctx: AudioContext, o: ToneOpts): void => {
-  const now = ctx.currentTime + (o.delay ?? 0)
-  const osc = ctx.createOscillator()
-  osc.type = o.type ?? 'sine'
-  osc.frequency.setValueAtTime(Math.max(20, o.freq), now)
-  if (o.toFreq && o.toFreq !== o.freq) {
-    osc.frequency.exponentialRampToValueAtTime(Math.max(20, o.toFreq), now + o.duration)
-  }
-
-  const attack = Math.min(o.attack ?? 0.004, o.duration * 0.5)
-  const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.0001, now)
-  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, o.gain), now + attack)
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + o.duration)
-
-  let node: AudioNode = osc
-  if (o.filter) {
-    const f = ctx.createBiquadFilter()
-    f.type = 'lowpass'
-    f.frequency.value = o.filter
-    osc.connect(f)
-    node = f
-  }
-  node.connect(gain)
-  land(ctx, withPan(ctx, gain, o.pan, o.panTo, now, o.duration), o.space ?? 0.12)
-  osc.start(now)
-  osc.stop(now + o.duration + 0.02)
-}
-
-/**
- * A struck, ringing voice: a fundamental with two inharmonic partials over it,
- * each dying on its own clock. It is the sound of something being GAINED —
- * a heal, a merge, a tile taken, a coin — and it is one function so that all
- * of those are recognisably relatives.
- */
-const bellTone = (
-  ctx: AudioContext, o: { freq: number; duration: number; gain: number; delay?: number; space?: number }
-): void => {
-  const partials: [number, number, number][] = [[1, 1, 1], [2.76, 0.26, 0.6], [5.4, 0.09, 0.35]]
-  for (const [mul, amp, life] of partials) {
-    tone(ctx, {
-      freq: o.freq * mul,
-      duration: o.duration * life,
-      gain: o.gain * amp,
-      type: 'sine',
-      delay: o.delay,
-      attack: 0.004,
-      space: o.space ?? 0.3
-    })
-  }
-}
+//
+// The instruments — `tone`, `noiseBurst`, `bellTone`, and the richer `fm`,
+// `metal`, `pluck`, `whoosh`, `crackle`, `thump`, `swell`, `shimmer` — live in
+// `sfxKit.ts`, shared with the per-rune recipes in `runeSfx/`. The palette's
+// two rules (one key, one room) are written up there.
 
 // ─── Cue definitions ────────────────────────────────────────────────────────
 
@@ -374,8 +167,6 @@ export const LAYER_SAMPLES: Partial<Record<FxSound, [string, number]>> = {
 }
 
 
-type Synth = (ctx: AudioContext, p: number, r: number) => void
-
 /**
  * One function per synthesised cue.
  *
@@ -384,7 +175,7 @@ type Synth = (ctx: AudioContext, p: number, r: number) => void
  * pitch jitter. `p` never changes WHICH sound plays — only how big it is — so
  * the mix stays legible.
  */
-const SYNTH: Partial<Record<FxSound, Synth>> = {
+const BASE_SYNTH: Partial<Record<FxSound, Synth>> = {
   // ── input ────────────────────────────────────────────────────────────────
 
   // A pebble lifted off the hand: a light stone tick with a puff of air.
@@ -474,164 +265,6 @@ const SYNTH: Partial<Record<FxSound, Synth>> = {
 
   // ── resolution ───────────────────────────────────────────────────────────
 
-  // A plucked string with the air of the arrow leaving.
-  arrow: (ctx, _p, r) => {
-    tone(ctx, { freq: 220 + r * 30, toFreq: 180, duration: 0.11, gain: vol(0.06), type: 'sawtooth', filter: 2200 })
-    noiseBurst(ctx, { duration: 0.02, gain: vol(0.04), filterFrom: 2500, filterTo: 1000, type: 'highpass', q: 0.7 })
-    noiseBurst(ctx, { duration: 0.14, gain: vol(0.03), filterFrom: 3500, filterTo: 1200, type: 'bandpass', q: 1.2, delay: 0.02 })
-  },
-
-  // Thock: the arrow burying itself in stone.
-  arrowHit: (ctx) => {
-    tone(ctx, { freq: 320, toFreq: 110, duration: 0.08, gain: vol(0.07) })
-    noiseBurst(ctx, { duration: 0.06, gain: vol(0.05), filterFrom: 1800, filterTo: 300 })
-    tone(ctx, { freq: 900, toFreq: 400, duration: 0.04, gain: vol(0.03), type: 'triangle' })
-  },
-
-  // The arcane hum: two sines three hertz apart, swelling in, a shimmer rising
-  // above them. The only cue in the combat mix with a slow attack.
-  beam: (ctx) => {
-    tone(ctx, { freq: NOTE(0), duration: 0.45, gain: vol(0.065), attack: 0.12, space: 0.4 })
-    tone(ctx, { freq: NOTE(0) + 3, duration: 0.45, gain: vol(0.065), attack: 0.12, space: 0.4 })
-    tone(ctx, { freq: NOTE(14), toFreq: NOTE(18), duration: 0.4, gain: vol(0.018), delay: 0.05, attack: 0.06, space: 0.45 })
-    noiseBurst(ctx, { duration: 0.4, gain: vol(0.016), filterFrom: 2000, filterTo: 5200, type: 'bandpass', q: 2, space: 0.4 })
-  },
-
-  // Zap — glass, not a buzzer: the square wave that used to carry it read as
-  // an error tone next to the rest of the mix.
-  beamHit: (ctx) => {
-    tone(ctx, { freq: NOTE(17), toFreq: NOTE(7), duration: 0.12, gain: vol(0.055), type: 'triangle', filter: 3200, space: 0.22 })
-    tone(ctx, { freq: NOTE(21), duration: 0.09, gain: vol(0.02), space: 0.3 })
-    noiseBurst(ctx, { duration: 0.08, gain: vol(0.033), filterFrom: 5200, filterTo: 800, type: 'bandpass', q: 1.5 })
-  },
-
-  // A blade through air: a highpass sweep opening upward, with the faintest
-  // metallic partial riding it.
-  slash: (ctx) => {
-    noiseBurst(ctx, { duration: 0.16, gain: vol(0.06), filterFrom: 400, filterTo: 5000, type: 'highpass', q: 0.8 })
-    tone(ctx, { freq: 2800, toFreq: 3400, duration: 0.12, gain: vol(0.015), type: 'triangle' })
-  },
-
-  // Steel on stone: a clank, a bright edge, and a low body so it lands.
-  slashHit: (ctx, _p, r) => {
-    tone(ctx, { freq: 1900 + r * 400, toFreq: 1400, duration: 0.07, gain: vol(0.05), type: 'triangle' })
-    tone(ctx, { freq: 3100, toFreq: 2600, duration: 0.05, gain: vol(0.02), type: 'square', filter: 8000 })
-    tone(ctx, { freq: 150, toFreq: 60, duration: 0.14, gain: vol(0.08) })
-    noiseBurst(ctx, { duration: 0.07, gain: vol(0.05), filterFrom: 4000, filterTo: 600 })
-  },
-
-  // The axe: `slash`'s gesture swung wider and slower — more air moved, a
-  // lower whistle, and a second body of air closing behind the head.
-  cleave: (ctx) => {
-    noiseBurst(ctx, { duration: 0.24, gain: vol(0.075), filterFrom: 300, filterTo: 3600, type: 'highpass', q: 0.7 })
-    noiseBurst(ctx, { duration: 0.12, gain: vol(0.03), filterFrom: 1400, filterTo: 500, type: 'bandpass', q: 1.1, delay: 0.06 })
-    tone(ctx, { freq: 1700, toFreq: 2100, duration: 0.16, gain: vol(0.018), type: 'triangle' })
-  },
-
-  // Three stones taking one blow: `slashHit`'s clank over a heavier body, with
-  // a softer second strike a frame behind it so the fan reads as wide.
-  cleaveHit: (ctx, _p, r) => {
-    tone(ctx, { freq: 1500 + r * 300, toFreq: 900, duration: 0.09, gain: vol(0.05), type: 'triangle' })
-    tone(ctx, { freq: 110, toFreq: 45, duration: 0.2, gain: vol(0.1) })
-    noiseBurst(ctx, { duration: 0.1, gain: vol(0.06), filterFrom: 3200, filterTo: 400 })
-    noiseBurst(ctx, { duration: 0.07, gain: vol(0.03), filterFrom: 2000, filterTo: 300, delay: 0.05 })
-  },
-
-  // The boulder under way: a long low grind with a rumble under it for mass,
-  // and four rough teeth inside the roll so it is stone on stone, not wind.
-  roll: (ctx, _p, r) => {
-    tone(ctx, { freq: 60, toFreq: 42, duration: 0.5, gain: vol(0.13), attack: 0.04 })
-    noiseBurst(ctx, { duration: 0.5, gain: vol(0.075), filterFrom: 700, filterTo: 260, q: 1.4, rate: 0.7 })
-    for (let i = 0; i < 4; i++) {
-      noiseBurst(ctx, {
-        duration: 0.07, gain: vol(0.025), filterFrom: 900 + r * 300, filterTo: 320,
-        type: 'bandpass', q: 2.2, delay: 0.06 + i * 0.1, rate: 0.8
-      })
-    }
-  },
-
-  // The boulder meeting something: a blunt crunch with no metal in it at all.
-  rollHit: (ctx, _p, r) => {
-    tone(ctx, { freq: 130 + r * 40, toFreq: 48, duration: 0.16, gain: vol(0.09) })
-    noiseBurst(ctx, { duration: 0.11, gain: vol(0.06), filterFrom: 1600, filterTo: 220 })
-    noiseBurst(ctx, { duration: 0.05, gain: vol(0.03), filterFrom: 2600, filterTo: 900, type: 'bandpass', q: 1.6 })
-  },
-
-  // The tube firing: a soft launch thump and the round going away from you.
-  shell: (ctx) => {
-    tone(ctx, { freq: 150, toFreq: 60, duration: 0.14, gain: vol(0.11) })
-    noiseBurst(ctx, { duration: 0.1, gain: vol(0.05), filterFrom: 1200, filterTo: 300 })
-    noiseBurst(ctx, { duration: 0.3, gain: vol(0.018), filterFrom: 2200, filterTo: 700, type: 'bandpass', q: 1.6, delay: 0.05 })
-  },
-
-  // …and the round landing three ranks off: `explode` heard from over there —
-  // shorter, duller, with most of its top end left behind on the way.
-  shellHit: (ctx) => {
-    tone(ctx, { freq: 80, toFreq: 34, duration: 0.34, gain: vol(0.15) })
-    noiseBurst(ctx, { duration: 0.3, gain: vol(0.09), filterFrom: 1200, filterTo: 90 })
-    noiseBurst(ctx, { duration: 0.5, gain: vol(0.035), filterFrom: 500, filterTo: 70 })
-  },
-
-  // The mage's Lv 2 cross: sub thump, a wide body, a long dark tail, and the
-  // crackle of stone on top.
-  explode: (ctx) => {
-    tone(ctx, { freq: 90, toFreq: 30, duration: 0.5, gain: vol(0.2) })
-    noiseBurst(ctx, { duration: 0.55, gain: vol(0.14), filterFrom: 3000, filterTo: 100 })
-    noiseBurst(ctx, { duration: 0.9, gain: vol(0.05), filterFrom: 700, filterTo: 80 })
-    noiseBurst(ctx, { duration: 0.12, gain: vol(0.05), filterFrom: 5000, filterTo: 1500, type: 'bandpass', q: 1.5, delay: 0.03 })
-  },
-
-  // The nuke. Everything `explode` is, an octave lower and twice as long: a
-  // sub that falls from 70 Hz to below hearing, a wide noise body opening then
-  // closing over a second and a half, and a long dark tail under it — the
-  // sound of the whole board going, not one tile. The tiny high crack at the
-  // front is the detonation itself; without it the voice reads as a rumble
-  // that started somewhere else.
-  nuke: (ctx) => {
-    tone(ctx, { freq: 70, toFreq: 18, duration: 1.1, gain: vol(0.26) })
-    tone(ctx, { freq: 140, toFreq: 34, duration: 0.7, gain: vol(0.12), delay: 0.01 })
-    noiseBurst(ctx, { duration: 0.16, gain: vol(0.13), filterFrom: 9000, filterTo: 2200, type: 'bandpass', q: 1.2 })
-    noiseBurst(ctx, { duration: 1.0, gain: vol(0.17), filterFrom: 4200, filterTo: 90 })
-    noiseBurst(ctx, { duration: 1.6, gain: vol(0.07), filterFrom: 500, filterTo: 60, delay: 0.08 })
-  },
-
-  // The crown changing heads. Every other combat voice in this file is an
-  // impact — something struck something. This one is the opposite, so it is
-  // built as a rising major arpeggio (a fanfare in three notes, 90 ms apart)
-  // over a bright shimmer: the sound of a thing being GAINED. It has to read
-  // as a reward even though a rune just left the board.
-  crown: (ctx) => {
-    // D, F, A — the tonic triad of the key, rising. It was a C major arpeggio,
-    // which is a fanfare in somebody else's music.
-    for (const [i, d] of [14, 16, 18].entries()) {
-      tone(ctx, { freq: NOTE(d), duration: i === 2 ? 0.34 : 0.16, gain: vol(i === 2 ? 0.08 : 0.07), type: 'triangle', delay: i * 0.09, space: 0.35 })
-    }
-    bellTone(ctx, { freq: NOTE(18) * 2, duration: 0.5, gain: vol(0.022), delay: 0.18, space: 0.5 })
-    noiseBurst(ctx, { duration: 0.35, gain: vol(0.03), filterFrom: 3000, filterTo: 8000, type: 'bandpass', q: 1.6, delay: 0.16, space: 0.4 })
-  },
-
-  // Damage eaten by a shield: struck glass, gone in a tenth of a second.
-  shield: (ctx) => {
-    bellTone(ctx, { freq: NOTE(19), duration: 0.16, gain: vol(0.042), space: 0.3 })
-    noiseBurst(ctx, { duration: 0.03, gain: vol(0.013), filterFrom: 7000, filterTo: 4000, type: 'bandpass', q: 4 })
-  },
-
-  // Two struck notes rising a fourth, A → D. The one cue in the mix with no
-  // noise in it at all — a health bar going UP has to sound like the opposite
-  // of a hit, and it lands on the tonic, which is as settled as a note gets.
-  heal: (ctx) => {
-    bellTone(ctx, { freq: NOTE(11), duration: 0.26, gain: vol(0.042), space: 0.35 })
-    bellTone(ctx, { freq: NOTE(14), duration: 0.36, gain: vol(0.042), delay: 0.11, space: 0.4 })
-  },
-
-  // The support sharpening a neighbour: the tonic triad, quick and bright.
-  buff: (ctx) => {
-    for (const [i, d] of [14, 16, 18].entries()) {
-      tone(ctx, { freq: NOTE(d), duration: 0.14, gain: vol(0.035), type: 'triangle', filter: 5000, delay: i * 0.055, space: 0.28 })
-    }
-    noiseBurst(ctx, { duration: 0.12, gain: vol(0.01), filterFrom: 6000, filterTo: 8500, type: 'bandpass', q: 3, space: 0.3 })
-  },
-
   // Stone breaking: two bursts, a low body, and debris tumbling for a quarter
   // of a second after. `p` is the size of the rune (a Lv 2 breaks bigger). A
   // quiet recorded `shrapnel` sits under all of it (LAYER_SAMPLES).
@@ -655,12 +288,6 @@ const SYNTH: Partial<Record<FxSound, Synth>> = {
     for (let i = 0; i < 3; i++) {
       tone(ctx, { freq: NOTE(19 + i) * (1 + r * 0.02), toFreq: NOTE(16), duration: 0.03, gain: vol(0.016), type: 'triangle', filter: 8000, delay: 0.04 + i * 0.03, space: 0.25 })
     }
-  },
-
-  // A rune shoved a tile back: a scrape sliding down, a low push under it.
-  knockback: (ctx) => {
-    noiseBurst(ctx, { duration: 0.22, gain: vol(0.06), filterFrom: 2400, filterTo: 400, type: 'bandpass', q: 2.5 })
-    tone(ctx, { freq: 80, toFreq: 40, duration: 0.15, gain: vol(0.06) })
   },
 
   // A tile changing hands: a resonant flip, then the tonic triad settling onto
@@ -764,6 +391,16 @@ const SYNTH: Partial<Record<FxSound, Synth>> = {
   }
 }
 
+/**
+ * Every synthesised cue: the board's own (above) and each rune's attack and
+ * defence voices (`runeSfx/<rune>.ts`). A rune recipe overrides a base one of
+ * the same name — there are none today; the cue test keeps it that way.
+ */
+const SYNTH: Partial<Record<FxSound, Synth>> = { ...BASE_SYNTH, ...RUNE_SFX }
+
+/** Test / bench seam: the recipe behind a cue, or `undefined` for a sample-only cue. */
+export const synthFor = (id: FxSound): Synth | undefined => SYNTH[id]
+
 /** Test seam: is there a sound for this cue at all (sample, layered or synthesised)? */
 export const __cueIsDefined = (id: FxSound): boolean =>
   id in SAMPLE_CUES || id in LAYER_SAMPLES || id in SYNTH
@@ -777,7 +414,23 @@ export const __cueIsDefined = (id: FxSound): boolean =>
  * @param power 0..1 intensity hint (a combo's size, a placement's weight, the
  *   clock's urgency). Never changes WHICH sound plays.
  */
-export const playFx = (id: FxSound, power = 0): void => {
+// ─── The bench's tap (DEV) ───────────────────────────────────────────────────
+
+type SfxTap = (id: FxSound, power: number, opts: SfxOpts | undefined) => void
+let sfxTap: SfxTap | null = null
+
+/**
+ * DEV / tests: hear every cue the game ASKS for, before any gating — muted,
+ * throttled, suspended or not. The FX bench records a scenario's cues with it
+ * and renders them offline (`sfxOffline.ts`), so a headless run can be
+ * listened to. `null` removes it.
+ */
+export const __setSfxTap = (fn: SfxTap | null): void => { sfxTap = fn }
+
+const NO_OPTS = { pan: 0, level: 1 } as const
+
+export const playFx = (id: FxSound, power = 0, opts?: SfxOpts): void => {
+  if (sfxTap) sfxTap(id, power, opts)
   if (!canPlay()) return
   if (!passesThrottle(id)) return
 
@@ -799,10 +452,15 @@ export const playFx = (id: FxSound, power = 0): void => {
   // skip until then rather than queueing a backlog of silent voices.
   if (ctx.state !== 'running') return
 
+  // One VOICE around the whole recipe: every instrument it plays lands on the
+  // same stereo panner, so the cue sits where its event happened.
+  beginVoice(ctx, opts)
   try {
-    synth(ctx, Number.isFinite(power) ? power : 0, Math.random())
+    synth(ctx, Number.isFinite(power) ? power : 0, Math.random(), opts ? { ...NO_OPTS, ...opts } : NO_OPTS)
   } catch {
     // Node budget exhausted or a context mid-teardown — the frame goes on.
+  } finally {
+    endVoice()
   }
 }
 

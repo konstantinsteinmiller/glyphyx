@@ -24,13 +24,19 @@ vi.mock('@/use/useGamePause', async (orig) => ({
 }))
 const paused = gate.paused
 
-/** `FReward` reduced to its contract: the slot, and a continue button while the hint is up. */
+/**
+ * `FReward` reduced to its contract: the slots, and a continue button while the
+ * hint is up. The `#stage` slot is rendered too — it carries the rays and the
+ * confetti, and whether those survive the overlay's leave is a contract of its
+ * own now (see "holds the celebration together").
+ */
 const FRewardStub = defineComponent({
   props: { modelValue: { type: Boolean, default: false }, showContinue: { type: Boolean, default: false } },
   emits: ['continue', 'update:modelValue'],
   setup(props, { emit, slots }) {
     return () => h('div', { class: 'freward' }, [
       slots.ribbon?.(),
+      slots.stage?.(),
       slots.default?.(),
       props.showContinue ? h('button', { class: 'cont', onClick: () => emit('continue') }, 'c') : null
     ])
@@ -55,6 +61,9 @@ const mountOverlay = async (): Promise<VueWrapper> => {
 
 const continues = (w: VueWrapper): number => (w.emitted('continue') ?? []).length
 
+/** Past every beat in the open sequence, so the celebration is fully lit. */
+const BEATS_SETTLED = 400
+
 describe('the chest overlay', () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -62,6 +71,43 @@ describe('the chest overlay', () => {
   })
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('holds the celebration together while the overlay is leaving', async () => {
+    // `FReward`'s root fades out on its own transition, and everything inside
+    // it has to go WITH it. Killing the rays and the confetti the instant
+    // `modelValue` went false left the prize's text — "REWARDS / UNLOCKED /
+    // BOW" and the rune's description — hanging over the next level's board
+    // for the length of the fade. Two blind testers, two rounds apart, both
+    // reported it as a rendering glitch (2026-09-12).
+    const { default: RewardStage } = await import('@/components/game/RewardStage.vue')
+    const { default: RewardConfetti } = await import('@/components/game/RewardConfetti.vue')
+    const w = await mountOverlay()
+    await w.setProps({ opened: true })
+    vi.advanceTimersByTime(BEATS_SETTLED)
+    await nextTick()
+    const stage = w.findComponent(RewardStage)
+    const confetti = w.findComponent(RewardConfetti)
+    expect(stage.props('burst')).toBe(true)
+    expect(confetti.props('burst')).toBe(true)
+
+    // The host closes it. The root is still fading; nothing inside may vanish.
+    await w.setProps({ modelValue: false })
+    expect(stage.props('burst')).toBe(true)
+    expect(confetti.props('burst')).toBe(true)
+    expect(stage.props('active')).toBe(true)
+  })
+
+  it('resets the celebration when it next OPENS, not when it closes', async () => {
+    const { default: RewardStage } = await import('@/components/game/RewardStage.vue')
+    const w = await mountOverlay()
+    await w.setProps({ opened: true })
+    vi.advanceTimersByTime(BEATS_SETTLED)
+    await nextTick()
+    await w.setProps({ modelValue: false })
+    // Reopening on a fresh, unopened chest starts the sequence over.
+    await w.setProps({ modelValue: true, opened: false })
+    expect(w.findComponent(RewardStage).props('burst')).toBe(false)
   })
 
   it('continues on a tap once the loot has settled, and only once', async () => {

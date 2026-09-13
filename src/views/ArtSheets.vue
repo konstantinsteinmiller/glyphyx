@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import {
-  CELL, SINGLE_SIZE, SHEETS, WALKS, SCENERY, SINGLES, sheetRows, sheetSize, promptDocs,
+  CELL, SINGLE_SIZE, SHEETS, WALKS, SCENERY, SINGLES, sheetRows, sheetSize, sheetTarget, promptDocs,
   type CellArt, type Fit, type FitMap, type SheetCell, type SheetSpec, type SingleSpec, type WalkSpec, type SceneryAsset
 } from '@/game/artSheet'
 import { SKINS, type GlyphStyle } from '@/game/rules'
@@ -415,12 +415,14 @@ const nativeSize = (src: string): { w: number; h: number } | undefined => {
   return img?.naturalWidth ? { w: img.naturalWidth, h: img.naturalHeight } : undefined
 }
 
-const cellEntry = (c: SheetCell, fits: FitMap, x: number, y: number, w: number, h: number) => ({
+// `target` defaults to the cell's own; a sheet passes `sheetTarget(c)`, which
+// is empty for a `singleOnly` cell, so the slicer never cuts it from the sheet.
+const cellEntry = (c: SheetCell, fits: FitMap, x: number, y: number, w: number, h: number, target = c.target) => ({
   id: c.id,
   label: c.label,
   variant: c.sub,
   x, y, w, h,
-  ...(c.target ? { target: c.target } : {}),
+  ...(target ? { target } : {}),
   ...(c.fill ? { fill: true } : {}),
   ...(c.maxEdge ? { maxEdge: c.maxEdge } : {}),
   // A panel holding an EXISTING bitmap was letterboxed to fit — the ribbon is
@@ -454,7 +456,7 @@ const buildIndex = (fits: FitMap) => ({
       rows: sheetRows(s),
       width: w,
       height: h,
-      cells: s.cells.map((c) => cellEntry(c, fits, c.col * CELL, c.row * CELL, c.cw * CELL, c.ch * CELL)),
+      cells: s.cells.map((c) => cellEntry(c, fits, c.col * CELL, c.row * CELL, c.cw * CELL, c.ch * CELL, sheetTarget(c))),
       singles: SINGLES.filter((t) => t.sheet === s.id).map((t) => {
         const boxH = Math.round(SINGLE_SIZE * (t.cell.ch / t.cell.cw))
         return {

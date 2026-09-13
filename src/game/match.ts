@@ -12,11 +12,12 @@
  */
 
 import {
-  CONQUEST_TILES, NO_HANDICAP, REROLLS_PER_MATCH, RUNES, STARTING_RUNES, clampLevel, dirsFor,
+  CONQUEST_TILES, LESSON_RESCUE_TURNS, NO_HANDICAP, REROLLS_PER_MATCH, RUNES, STARTING_RUNES, clampLevel, dirsFor,
+  strikeCells,
   type Cell, type Handicap, type Dir, type Faction, type MatchResult, type MatchState, type Move, type NodeConfig,
   type ResolveEvent, type RuneType
 } from './rules'
-import { countTiles, createBoard, factionTiles, placementKind, runesOf } from './board'
+import { countTiles, createBoard, factionTiles, legalPlacements, placementKind, runeAt, runesOf, sideHp } from './board'
 import { drawHand, fillHand } from './hand'
 import { planEnemyMove, type Difficulty } from './ai'
 import { rand, seedFrom } from './rng'
@@ -82,7 +83,8 @@ export const createMatch = (
     rng,
     startedAt: now,
     boons: { ...boons },
-    ranks: { ...ranks }
+    ranks: { ...ranks },
+    stallTurns: 0
   }
 }
 
@@ -169,21 +171,58 @@ export const resolveCurrentTurn = (state: MatchState): { state: MatchState; even
   // turn's relief; the resolver keeps any scaled hit at 1 or more.
   const nodeMul = atkMulOf(s.config)
   const reliefMul = s.handicap?.atkMul ?? 1
+  const before = sideHp(s.board, 'enemy')
   const outcome = resolveTurn(s.board, moves, {
     enemyAtkMul: (f) => nodeMul(f) * reliefMul,
     // The match's own copy, not the shop's live one — see `createMatch`.
     playerRanks: s.ranks
   })
+  // Did this turn do the enemy any harm at all? That, and not the turn
+  // counter, is what says a match is going nowhere — see `MatchState.stallTurns`.
+  const landed = sideHp(outcome.board, 'enemy') < before
   return {
     state: {
       ...s,
       board: outcome.board,
       phase: 'resolve',
       kills: s.kills + outcome.playerKills,
-      maxCombo: Math.max(s.maxCombo, outcome.playerKills)
+      maxCombo: Math.max(s.maxCombo, outcome.playerKills),
+      stallTurns: landed ? 0 : s.stallTurns + 1
     },
     events: outcome.events
   }
+}
+
+/**
+ * A move from the hand that would land on something this turn — what the
+ * teaching hand comes back to show when a lesson stalls (`LESSON_HINT_TURNS`).
+ *
+ * Best by the same measure `usefulDir` uses — how many enemy stones the
+ * placement's own shape covers — and a stack counts at the level it would
+ * reach. `null` when the hand genuinely has nothing that touches anything,
+ * which is when the rescue's second step takes over.
+ */
+export const rescueMove = (state: MatchState): Move | null => {
+  let best: Move | null = null
+  let bestScore = 0
+  for (const type of new Set(state.hand)) {
+    for (const { cell, kind } of legalPlacements(state.board, 'player', type)) {
+      const under = runeAt(state.board, cell.col, cell.row)
+      const level = kind === 'stack' && under ? clampLevel(under.level + 1) : clampLevel(state.boons[type] ?? 1)
+      for (const dir of dirsFor(type)) {
+        let score = 0
+        for (const hit of strikeCells(type, level, dir, cell)) {
+          const rune = runeAt(state.board, hit.col, hit.row)
+          if (rune && rune.side === 'enemy') score++
+        }
+        if (score > bestScore) {
+          bestScore = score
+          best = { side: 'player', faction: null, type, col: cell.col, row: cell.row, dir }
+        }
+      }
+    }
+  }
+  return best
 }
 
 /** The result the current board implies, or `null` while the match is undecided. */
@@ -196,6 +235,12 @@ export const evaluateResult = (state: MatchState, now: number): MatchResult | nu
     won, reason, turns: state.turn, playerTiles, enemyTiles,
     maxCombo: state.maxCombo, kills: state.kills, durationMs: Math.max(0, now - state.startedAt)
   })
+
+  // A lesson that has gone nowhere for `LESSON_RESCUE_TURNS` is over: the
+  // dummies crumble and it counts as taught. Lessons only — a real match that
+  // stalls has the stall-breaker, sudden death and a turn limit to end it,
+  // and none of those hand the player a win.
+  if (config.tutorial && state.stallTurns >= LESSON_RESCUE_TURNS) return done(true, 'crumbled')
 
   switch (config.objective) {
     case 'eliminate': {

@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'スキン',
       'runes': 'パワールーン',
+      'ranks': 'ランク',
     },
     'title': 'ショップ',
   },
   'gameName': 'Glyphyx',
+  'coins': 'コイン',
   'cancel': 'キャンセル',
   'close': '閉じる',
   'ok': 'OK',
@@ -49,6 +51,7 @@ export default {
     'stage': 'レベル {c}-{n}',
     'conquest': '制圧',
     'tiles': '{n} / {total}',
+    'runesLeft': '残り{n}',
     'turn': 'ターン {n}',
     'you': 'あなた',
     'enemy': '敵',
@@ -117,17 +120,37 @@ export default {
       'touch': '8 マス確保で勝利',
       'desktop': '8 マス確保で勝利'
     },
+    'conquestClaim': {
+      'touch': '置いたルーンはそのマスを取る',
+      'desktop': '置いたルーンはそのマスを取る'
+    },
     'siege': {
       'touch': '包囲された！突破して 8 マスを確保',
       'desktop': '包囲された！突破して 8 マスを確保'
+    },
+    'yourMove': {
+      'touch': 'あなたの番 — ルーンを置こう',
+      'desktop': 'あなたの番 — ルーンを置こう'
+    },
+    'busyPlaced': {
+      'touch': '1ターンに1つだけ',
+      'desktop': '1ターンに1つだけ'
+    },
+    'busyPhase': {
+      'touch': '待って — ルーンが攻撃中',
+      'desktop': '待って — ルーンが攻撃中'
+    },
+    'busyTile': {
+      'touch': 'そのマスには置けません',
+      'desktop': 'そのマスには置けません'
     },
     'mage': {
       'touch': 'オーブは斜めに2マス先までビームを放つ',
       'desktop': 'オーブは斜めに2マス先までビームを放つ'
     },
     'defense': {
-      'touch': '盾は矢とビームを防ぐ',
-      'desktop': '盾は矢とビームを防ぐ'
+      'touch': '盾は敵の矢とビームを止める',
+      'desktop': '盾は敵の矢とビームを止める'
     },
     'support': {
       'touch': '十字は隣を癒やし、攻撃を高める',
@@ -169,13 +192,15 @@ export default {
     'clash': '激突！',
     'victory': '勝利！',
     'defeat': '敗北',
-    'reveal': '公開',
+    'reveal': '攻撃',
     'suddenDeath': 'サドンデス',
     'turn': 'ターン {n}',
     'you': 'あなた',
     'foe': '敵',
     'reroll': '引き直し',
-    'lastTurn': '最終ターン'
+    'lastTurn': '最終ターン',
+    'firesIn': '発射まで',
+    'yourTurn': 'あなたの番'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': '確保マス数で決着',
       'suddenDeath': 'サドンデス',
       'siegeHeld': '戦線を守り抜いた',
-      'siegeBroken': '包囲に押し切られた'
+      'siegeBroken': '包囲に押し切られた',
+      'crumbled': '訓練人形が砕け散った'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'ランク',
     'title': 'ルーンランク',
     'tagline': '1 ランクごとに最大 HP +{n}。どのルーンも同じ。',
     'rank': 'ランク {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'ルーンの炉 — 鍛造中',
     'full': 'ルーンの炉 — 満杯',
     'perHour': '+{n} / 時'
+  },
+  'skinChest': {
+    'ready': '無料スキン準備完了 — タップして開く',
+    'waiting': '無料スキンまで {time}',
+    'take': '受取'
   },
 
   'leaderboard': {

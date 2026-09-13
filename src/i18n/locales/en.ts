@@ -28,10 +28,12 @@ export default {
     'tabs': {
       'skins': 'Skins',
       'runes': 'Power Runes',
+      'ranks': 'Ranks',
     },
     'title': 'Shop',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Coins',
   'cancel': 'Cancel',
   'close': 'Close',
   'ok': 'Ok',
@@ -63,6 +65,7 @@ export default {
     'conquest': 'Conquest',
     // `{n}` tiles held of `{total}` needed — "5 / 8".
     'tiles': '{n} / {total}',
+    'runesLeft': '{n} left',
     'turn': 'Turn {n}',
     'you': 'You',
     'enemy': 'Enemy',
@@ -135,17 +138,37 @@ export default {
       'touch': 'Hold 8 tiles to win',
       'desktop': 'Hold 8 tiles to win'
     },
+    'conquestClaim': {
+      'touch': 'Every rune you place takes its tile',
+      'desktop': 'Every rune you place takes its tile'
+    },
     'siege': {
       'touch': 'Surrounded! Break out and hold 8 tiles',
       'desktop': 'Surrounded! Break out and hold 8 tiles'
+    },
+    'yourMove': {
+      'touch': 'Your move — drop a rune',
+      'desktop': 'Your move — drop a rune'
+    },
+    'busyPlaced': {
+      'touch': 'One rune per turn',
+      'desktop': 'One rune per turn'
+    },
+    'busyPhase': {
+      'touch': 'Wait — the runes are firing',
+      'desktop': 'Wait — the runes are firing'
+    },
+    'busyTile': {
+      'touch': 'That tile will not take it',
+      'desktop': 'That tile will not take it'
     },
     'mage': {
       'touch': 'The orb beams two tiles diagonally',
       'desktop': 'The orb beams two tiles diagonally'
     },
     'defense': {
-      'touch': 'The shield blocks arrows and beams',
-      'desktop': 'The shield blocks arrows and beams'
+      'touch': 'Your shield stops ENEMY arrows and beams',
+      'desktop': 'Your shield stops ENEMY arrows and beams'
     },
     'support': {
       'touch': 'The cross heals and sharpens its neighbours',
@@ -190,13 +213,15 @@ export default {
     'clash': 'CLASH!',
     'victory': 'VICTORY!',
     'defeat': 'DEFEAT',
-    'reveal': 'REVEAL',
+    'reveal': 'FIRING',
     'suddenDeath': 'SUDDEN DEATH',
     'turn': 'TURN {n}',
     'you': 'YOU',
     'foe': 'FOE',
     'reroll': 'REROLL',
-    'lastTurn': 'LAST TURN'
+    'lastTurn': 'LAST TURN',
+    'firesIn': 'FIRES IN',
+    'yourTurn': 'YOUR MOVE'
   },
 
   // ─── The stage banner ─────────────────────────────────────────────────────
@@ -233,7 +258,8 @@ export default {
       'turnLimit': 'Decided on tiles held',
       'suddenDeath': 'Sudden death',
       'siegeHeld': 'You held the line',
-      'siegeBroken': 'The siege broke you'
+      'siegeBroken': 'The siege broke you',
+      'crumbled': 'The dummies crumbled'
     }
   },
 
@@ -294,7 +320,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Ranks',
     'title': 'Rune ranks',
     'tagline': 'Every rank is +{n} max HP — the same for every rune.',
     'rank': 'Rank {n}/{max}',
@@ -324,6 +349,11 @@ export default {
     'filling': 'Rune Forge — forging',
     'full': 'Rune Forge — full',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Free skin ready — tap to open',
+    'waiting': 'Free skin in {time}',
+    'take': 'Take'
   },
 
   // ─── Leaderboard ──────────────────────────────────────────────────────────

@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Aspectos',
       'runes': 'Runas de poder',
+      'ranks': 'Rangos',
     },
     'title': 'Tienda',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Monedas',
   'cancel': 'Cancelar',
   'close': 'Cerrar',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Nivel {c}-{n}',
     'conquest': 'Conquista',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Quedan {n}',
     'turn': 'Turno {n}',
     'you': 'Tú',
     'enemy': 'Enemigo',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Mantén 8 casillas para ganar',
       'desktop': 'Mantén 8 casillas para ganar'
     },
+    'conquestClaim': {
+      'touch': 'Cada runa que colocas se queda con su casilla',
+      'desktop': 'Cada runa que colocas se queda con su casilla'
+    },
     'siege': {
       'touch': '¡Rodeado! Escapa y mantén 8 casillas',
       'desktop': '¡Rodeado! Escapa y mantén 8 casillas'
+    },
+    'yourMove': {
+      'touch': 'Tu turno: coloca una runa',
+      'desktop': 'Tu turno: coloca una runa'
+    },
+    'busyPlaced': {
+      'touch': 'Una runa por turno',
+      'desktop': 'Una runa por turno'
+    },
+    'busyPhase': {
+      'touch': 'Espera: las runas están disparando',
+      'desktop': 'Espera: las runas están disparando'
+    },
+    'busyTile': {
+      'touch': 'Esa casilla no la acepta',
+      'desktop': 'Esa casilla no la acepta'
     },
     'mage': {
       'touch': 'El orbe dispara en diagonal a través de dos casillas',
       'desktop': 'El orbe dispara en diagonal a través de dos casillas'
     },
     'defense': {
-      'touch': 'El escudo bloquea flechas y rayos',
-      'desktop': 'El escudo bloquea flechas y rayos'
+      'touch': 'Tu escudo detiene flechas y rayos ENEMIGOS',
+      'desktop': 'Tu escudo detiene flechas y rayos ENEMIGOS'
     },
     'support': {
       'touch': 'La cruz cura y refuerza a sus vecinos',
@@ -169,13 +192,15 @@ export default {
     'clash': '¡CHOQUE!',
     'victory': '¡VICTORIA!',
     'defeat': 'DERROTA',
-    'reveal': 'REVELAR',
+    'reveal': 'ATACANDO',
     'suddenDeath': 'MUERTE SÚBITA',
     'turn': 'TURNO {n}',
     'you': 'TÚ',
     'foe': 'RIVAL',
     'reroll': 'CAMBIAR',
-    'lastTurn': 'ÚLTIMO TURNO'
+    'lastTurn': 'ÚLTIMO TURNO',
+    'firesIn': 'DISPARA EN',
+    'yourTurn': 'TU TURNO'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Decidido por casillas ocupadas',
       'suddenDeath': 'Muerte súbita',
       'siegeHeld': 'Resististe el asedio',
-      'siegeBroken': 'El asedio te derrotó'
+      'siegeBroken': 'El asedio te derrotó',
+      'crumbled': 'Los muñecos se desmoronaron'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Rangos',
     'title': 'Rangos de runa',
     'tagline': 'Cada rango da +{n} PV máx.: igual para todas las runas.',
     'rank': 'Rango {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Forja de runas — forjando',
     'full': 'Forja de runas — llena',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Skin gratis listo: toca para abrir',
+    'waiting': 'Skin gratis en {time}',
+    'take': 'Coger'
   },
 
   'leaderboard': {

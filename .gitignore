@@ -94,3 +94,6 @@ __screenshots__/
 # Portal preview videos rendered by tools/preview-video (pnpm preview:video).
 # Regenerable from the scenarios, and a lossless 10 s 720p clip is tens of MB.
 /preview-videos/
+
+# FX bench renders (tools/fx-bench/shoot.mjs) — contact sheets, WAVs, stats
+/fx-bench-out/

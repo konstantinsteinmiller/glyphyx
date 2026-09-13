@@ -33,6 +33,10 @@ vi.mock('@/use/useAdGate', async () => {
     watchRewarded: vi.fn(async (reason: string) => { gate.calls.push(reason); return gate.granted }),
     claimReward: vi.fn(async (grant: () => void) => { if (gate.granted) grant(); return gate.granted }),
     canOfferReward: r,
+    // These cases model a build where a video really plays, so the "video as
+    // the other way to pay" gate is the same switch. The ad-free build, where
+    // it is not, is `runeRanks.ui.test.ts`'s.
+    canOfferVideo: r,
     adInFlight: ref(false)
   }
 })
@@ -196,6 +200,53 @@ describe('the shop', () => {
     expect(skins.activeSkin.value).toBe('obsidian')
   })
 
+  it('shows the material on whichever rune the strip is asked for', async () => {
+    // The strip under the hero stone is a PICKER. It used to be a row of
+    // pictures cut into neat squares — a row of buttons, as far as anyone can
+    // tell — and the six-year-old in the shop audit poked every one of them
+    // waiting for something to happen.
+    const { ShopModal } = await fresh()
+    wrapper = mount(ShopModal, { props: { modelValue: true }, global: { plugins: [i18n()], stubs } })
+    wrapper.findComponent(FModalStub).vm.$emit('update:activeTab', 'skins')
+    await nextTick()
+    const slots = wrapper.findAll('button.hero__slot')
+    expect(slots.length).toBe(FULL_ROSTER.length)
+    const hero = () => wrapper!.find('.hero__big .pebble-stub').attributes('data-type')
+    expect(hero()).toBe('melee')
+    expect(slots[0]!.attributes('aria-pressed')).toBe('true')
+    await slots[3]!.trigger('click')
+    await nextTick()
+    expect(hero()).toBe(FULL_ROSTER[3])
+    expect(slots[3]!.attributes('aria-pressed')).toBe('true')
+    expect(slots[0]!.attributes('aria-pressed')).toBe('false')
+  })
+
+  it('prices every tab the same way: the coin, then the number', async () => {
+    // One buy-button anatomy across the shop. The skins button used to lead
+    // with the word "Buy", which made it the one price in the shop that read
+    // differently; the word lives on the label now, where a screen reader
+    // still gets it.
+    const { ShopModal } = await fresh({ gx_coins: 10_000 })
+    wrapper = mount(ShopModal, { props: { modelValue: true }, global: { plugins: [i18n()], stubs } })
+    const order = (el: ReturnType<typeof wrapper.find>): string =>
+      el.findAll('.coin-stub, span').map((n) => (n.classes('coin-stub') ? 'coin' : n.text().trim()))
+        .filter((part) => part === 'coin' || /^\d+$/.test(part)).join(' ')
+    expect(order(wrapper.find('.prc__buy'))).toBe('coin 180')
+
+    wrapper.findComponent(FModalStub).vm.$emit('update:activeTab', 'ranks')
+    await nextTick()
+    expect(order(wrapper.find('.rrc__buy'))).toBe('coin 70')
+
+    wrapper.findComponent(FModalStub).vm.$emit('update:activeTab', 'skins')
+    await nextTick()
+    await wrapper.find('.card[aria-label="Obsidian"]').trigger('click')
+    await nextTick()
+    const buy = wrapper.find('.hero__buy')
+    expect(order(buy)).toBe('coin 120')
+    expect(buy.text()).not.toContain('Buy')
+    expect(buy.attributes('aria-label')).toBe('Buy')
+  })
+
   it('opens straight onto the tab it was asked for', async () => {
     const { ShopModal } = await fresh()
     wrapper = mount(ShopModal, { props: { modelValue: true, initialTab: 'skins' }, global: { plugins: [i18n()], stubs } })
@@ -211,7 +262,12 @@ describe('the conquest rail', () => {
     wrapper = mount(ConquestBar, { props: { player: 3, enemy: 2 }, global: { plugins: [i18n()], stubs } })
     expect(wrapper.find('.conquest__goal-num').text()).toBe('8')
     expect(wrapper.find('.conquest__crown .art-stub').exists()).toBe(true)
-    expect(wrapper.find('.conquest__label').text()).toBe('3 / 8')
+    // The rail prints NO number: `ConquestCounters` a few pixels away owns the
+    // live tile count, and printing it twice — once under a crown — is what
+    // left a blind tester unable to say which number decided the match
+    // (2026-09-12). It survives as the rail's accessible name.
+    expect(wrapper.find('.conquest__label').exists()).toBe(false)
+    expect(wrapper.find('.conquest').attributes('aria-label')).toContain('3 / 8')
     expect(wrapper.find('.conquest__tip').exists()).toBe(false)
     await wrapper.find('.conquest').trigger('click')
     await nextTick()

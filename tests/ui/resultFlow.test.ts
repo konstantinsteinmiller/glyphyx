@@ -84,13 +84,27 @@ describe('the result screen', () => {
     expect(body).toMatch(/result__chest-coins\(v-if="chestCoinsShown > 0"\)/)
   })
 
-  it('keeps the ad before the first overlay, chest or result', () => {
+  it('keeps a WIN ad before the first overlay, chest or result', () => {
+    // The original rule, unchanged: an ad must never land on a celebration
+    // already in progress, so for a win it goes first.
     const body = between(scene, 'const presentResult', 'const openResultOverlay')
-    const adAt = body.indexOf('await maybeShowInterstitial()')
+    const adAt = body.indexOf('await maybeShowInterstitial(s)')
     const chestAt = body.indexOf('showChest.value = true')
     expect(adAt).toBeGreaterThan(0)
     expect(chestAt).toBeGreaterThan(adAt)
     expect(body).not.toMatch(/showResult\.value = true/)
+  })
+
+  it('never shows an interstitial during the tutorial, or in front of a defeat', () => {
+    // Both measured on blind testers: an ad at a lesson handover reads as an
+    // ad inside the lesson (the handover is silent), and an ad in front of a
+    // defeat screen makes the player watch it before learning what happened.
+    expect(scene).toMatch(/const adsAllowedAfter = \(s: MatchSummary\): boolean => !isLessonNode\(s\.node\.id\)/)
+    const gate = between(scene, 'const maybeShowInterstitial', 'const interstitialOnLeavingResult')
+    expect(gate).toMatch(/if \(!adsAllowedAfter\(s\) \|\| !s\.result\.won\) return/)
+    // A defeat's ad rides the player's own tap off the screen instead.
+    expect(between(scene, 'const onRetry', 'const onSkinsFromResult')).toMatch(/await interstitialOnLeavingResult\(\)/)
+    expect(between(scene, 'const onNext', 'const onRetry')).toMatch(/await interstitialOnLeavingResult\(\)/)
   })
 
   it('leaves the loot on screen: the chest overlay, not the scene, decides when to continue', () => {

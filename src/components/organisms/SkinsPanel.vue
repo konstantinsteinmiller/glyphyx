@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FButton from '@/components/atoms/FButton.vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
@@ -10,7 +10,7 @@ import { RUNE_TYPES, SKINS, SKIN_IDS, type RuneType, type SkinId } from '@/game/
 import useSkins from '@/use/useSkins'
 import useEconomy from '@/use/useEconomy'
 import { isNative } from '@/use/useUser'
-import { adInFlight, canOfferReward } from '@/use/useAdGate'
+import { adInFlight, canOfferVideo } from '@/use/useAdGate'
 import { unlockedRunes } from '@/use/useCampaign'
 import { playFx } from '@/use/useGameAudio'
 
@@ -40,8 +40,14 @@ import { playFx } from '@/use/useGameAudio'
  * is the alternative payment: offered only while the ads layer says one can
  * actually play, granted only after it did.
  *
- * Lives inside `ShopModal` (the "Skins" tab) and inside the legacy
- * `SkinsModal` wrapper. The wallet row can be hidden when the host shows one.
+ * Lives inside `ShopModal` (the "Skins" tab). The wallet row can be hidden
+ * when the host shows one.
+ *
+ * The rune strip under the hero stone is a PICKER, not a caption: tapping a
+ * rune shows the material on THAT rune. It used to be a plain row of pictures
+ * cut into neat squares, which is a row of buttons as far as anyone can tell —
+ * a six-year-old in the shop audit poked every one of them waiting for
+ * something to happen. Locked runes stay question marks and stay inert.
  */
 interface Props {
   /** The tagline + wallet row under the hero; off when the host has its own. */
@@ -84,6 +90,28 @@ const shortfall = computed(() => Math.max(0, sel.value.price - coins.value))
 /** A video is on its way for this material; the buttons wait for it. */
 const busy = ref(false)
 
+/**
+ * Which rune wears the material on the hero stage. The sword to begin with —
+ * every player owns it — and whatever the player picks from the strip after.
+ */
+const heroRune = ref<RuneType>('melee')
+
+/**
+ * Set for one beat after a material is bought, so the hero can CELEBRATE it.
+ * The rank card has always bounced on a purchase; a skin — the most expensive
+ * thing in the shop — only played a sound.
+ */
+const landed = ref(false)
+let landedTimer: ReturnType<typeof setTimeout> | null = null
+
+const celebrate = (): void => {
+  playFx('skinBuy')
+  landed.value = true
+  if (landedTimer !== null) clearTimeout(landedTimer)
+  landedTimer = setTimeout(() => { landed.value = false; landedTimer = null }, 700)
+}
+onBeforeUnmount(() => { if (landedTimer !== null) clearTimeout(landedTimer) })
+
 /** Only a native build has the width to spell "Watch ad" out beside the frame. */
 const showAdWord = isNative
 
@@ -99,7 +127,7 @@ const onAction = (row: Row): void => {
     if (equipSkin(row.id)) playFx('uiOpen')
     return
   }
-  if (buySkin(row.id)) playFx('skinBuy')
+  if (buySkin(row.id)) celebrate()
   else playFx('uiReject')
 }
 
@@ -107,7 +135,7 @@ const onWatch = async (row: Row): Promise<void> => {
   if (row.owned || busy.value || adInFlight.value) return
   busy.value = true
   try {
-    if (await unlockSkinByAd(row.id)) playFx('skinBuy')
+    if (await unlockSkinByAd(row.id)) celebrate()
   } finally {
     busy.value = false
   }
@@ -119,6 +147,13 @@ const onWatch = async (row: Row): Promise<void> => {
  */
 const isOwned = (type: RuneType): boolean => unlockedRunes.value.includes(type)
 
+/** Show the material on another rune. Only ever called for an owned one. */
+const showOn = (type: RuneType): void => {
+  if (heroRune.value === type || !isOwned(type)) return
+  heroRune.value = type
+  playFx('uiOpen', 0.5)
+}
+
 /** The hero's glow and the cards' rims follow the material's own rim light. */
 const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].base })
 </script>
@@ -126,10 +161,10 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
 <template lang="pug">
   div.skins(:class="{ 'has-wallet': props.showWallet }")
     //- ── The hero: the selected material, worn by every rune ────────────
-    section.hero(:style="rimOf(selected)" :class="{ 'is-owned': sel.owned }")
+    section.hero(:style="rimOf(selected)" :class="{ 'is-owned': sel.owned, 'is-landed': landed }")
       div.hero__stage
         div.hero__big
-          PebblePreview(type="melee" :skin="selected" :level="2" animated)
+          PebblePreview(:type="heroRune" :skin="selected" :level="2" animated)
           span.hero__lv {{ t('runes.level', { n: 2 }) }}
         //- The material worn by the runes the player OWNS — and a question
         //- mark for each one still to come. Drawing every rune's glyph here
@@ -138,7 +173,14 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
         //- this row handed all four over to anyone who opened it on day one.
         div.hero__row
           template(v-for="type in RUNE_TYPES" :key="type")
-            div.hero__slot(v-if="isOwned(type)")
+            button.hero__slot(
+              v-if="isOwned(type)"
+              type="button"
+              :class="{ 'is-showing': heroRune === type }"
+              :aria-label="t(`runes.names.${type}`)"
+              :aria-pressed="heroRune === type"
+              @click="showOn(type)"
+            )
               PebblePreview(:type="type" :skin="selected" :level="1")
             div.hero__slot.is-locked(v-else aria-hidden="true") ?
 
@@ -158,20 +200,31 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
             ) {{ t('skins.equip') }}
           template(v-else)
             div.hero__pay
-              FButton.hero__buy(
-                size="sm"
-                type="warning"
-                :is-disabled="!sel.affordable || busy"
-                @click="onAction(sel)"
-              )
-                span {{ t('skins.buy') }}
-                IconCoin.hero__buy-coin
-                span {{ sel.price }}
+              //- Price and shortfall are ONE thing, in one column. Apart, the
+              //- shortfall lands under the VIDEO button and reads as what the
+              //- video pays — see the same fix in `PowerRuneCard`.
+              div.hero__buycol
+                FButton.hero__buy(
+                  size="sm"
+                  type="warning"
+                  :is-disabled="!sel.affordable || busy"
+                  :aria-label="t('skins.buy')"
+                  @click="onAction(sel)"
+                )
+                  //- Coin, then price — the same two things in the same order
+                  //- as the rank and power-rune buttons. The word "Buy" made
+                  //- this the one price in the shop that read differently, and
+                  //- the coin already says what is being spent; the word lives
+                  //- on the label, where a screen reader still reads it.
+                  IconCoin.hero__buy-coin
+                  span {{ sel.price }}
+                span.hero__need(v-if="!sel.affordable") {{ t('skins.needMore', { n: shortfall }) }}
               //- Less text, same offer: the film frame carries it, and the
               //- word only appears where there is room for it (see the rank
-              //- card's switch, which set this style).
+              //- card's switch, which set this style). Only where a video can
+              //- really play — elsewhere the price is the whole offer.
               FButton.hero__ad(
-                v-if="canOfferReward"
+                v-if="canOfferVideo"
                 size="sm"
                 type="secondary"
                 :is-disabled="busy || adInFlight"
@@ -180,7 +233,6 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
               )
                 RewardAdIcon.hero__ad-icon
                 span.hero__adword(v-if="showAdWord") {{ t('shop.watchAd') }}
-            span.hero__need(v-if="!sel.affordable") {{ t('skins.needMore', { n: shortfall }) }}
 
     //- ── The wallet and the six materials ────────────────────────────────
     div.skins__bar(v-if="props.showWallet")
@@ -269,7 +321,21 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
   width: min(100%, 18rem)
 
 .hero__slot
+  padding: 0.12rem
+  border: 2px solid transparent
+  border-radius: 50%
+  background: none
+  cursor: pointer
   filter: drop-shadow(0 0.2rem 0.35rem rgba(0, 0, 0, 0.6))
+  transition: border-color 0.18s ease, scale 0.18s ease
+
+  &:hover
+    border-color: color-mix(in srgb, var(--rim) 45%, transparent)
+
+// The rune currently wearing the material on the big stone above.
+.hero__slot.is-showing
+  border-color: var(--rim)
+  scale: 1.06
 
 // A rune still to come: the socket it will sit in, and nothing that says which
 // rune it is.
@@ -285,6 +351,20 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
   font-weight: 900
   font-size: clamp(0.6rem, 3vw, 0.95rem)
   filter: none
+
+// One beat of bounce when a material is bought — the rank card's own
+// celebration, on the same clock, so every purchase in the shop lands the
+// same way.
+.hero.is-landed
+  animation: hero-land 0.7s ease-out
+
+@keyframes hero-land
+  0%
+    scale: 1
+  35%
+    scale: 1.03
+  100%
+    scale: 1
 
 .hero__caption
   display: flex
@@ -362,6 +442,12 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
   flex: 0 0 auto
   width: 1.3em
   height: 1em
+
+.hero__buycol
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 0.1rem
 
 .hero__need
   color: #ff9a8f
@@ -514,8 +600,17 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
   .hero__big
     width: clamp(3rem, 13vh, 4.5rem)
 
+  // Ten runes in four columns is THREE rows of circles — 154 px of a 390 px
+  // screen, measured, which is what pushed the buy button off the bottom of a
+  // landscape phone. Five narrower columns make it two short rows and put the
+  // price and the button back on screen.
   .hero__row
-    width: min(100%, 13rem)
+    grid-template-columns: repeat(5, minmax(0, 1fr))
+    gap: 0.2rem
+    width: min(100%, 11rem)
+
+  .hero__big
+    width: clamp(2.6rem, 11vh, 3.6rem)
 
   .hero__blurb
     font-size: clamp(0.58rem, 1.9vh, 0.78rem)
@@ -526,4 +621,9 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
 
   .card__stone
     width: clamp(2rem, 10vh, 3rem)
+@media (prefers-reduced-motion: reduce)
+  .hero.is-landed
+    animation: none
+  .hero__slot
+    transition: none
 </style>

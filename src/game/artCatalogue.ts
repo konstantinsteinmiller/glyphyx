@@ -108,7 +108,20 @@ export const artTarget = (kind: ArtKind, id: string): string => `${ART_FOLDERS[k
  * of the height and whose tails hung at 62 %; every caption landed on its
  * lower rim.
  */
-export const RIBBON_PLATE = { w: 597, h: 256, cap: 0.25 } as const
+/**
+ * The ribbon the reward banner is cut from: `cap` is the slice taken off each
+ * end (the swallow tails), and `mid` is where the CLOTH's centre line sits as
+ * a fraction of the image's height.
+ *
+ * `mid` exists because a ribbon is not vertically symmetric: this painting's
+ * band runs y 2…158 of 207 down its middle column, centred at 0.3865, with the
+ * lower third given over to the shadowed fold beneath it. A caption centred in
+ * the image's BOX therefore sits about a ninth of the banner's height below
+ * the cloth it is supposed to be written on — visible, and reported
+ * (2026-09-13). Measured off the painting, not guessed; re-measure it if the
+ * ribbon is ever repainted.
+ */
+export const RIBBON_PLATE = { w: 597, h: 256, cap: 0.25, mid: 0.3865 } as const
 
 /** Every `(kind, id)` the catalogue names, flattened, in catalogue order. */
 export const allArtIds = (): (readonly [ArtKind, string])[] =>

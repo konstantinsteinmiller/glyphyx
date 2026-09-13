@@ -39,6 +39,8 @@ export type FxSound =
   | 'nuke'        // a nuker goes off: the whole board at once
   | 'crown'       // a crown takes an enemy rune and is spent doing it
   | 'shield'      // damage absorbed by a defense / aura
+  | 'aura'        // a Lv 2 defense raising its shields over its neighbours
+  | 'intercept'   // an arrow, beam or blade stopped dead on a shield stone
   | 'heal'
   | 'buff'
   | 'shatter'     // a rune breaks into rubble
@@ -63,3 +65,20 @@ export type FxSound =
   | 'skinBuy'
   | 'uiOpen'
   | 'uiReject'
+
+/**
+ * Where a cue happens and what made it — handed to a cue's recipe so the same
+ * sound can sit where it happened and weigh what it weighs.
+ *
+ *   `pan`   −1 (left) … +1 (right): the renderer derives it from the event's
+ *           position on the board, so a bow on the left twangs from the left.
+ *   `level` the rune's level (1…8): a Lv 2+ rune may play heavier.
+ *   `side`  whose rune it was, for a recipe that colours the two sides apart.
+ *
+ * All optional: a cue with no placement plays centred, at Lv 1.
+ */
+export interface SfxOpts {
+  pan?: number
+  level?: number
+  side?: 'player' | 'enemy'
+}

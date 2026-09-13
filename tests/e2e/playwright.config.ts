@@ -17,7 +17,14 @@ import { defineConfig, devices } from '@playwright/test'
  * thing a unit test cannot prove.
  */
 
-const PORT = 2051
+/**
+ * The suite brings up its OWN dev server on this port, and refuses to reuse
+ * one it finds there — a stale server from another project answers happily and
+ * the whole run then grades the wrong game. `GLYPHYX_E2E_PORT` is for the case
+ * where something else already holds 2051: move this run rather than adopt
+ * whatever is listening.
+ */
+const PORT = Number(process.env.GLYPHYX_E2E_PORT) || 2051
 
 export default defineConfig({
   testDir: '.',

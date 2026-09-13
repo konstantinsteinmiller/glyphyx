@@ -433,12 +433,22 @@ export const registeredSpriteCount = (): number => spriteRegistry.length
 /** Test seam: forget every registered sprite. */
 export const __clearSpriteRegistry = (): void => { spriteRegistry.length = 0 }
 
+let emitSuspended = false
+
+/**
+ * Suspend emission: every `emit` becomes a no-op until it is resumed. For the
+ * rune-effects warm-up (`runeFx/warm.ts`), which runs each effect offscreen to
+ * BAKE its sprites and must not put a single particle in the pool doing it.
+ */
+export const suspendEmit = (on: boolean): void => { emitSuspended = on }
+
 /**
  * Spawn one particle. Over-capacity spawns recycle the OLDEST slot rather than
  * being dropped, so a big burst always reads as a big burst — it just cuts the
  * tail of whatever came before it.
  */
 export const emit = (o: EmitOptions): void => {
+  if (emitSuspended) return
   const cap = currentCapacity
   let i: number
   if (liveCount < cap) {

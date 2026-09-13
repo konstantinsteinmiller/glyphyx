@@ -97,6 +97,38 @@ export const STALL_BREAKER_MS = 75_000
 export const STALL_BREAKER_FULL_MS = 120_000
 
 /**
+ * ─── The lesson rescue ──────────────────────────────────────────────────────
+ *
+ * The stall-breaker above weakens the ENEMY, which is the right answer for a
+ * duel and no answer at all for a lesson: a lesson's dummies are passive and
+ * hit for nothing already, so there is nothing there to weaken. What stalls a
+ * lesson is the PLAYER having no move they can see — the last dummy out of
+ * reach of every stone they have placed, the board full, and `TUTORIAL_TURN_LIMIT`
+ * 200 turns away.
+ *
+ * So a lesson counts resolutions in which the enemy lost no health
+ * (`MatchState.stallTurns`) and answers in two steps: the teaching hand comes
+ * back showing a move that WOULD land (`rescueMove`), and if that is ignored
+ * too, the dummies crumble and the lesson is cleared. A lesson that cannot be
+ * lost must not be able to trap the player either.
+ */
+export const LESSON_HINT_TURNS = 2
+export const LESSON_RESCUE_TURNS = 6
+
+/**
+ * How much slower a LESSON's resolution plays. The resolver's ordering and
+ * every event's place in it are untouched — the clock that walks the timeline
+ * simply runs at this fraction of speed while a tutorial node is up, and at
+ * full speed from the first real duel on.
+ *
+ * 1.2 s is enough for a player who knows what a sword, a bow and a beam look
+ * like. For one who does not, it is the entire turn happening at once: blind
+ * testers reported seeing stones "silently vanish" and numbers change with no
+ * visible cause, and three of them never worked out what their own runes did.
+ */
+export const LESSON_RESOLVE_SCALE = 1.6
+
+/**
  * Where inside the 1.2 s resolution each step lands. `at` is the offset the
  * step's first event starts on, `dur` is how long one event of that step is
  * animated for. `resolve.ts` stamps every event with these so the renderer
@@ -365,6 +397,18 @@ export const RANK_HP_PER_RANK = 1
 /** Coins for rank 1, 2, 3, 4, 5. A full rune is 1390; the whole roster 12510. */
 export const RANK_PRICES: readonly number[] = [70, 140, 240, 380, 560]
 
+/**
+ * Coins for taking the LAST rune early — the Nuker, which the campaign
+ * otherwise hands over at 4-1.
+ *
+ * Dearer than the top rank (560) and just under the top skin (750): it is a
+ * whole rune ahead of schedule, and it must never be the cheap thing on the
+ * tab. The offer exists at all so the rune is reachable where no video can
+ * play — an ad-free build used to hand it over for a button press, which is a
+ * campaign gate leaking through the ads layer.
+ */
+export const RUNE_UNLOCK_PRICE = 600
+
 export const clampRank = (rank: number): number =>
   Math.max(0, Math.min(MAX_RUNE_RANK, Math.floor(Number(rank) || 0)))
 
@@ -603,6 +647,49 @@ export const aimRegionPolygon = (type: RuneType, dir: Dir): readonly (readonly [
   }
 }
 
+/**
+ * Which part of a region's polygon faces OUT of the tile: the two vertex
+ * indices that bound it, and the anchor point between them, in unit space.
+ *
+ * `a` and `b` are where an outward chevron's arms end; (`ax`, `ay`) is where
+ * its peak grows from, and doubles as the "rim" anchor a touch UI leans its
+ * arrow toward. For a cardinal triangle that is its outer EDGE and the edge's
+ * midpoint; for a diagonal quadrant it is the two half-edge points either side
+ * of the outer CORNER, and the corner itself.
+ *
+ * Derived from the polygon rather than assumed from its winding, which is what
+ * the code that came before got wrong: it took the first point as the outer
+ * one, and that is only true of `up` and `ul`. On `ur`, `dr` and `dl` the
+ * first point is the tile's own CENTRE or a half-edge, so the mark that was
+ * supposed to lean out to the rim leaned into the middle of the tile —
+ * precisely where the finger or the carried stone was already covering it.
+ *
+ * The vertex nearest the tile's centre is the region's inner one (a triangle's
+ * apex, a quadrant's inner corner), and it is unambiguous for both shapes; the
+ * outward feature is the part opposite it. `omni` has no outward feature and
+ * returns the whole tile's centre with `a`/`b` equal, so a caller can tell.
+ */
+export const aimRegionOuterEdge = (
+  type: RuneType, dir: Dir
+): { a: number; b: number; ax: number; ay: number } => {
+  const poly = aimRegionPolygon(type, dir)
+  const n = poly.length
+  if (dir === 'omni' || n < 3) return { a: 0, b: 0, ax: 0.5, ay: 0.5 }
+  let inner = 0
+  let best = Infinity
+  for (let i = 0; i < n; i++) {
+    const d = (poly[i]![0] - 0.5) ** 2 + (poly[i]![1] - 0.5) ** 2
+    if (d < best) { best = d; inner = i }
+  }
+  const a = (inner + 1) % n
+  const b = (inner + n - 1) % n
+  if (n === 3) {
+    return { a, b, ax: (poly[a]![0] + poly[b]![0]) / 2, ay: (poly[a]![1] + poly[b]![1]) / 2 }
+  }
+  const corner = poly[(inner + 2) % n]!
+  return { a, b, ax: corner[0], ay: corner[1] }
+}
+
 // ─── Board state ────────────────────────────────────────────────────────────
 
 export interface Cell {
@@ -667,6 +754,65 @@ export const bombardCells = (from: Cell, dir: Dir, level: number): Cell[] => {
   }
   for (const side of [-1, 0, 1] as const) {
     push(from.col + dx * BOMBARD_RANGE + px * side, from.row + dy * BOMBARD_RANGE + py * side)
+  }
+  return out
+}
+
+/**
+ * Every tile a rune of `type` at `from` facing `dir` would strike this turn.
+ *
+ * The one place that answers "what does this facing point AT" outside the
+ * resolver. It is deliberately a thin composition of the shape helpers above,
+ * because two other pieces of code answer the same question their own way and
+ * they must not disagree with each other:
+ *
+ *   • `resolve.ts` strikes for real, per type, with mitigation and interception.
+ *   • `useArenaArt.attackCells` mirrors the shapes into preallocated scratch for
+ *     the per-frame aim preview.
+ *
+ * This one exists for the cheap question a placement asks: is anything of the
+ * other side in this line? It allocates, so it belongs off the frame loop —
+ * `board.usefulDir` calls it a handful of times when a pebble enters a tile.
+ * `omni` strikes nothing: a shield or a cross has no facing to be useful.
+ */
+export const strikeCells = (type: RuneType, level: number, dir: Dir, from: Cell): Cell[] => {
+  if (dir === 'omni') return []
+  const [dx, dy] = DIR_VEC[dir]
+  if (dx === 0 && dy === 0) return []
+  const out: Cell[] = []
+  const push = (col: number, row: number): void => {
+    if (inBounds(col, row)) out.push({ col, row })
+  }
+  switch (type) {
+    case 'melee':
+    case 'crown':
+      push(from.col + dx, from.row + dy)
+      break
+    case 'archer':
+      // The skipped tile is NOT a target: an arrow flies over the stone in
+      // front of it, which is the whole lesson of 1-2.
+      for (const step of archerRange(level)) push(from.col + dx * step, from.row + dy * step)
+      break
+    case 'mage':
+      for (let step = 1; step <= MAGE_REACH; step++) {
+        const col = from.col + dx * step
+        const row = from.row + dy * step
+        if (!inBounds(col, row)) break
+        out.push({ col, row })
+      }
+      break
+    case 'cleave':
+      out.push(...cleaveCells(from, dir))
+      break
+    case 'roller':
+      out.push(...rollerLane(from, dir))
+      break
+    case 'bombard':
+      out.push(...bombardCells(from, dir, level))
+      break
+    default:
+      // defense, support, nuker: no directional strike of their own.
+      break
   }
   return out
 }
@@ -925,6 +1071,27 @@ export interface NodeConfig {
   tutorial: TutorialBeat
   /** The ghost hand's script, on tutorial nodes. */
   ghost?: GhostSpec
+  /**
+   * ─── One taught move on a node that is still a real fight ────────────────
+   *
+   * A `ghost` belongs to a lesson: no clock, a dummy that never places, the
+   * adaptive relief switched off because the ghost hand IS the relief. A
+   * `guide` is the same hand on a node that remains a real match — it shows
+   * the opening move once, on turn 1, and then gets out of the way.
+   *
+   * It exists because the campaign teaches every RUNE with a lesson and never
+   * taught the OBJECTIVE. Conquest arrives at 1-7 with a new win condition, a
+   * live clock and a turn limit all at once, and two blind testers lost it
+   * twice and stopped playing there without ever working out how a tile
+   * changes hands — one of them read the enemy placing runes as pieces that
+   * "spawn and creep onto my side" (2026-09-12 round 4).
+   *
+   * Making 1-7 a lesson would have been the wrong tool: it would have turned
+   * the first real fight into another dummy match AND switched off the
+   * adaptive relief that the same round's measurements had just been tuned
+   * into. The node stays a fight; it just opens by showing you one move.
+   */
+  guide?: GhostSpec
   /** `false` on the tutorial nodes: planning waits for the player. */
   timer: boolean
   turnLimit: number
@@ -990,6 +1157,8 @@ export interface MatchResult {
   won: boolean
   /** Why it ended. */
   reason: 'conquest' | 'eliminated' | 'overrun' | 'turnLimit' | 'suddenDeath' | 'siegeHeld' | 'siegeBroken'
+  /** The lesson gave up on being finished and crumbled (see `LESSON_RESCUE_TURNS`). */
+  | 'crumbled'
   turns: number
   playerTiles: number
   enemyTiles: number
@@ -1034,6 +1203,18 @@ export interface MatchState {
    * has ranks; this is only ever applied to the player's side.
    */
   ranks: RankTable
+  /**
+   * Consecutive resolutions in which the enemy lost no health at all — the
+   * match is going nowhere. Zeroed by any damage the player lands.
+   *
+   * It exists because a LESSON cannot be lost, which quietly meant it could not
+   * be finished either: with the board full, every stone facing the wrong way
+   * and the only remaining enemy out of reach, four of five blind testers sat
+   * in 1-2 watching a turn counter climb until they closed the tab
+   * (2026-09-11). `LESSON_HINT_TURNS` brings the teaching hand back; by
+   * `LESSON_RESCUE_TURNS` the dummies crumble and the lesson is done.
+   */
+  stallTurns: number
 }
 
 // ─── Economy ────────────────────────────────────────────────────────────────
@@ -1059,6 +1240,18 @@ export const FORGE_COINS_PER_HOUR = 12
 export const FORGE_CAP_HOURS = 8
 /** A brand-new player finds the forge already this many minutes along. */
 export const FORGE_HEAD_START_MIN = 45
+
+/**
+ * The skin chest: minutes between free materials.
+ *
+ * Short on purpose. The shop's cheapest material is 220 coins against a forge
+ * that pays 12 an hour, so the nine materials are otherwise a very long way
+ * off — and a session that has a reward landing inside it is a session with a
+ * reason to still be open. Ten minutes also sits just past the three-minute
+ * mark the portal fit test grades, so a player who stays for one chest has
+ * already cleared it. See `useSkinChest`.
+ */
+export const SKIN_CHEST_MINUTES = 10
 
 /**
  * ─── Silhouette: the rune says WHAT shape, the skin says HOW it is cut ──────

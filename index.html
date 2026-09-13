@@ -17,8 +17,10 @@
   <title>Glyphyx</title>
   <style>
       /* The splash paints before any JS runs, so its colours are inlined here
-         rather than pulled from the app's stylesheet. They match the arena's
-         night-sky background so the handover to the canvas is seamless. */
+         rather than pulled from the app's stylesheet. The page itself stays the
+         arena's night sky; the splash is a deep rune-indigo over it, lit behind
+         the card, whose edge sits a shade off that sky so the fade to the game
+         has nothing to jump over. */
       body {
           margin: 0;
           background-color: #0a1224;
@@ -32,13 +34,61 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          background: radial-gradient(circle at 50% 38%, #1b2b52 0%, #0a1224 70%);
+          overflow: hidden;
+          background: radial-gradient(circle at 50% 40%, #2a3474 0%, #161d4c 45%, #0c1030 88%);
           transition: opacity 0.4s ease-out;
       }
 
       #static-splash.hidden {
           opacity: 0;
           pointer-events: none;
+      }
+
+      /* The panning backdrop.
+         ------------------------------------------------------------------
+         Eight runes in eight skins as faint line drawings, one seamless tile
+         (public/images/bg/splash-tile.svg, generated from the game's own
+         stone outlines by `pnpm art:splash-tile`), drifting down and to the
+         right the way a Brawl Stars loading screen does.
+
+         The layer is one tile bigger than the screen up and to the left, and
+         slides exactly one tile down-right before it loops, so the loop has
+         no seam. It moves by TRANSFORM, never background-position: a
+         transform runs on the compositor, so the drift stays smooth while
+         the main thread is busy booting the game — which is the whole time
+         this screen is up.
+
+         Like the logo, the tile is a file both splashes name, so it arrives
+         a beat after the first frame; the fade-in hides that. FLogoProgress
+         draws the same layer and adopts this one's clock at the handover. */
+      .splash-tiles {
+          position: absolute;
+          top: -320px;
+          left: -320px;
+          right: 0;
+          bottom: 0;
+          background: url(./images/bg/splash-tile.svg) 0 0 / 320px 320px repeat;
+          opacity: 0.15;
+          will-change: transform;
+          animation: splash-tiles-in 0.6s ease-out both, splash-tiles-pan 32s linear infinite;
+      }
+
+      /* A haze over the tiles behind the card, so the Keeper and the logo
+         stand on quiet ground and the pattern lives round the edges. */
+      #static-splash::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: radial-gradient(ellipse 60% 44% at 50% 45%, rgba(34, 42, 98, 0.72) 0%, rgba(30, 38, 90, 0.35) 55%, rgba(22, 29, 76, 0) 100%);
+      }
+
+      @keyframes splash-tiles-in {
+          from { opacity: 0; }
+      }
+
+      @keyframes splash-tiles-pan {
+          to { transform: translate3d(320px, 320px, 0); }
       }
 
       /* The greeting card.
@@ -62,6 +112,8 @@
          and `.splash-painted + svg` puts the drawing away. */
       .splash-greet {
           position: relative;
+          /* Over the haze, which is painted after it. */
+          z-index: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -158,12 +210,13 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-          .splash-hero, .splash-glow, .splash-eye, .splash-mote { animation: none; }
+          .splash-hero, .splash-glow, .splash-eye, .splash-mote, .splash-tiles { animation: none; }
       }
   </style>
 </head>
 <body>
 <div id="static-splash">
+  <div class="splash-tiles" aria-hidden="true"></div>
   <div class="splash-greet">
     <div class="splash-hero" aria-hidden="true">
       <!-- painted keeper: baked in at build time when the art ships (src/game/keeperSplash.ts) -->

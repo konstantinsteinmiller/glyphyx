@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skórki',
       'runes': 'Runy mocy',
+      'ranks': 'Rangi',
     },
     'title': 'Sklep',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Monety',
   'cancel': 'Anuluj',
   'close': 'Zamknij',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Poziom {c}-{n}',
     'conquest': 'Podbój',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Zostało {n}',
     'turn': 'Tura {n}',
     'you': 'Ty',
     'enemy': 'Wróg',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Utrzymaj 8 pól, by wygrać',
       'desktop': 'Utrzymaj 8 pól, by wygrać'
     },
+    'conquestClaim': {
+      'touch': 'Każda postawiona runa zajmuje swoje pole',
+      'desktop': 'Każda postawiona runa zajmuje swoje pole'
+    },
     'siege': {
       'touch': 'Otoczono cię! Przebij się i utrzymaj 8 pól',
       'desktop': 'Otoczono cię! Przebij się i utrzymaj 8 pól'
+    },
+    'yourMove': {
+      'touch': 'Twój ruch — połóż runę',
+      'desktop': 'Twój ruch — połóż runę'
+    },
+    'busyPlaced': {
+      'touch': 'Jedna runa na turę',
+      'desktop': 'Jedna runa na turę'
+    },
+    'busyPhase': {
+      'touch': 'Czekaj — runy atakują',
+      'desktop': 'Czekaj — runy atakują'
+    },
+    'busyTile': {
+      'touch': 'To pole jej nie przyjmie',
+      'desktop': 'To pole jej nie przyjmie'
     },
     'mage': {
       'touch': 'Kula strzela po skosie przez dwa pola',
       'desktop': 'Kula strzela po skosie przez dwa pola'
     },
     'defense': {
-      'touch': 'Tarcza blokuje strzały i promienie',
-      'desktop': 'Tarcza blokuje strzały i promienie'
+      'touch': 'Twoja tarcza zatrzymuje WROGIE strzały i wiązki',
+      'desktop': 'Twoja tarcza zatrzymuje WROGIE strzały i wiązki'
     },
     'support': {
       'touch': 'Krzyż leczy i wzmacnia sąsiadów',
@@ -169,13 +192,15 @@ export default {
     'clash': 'STARCIE!',
     'victory': 'ZWYCIĘSTWO!',
     'defeat': 'PORAŻKA',
-    'reveal': 'ODSŁONA',
+    'reveal': 'ATAK',
     'suddenDeath': 'NAGŁA ŚMIERĆ',
     'turn': 'TURA {n}',
     'you': 'TY',
     'foe': 'WRÓG',
     'reroll': 'PRZETASUJ',
-    'lastTurn': 'OSTATNIA TURA'
+    'lastTurn': 'OSTATNIA TURA',
+    'firesIn': 'STRZAŁ ZA',
+    'yourTurn': 'TWÓJ RUCH'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Rozstrzygnięto po utrzymanych polach',
       'suddenDeath': 'Nagła śmierć',
       'siegeHeld': 'Utrzymałeś linię',
-      'siegeBroken': 'Oblężenie cię złamało'
+      'siegeBroken': 'Oblężenie cię złamało',
+      'crumbled': 'Kukły rozsypały się'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Rangi',
     'title': 'Rangi run',
     'tagline': 'Każda ranga to +{n} maks. PŻ — tyle samo dla każdej runy.',
     'rank': 'Ranga {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Kuźnia run — w pracy',
     'full': 'Kuźnia run — pełna',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Darmowy skin gotowy — dotknij, by otworzyć',
+    'waiting': 'Darmowy skin za {time}',
+    'take': 'Odbierz'
   },
 
   'leaderboard': {

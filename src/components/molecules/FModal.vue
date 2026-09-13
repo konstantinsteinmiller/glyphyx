@@ -66,6 +66,112 @@ const attachObserver = async (): Promise<void> => {
   measureHeader()
 }
 
+/**
+ * ─── Keeping the keyboard inside the dialog ─────────────────────────────────
+ *
+ * This is `role="dialog" aria-modal="true"`, and until now it was neither:
+ * Tab walked out of the frame and into the game behind it — the eighth press
+ * landed on `<body>` — so a keyboard or switch-control player could be
+ * operating a board they could no longer see. Nobody noticed while nothing
+ * drew a focus ring at all; the ring made it obvious.
+ *
+ * Three parts, which together are the WAI-ARIA dialog pattern:
+ *   · on open, focus moves to the frame itself (a `tabindex="-1"` container,
+ *     so no ring flashes for a player who opened it with a mouse);
+ *   · Tab and Shift+Tab wrap at the ends of the dialog's own focusables;
+ *   · on close, focus returns to whatever opened it — the shop button, not
+ *     the top of the document.
+ *
+ * The listener is on the DOCUMENT rather than the frame, because the frame
+ * only receives keys while focus is already inside it, and recovering focus
+ * that has escaped is half the job. Stacked modals are guarded by letting
+ * only the last `.f-modal` in the DOM trap.
+ */
+const dialogEl = ref<HTMLElement | null>(null)
+let lastFocused: HTMLElement | null = null
+
+const FOCUSABLE = [
+  'button:not([disabled])',
+  '[href]',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(', ')
+
+/**
+ * The dialog's own focusables, in tab order, skipping anything hidden.
+ *
+ * Visibility is asked of `checkVisibility()` where the browser has it, and of
+ * the computed style otherwise. NOT of `offsetWidth` — every element measures
+ * zero under jsdom, so a box-size filter leaves the tests with exactly one
+ * focusable and a trap that silently passes by wrapping onto itself.
+ */
+const focusables = (): HTMLElement[] => {
+  const root = dialogEl.value
+  if (!root) return []
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => {
+    if (typeof el.checkVisibility === 'function') return el.checkVisibility()
+    const cs = getComputedStyle(el)
+    return cs.display !== 'none' && cs.visibility !== 'hidden'
+  })
+}
+
+/** The topmost open dialog traps; anything under it stays out of the way. */
+const isTopDialog = (): boolean => {
+  const all = document.querySelectorAll('.f-modal')
+  return all.length === 0 || all[all.length - 1] === dialogEl.value
+}
+
+const onKeydown = (e: KeyboardEvent): void => {
+  if (!props.modelValue || !dialogEl.value || !isTopDialog()) return
+  if (e.key === 'Escape' && props.isClosable) { close(); return }
+  if (e.key !== 'Tab') return
+  const items = focusables()
+  const active = document.activeElement as HTMLElement | null
+  const inside = active !== null && dialogEl.value.contains(active)
+  if (items.length === 0) { e.preventDefault(); dialogEl.value.focus(); return }
+  const first = items[0]!
+  const last = items[items.length - 1]!
+  if (!inside) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return }
+  if (e.shiftKey && active === first) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus() }
+}
+
+const takeFocus = (): void => {
+  lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  void nextTick(() => dialogEl.value?.focus())
+}
+
+const returnFocus = (): void => {
+  const back = lastFocused
+  lastFocused = null
+  if (back && back.isConnected) back.focus()
+}
+
+/**
+ * ─── "There is more below" ──────────────────────────────────────────────────
+ *
+ * The content region scrolls whenever a panel is taller than the frame, which
+ * on a landscape phone is nearly always — and nothing said so. The shop audit
+ * found the skins tab's buy button and the ranks tab's free gift both sitting
+ * past the fold there, on a viewport where a player has no scrollbar to see.
+ *
+ * `hasMore` is true while anything is still under the fold; the foot of the
+ * content then wears a fade. Re-checked on scroll, on open, and whenever the
+ * header is re-measured (a tab switch swaps the whole panel out).
+ */
+const contentEl = ref<HTMLElement | null>(null)
+const hasMore = ref(false)
+
+const syncMore = (): void => {
+  const el = contentEl.value
+  if (!el) { hasMore.value = false; return }
+  hasMore.value = el.scrollHeight - el.clientHeight - el.scrollTop > 8
+}
+
+const syncMoreSoon = (): void => { void nextTick(() => { syncMore(); setTimeout(syncMore, 120) }) }
+
 // ─── Modal-open signal (CrazyGames gameplayStop/Start) ──────────────────────
 // Centralised here so every FModal consumer participates without per-modal
 // wiring. Refcounted; held once per open, dropped on close or unmount.
@@ -75,19 +181,26 @@ const markClosed = (): void => { releaseModalOpen?.(); releaseModalOpen = null }
 
 watch(() => props.modelValue, (open, prev) => {
   if (open && !prev) playSound('modal-open', 0.07)
-  if (open) { markOpen(); void attachObserver() } else { markClosed(); observer?.disconnect() }
+  if (open) { markOpen(); void attachObserver(); syncMoreSoon(); takeFocus() } else { markClosed(); observer?.disconnect(); returnFocus() }
 })
 
 // Re-measure when the header's content changes (title text, tab set).
 watch(() => [props.title, props.tabs?.length], () => { void nextTick(measureHeader) })
+// A tab switch swaps the whole panel: what was below the fold changes with it.
+watch(() => props.activeTab, syncMoreSoon)
 
 onMounted(() => {
-  if (props.modelValue) { markOpen(); void attachObserver() }
+  if (props.modelValue) { markOpen(); void attachObserver(); syncMoreSoon(); takeFocus() }
+  window.addEventListener('resize', syncMore, { passive: true })
+  document.addEventListener('keydown', onKeydown)
 })
 onUnmounted(() => {
   markClosed()
   observer?.disconnect()
   observer = null
+  window.removeEventListener('resize', syncMore)
+  document.removeEventListener('keydown', onKeydown)
+  returnFocus()
 })
 
 const close = (): void => emit('update:modelValue', false)
@@ -108,10 +221,12 @@ const handleTabChange = (val: string | number): void => emit('update:activeTab',
     )
       div.f-modal(
         v-if="modelValue"
+        ref="dialogEl"
         v-bind="$attrs"
         :style="{ '--fmodal-header-overlap': headerOverlap + 'px' }"
         role="dialog"
         aria-modal="true"
+        tabindex="-1"
       )
         //- Backdrop
         div.f-modal__backdrop(@click="isClosable && close()")
@@ -150,8 +265,16 @@ const handleTabChange = (val: string | number): void => emit('update:activeTab',
 
               //- Scrollable content. Top padding is the MEASURED header
               //- overhang plus a gap — never a guess.
-              div.f-modal__content
+              div.f-modal__content(ref="contentEl" :class="{ 'has-more': hasMore }" @scroll.passive="syncMore")
                 slot
+
+              //- "There is more under this" — a fade at the content's foot,
+              //- shown only while something is actually below it. A short
+              //- landscape phone turns every one of these panels into a
+              //- scroller, and the audit found players who never learned that:
+              //- the skins tab's buy button and the ranks tab's free gift both
+              //- sit past the fold there with nothing to say so.
+              div.f-modal__more(v-if="hasMore" aria-hidden="true")
 
               //- Footer — pinned, collapses out of layout when empty.
               div.f-modal__footer
@@ -171,6 +294,12 @@ const handleTabChange = (val: string | number): void => emit('update:activeTab',
   align-items: center
   justify-content: center
   padding: calc(clamp(0.4rem, 2vw, 1rem) + env(safe-area-inset-top, 0px)) calc(clamp(0.4rem, 2vw, 1rem) + env(safe-area-inset-right, 0px)) calc(clamp(0.4rem, 2vw, 1rem) + env(safe-area-inset-bottom, 0px)) calc(clamp(0.4rem, 2vw, 1rem) + env(safe-area-inset-left, 0px))
+
+// The frame takes focus on open so the first Tab starts INSIDE the dialog.
+// It is a container, not a control, so it never wears the ring.
+.f-modal:focus,
+.f-modal:focus-visible
+  outline: none
 
 .f-modal__backdrop
   position: absolute
@@ -254,6 +383,21 @@ const handleTabChange = (val: string | number): void => emit('update:activeTab',
   border: 5px solid #0f1a30
   border-radius: clamp(0.9rem, 4.4vw, 2rem)
   background-color: #1a2b4b
+
+// The fade that says the panel goes on past the frame. Pinned to the frame's
+// foot, never scrolls with the content, and never eats a tap.
+.f-modal__more
+  position: absolute
+  left: 0
+  right: 0
+  bottom: 0
+  height: clamp(1.4rem, 5vh, 2.4rem)
+  // The frame's own radius and its own colour: the fade has to look like the
+  // panel running out, not like a bar laid over it.
+  border-radius: 0 0 clamp(0.9rem, 4.4vw, 2rem) clamp(0.9rem, 4.4vw, 2rem)
+  background: linear-gradient(to bottom, rgba(26, 43, 75, 0), rgba(26, 43, 75, 0.96))
+  pointer-events: none
+  z-index: 2
 
 .f-modal__content
   flex: 1 1 auto

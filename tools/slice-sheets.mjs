@@ -68,6 +68,42 @@
  * Without a receipt (a fresh clone, a first run) nothing is refused: mtimes
  * after a checkout say nothing, so an older-looking file is a WARNING and the
  * slice goes ahead.
+ *
+ * WHAT IT READS BEFORE IT CUTS
+ *
+ * A lattice cut is blind: it trusts that cell N's paint is inside cell N's
+ * rect and nothing else is. An audit of every slice in the game (2026-09-11)
+ * found five ways that was false, none of which the shape test can see, so
+ * the painting is now read WHOLE before a single rect is cut (`prepareInPage`):
+ *
+ *   · RE-COMPOSED GRIDS. Three stone sheets came back with THREE states per
+ *     skin — eight stones a row where the lattice holds six — at the exact
+ *     2:1 the sheet asked for. Every one of the 62 files cut from them held
+ *     two half-stones. Now: when paint wider than a line runs across more
+ *     than a tenth of the interior cut length, the painting is refused.
+ *   · PAINTED GRID LINES. The key sheet's lattice, copied in as thin dark
+ *     lines. They survived the key as a frame around every crown, glyph and
+ *     warhead, and they were measured as the SUBJECT, so each stone was
+ *     normalised against a box the size of its cell and shipped shrunken.
+ *     Now: long thin straight runs of paint along a cut line are erased.
+ *   · NEIGHBOURS. A stone that drifted across its cut line leaves a sliver in
+ *     the next file and a flat side on its own. Now: every blob of paint
+ *     belongs to the cell that holds most of it. A cell erases the blobs it
+ *     does not own, and cuts wider to take in the ones it does (the fit then
+ *     puts the whole stone back in the box).
+ *   · MARKS THE DRAWING NEVER HAD. Cell numbers ("1." to "18."), captions
+ *     ("Laurel · Sword, Lv 2"), a gold silhouette inside a wreath. Now: a
+ *     detached blob, up to STRAY_MAX of a cell, that does not come near
+ *     anything in the reference drawing is erased, and the console says so.
+ *   · A GROUND THAT IS NOT MAGENTA. The boulder sheet came back on dusty
+ *     purple. A few JPEG pixels passed the magenta test, that switched the
+ *     flood off, and the spill step turned the purple into a grey card behind
+ *     the stone. Now: the key counts as having found the ground only when it
+ *     cleared the cell's own border, and a slice whose border is still opaque
+ *     where the drawing leaves margin is refused rather than written.
+ *
+ * `--no-clean` cuts blind as before; `--grid-ok` cuts a painting whose cut
+ * lines run through paint anyway.
  */
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -169,6 +205,21 @@ const NO_CHROMA = flag('--no-chroma')
 const NO_TRIM = flag('--no-trim')
 const NO_AUTO_BG = flag('--no-auto-bg')
 const NO_FIT = flag('--no-fit')
+const NO_CLEAN = flag('--no-clean')
+const GRID_OK = flag('--grid-ok')
+/**
+ * How much of the interior cut length may run through paint before the
+ * painting counts as re-composed. The four re-composed returns measured 33-39%,
+ * every good one 0-1.6% (a stone that drifted a little over one line).
+ */
+const GRID_CROSS_MAX = 0.1
+/**
+ * The biggest detached blob, as a share of its cell, that is erased for lying
+ * where the reference has nothing. Text and cell numbers are well under 1%,
+ * the silhouettes painted into the laurels 5-16%. Bigger than this it is more
+ * likely an idea the painter had than a mistake, so it stays.
+ */
+const STRAY_MAX = 0.2
 // How to square up a single-cell image that did not come back square.
 const FIT = opts['--fit'] ?? 'squash'
 if (!['squash', 'crop'].includes(FIT)) {
@@ -211,6 +262,12 @@ Slice repainted contact sheets back into drop-in bitmaps.
                    was painted. Off by default: the receipt in
                    painted/.sliced.json is what stops a re-cut rune quietly
                    getting its old silhouette back on the next unrelated run.
+  --no-clean       Cut the rects blind: no painted grid lines erased, no
+                   neighbour slivers or stray marks removed, no widened cut
+                   for a subject that overhangs its cell.
+  --grid-ok        Cut a painting whose cut lines run through painted subjects
+                   (a re-composed grid). Off by default: every slice of one
+                   holds pieces of two stones.
   --size <px>      See above. 256 is the rule (LOADING.md, payload sizing).
   --dry            Print the plan and write nothing.
 `)
@@ -498,6 +555,533 @@ const freshness = (file, sheet) => {
   return { ok: true, rev, own }
 }
 
+// ─── Reading the painting whole ─────────────────────────────────────────────
+//
+// See "WHAT IT READS BEFORE IT CUTS" at the top. This runs IN THE PAGE (it is
+// passed over as source), so it may use nothing from this module. It leaves
+// the cleaned painting in `globalThis.__sheet` and, per blob of paint, who
+// owns it in `globalThis.__prep`; the cut reads both.
+//
+// `a.cells` are rects in painting pixels; `a.vcuts`/`a.hcuts` are the lines
+// the lattice is cut on (grid lines are looked for there); `a.seams` are the
+// interior lines between two cells whose paint must not cross.
+async function prepareInPage (a) {
+  const src = globalThis.__sheet
+  const W = src.naturalWidth || src.width
+  const H = src.naturalHeight || src.height
+  const N = W * H
+  const cv = document.createElement('canvas')
+  cv.width = W
+  cv.height = H
+  const g = cv.getContext('2d', { willReadFrequently: true })
+  g.drawImage(src, 0, 0)
+  const img = g.getImageData(0, 0, W, H)
+  const d = img.data
+  const report = { grounds: [], lines: 0, linePx: 0, crossing: 0, crossRows: 0, cells: {} }
+  const l1 = (r, gg, b, c) => Math.abs(r - c[0]) + Math.abs(gg - c[1]) + Math.abs(b - c[2])
+
+  // ── What the ground is ──
+  //
+  // Magenta and its JPEG smear always. Plus any flat colour that makes up a
+  // quarter of a ring sampled just INSIDE the frame — the boulder sheet's
+  // dusty purple — because a ground the key misses would otherwise read as one
+  // blob of paint covering the whole sheet. Inside the frame, so a painted
+  // border line along the edge is not taken for the ground; never dark, for
+  // the same reason.
+  const inset = Math.max(2, Math.round(a.minCell * 0.04))
+  const q = (i) => ((d[i] >> 4) << 8) | ((d[i + 1] >> 4) << 4) | (d[i + 2] >> 4)
+  const counts = new Map()
+  let ringN = 0
+  const sample = (x, y) => {
+    const key = q((y * W + x) * 4)
+    counts.set(key, (counts.get(key) || 0) + 1)
+    ringN++
+  }
+  for (let x = inset; x < W - inset; x += 2) { sample(x, inset); sample(x, H - 1 - inset) }
+  for (let y = inset; y < H - inset; y += 2) { sample(inset, y); sample(W - 1 - inset, y) }
+  const centre = (k) => [((k >> 8) & 15) * 16 + 8, ((k >> 4) & 15) * 16 + 8, (k & 15) * 16 + 8]
+  const clusters = []
+  for (const [key, n] of [...counts].sort((x, y) => y[1] - x[1])) {
+    const c = centre(key)
+    const hit = clusters.find((cl) => l1(c[0], c[1], c[2], cl.c) <= 64)
+    if (hit) hit.n += n
+    else clusters.push({ c, n })
+  }
+  const grounds = clusters
+    .filter((cl) => cl.n >= ringN * 0.25 && cl.c[0] + cl.c[1] + cl.c[2] > 150)
+    .slice(0, 3).map((cl) => cl.c)
+  // Reported: the grounds the magenta key would not have reached on its own.
+  report.grounds = grounds
+    .filter((c) => Math.abs(c[0] - 255) + c[1] + Math.abs(c[2] - 255) >= 150)
+    .map((c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join(''))
+  const P = new Uint8Array(N)
+  for (let k = 0, i = 0; k < N; k++, i += 4) {
+    const r = d[i], gg = d[i + 1], b = d[i + 2]
+    if (Math.abs(r - 255) + gg + Math.abs(b - 255) < 150) continue
+    let ground = false
+    for (const c of grounds) if (l1(r, gg, b, c) <= 60) { ground = true; break }
+    if (!ground) P[k] = 1
+  }
+
+  // ── A ground that is not magenta becomes magenta ──
+  //
+  // The boulder sheet came back dusty purple WITH magenta lines drawn over it
+  // along the lattice. Each cell's border then keyed perfectly, the purple
+  // inside it never did, and the spill step greyed it into a card. So the odd
+  // ground is recoloured here, once, for the whole sheet, and every cell goes
+  // down the well-worn magenta path. Only ground CONNECTED to a cut line or
+  // the frame: a purple enclosed by a stone's outline is the stone's.
+  const odd = grounds.filter((c) => Math.abs(c[0] - 255) + c[1] + Math.abs(c[2] - 255) >= 150)
+  report.recoloured = 0
+  if (odd.length) {
+    const seen = new Uint8Array(N)
+    const st = new Int32Array(N)
+    let sp = 0
+    const seed = (x, y) => {
+      if (x < 0 || y < 0 || x >= W || y >= H) return
+      const k = y * W + x
+      if (!P[k] && !seen[k]) { seen[k] = 1; st[sp++] = k }
+    }
+    for (let x = 0; x < W; x++) { seed(x, 0); seed(x, H - 1) }
+    for (let y = 0; y < H; y++) { seed(0, y); seed(W - 1, y) }
+    for (const c of a.cells) {
+      for (let x = c.x0; x < c.x1; x++) { seed(x, c.y0); seed(x, c.y1 - 1) }
+      for (let y = c.y0; y < c.y1; y++) { seed(c.x0, y); seed(c.x1 - 1, y) }
+    }
+    while (sp) {
+      const k = st[--sp]
+      const i = k * 4
+      if (odd.some((c) => l1(d[i], d[i + 1], d[i + 2], c) <= 60)) {
+        d[i] = 255; d[i + 1] = 0; d[i + 2] = 255
+        report.recoloured++
+      }
+      const x = k % W, y = (k - x) / W
+      if (x > 0) seed(x - 1, y)
+      if (x < W - 1) seed(x + 1, y)
+      if (y > 0) seed(x, y - 1)
+      if (y < H - 1) seed(x, y + 1)
+    }
+  }
+  // A grid line is painted over with the ground just beyond it, so it becomes
+  // exactly what surrounds it: magenta on a magenta sheet, keyed with the rest;
+  // purple on a purple one, flooded with the rest. Pure magenta there made a
+  // keyed-looking band round every cell of a sheet the key could not clear.
+  const erase = (k, rgb) => {
+    const i = k * 4
+    d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2]; d[i + 3] = 255
+    P[k] = 0
+  }
+
+  // ── Painted grid lines ──
+  //
+  // A run of paint at most `tmax` across, with ground on both sides, inside a
+  // band either side of a cut line; runs on successive rows chained into one
+  // straight line at least a fifth of a cell long. A stone's own outline near
+  // the band curves away long before that, and a subject that reaches the
+  // band edge is not flanked by ground, so neither is ever a candidate.
+  if (a.lines) {
+    const scan = (cut, vertical) => {
+      const across = vertical ? W : H
+      const b = Math.max(4, Math.round(cut.cell * 0.06))
+      const tmax = Math.max(4, Math.round(cut.cell * 0.03))
+      const lo = Math.max(0, cut.at - b)
+      const hi = Math.min(across - 1, cut.at + b)
+      const at = vertical ? (u, v) => v * W + u : (u, v) => u * W + v
+      const runs = []
+      for (let v = Math.max(0, cut.from); v < Math.min(vertical ? H : W, cut.to); v++) {
+        let u = lo
+        while (u <= hi) {
+          if (!P[at(u, v)]) { u++; continue }
+          const r0 = u
+          while (u <= hi && P[at(u, v)]) u++
+          const r1 = u - 1
+          const open = (r0 > lo || lo === 0) && (r1 < hi || hi === across - 1)
+          if (open && r1 - r0 + 1 <= tmax) runs.push({ v, r0, r1, c: (r0 + r1) / 2 })
+        }
+      }
+      const chains = []
+      for (const r of runs) {
+        let best = null
+        for (const ch of chains) {
+          if (r.v === ch.lastV || r.v - ch.lastV > tmax + 2) continue
+          const dc = Math.abs(ch.lastC - r.c)
+          if (dc <= 2.5 && (!best || dc < Math.abs(best.lastC - r.c))) best = ch
+        }
+        if (best) {
+          best.runs.push(r)
+          best.lastV = r.v
+          best.lastC = r.c
+          best.minC = Math.min(best.minC, r.c)
+          best.maxC = Math.max(best.maxC, r.c)
+        } else {
+          chains.push({ runs: [r], firstV: r.v, lastV: r.v, lastC: r.c, minC: r.c, maxC: r.c })
+        }
+      }
+      // The ground beside a run: three pixels out, past the line's own soft
+      // edge, whichever side is ground; magenta when neither is.
+      const beside = (r) => {
+        for (const u of [r.r0 - 3, r.r1 + 3, r.r0 - 2, r.r1 + 2]) {
+          if (u < 0 || u >= across) continue
+          const k = at(u, r.v)
+          if (!P[k]) return [d[k * 4], d[k * 4 + 1], d[k * 4 + 2]]
+        }
+        return [255, 0, 255]
+      }
+      for (const ch of chains) {
+        const span = ch.lastV - ch.firstV + 1
+        if (span < cut.len * 0.2 || ch.runs.length < span * 0.6 || ch.maxC - ch.minC > cut.cell * 0.04) continue
+        report.lines++
+        for (const r of ch.runs) {
+          const rgb = beside(r)
+          for (let u = Math.max(0, r.r0 - 1); u <= Math.min(across - 1, r.r1 + 1); u++) {
+            const k = at(u, r.v)
+            if (P[k]) report.linePx++
+            erase(k, rgb)
+          }
+        }
+      }
+    }
+    for (const c of a.vcuts) scan(c, true)
+    for (const c of a.hcuts) scan(c, false)
+  }
+
+  // ── Does paint run across the cut lines? ──
+  //
+  // Rows where paint spans the whole ±d neighbourhood of a seam: a stone cut
+  // through, not a line drawn along it.
+  let cross = 0, len = 0
+  for (const s of a.seams) {
+    const across = s.vertical ? W : H
+    for (let v = s.from; v < s.to; v++) {
+      let all = true
+      for (let u = s.at - s.d; u <= s.at + s.d; u++) {
+        if (u < 0 || u >= across || !P[s.vertical ? v * W + u : u * W + v]) { all = false; break }
+      }
+      if (all) cross++
+      len++
+    }
+  }
+  report.crossing = len ? cross / len : 0
+  report.crossRows = cross
+
+  g.putImageData(img, 0, 0)
+  globalThis.__sheet = cv
+  if (!a.own) return JSON.stringify(report)
+
+  // ── Blobs, and who owns each ──
+  const lab = new Int32Array(N)
+  const size = [0], bx0 = [0], by0 = [0], bx1 = [0], by1 = [0]
+  const stack = new Int32Array(N)
+  let nLab = 0
+  for (let k0 = 0; k0 < N; k0++) {
+    if (!P[k0] || lab[k0]) continue
+    const l = ++nLab
+    let sp = 0, n = 0, mnx = W, mny = H, mxx = -1, mxy = -1
+    stack[sp++] = k0
+    lab[k0] = l
+    while (sp) {
+      const k = stack[--sp]
+      n++
+      const x = k % W, y = (k - x) / W
+      if (x < mnx) mnx = x
+      if (x > mxx) mxx = x
+      if (y < mny) mny = y
+      if (y > mxy) mxy = y
+      for (let dy = -1; dy <= 1; dy++) {
+        const yy = y + dy
+        if (yy < 0 || yy >= H) continue
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx
+          if (xx < 0 || xx >= W) continue
+          const kk = yy * W + xx
+          if (P[kk] && !lab[kk]) { lab[kk] = l; stack[sp++] = kk }
+        }
+      }
+    }
+    size.push(n); bx0.push(mnx); by0.push(mny); bx1.push(mxx); by1.push(mxy)
+  }
+  const cells = a.cells
+  const owner = new Int32Array(nLab + 1).fill(-1)
+  const ownN = new Int32Array(nLab + 1)
+  const inCell = cells.map((c) => {
+    const m = new Map()
+    for (let y = Math.max(0, c.y0); y < Math.min(H, c.y1); y++) {
+      for (let x = Math.max(0, c.x0); x < Math.min(W, c.x1); x++) {
+        const l = lab[y * W + x]
+        if (l) m.set(l, (m.get(l) || 0) + 1)
+      }
+    }
+    return m
+  })
+  inCell.forEach((m, ci) => {
+    for (const [l, n] of m) if (n > ownN[l]) { ownN[l] = n; owner[l] = ci }
+  })
+
+  // ── Marks the drawing never had ──
+  //
+  // The reference, scaled onto the painting and grown by an eighth of a cell
+  // to allow for a painter who enlarged or nudged the subject. A blob that
+  // touches none of it, is not its cell's biggest, and is small, is a mark.
+  const stray = new Uint8Array(nLab + 1)
+  let refMask = null
+  if (a.ref) {
+    const ri = new Image()
+    ri.src = a.ref
+    await ri.decode()
+    const RW = ri.naturalWidth, RH = ri.naturalHeight
+    const rc = document.createElement('canvas')
+    rc.width = RW
+    rc.height = RH
+    const rg = rc.getContext('2d', { willReadFrequently: true })
+    rg.drawImage(ri, 0, 0)
+    const rd = rg.getImageData(0, 0, RW, RH).data
+    const ref = new Uint8Array(N)
+    for (let y = 0; y < H; y++) {
+      const ry = Math.min(RH - 1, Math.floor((y * RH) / H))
+      for (let x = 0; x < W; x++) {
+        const i = (ry * RW + Math.min(RW - 1, Math.floor((x * RW) / W))) * 4
+        if (rd[i + 3] > 8 && Math.abs(rd[i] - 255) + rd[i + 1] + Math.abs(rd[i + 2] - 255) >= 60) ref[y * W + x] = 1
+      }
+    }
+    refMask = ref
+    // Grown INSIDE each cell only. Grown across the sheet, the bottom of one
+    // row's wreaths reached the captions painted at the top of the next, and
+    // the stone to the left reached this one's cell number, and both stayed.
+    const grow = (r) => {
+      const tmp = new Uint8Array(N), dil = new Uint8Array(N)
+      for (const c of cells) {
+        const cx0 = Math.max(0, c.x0), cx1 = Math.min(W, c.x1), cy0 = Math.max(0, c.y0), cy1 = Math.min(H, c.y1)
+        for (let y = cy0; y < cy1; y++) {
+          const row = y * W
+          let run = 0
+          for (let j = cx0; j < cx0 + r && j < cx1; j++) run += ref[row + j]
+          for (let x = cx0; x < cx1; x++) {
+            if (x + r < cx1) run += ref[row + x + r]
+            if (x - r - 1 >= cx0) run -= ref[row + x - r - 1]
+            tmp[row + x] = run > 0 ? 1 : 0
+          }
+        }
+        for (let x = cx0; x < cx1; x++) {
+          let run = 0
+          for (let j = cy0; j < cy0 + r && j < cy1; j++) run += tmp[j * W + x]
+          for (let y = cy0; y < cy1; y++) {
+            if (y + r < cy1) run += tmp[(y + r) * W + x]
+            if (y - r - 1 >= cy0) run -= tmp[(y - r - 1) * W + x]
+            dil[y * W + x] = run > 0 ? 1 : 0
+          }
+        }
+      }
+      return dil
+    }
+    // Touching counts inside the blob's OWN cell only.
+    const touching = (dil) => {
+      const t = new Uint8Array(nLab + 1)
+      cells.forEach((c, ci) => {
+        for (let y = Math.max(0, c.y0); y < Math.min(H, c.y1); y++) {
+          for (let x = Math.max(0, c.x0); x < Math.min(W, c.x1); x++) {
+            const k = y * W + x, l = lab[k]
+            if (l && dil[k] && owner[l] === ci) t[l] = 1
+          }
+        }
+      })
+      return t
+    }
+    const far = touching(grow(Math.max(2, Math.round(a.minCell * 0.12))))
+    // Text sits at the top of a cell in every return that carried it, often
+    // closer to a big stone than the wide margin above allows — "12." beside
+    // a Lv 2 stone. So a TINY mark wholly inside the top band is judged by a
+    // tight margin instead.
+    const near = touching(grow(Math.max(1, Math.round(a.minCell * 0.03))))
+    const biggest = new Int32Array(cells.length)
+    for (let l = 1; l <= nLab; l++) {
+      const ci = owner[l]
+      if (ci >= 0 && (!biggest[ci] || size[l] > size[biggest[ci]])) biggest[ci] = l
+    }
+    for (let l = 1; l <= nLab; l++) {
+      const ci = owner[l]
+      if (ci < 0 || biggest[ci] === l) continue
+      const c = cells[ci]
+      const area = (c.x1 - c.x0) * (c.y1 - c.y0)
+      if (!far[l] && size[l] <= area * a.strayMax) stray[l] = 1
+      else if (!near[l] && size[l] <= area * 0.006 && by1[l] < c.y0 + (c.y1 - c.y0) * 0.14) stray[l] = 1
+    }
+
+    // A SHAPE the drawing does not have, sitting inside the subject — the gold
+    // sword painted into the middle of every laurel, where the drawing is an
+    // empty wreath. Near the wreath's knot, so no margin test catches it. The
+    // painting is registered onto the reference first (the same box-to-box
+    // scale the fit will use), then a sizeable blob that lands on almost none
+    // of the drawing goes. Sizeable only: the splash's little floating rune is
+    // an addition too, and a welcome one.
+    const reg = grow(Math.max(1, Math.round(a.minCell * 0.04)))
+    cells.forEach((c, ci) => {
+      if (!c.fit || !c.target || c.fill) return
+      const cw = c.x1 - c.x0, ch = c.y1 - c.y0, area = cw * ch
+      let px0 = W, py0 = H, px1 = -1, py1 = -1
+      const cand = []
+      for (let l = 1; l <= nLab; l++) {
+        if (owner[l] !== ci || stray[l]) continue
+        if (size[l] >= area * 0.01) {
+          px0 = Math.min(px0, bx0[l]); py0 = Math.min(py0, by0[l])
+          px1 = Math.max(px1, bx1[l]); py1 = Math.max(py1, by1[l])
+        }
+        if (l !== biggest[ci] && size[l] >= area * 0.03 && size[l] <= area * a.strayMax) cand.push(l)
+      }
+      if (!cand.length || px1 < 0) return
+      const k = Math.sqrt(((c.fit.w * cw) / (px1 - px0 + 1)) * ((c.fit.h * ch) / (py1 - py0 + 1)))
+      const pcx = (px0 + px1 + 1) / 2, pcy = (py0 + py1 + 1) / 2
+      const rcx = c.x0 + c.fit.cx * cw, rcy = c.y0 + c.fit.cy * ch
+      const hit = new Map(), tot = new Map()
+      for (const l of cand) { hit.set(l, 0); tot.set(l, 0) }
+      for (let y = Math.max(0, py0); y <= Math.min(H - 1, py1); y++) {
+        for (let x = Math.max(0, px0); x <= Math.min(W - 1, px1); x++) {
+          const l = lab[y * W + x]
+          if (!l || !tot.has(l)) continue
+          tot.set(l, tot.get(l) + 1)
+          const rx = Math.round(rcx + (x - pcx) * k), ry = Math.round(rcy + (y - pcy) * k)
+          if (rx >= c.x0 && rx < c.x1 && ry >= c.y0 && ry < c.y1 && reg[ry * W + rx]) hit.set(l, hit.get(l) + 1)
+        }
+      }
+      for (const l of cand) if (tot.get(l) && hit.get(l) / tot.get(l) < 0.1) stray[l] = 1
+    })
+  }
+
+  // ── Per cell: what it loses, what it gains ──
+  cells.forEach((c, ci) => {
+    if (!c.target || c.fill) return
+    const cw = c.x1 - c.x0, ch = c.y1 - c.y0, area = cw * ch
+    let foreignPx = 0
+    const from = {}
+    for (const [l, n] of inCell[ci]) {
+      if (owner[l] === ci || size[l] < area * 0.002) continue
+      foreignPx += n
+      const o = cells[owner[l]].id
+      from[o] = (from[o] || 0) + n
+    }
+    let strayN = 0, strayPx = 0
+    let sx0 = W, sy0 = H, sx1 = -1, sy1 = -1
+    let ox0 = c.x0, oy0 = c.y0, ox1 = c.x1 - 1, oy1 = c.y1 - 1
+    for (let l = 1; l <= nLab; l++) {
+      if (owner[l] !== ci) continue
+      if (stray[l]) {
+        if (size[l] < 8) continue
+        strayN++
+        strayPx += size[l]
+        sx0 = Math.min(sx0, bx0[l]); sy0 = Math.min(sy0, by0[l])
+        sx1 = Math.max(sx1, bx1[l]); sy1 = Math.max(sy1, by1[l])
+        continue
+      }
+      if (size[l] < area * 0.01) continue
+      ox0 = Math.min(ox0, bx0[l]); oy0 = Math.min(oy0, by0[l])
+      ox1 = Math.max(ox1, bx1[l]); oy1 = Math.max(oy1, by1[l])
+    }
+    // How solidly the DRAWING fills its own box: a ring a third, a plaque
+    // nearly all of it. A return far more solid than that is a card.
+    //
+    // And how much of that box is a HOLE — ground the drawing walls in, the
+    // middle of a ring. Topology survives any fit, so it is compared directly.
+    let refFill = null, refHole = null
+    if (refMask) {
+      const cx0 = Math.max(0, c.x0), cx1 = Math.min(W, c.x1), cy0 = Math.max(0, c.y0), cy1 = Math.min(H, c.y1)
+      let rx0 = W, ry0 = H, rx1 = -1, ry1 = -1, on = 0
+      for (let y = cy0; y < cy1; y++) {
+        for (let x = cx0; x < cx1; x++) {
+          if (!refMask[y * W + x]) continue
+          on++
+          if (x < rx0) rx0 = x
+          if (x > rx1) rx1 = x
+          if (y < ry0) ry0 = y
+          if (y > ry1) ry1 = y
+        }
+      }
+      if (rx1 >= 0) {
+        const box = (rx1 - rx0 + 1) * (ry1 - ry0 + 1)
+        refFill = on / box
+        const out = new Uint8Array((cx1 - cx0) * (cy1 - cy0))
+        const cw2 = cx1 - cx0
+        const st = []
+        const push = (x, y) => {
+          if (x < cx0 || y < cy0 || x >= cx1 || y >= cy1) return
+          const j = (y - cy0) * cw2 + (x - cx0)
+          if (out[j] || refMask[y * W + x]) return
+          out[j] = 1
+          st.push(x, y)
+        }
+        for (let x = cx0; x < cx1; x++) { push(x, cy0); push(x, cy1 - 1) }
+        for (let y = cy0; y < cy1; y++) { push(cx0, y); push(cx1 - 1, y) }
+        while (st.length) {
+          const y = st.pop(), x = st.pop()
+          push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1)
+        }
+        let holes = 0
+        for (let y = ry0; y <= ry1; y++) {
+          for (let x = rx0; x <= rx1; x++) {
+            if (!refMask[y * W + x] && !out[(y - cy0) * cw2 + (x - cx0)]) holes++
+          }
+        }
+        refHole = holes / box
+      }
+    }
+    const capX = Math.round(cw * 0.3), capY = Math.round(ch * 0.3)
+    report.cells[c.id] = {
+      refFill,
+      refHole,
+      foreignPx,
+      from,
+      strayN,
+      strayPx,
+      strayBox: strayN ? [(sx0 - c.x0) / cw, (sy0 - c.y0) / ch, (sx1 + 1 - c.x0) / cw, (sy1 + 1 - c.y0) / ch] : null,
+      pad: {
+        l: Math.min(capX, c.x0 - ox0),
+        t: Math.min(capY, c.y0 - oy0),
+        r: Math.min(capX, ox1 - (c.x1 - 1)),
+        b: Math.min(capY, oy1 - (c.y1 - 1))
+      }
+    }
+  })
+  globalThis.__prep = { lab, owner, stray, W, H }
+  return JSON.stringify(report)
+}
+
+/**
+ * Did this panel come back standing on its ground? `null` when not, else the
+ * lines that say why. `pc` is the whole-painting read's note on the cell.
+ *
+ * Three signs, each measured on real returns:
+ *   · a border still solid where the DRAWING leaves room — a ground the key
+ *     could not see (`r.card`, counted in the page);
+ *   · a solid rectangle, flush with its own box on all four sides, where the
+ *     drawing is not one — a tile of parchment floating on a magenta the key
+ *     DID clear. Cards measured 96-100% solid and 75-100% flush on their
+ *     weakest side; the solid stones (emerald cuts, plaques) 93-95% and 66%;
+ *   · a hole in the drawing that the return does not have — the ground inside
+ *     a ring, walled in where no key and no flood reach it. The rings: holes
+ *     of 27-41% of the drawing's box, 0 in the return; nothing else drawn in
+ *     this game has one over 5%.
+ */
+const groundVerdict = (r, pc, sheet) => {
+  if (r.fill || r.frames !== undefined || sheet.bg === 'opaque') return null
+  const id = r.id.padEnd(26)
+  if (pc?.refHole >= 0.15 && r.hole < pc.refHole * 0.25) {
+    return [
+      `  ✗ ${id} its middle came back filled — the drawing has a hole there`
+        + ` (${(pc.refHole * 100).toFixed(0)}% of its box), the return ${(r.hole * 100).toFixed(0)}%.`,
+      '    The ground inside it was painted in. Not written; repaint it on flat magenta.'
+    ]
+  }
+  const solidBox = r.bboxFill >= 0.93 && r.flush >= 0.75 && (pc?.refFill == null || pc.refFill < 0.9)
+  if (!r.card && !solidBox) return null
+  const names = ['top', 'bottom', 'right', 'left']
+  return [
+    `  ✗ ${id} the ground behind it was never removed — `
+      + (r.card
+        ? `its ${r.edges.map((v, i) => (v >= 0.5 ? names[i] : null)).filter(Boolean).join('/')} border is solid where the drawing leaves room.`
+        : `it is a solid rectangle (${(r.bboxFill * 100).toFixed(0)}% of its box, flush on every side)`
+          + (pc?.refFill != null ? `, the drawing fills ${(pc.refFill * 100).toFixed(0)}%.` : '.')),
+    '    It would ship as a picture on a card. Not written; repaint it on flat magenta.'
+  ]
+}
+
 let written = 0
 let skipped = 0
 let failed = 0
@@ -545,6 +1129,7 @@ try {
         img.src = 'data:${mime};base64,${b64}';
         await img.decode();
         globalThis.__sheet = img;
+        globalThis.__prep = null;
         return JSON.stringify({ w: img.naturalWidth, h: img.naturalHeight });
       })()`,
       awaitPromise: true, returnByValue: true
@@ -571,7 +1156,12 @@ try {
     }
     if (!fresh.ok) console.warn(`\n  ! ${basename(file)} — ${fresh.why.split('\n')[0]} Slicing anyway (--stale-ok).`)
     if (fresh.warn) console.warn(`  ! ${fresh.warn}`)
-    if (fresh.rev) receiptNext[basename(file)] = { sheet: sheet.id, rev: fresh.rev, painting: fresh.own, at: new Date().toISOString() }
+    // Recorded once something was actually cut from it: a painting refused
+    // further down (a re-composed grid, a card) was not "sliced against" rev X.
+    const receiptLine = fresh.rev
+      ? { sheet: sheet.id, rev: fresh.rev, painting: fresh.own, at: new Date().toISOString() }
+      : null
+    const writtenBefore = written
 
     // The sheet may come back at a different resolution than it left at, which
     // is fine and expected. What is NOT fine is a different SHAPE: that means
@@ -845,12 +1435,110 @@ try {
       continue
     }
 
+    // ── Read the painting whole, before anything is cut ──
+    //
+    // See "WHAT IT READS BEFORE IT CUTS" at the top. Lattice sheets and walk
+    // sheets only: a single or a band IS its own rect. A sheet with `fill`
+    // panels (tiles, the frame) is left alone — its paint reaches the cut
+    // lines by contract, so every test here would read it as a failure.
+    const rectOf = (c) => ({
+      x0: Math.round(c.x * sx), y0: Math.round(c.y * sy),
+      x1: Math.round((c.x + c.w) * sx), y1: Math.round((c.y + c.h) * sy)
+    })
+    let prep = null
+    if (!NO_CLEAN && ['sheet', 'walk'].includes(sheet.kind) && !sheet.cells.some((c) => c.fill)) {
+      const cellsPx = sheet.cells.map((c) => ({
+        id: c.id, target: c.target ?? null, fill: !!c.fill, fit: c.fit ?? null, ...rectOf(c)
+      }))
+      const minCell = Math.min(...cellsPx.map((c) => Math.min(c.x1 - c.x0, c.y1 - c.y0)))
+      // Every edge of every cell is a line a grid may have been painted on.
+      const seen = new Set()
+      const vcuts = [], hcuts = []
+      for (const c of cellsPx) {
+        const cw = c.x1 - c.x0, ch = c.y1 - c.y0
+        for (const at of [c.x0, c.x1]) {
+          const key = `v${at}:${c.y0}`
+          if (!seen.has(key)) { seen.add(key); vcuts.push({ at, from: c.y0, to: c.y1, cell: cw, len: ch }) }
+        }
+        for (const at of [c.y0, c.y1]) {
+          const key = `h${at}:${c.x0}`
+          if (!seen.has(key)) { seen.add(key); hcuts.push({ at, from: c.x0, to: c.x1, cell: ch, len: cw }) }
+        }
+      }
+      // The lines two cells share, where one cell's paint must stop.
+      const seams = []
+      for (const a2 of cellsPx) {
+        for (const b2 of cellsPx) {
+          if (a2.x1 === b2.x0) {
+            const from = Math.max(a2.y0, b2.y0), to = Math.min(a2.y1, b2.y1)
+            if (to > from) seams.push({ vertical: true, at: a2.x1, from, to, d: Math.max(3, Math.round((a2.x1 - a2.x0) * 0.03)) })
+          }
+          if (a2.y1 === b2.y0) {
+            const from = Math.max(a2.x0, b2.x0), to = Math.min(a2.x1, b2.x1)
+            if (to > from) seams.push({ vertical: false, at: a2.y1, from, to, d: Math.max(3, Math.round((a2.y1 - a2.y0) * 0.03)) })
+          }
+        }
+      }
+      // The reference is only a map of this painting when the painting kept
+      // its grid; a walk accepted with --frames at another layout has none.
+      const base = TARGETS.find((t) => t.id === sheet.id)
+      const refFile = referenceOf(sheet)
+      const ref = refFile && (sheet.kind !== 'walk' || (base.cols === sheet.cols && base.rows === sheet.rows))
+        ? `data:image/png;base64,${readFileSync(refFile).toString('base64')}`
+        : null
+      const res = await send('Runtime.evaluate', {
+        expression: `(${prepareInPage.toString()})(${JSON.stringify({
+          cells: cellsPx, vcuts, hcuts, seams, minCell, lines: true, own: true, ref, strayMax: STRAY_MAX
+        })})`,
+        awaitPromise: true, returnByValue: true
+      })
+      if (res.exceptionDetails) {
+        console.warn(`  ! could not read the painting whole (${res.exceptionDetails.exception?.description?.split('\n')[0] ?? 'error'})`
+          + ' — cutting blind. Check every slice.')
+      } else {
+        prep = JSON.parse(res.result.value)
+      }
+    }
+    if (prep) {
+      for (const hex of prep.grounds) {
+        console.warn(`  ! the background is ${hex}, not #ff00ff. ${prep.recoloured} px of it that reach a cut line`
+          + ' were turned magenta and keyed; that is only as good as the outlines around the art — check every slice.')
+      }
+      if (prep.lines) {
+        console.log(`  · erased ${prep.lines} painted grid line${prep.lines > 1 ? 's' : ''} (${prep.linePx} px):`
+          + ' the key sheet\'s lattice, copied in as art.')
+      }
+      if (prep.crossing > GRID_CROSS_MAX) {
+        const say = GRID_OK ? console.warn : console.error
+        say(`  ${GRID_OK ? '!' : '✗'} ${(prep.crossing * 100).toFixed(0)}% of the cut lines run through painted subjects.`)
+        say('    The model re-composed the grid (more or fewer panels than the reference, at the')
+        say('    same overall size), so every cut would slice subjects in half.')
+        if (!GRID_OK) {
+          console.error('    Repaint it from the reference, or pass --grid-ok to cut it anyway.')
+          failed++
+          continue
+        }
+      } else if (prep.crossRows) {
+        console.log(`  · ${(prep.crossing * 100).toFixed(1)}% of the cut length crosses paint — a subject over its line;`
+          + ' it is given back to the cell that holds most of it.')
+      }
+    }
+
     const plan = slices.map((c) => ({
       id: c.id,
       target: c.target,
       letterboxed: c.letterboxed ?? null,
       sx: Math.round(c.x * sx), sy: Math.round(c.y * sy),
       sw: Math.round(c.w * sx), sh: Math.round(c.h * sy),
+      // Which blobs of the painting are this cell's (`globalThis.__prep`), and
+      // how far its own subject overhangs the rect. The cut is widened by that
+      // much so the fit can take the whole stone back into the box — only
+      // where there is a fit to do it with, and never for a walk frame, whose
+      // strip is fitted as one.
+      ci: prep ? sheet.cells.indexOf(c) : -1,
+      pad: prep && !NO_FIT && c.fit && !c.fill && c.frame === undefined && prep.cells[c.id]
+        ? prep.cells[c.id].pad
+        : { l: 0, t: 0, r: 0, b: 0 },
       // Square again. When the proportions drifted this is what undoes it;
       // when they did not, source and output are equal and nothing resamples.
       // A single-cell image is capped: a model handed back 1536x1536 would
@@ -928,17 +1616,61 @@ try {
         const out = [];
         // Walk-cycle panels, held back so they can be composed into one strip.
         const strip = [];
+        // Who owns each blob of paint, from the whole-painting read (null when
+        // the painting was cut blind).
+        const PREP = globalThis.__prep || null;
         for (const p of plan) {
-          // Crop the cell 1:1 first, so measuring happens on real pixels.
+          // Crop the cell 1:1 first, so measuring happens on real pixels —
+          // widened by the pad where this cell's own subject overhangs it.
+          // CW x CH is the crop; p.sw x p.sh stays the panel it is fitted into.
+          const CW = p.sw + p.pad.l + p.pad.r, CH = p.sh + p.pad.t + p.pad.b;
+          const padded = CW !== p.sw || CH !== p.sh;
           const cell = document.createElement('canvas');
-          cell.width = p.sw; cell.height = p.sh;
-          const cc = cell.getContext('2d');
-          cc.drawImage(img, p.sx, p.sy, p.sw, p.sh, 0, 0, p.sw, p.sh);
+          cell.width = CW; cell.height = CH;
+          const cc = cell.getContext('2d', { willReadFrequently: true });
+          cc.drawImage(img, p.sx - p.pad.l, p.sy - p.pad.t, CW, CH, 0, 0, CW, CH);
 
-          const id = cc.getImageData(0, 0, p.sw, p.sh);
+          const id = cc.getImageData(0, 0, CW, CH);
           const d = id.data;
-          const N_PIX = p.sw * p.sh;
+          const N_PIX = CW * CH;
           let keyed = 0;
+
+          // Paint this cell does not own goes back to ground before anything
+          // is keyed or measured: a neighbour's blob that crossed the cut, a
+          // stray mark the reference never had. Magenta, so every step below
+          // treats it exactly like the ground around it.
+          //
+          // 'art' marks the pixels of the crop that are magenta only because
+          // they were painted over here. The border tests below skip them: a
+          // neighbour's sliver along one side, counted as ground, would make a
+          // sheet the key could not clear look keyed.
+          let foreignPx = 0;
+          const art = new Uint8Array(N_PIX);
+          if (PREP && p.ci >= 0) {
+            const lab = PREP.lab, own = PREP.owner, stray = PREP.stray;
+            const ox = p.sx - p.pad.l, oy = p.sy - p.pad.t;
+            for (let y = 0; y < CH; y++) {
+              const yy = oy + y;
+              if (yy < 0 || yy >= PREP.H) continue;
+              for (let x = 0; x < CW; x++) {
+                const xx = ox + x;
+                if (xx < 0 || xx >= PREP.W) continue;
+                const l = lab[yy * PREP.W + xx];
+                if (!l || (own[l] === p.ci && !stray[l])) continue;
+                const i = (y * CW + x) * 4;
+                d[i] = 255; d[i + 1] = 0; d[i + 2] = 255; d[i + 3] = 255;
+                art[y * CW + x] = 1;
+                foreignPx++;
+              }
+            }
+          }
+
+          // Did the key find the GROUND, or only a few pixels of it? Counted
+          // on the cell's own border, where a ground has to be. The boulder
+          // sheet came back on dusty purple: 3% of it passed the magenta test,
+          // which switched the flood off, and the spill step below then turned
+          // the purple into a grey card behind every other stone.
+          let groundFound = false;
 
           // Chroma key. Asking an image model for a transparent background is
           // unreliable — one attempt came back fully opaque, and it painted the
@@ -953,12 +1685,26 @@ try {
             // close enough to pure magenta that a soft distance key knocked it
             // to 39% alpha. Pure magenta is the only thing with G near zero AND
             // both R and B near full, and no palette in the game has that.
-            const W = p.sw, H = p.sh, N = W * H;
+            const W = CW, H = CH, N = W * H;
             const bg = new Uint8Array(N);
             for (let k = 0; k < N; k++) {
               const i = k * 4;
               if (d[i + 1] < 70 && d[i] > 190 && d[i + 2] > 190) { bg[k] = 1; d[i + 3] = 0; keyed++; }
             }
+            // A crop widened past the painting's edge is transparent there,
+            // which is ground too. Painted-over pixels are no evidence either way.
+            let ringK = 0, ringN = 0;
+            const ring = (k) => {
+              if (art[k]) return;
+              ringN++;
+              if (bg[k] || d[k * 4 + 3] < 8) ringK++;
+            };
+            for (let x = 0; x < W; x++) { ring(x); ring((H - 1) * W + x); }
+            for (let y = 1; y < H - 1; y++) { ring(y * W); ring(y * W + W - 1); }
+            // A fill panel reaches its border by contract, so there the old
+            // whole-cell count is all there is to go on.
+            groundFound = keyed > N_PIX * 0.03
+              && (p.isBlock || ringN < 16 || ringK >= ringN * 0.35);
             // De-fringe ONLY where art meets keyed background. Anti-aliasing
             // leaves a pink rim there; running this over the whole cell instead
             // would desaturate every warm highlight in the sprite.
@@ -993,7 +1739,7 @@ try {
             // Gated on the hard key having found REAL ground, not on the shore
             // clustering — a halo is a gradient across dozens of buckets, which
             // is exactly the case the clustering gate rejects.
-            if (keyed > N_PIX * 0.03) {
+            if (groundFound) {
               const LO = 60, HI = 210;
               for (let i = 0; i < d.length; i += 4) {
                 if (d[i + 3] < 8) continue;
@@ -1020,8 +1766,8 @@ try {
             // why the sun kept a thin pink outline after everything else. Being
             // ADJACENT to keyed background is itself strong evidence, so the
             // rule can be much looser there than it could be image-wide.
-            if (keyed > N_PIX * 0.03) {
-              const W2 = p.sw, H2 = p.sh;
+            if (groundFound) {
+              const W2 = CW, H2 = CH;
               const Aa = (k) => d[k * 4 + 3];
               for (let pass = 0; pass < 2; pass++) {
                 const edits = [];
@@ -1053,7 +1799,7 @@ try {
             // green; pulling the excess down leaves a neutral halo, which is
             // what the glow was supposed to be. Warm art is untouched — cream
             // and tan have blue BELOW green, so they show no excess at all.
-            if (keyed > N_PIX * 0.03) {
+            if (groundFound) {
               for (let i = 0; i < d.length; i += 4) {
                 if (d[i + 3] < 8) continue;
                 const g = d[i + 1];
@@ -1105,9 +1851,14 @@ try {
           // The seed floor guards the same failure on the paths where the key is
           // off or found nothing: a real background reaches a good share of the
           // frame it is behind. A dozen pixels of leaf do not.
-          const shore = p.seedTopOnly ? p.sw : 2 * (p.sw + p.sh);
-          if (p.autoBg && keyed <= N_PIX * 0.03) {
-            const W = p.sw, H = p.sh, N = W * H;
+          //
+          // "Found nothing" is judged on the cell's BORDER (groundFound, above),
+          // not on a share of the whole cell: a purple ground with a few
+          // magenta-passing JPEG pixels in it found something, and nothing it
+          // could use.
+          const shore = p.seedTopOnly ? CW : 2 * (CW + CH);
+          if (p.autoBg && !groundFound) {
+            const W = CW, H = CH, N = W * H;
             const A = (k) => d[k * 4 + 3];
             const q = (i) => ((d[i] >> 4) << 8) | ((d[i + 1] >> 4) << 4) | (d[i + 2] >> 4);
 
@@ -1272,15 +2023,15 @@ try {
             }
           }
 
-          let x0 = p.sw, y0 = p.sh, x1 = -1, y1 = -1, opaque = 0;
+          let x0 = CW, y0 = CH, x1 = -1, y1 = -1, opaque = 0;
           // A SECOND box at a high alpha floor, for the fit measurement only.
           // The reference is measured the same way: a soft shadow belongs to
           // neither silhouette, and letting one into the comparison sinks the
           // sprite by the depth of a shadow the other side never painted.
-          let fx0 = p.sw, fy0 = p.sh, fx1 = -1, fy1 = -1;
-          for (let y = 0; y < p.sh; y++)
-            for (let x = 0; x < p.sw; x++) {
-              const a = d[(y * p.sw + x) * 4 + 3];
+          let fx0 = CW, fy0 = CH, fx1 = -1, fy1 = -1;
+          for (let y = 0; y < CH; y++)
+            for (let x = 0; x < CW; x++) {
+              const a = d[(y * CW + x) * 4 + 3];
               if (a > 8) {
                 opaque++;
                 if (x < x0) x0 = x; if (x > x1) x1 = x;
@@ -1304,10 +2055,10 @@ try {
           // illustrator's instinct is to leave a polite margin — this crops
           // that margin back off and lets the block fill its cell. Only for
           // blocks: an enemy is SUPPOSED to have space around it.
-          let src = { x: 0, y: 0, w: p.sw, h: p.sh };
+          let src = { x: 0, y: 0, w: CW, h: CH };
           let trimmed = false;
           if (p.isBlock && p.trim && x1 >= 0) {
-            const touches = x0 === 0 && y0 === 0 && x1 === p.sw - 1 && y1 === p.sh - 1;
+            const touches = x0 === 0 && y0 === 0 && x1 === CW - 1 && y1 === CH - 1;
             if (!touches) {
               src = { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
               trimmed = true;
@@ -1323,10 +2074,27 @@ try {
           // pixels only); the return is measured the same way, and one scale
           // and move puts it back. Per panel, because every panel is its own
           // file — there is no cycle here to keep steady.
+          //
+          // Measured in crop pixels, stated as fractions of the PANEL: a crop
+          // widened for an overhanging stone is bigger than the panel, and the
+          // fit is what brings the whole stone back inside it.
           let fitNote = null;
+          // Back to the panel's own size, drawing the crop through a transform.
+          const toPanel = (tx, ty, k2, fx, fy) => {
+            const to = document.createElement('canvas');
+            to.width = p.sw; to.height = p.sh;
+            const g2 = to.getContext('2d');
+            g2.translate(tx, ty);
+            g2.scale(k2, k2);
+            g2.translate(-fx, -fy);
+            g2.drawImage(cell, 0, 0);
+            cell.width = p.sw; cell.height = p.sh;
+            cc.drawImage(to, 0, 0);
+          };
           if (p.refFit && !p.isBlock && !p.letterboxed && p.frame === undefined && fx1 >= 0) {
+            const midX = (fx0 + fx1 + 1) / 2, midY = (fy0 + fy1 + 1) / 2;
             const gotW = (fx1 - fx0 + 1) / p.sw, gotH = (fy1 - fy0 + 1) / p.sh;
-            const gotCx = ((fx0 + fx1 + 1) / 2) / p.sw, gotCy = ((fy0 + fy1 + 1) / 2) / p.sh;
+            const gotCx = (midX - p.pad.l) / p.sw, gotCy = (midY - p.pad.t) / p.sh;
             const kH = gotH > 0.01 ? p.refFit.h / gotH : 1;
             const kW = gotW > 0.01 ? p.refFit.w / gotW : 1;
             // Match the reference box's AREA: a painting with the reference's
@@ -1336,19 +2104,12 @@ try {
             // The box is the rect the renderer blits into, so the measurement
             // cannot be wild: a factor of four means a stone painted four
             // times too big, not a mis-measurement. A correction under 4% is
-            // not worth resampling for.
-            if (k > 0.1 && k < 4 && (Math.abs(k - 1) > 0.04
+            // not worth resampling for — unless the crop was widened, which
+            // always has to come back to the panel.
+            if (k > 0.1 && k < 4 && (padded || Math.abs(k - 1) > 0.04
                 || Math.abs(gotCx - p.refFit.cx) > 0.02
                 || Math.abs(gotCy - p.refFit.cy) > 0.02)) {
-              const to = document.createElement('canvas');
-              to.width = p.sw; to.height = p.sh;
-              const g2 = to.getContext('2d');
-              g2.translate(p.refFit.cx * p.sw, p.refFit.cy * p.sh);
-              g2.scale(k, k);
-              g2.translate(-gotCx * p.sw, -gotCy * p.sh);
-              g2.drawImage(cell, 0, 0);
-              cc.clearRect(0, 0, p.sw, p.sh);
-              cc.drawImage(to, 0, 0);
+              toPanel(p.refFit.cx * p.sw, p.refFit.cy * p.sh, k, midX, midY);
               fitNote = {
                 k: +k.toFixed(3),
                 dx: +(p.refFit.cx - gotCx).toFixed(3),
@@ -1356,6 +2117,8 @@ try {
               };
             }
           }
+          // A widened crop that could not be fitted is cut back to its panel.
+          if (padded && !p.letterboxed && cell.width !== p.sw) toPanel(0, 0, 1, p.pad.l, p.pad.t);
 
           let dst;
           if (p.letterboxed) {
@@ -1395,24 +2158,43 @@ try {
           // block has to reach all four, or the tower shows a seam around every
           // one of them — rounded corners and a polite margin are exactly what
           // an illustrator draws unless told not to.
+          // Measured on the keyed crop, before any fit moved it, and only on
+          // pixels the painter put there ('art' above).
           const edge = (pick) => {
             let on = 0, n = 0;
-            for (let t = 0; t < (pick < 2 ? p.sw : p.sh); t++) {
-              const x = pick === 0 || pick === 1 ? t : (pick === 3 ? 0 : p.sw - 1);
-              const y = pick === 0 ? 0 : pick === 1 ? p.sh - 1 : t;
+            for (let t = 0; t < (pick < 2 ? CW : CH); t++) {
+              const x = pick === 0 || pick === 1 ? t : (pick === 3 ? 0 : CW - 1);
+              const y = pick === 0 ? 0 : pick === 1 ? CH - 1 : t;
+              if (art[y * CW + x]) continue;
               n++;
-              if (d[(y * p.sw + x) * 4 + 3] > 8) on++;
+              if (d[(y * CW + x) * 4 + 3] > 8) on++;
             }
             return n ? on / n : 0;
           };
+          // top, bottom, right, left — the order edge() counts them in.
           const edges = [edge(0), edge(1), edge(2), edge(3)];
+
+          // ── A card ──
+          //
+          // The border is still opaque on sides where the DRAWING leaves room:
+          // the ground was never removed, and the subject sits on a square of
+          // it. The effects sheet came back painted on parchment tiles, and the
+          // boulders on a purple the key could not see. bboxFill (below) only
+          // warns; this refuses, because a card written over a good file is
+          // the silent corruption the whole slicer exists to prevent.
+          let card = false;
+          if (!p.isBlock && p.frame === undefined && p.refFit) {
+            const f = p.refFit;
+            const room = [f.cy - f.h / 2, 1 - (f.cy + f.h / 2), 1 - (f.cx + f.w / 2), f.cx - f.w / 2];
+            card = edges.filter((v, i) => room[i] >= 0.06 && v >= 0.5).length >= 2;
+          }
 
           // A walk-cycle panel is a FRAME, not a file. It is held with its
           // content bbox so the frames can be checked against each other, then
           // composed into one strip below.
           if (p.frame !== undefined) {
             strip.push({
-              frame: p.frame, cv: dst, keyed, srcArea: p.sw * p.sh,
+              frame: p.frame, cv: dst, keyed, srcArea: p.sw * p.sh, foreignPx,
               // Where the drawing sits in its panel, as fractions of the panel.
               // These are what catch a creature that wandered between frames.
               foot: (y1 + 1) / p.sh, top: y0 / p.sh,
@@ -1442,22 +2224,58 @@ try {
             // check passes — while the card sits untouched in the middle. What
             // gives a card away is that it fills its bounding box completely;
             // a sun, a tree or a logo's lettering never does.
-            bboxFill: (() => {
+            //
+            // And how much of each side of that box it presses against, two
+            // pixels in: a card is a rectangle, flush with its box all round
+            // (81-100% on every side, measured on the effects and boulder
+            // cards); an emerald-cut stone or a plaque is solid too, but has at
+            // least one side it only touches along part of (63% at most).
+            ...(() => {
               const W = dst.width, H = dst.height;
               const q = dst.getContext('2d').getImageData(0, 0, W, H).data;
+              const A = (x, y) => q[(y * W + x) * 4 + 3] >= 8;
               let x0 = W, y0 = H, x1 = -1, y1 = -1, on = 0;
               for (let y = 0; y < H; y++) {
                 for (let x = 0; x < W; x++) {
-                  if (q[(y * W + x) * 4 + 3] < 8) continue;
+                  if (!A(x, y)) continue;
                   on++;
                   if (x < x0) x0 = x; if (x > x1) x1 = x;
                   if (y < y0) y0 = y; if (y > y1) y1 = y;
                 }
               }
-              if (x1 < 0) return 0;
-              return on / ((x1 - x0 + 1) * (y1 - y0 + 1));
+              if (x1 < 0) return { bboxFill: 0, flush: 0, hole: 0 };
+              const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+              const i2 = Math.min(2, Math.floor(Math.min(bw, bh) / 4));
+              let t = 0, b = 0, l = 0, r = 0;
+              for (let x = x0; x <= x1; x++) { if (A(x, y0 + i2)) t++; if (A(x, y1 - i2)) b++; }
+              for (let y = y0; y <= y1; y++) { if (A(x0 + i2, y)) l++; if (A(x1 - i2, y)) r++; }
+              // Clear pixels the sprite walls in: the middle of a ring.
+              const outside = new Uint8Array(W * H);
+              const st = [];
+              const push = (x, y) => {
+                if (x < 0 || y < 0 || x >= W || y >= H) return;
+                const j = y * W + x;
+                if (outside[j] || A(x, y)) return;
+                outside[j] = 1; st.push(j);
+              };
+              for (let x = 0; x < W; x++) { push(x, 0); push(x, H - 1); }
+              for (let y = 0; y < H; y++) { push(0, y); push(W - 1, y); }
+              while (st.length) {
+                const j = st.pop(), x = j % W, y = (j - x) / W;
+                push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1);
+              }
+              let holes = 0;
+              for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (!A(x, y) && !outside[y * W + x]) holes++;
+              return {
+                bboxFill: on / (bw * bh),
+                flush: Math.min(t / bw, b / bw, l / bh, r / bh),
+                hole: holes / (bw * bh)
+              };
             })(),
             edges,
+            card,
+            foreignPx,
+            padded,
             trimmed,
             fill: p.isBlock,
             fitNote,
@@ -1584,6 +2402,7 @@ try {
               coverages: solid.map((f) => f.coverage),
               fitNote,
               keyed: solid.reduce((a2, f) => a2 + f.keyed, 0),
+              foreignPx: solid.reduce((a2, f) => a2 + f.foreignPx, 0),
               srcArea: solid.reduce((a2, f) => a2 + f.srcArea, 0),
               w: cv.width, h: cv.height,
               dataUrl: cv.toDataURL('image/webp', q)
@@ -1599,7 +2418,25 @@ try {
       throw new Error(cut.exceptionDetails.exception?.description ?? 'slice failed')
     }
 
-    for (const r of JSON.parse(cut.result.value)) {
+    const results = JSON.parse(cut.result.value)
+    // Panels whose ground was never removed (see groundVerdict). When a third
+    // or more of a sheet's panels come back like that, the ground is broken
+    // across the whole painting and the panels that squeaked through were cut
+    // from the same broken ground — the effects sheet refused seven panels
+    // and "passed" a flash, a scorch and an arrow still standing on ragged
+    // parchment. So then nothing from it is written.
+    const verdicts = new Map(results.filter((r) => !r.empty && r.dataUrl)
+      .map((r) => [r.id, groundVerdict(r, prep?.cells?.[r.id], sheet)]))
+    const cut2 = [...verdicts.values()]
+    const bad = cut2.filter(Boolean).length
+    if (bad >= 2 && bad >= cut2.length / 3) {
+      for (const lines of cut2.filter(Boolean)) for (const l of lines) console.error(l)
+      console.error(`  ✗ ${bad} of ${cut2.length} panels came back standing on their ground: it is broken across`
+        + ' the whole painting, and the rest were cut from the same ground. Nothing from it is written.')
+      failed += cut2.length
+      continue
+    }
+    for (const r of results) {
       if (r.empty) {
         console.log(`  · ${r.id.padEnd(26)} empty cell, skipped`)
         skipped++
@@ -1615,6 +2452,28 @@ try {
         console.error(`  ✗ ${r.id.padEnd(26)} target escapes ${relative(ROOT, OUT_ROOT)}/`)
         failed++
         continue
+      }
+      // What the whole-painting read took out of this cell, and gave back.
+      const pc = prep?.cells?.[r.id]
+      const refused = verdicts.get(r.id)
+      if (refused) {
+        for (const l of refused) console.error(l)
+        failed++
+        continue
+      }
+      if (pc?.foreignPx) {
+        console.log(`    · erased ${pc.foreignPx} px of ${Object.keys(pc.from).join(', ')} that crossed into this cell.`)
+      }
+      if (pc?.strayN) {
+        const b = pc.strayBox.map((v) => v.toFixed(2)).join(', ')
+        console.log(`    · erased ${pc.strayN} mark${pc.strayN > 1 ? 's' : ''} (${pc.strayPx} px, in ${b} of the panel)`
+          + ' where the reference has nothing: baked text, a cell number, stray paint.')
+      }
+      if (r.padded) {
+        console.log('    · its subject overhung the cell — cut wider, and fitted back into the panel whole.')
+      }
+      if (r.frames !== undefined && r.foreignPx) {
+        console.log(`    · erased ${r.foreignPx} px of neighbouring frames that crossed the panel lines.`)
       }
       if (r.fitNote) {
         console.log(`    · normalised onto the reference: scaled to`
@@ -1685,7 +2544,7 @@ try {
 
       // A tile that does not reach its own edges sits with a gap.
       if (r.fill && r.edges && !r.trimmed) {
-        const names = ['top', 'bottom', 'left', 'right']
+        const names = ['top', 'bottom', 'right', 'left']
         const short = r.edges
           .map((v, i) => ({ v, n: names[i] }))
           .filter((e) => e.v < 0.9)
@@ -1708,10 +2567,12 @@ try {
       }
       written++
     }
+    if (receiptLine && written > writtenBefore) receiptNext[basename(file)] = receiptLine
   }
 
-  // The receipt records what was actually cut, so a dry run leaves it alone.
-  if (written && !DRY) {
+  // The receipt records what was actually cut, so a dry run leaves it alone —
+  // and so does a run into another --out, which installed nothing.
+  if (written && !DRY && OUT_ROOT === resolve(ROOT, 'public')) {
     mkdirSync(PAINTED, { recursive: true })
     writeFileSync(RECEIPT, `${JSON.stringify({ note: 'written by tools/slice-sheets.mjs — the reference revision each painting was cut against', files: receiptNext }, null, 2)}\n`, 'utf-8')
   }

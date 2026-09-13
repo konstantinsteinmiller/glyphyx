@@ -168,6 +168,14 @@ const glow = computed(() => (isRune.value ? RUNES[runeType.value].color : SKINS[
 // past its cap, and `line-clamp` is what keeps that a promise rather than a
 // hope.
 .unlock__desc
+  // NEVER the element that gives way. It is a flex item in a column with a
+  // hard `max-height`, so with the default `flex: 0 1 auto` it was what
+  // shrank when the card hit its cap — down to ONE line, with
+  // `overflow: hidden` eating the rest. Every rune unlock on a 1280x720
+  // desktop read "Skips one tile and hits the", losing the word that
+  // carries the rule (2026-09-12 playtest). The plinth is the shrinkable one.
+  flex: 0 0 auto
+  min-height: 2.5em
   display: -webkit-box
   -webkit-box-orient: vertical
   -webkit-line-clamp: 2

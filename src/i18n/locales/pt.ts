@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Skins',
       'runes': 'Runas de poder',
+      'ranks': 'Patentes',
     },
     'title': 'Loja',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Moedas',
   'cancel': 'Cancelar',
   'close': 'Fechar',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Nível {c}-{n}',
     'conquest': 'Conquista',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Faltam {n}',
     'turn': 'Turno {n}',
     'you': 'Você',
     'enemy': 'Inimigo',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Mantenha 8 casas para vencer',
       'desktop': 'Mantenha 8 casas para vencer'
     },
+    'conquestClaim': {
+      'touch': 'Cada runa que você coloca toma a sua casa',
+      'desktop': 'Cada runa que você coloca toma a sua casa'
+    },
     'siege': {
       'touch': 'Cercado! Rompa o cerco e mantenha 8 casas',
       'desktop': 'Cercado! Rompa o cerco e mantenha 8 casas'
+    },
+    'yourMove': {
+      'touch': 'Sua vez: coloque uma runa',
+      'desktop': 'Sua vez: coloque uma runa'
+    },
+    'busyPlaced': {
+      'touch': 'Uma runa por turno',
+      'desktop': 'Uma runa por turno'
+    },
+    'busyPhase': {
+      'touch': 'Espere — as runas estão atacando',
+      'desktop': 'Espere — as runas estão atacando'
+    },
+    'busyTile': {
+      'touch': 'Essa casa não aceita',
+      'desktop': 'Essa casa não aceita'
     },
     'mage': {
       'touch': 'O orbe dispara na diagonal através de duas casas',
       'desktop': 'O orbe dispara na diagonal através de duas casas'
     },
     'defense': {
-      'touch': 'O escudo bloqueia flechas e raios',
-      'desktop': 'O escudo bloqueia flechas e raios'
+      'touch': 'Seu escudo bloqueia flechas e raios INIMIGOS',
+      'desktop': 'Seu escudo bloqueia flechas e raios INIMIGOS'
     },
     'support': {
       'touch': 'A cruz cura e fortalece os vizinhos',
@@ -169,13 +192,15 @@ export default {
     'clash': 'CHOQUE!',
     'victory': 'VITÓRIA!',
     'defeat': 'DERROTA',
-    'reveal': 'REVELAR',
+    'reveal': 'ATACANDO',
     'suddenDeath': 'MORTE SÚBITA',
     'turn': 'TURNO {n}',
     'you': 'VOCÊ',
     'foe': 'RIVAL',
     'reroll': 'TROCAR',
-    'lastTurn': 'ÚLTIMO TURNO'
+    'lastTurn': 'ÚLTIMO TURNO',
+    'firesIn': 'DISPARA EM',
+    'yourTurn': 'SUA VEZ'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Decidido pelas casas mantidas',
       'suddenDeath': 'Morte súbita',
       'siegeHeld': 'Você segurou a linha',
-      'siegeBroken': 'O cerco venceu você'
+      'siegeBroken': 'O cerco venceu você',
+      'crumbled': 'Os bonecos desmoronaram'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Patentes',
     'title': 'Patentes das runas',
     'tagline': 'Cada patente dá +{n} PV máx. — igual para toda runa.',
     'rank': 'Patente {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Forja de runas — forjando',
     'full': 'Forja de runas — cheia',
     'perHour': '+{n} / h'
+  },
+  'skinChest': {
+    'ready': 'Skin grátis pronta — toque para abrir',
+    'waiting': 'Skin grátis em {time}',
+    'take': 'Pegar'
   },
 
   'leaderboard': {

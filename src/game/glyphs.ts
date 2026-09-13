@@ -1,4 +1,4 @@
-import { RUNES, type RuneType } from './rules'
+import { DIR_VEC, RUNES, type Dir, type RuneType } from './rules'
 
 /**
  * ─── The ten glyphs ─────────────────────────────────────────────────────────
@@ -161,3 +161,61 @@ export const drawGlyph = (ctx: CanvasRenderingContext2D, type: RuneType, size: n
 
 /** An SVG `d` attribute for a DOM `<svg viewBox="0 0 100 100">`. */
 export const glyphSvgPath = (type: RuneType): string => GLYPH_PATHS[type]
+
+/**
+ * ─── Which way each glyph already points ────────────────────────────────────
+ *
+ * Every glyph above was drawn facing SOMEWHERE: the sword's point is up, the
+ * bow's arrow flies right, the boulder has left its speed bars behind on the
+ * left. That heading is a fact about the drawing, and until now nothing read
+ * it — a rune aimed right sat on the board with its sword still pointing at
+ * the ceiling, and the only thing that said "right" was a chevron the size of
+ * a fingernail.
+ *
+ * So the renderer turns the stone instead. `glyphSpin` is the angle it has to
+ * turn through for the glyph's own heading to land on the facing, and because
+ * the heading lives here — beside the path it describes — a redrawn glyph
+ * corrects its own rotation.
+ *
+ * An omni rune has no heading and never turns: a shield pointing somewhere
+ * would be a lie, and the trefoil means "everything near this dies".
+ */
+export const GLYPH_HEADING: Record<RuneType, Dir> = {
+  // The sword's point, the axe's bit, the mortar's muzzle and the crown's
+  // tallest peak are all drawn toward the top of the box.
+  melee: 'up',
+  cleave: 'up',
+  bombard: 'up',
+  crown: 'up',
+  // The arrow is nocked and flying right; the boulder is travelling right,
+  // which is why its speed bars trail off the left edge.
+  archer: 'right',
+  roller: 'right',
+  // The orb aims on the DIAGONALS, and `defaultDir` starts a player's at `ur`
+  // — so that is the heading a freshly placed one is already wearing.
+  mage: 'ur',
+  // No heading: these three never face anything.
+  defense: 'omni',
+  support: 'omni',
+  nuker: 'omni'
+}
+
+/**
+ * How far a stone must turn for its glyph to point `dir`, in radians.
+ *
+ * Zero whenever there is nothing to turn — an omni rune, a facing it does not
+ * have, or a glyph already drawn that way — so a caller can rotate
+ * unconditionally and pay nothing for the runes that do not move.
+ */
+export const glyphSpin = (type: RuneType, dir: Dir): number => {
+  if (dir === 'omni') return 0
+  const heading = GLYPH_HEADING[type]
+  if (heading === 'omni' || heading === dir) return 0
+  const [hx, hy] = DIR_VEC[heading]
+  const [dx, dy] = DIR_VEC[dir]
+  // Wrapped into (-PI, PI] so the stone always turns the SHORT way round: a
+  // sword going from up to left swings a quarter turn widdershins, never three
+  // quarters the other way.
+  const raw = Math.atan2(dy, dx) - Math.atan2(hy, hx)
+  return Math.atan2(Math.sin(raw), Math.cos(raw))
+}

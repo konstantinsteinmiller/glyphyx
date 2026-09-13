@@ -105,17 +105,26 @@ const chapterOne = (id: number): NodeConfig => {
         reward: reward(15, 'archer')
       }
     case 2:
-      // Your sword stands at (1,2) below a 3-HP skeleton; the bow dropped at
-      // (1,3) shoots OVER the sword and kills the archer at (1,0). The sword
-      // finishes the skeleton by itself next turn, whatever is placed then.
+      // Your sword stands at (1,2) under a 3-HP skeleton at (1,1). The bow
+      // dropped at (1,3) shoots OVER your own sword and lands on that skeleton
+      // — `ARCHER_RANGE[1]` is [2], so from (1,3) the arrow skips (1,2) and
+      // strikes (1,1) — and sword plus arrow is 4 against 3. One move, one
+      // turn, lesson over.
+      //
+      // It used to hold a second skeleton, an archer at (1,0), on the theory
+      // that the arrow reached IT. It does not: nothing the lesson put on the
+      // board could reach (1,0), so the ghost's move left a survivor and
+      // finishing the lesson needed a second move it never taught. Four of five
+      // blind testers were still in this lesson when they quit (2026-09-11),
+      // boards full, watching a turn counter. The floor test now holds every
+      // lesson to the same one-turn rule the late lessons already pass.
       return {
         ...lesson(b, 'archer', { type: 'archer', to: { col: 1, row: 3 }, dir: 'up' }, ['melee', 'archer']),
         mode: '1v1', objective: 'eliminate',
         enemies: [enemy('skeleton', 'top', 'passive', { atkMul: 0, deck: ['melee', 'archer'] })],
         presets: [
           { side: 'player', faction: null, type: 'melee', col: 1, row: 2, dir: 'up' },
-          skeleton('melee', 1, 1, 3),
-          skeleton('archer', 1, 0, 2)
+          skeleton('melee', 1, 1, 3)
         ],
         reward: reward(20)
       }
@@ -175,8 +184,18 @@ const chapterOne = (id: number): NodeConfig => {
       }
     case 7:
       // The first real duel: easy goblins, the whole roster in hand.
+      //
+      // And the first time the game asks for something other than "kill them
+      // all", which is why it opens with one taught move (`guide`, not a
+      // lesson — the node stays a real fight with a real clock and the
+      // adaptive relief intact). The sword onto (1,2) steps OFF the player's
+      // home row onto neutral ground and claims it: the whole rule of the mode
+      // in one gesture, which is how every rune was taught. Two blind testers
+      // lost this node twice and quit without ever learning that a placed rune
+      // takes its tile (2026-09-12 round 4).
       return {
         ...b, mode: '1v1', objective: 'conquest',
+        guide: { type: 'melee', to: { col: 1, row: 2 }, dir: 'up' },
         enemies: [enemy('goblin', 'top', 'easy')],
         reward: reward(45, null, 'obsidian')
       }
@@ -441,6 +460,17 @@ const lateLesson = (gen: NodeConfig, rune: RuneType): NodeConfig => {
       )
   }
 }
+
+/**
+ * Is node `id` a LESSON — one of the scripted, clockless, cannot-be-lost nodes?
+ *
+ * Asked by everything that must not interrupt the teaching: a lesson hands over
+ * silently (the coins fly, the next lesson starts), so an ad dropped between
+ * two of them reads as an ad dropped INSIDE one. A blind tester on 2026-09-12
+ * described exactly that — "it cut into an active fight" — for an interstitial
+ * that had in fact fired at a clean 1-6 → 1-7 boundary.
+ */
+export const isLessonNode = (id: number): boolean => nodeConfig(id, 'medium').tutorial !== null
 
 /** The full setup of global node `id`. Chapter 1 is authored; later chapters are generated. Pure and deterministic. */
 export const nodeConfig = (id: number, _difficulty: 'easy' | 'medium' | 'hard'): NodeConfig => {

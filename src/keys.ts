@@ -54,6 +54,8 @@ export const LOSS_STREAK_KEY = 'gx_loss_streak'
 /** Epoch ms of the last forge claim. 0/absent = never claimed (a first-time
  *  player finds a forge that is already partly filled — see `useRuneForge`). */
 export const FORGE_AT_KEY = 'gx_forge_at'
+/** When the skin chest was last opened (epoch ms). See `useSkinChest`. */
+export const SKIN_CHEST_AT_KEY = 'gx_skin_chest_at'
 
 // ─── Onboarding / one-shot UI nudges ────────────────────────────────────────
 

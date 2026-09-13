@@ -1,28 +1,26 @@
 import { watch } from 'vue'
 import {
-  archerRange, bombardCells, cleaveCells, CONQUEST_TILES, DIR_VEC, FACTION_DEFS, GRID, HAND_SIZE, LOCK_CHEVRON_HIT_TILES,
+  archerRange, bombardCells, cleaveCells, CONQUEST_TILES, DEFENSE_MITIGATION, DIR_VEC, FACTION_DEFS, GRID, HAND_SIZE,
+  LOCK_CHEVRON_HIT_TILES, RUNE_TYPES,
   LOCK_CHEVRON_TILES, MAGE_REACH, MAX_LEVEL, RESET_MS, REVEAL_MS, rollerLane, RUNES, SKINS, STARTING_SKIN,
-  aimRegionPolygon, aimRegionShape, aimRegions, cellIndex, defaultDir, dirsFor, inBounds,
+  aimRegionOuterEdge, aimRegionPolygon, aimRegionShape, aimRegions, cellIndex, defaultDir, dirsFor, inBounds,
   type BoardState, type Cell, type Dir, type Faction, type Hit, type Move, type Owner,
   type ResolveEvent, type Rune, type RuneSnapshot, type RuneType, type SkinId, type Side, type Weapon
 } from '@/game/rules'
 import type { FxSound } from '@/game/cues'
 import type { ArenaLayout, ArenaView, CanvasLabels, DragState, HitTarget, HoverState, Rect } from '@/game/view'
-import { drawGlyph } from '@/game/glyphs'
-import { placementKind } from '@/game/board'
+import { drawGlyph, glyphSpin } from '@/game/glyphs'
+import { placementKind, runeAt } from '@/game/board'
 import {
-  ENEMY_STONE, GRID_GLOW, RIDGE_SKYLINE, paintBoardFrame, paintLaurel, paintPebble, paintRerollChip, paintRidge, paintSky,
-  paintTile, resolveGlow
+  ENEMY_STONE, GRID_GLOW, RIDGE_SKYLINE, damageStage, paintBoardFrame, paintDamage, paintLaurel, paintPebble,
+  paintPebbleOrnaments, paintRerollChip, paintRidge, paintSky, paintTile, resolveGlow, type DamageStage
 } from '@/use/arenaPainters'
 import { onArtChanged, spriteFor, type ArtKind } from '@/game/art'
 import { CLEAN_FEED } from '@/game/cleanFeed'
 import {
-  blit, glowSprite, paintAimRefused, paintAimRegion, paintArrow, paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave,
-  paintCleaveArc, paintClashFlash, paintCrossBurst, paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing,
-  paintNukeFlash, paintNukeWave,
-  paintRing, paintShellArc, paintShellBurst, paintShieldDome, paintShockwave, paintSlash, spawnArrowTrail, spawnBeamCrackle, spawnBuffGlint,
-  spawnBurstMotes, spawnCaptureSparks, spawnChips, spawnDefeatAsh, spawnEmbers, spawnHealMotes, spawnImpactSparks,
-  spawnKnockbackDust, spawnMergeFountain, spawnRollDust, spawnShatter, spawnShieldShards, spawnTileDust, spawnVictoryShower
+  blit, bucketFor, glowSprite, paintAimRefused, paintAimRegion, paintAimScrim, paintBeam, paintCaptureWave, paintClashFlash, paintGlow,
+  paintLanding, paintMergeRing, paintRing, paintShockwave, spawnCaptureSparks, spawnChips, spawnDefeatAsh,
+  spawnImpactSparks, spawnMergeFountain, spawnShatter, spawnTileDust, spawnVictoryShower
 } from '@/use/arenaFx'
 import { rand, seedFrom } from '@/game/rng'
 import {
@@ -33,6 +31,8 @@ import { clearRamps } from '@/use/useGradientRamps'
 import { measureLabel } from '@/use/useTextMetrics'
 import { useScreenshake } from '@/use/useScreenshake'
 import { playFx } from '@/use/useGameAudio'
+import { RUNE_FX, intercepted, ownerOf, type FxApi, type RuneEvent, type SoundAt } from '@/use/runeFx'
+import { nukeFrontAt } from '@/use/runeFx/nuker'
 
 /**
  * ─── The arena renderer ─────────────────────────────────────────────────────
@@ -65,7 +65,6 @@ import { playFx } from '@/use/useGameAudio'
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v)
 /** How far the nuke's front travels, in TILES — enough to clear a 4x4's far corner. */
-const NUKE_WAVE_TILES = 5
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - clamp01(t), 3)
 const easeOutQuad = (t: number): number => { const c = clamp01(t); return 1 - (1 - c) * (1 - c) }
@@ -84,11 +83,29 @@ const easeOutBack = (t: number): number => {
 
 const PLAYER_COLOR = '#4aa8ff'
 const PLAYER_ARROW = '#7fd0ff'
+/** A facing with nothing of the enemy's in it — see `drawStandingLines`. */
+const NO_TARGET = '#8c93a6'
 const ENEMY_ARROW = '#ff5a5a'
 const NEUTRAL_COLOR = '#7b8397'
 const GOLD = '#ffd75e'
 const GOLD_DARK = '#b8860b'
 const VALID_EMPTY = '#35e07a'
+/**
+ * ─── The aim compass's own colour ───────────────────────────────────────────
+ *
+ * The compass used to be drawn in the RUNE's colour, which is the colour of
+ * the stone being carried over it — so the menu and the thing covering the
+ * menu were the same hue, and the facing was hard to read at the one moment it
+ * had to be. It is green now, because green is already this game's word for
+ * "this placement is legal" (`VALID_EMPTY`): the tile ring that says a stone
+ * may go here and the wedge that says which way it will point are one idea.
+ *
+ * Deliberately NOT the cyan the reach cone uses — green answers "which way",
+ * cyan answers "what it hits", and a player should be able to tell those two
+ * readings apart at a glance.
+ */
+const AIM_OFFER = '#1f9c57'
+const AIM_CHOSEN = '#5cffa6'
 const VALID_STACK = '#ffd23f'
 const INVALID = '#ff3b4a'
 const HEAL_COLOR = '#5cff9a'
@@ -137,47 +154,17 @@ const dirAngle = (dir: Dir): number => {
   return Math.atan2(dy, dx)
 }
 
-// ─── Per-weapon dispatch ────────────────────────────────────────────────────
+// ─── Per-weapon timing ──────────────────────────────────────────────────────
 //
-// TABLES, not `? :` chains. A `shot` carries a `Weapon` and the renderer has to
-// pick a sound, an impact moment and an ink for each — and a chain ending in
-// `: 'slash'` turns every weapon it has never heard of into a sword, silently.
-// As `Record<Weapon, …>` a new member of the union is a compile error right
-// here instead.
+// The look and the sound of every attack live in its rune's module
+// (`runeFx/<rune>.ts`, `runeSfx/<rune>.ts`); a module may also move its impact
+// moment (`impactAt`). These are the defaults — a TABLE, so a new member of
+// the `Weapon` union is a compile error here rather than silently a sword.
 
-/** The cue fired when the attack STARTS (the swing, the release, the launch). */
-const WEAPON_SWING: Record<Weapon, FxSound> = {
-  blade: 'slash', arrow: 'arrow', beam: 'beam', cleave: 'cleave', roll: 'roll', shell: 'shell'
-}
-/** …and when it connects. */
-const WEAPON_HIT: Record<Weapon, FxSound> = {
-  blade: 'slashHit', arrow: 'arrowHit', beam: 'beamHit', cleave: 'cleaveHit', roll: 'rollHit', shell: 'shellHit'
-}
 /** Where inside the event's window its damage lands. */
 const WEAPON_IMPACT: Record<Weapon, number> = {
   blade: 0.45, arrow: 0.6, beam: 0.42, cleave: 0.48, roll: 0.62, shell: 0.66
 }
-/**
- * The colour an attack paints itself and its damage in, where that is NOT the
- * attacker's side colour. The boulder is the reason this exists: it can hit its
- * own side, and a friendly-fire hit painted in the player's own blue would read
- * as an enemy strike. The beam, the fan and the shell follow their rune's neon
- * for the same reason the orb always has — the weapon is the glyph.
- */
-const WEAPON_INK: Partial<Record<Weapon, string>> = {
-  beam: RUNES.mage.color, cleave: RUNES.cleave.color, roll: RUNES.roller.color, shell: RUNES.bombard.color
-}
-/** Chips fly off a struck stone; the heavy weapons knock off more. */
-const WEAPON_CHIPS: Record<Weapon, number> = {
-  blade: 8, arrow: 5, beam: 5, cleave: 8, roll: 8, shell: 6
-}
-/**
- * Only a PROJECTILE can be intercepted by a shield standing in its way. A
- * shield inside a cleave's fan, a boulder's lane or a shell's footprint is a
- * target like any other — so those three never take the intercept branch, and
- * their hits shower chips like any other hit.
- */
-const canBeIntercepted = (w: Weapon): boolean => w === 'arrow' || w === 'beam' || w === 'blade'
 
 const sideColor = (side: Side, faction: Faction | null): string =>
   side === 'player' ? PLAYER_COLOR : FACTION_DEFS[faction ?? 'orc'].color
@@ -402,10 +389,14 @@ const skipScratch: Cell[] = newScratch(4)
 const pebbleCache = new Map<string, HTMLCanvasElement>()
 const glowCache = new Map<string, HTMLCanvasElement>()
 const arrowCache = new Map<string, HTMLCanvasElement>()
+/** The Lv 2 wreath + crest, baked apart from the stone so they never turn with it. */
+const ornamentCache = new Map<string, HTMLCanvasElement>()
 const tintCache = new Map<string, HTMLCanvasElement>()
 const flameCache = new Map<string, HTMLCanvasElement>()
 const fingerCache = new Map<string, HTMLCanvasElement>()
 const rerollCache = new Map<string, HTMLCanvasElement>()
+/** Baked damage overlays, keyed on stage + the stone's own seed + size. */
+const damageCache = new Map<string, HTMLCanvasElement>()
 /** Baked hand sockets and static HUD captions. See `socketSprite`, `captionSprite`. */
 const socketCache = new Map<string, HTMLCanvasElement>()
 const captionCache = new Map<string, HTMLCanvasElement>()
@@ -436,14 +427,16 @@ const runeArtId = (type: RuneType, level: number, side: Side, skin: SkinId, fact
   side === 'player' ? `${type}-${skin}-lv${Math.min(2, level)}` : `${type}-e-${faction ?? 'orc'}-lv${Math.min(2, level)}`
 
 /**
- * One stone, baked, in TWO layers: the stone — a painted file when the art
- * layer has one, the painter otherwise — and then, from Lv 2, the laurel.
+ * The stone alone, baked — a painted file when the art layer has one, the
+ * painter otherwise, and NOTHING that has to stay the right way up.
  *
- * The wreath is separate because a wreath described in the stone prompts came
- * back a different wreath on every sheet (see `arenaPainters.paintLaurel`).
- * One drawable, painted once, composited here over whichever stone we got.
- * Both layers are drawn into the same `PEBBLE_PAD`-tile square with the stone
- * centred in it, so neither blit has to know what the other did.
+ * This is the layer the arena TURNS. A rune fires along the way it faces, and
+ * since every glyph was drawn facing somewhere already (`glyphs.GLYPH_HEADING`
+ * — the sword's point up, the bow's arrow right) the renderer can simply spin
+ * the stone until the drawing agrees with the facing. That only works if the
+ * things hung ON a stone come off it first, which is what `bakeOrnaments` is
+ * for: a wreath and a level plaque lying on their side are two lies, and the
+ * plaque is not even readable.
  */
 const bakePebble = (
   type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
@@ -458,18 +451,44 @@ const bakePebble = (
   else {
     paintPebble(ctx, sideLen, sideLen, {
       // A clean feed bakes no word into a stone: the crest falls back to its mark.
-      type, level, owner: side, faction, skin: SKINS[skin] ?? SKINS.river, label: CLEAN_FEED ? '' : levelLabel, laurel: false
+      type, level, owner: side, faction, skin: SKINS[skin] ?? SKINS.river, label: CLEAN_FEED ? '' : levelLabel,
+      laurel: false, crest: false
     })
   }
-  if (level >= 2) {
-    // One wreath per RUNE: the rune owns the silhouette the wreath hugs, and
-    // the skin only decides how that silhouette is finished — so both sides
-    // wear the same wreath for the same rune.
-    const wreath = spriteFor('fx', `laurel-${type}`)
-    if (wreath) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
-    else paintLaurel(ctx, sideLen, sideLen, type)
-  }
   pebbleCache.set(key, canvas)
+  return canvas
+}
+
+/**
+ * The Lv 2 finery, baked on its own so it can be blitted LEVEL over a stone
+ * that has turned: the wreath, then the crest.
+ *
+ * One wreath per RUNE, not per skin: the rune owns the silhouette the wreath
+ * hugs and the skin only decides how that silhouette is finished, so both
+ * sides wear the same wreath for the same rune. (It is a separate drawable at
+ * all because a wreath described in the stone prompts came back a different
+ * wreath on every sheet — see `arenaPainters.paintLaurel`.)
+ *
+ * The crest is painter-only: a painted stone that came back with its level
+ * already written on it keeps the one it has.
+ */
+const bakeOrnaments = (
+  type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
+  key: string, size: number, dpr: number, levelLabel: string
+): HTMLCanvasElement | null => {
+  const sideLen = Math.ceil(size * PEBBLE_PAD)
+  const made = makeCanvas(sideLen, sideLen, dpr)
+  if (!made) return null
+  const [canvas, ctx] = made
+  const wreath = spriteFor('fx', `laurel-${type}`)
+  if (wreath) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
+  else paintLaurel(ctx, sideLen, sideLen, type)
+  if (!spriteFor('rune', runeArtId(type, level, side, skin, faction))) {
+    paintPebbleOrnaments(ctx, sideLen, sideLen, {
+      type, level, laurel: false, label: CLEAN_FEED ? '' : levelLabel
+    })
+  }
+  ornamentCache.set(key, canvas)
   return canvas
 }
 
@@ -545,38 +564,117 @@ const glyphGlow = (type: RuneType, color: string, size: number, dpr: number): HT
   return canvas
 }
 
-/** A glowing chevron pointing UP, rotated at draw time. */
+/**
+ * A stone's damage, baked. Keyed on the stage, the stone's own seed and the
+ * size bucket, so sixteen runes wearing down over a match cost three bakes
+ * each at most — the network itself is deterministic, so the same key is
+ * always the same drawing.
+ */
+const damageSprite = (stage: DamageStage, seed: number, size: number, dpr: number): HTMLCanvasElement | null => {
+  if (stage <= 0) return null
+  const key = `${stage}|${seed}|${bucket(size)}`
+  const hit = damageCache.get(key)
+  if (hit) return hit
+  const side = Math.ceil(size * PEBBLE_PAD)
+  const made = makeCanvas(side, side, dpr)
+  if (!made) return null
+  const [canvas, c] = made
+  paintDamage(c, side, side, stage, seed)
+  damageCache.set(key, canvas)
+  return canvas
+}
+
+/**
+ * The arrow sprite's two sizes, both as a multiple of the tile.
+ *
+ * `ARROW_BOX` is the square it is BAKED into and `ARROW_DRAW` the footprint it
+ * is drawn at, and they are different numbers on purpose. The head now carries
+ * a heavy black keyline and a halo, and both of those need room around the
+ * head that the old box — sized to the head itself — did not have. Growing the
+ * box alone would have silently scaled up every arrow in the game by a third,
+ * since a dozen call sites pass a `scale` that was tuned against the old one.
+ * So the box grew, the drawn footprint did not, and `scale` still means what
+ * it meant at every one of those call sites.
+ */
+const ARROW_BOX = 0.9
+const ARROW_DRAW = 0.7
+
+/**
+ * The arrowhead's outline — a broad head with a stub of shaft behind it —
+ * traced about (cx, cy) in a box `size` across, pointing UP.
+ *
+ * Module level, above `arrowSprite`, rather than a closure inside it: the
+ * source guard in `noFrameBlur.test.ts` reads the nearest enclosing `const` to
+ * decide whether a `shadowBlur` sits inside a bake helper, and a nested
+ * arrow function defined before the blur hides the helper it belongs to.
+ */
+const arrowHeadPath = (ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number): void => {
+  const hw = size * 0.3
+  const hh = size * 0.26
+  const sw = size * 0.115
+  const sl = size * 0.17
+  const nose = cy - hh * 0.62
+  const barb = nose + hh
+  ctx.beginPath()
+  ctx.moveTo(cx, nose)
+  ctx.lineTo(cx + hw / 2, barb)
+  ctx.lineTo(cx + sw / 2, barb)
+  ctx.lineTo(cx + sw / 2, barb + sl)
+  ctx.lineTo(cx - sw / 2, barb + sl)
+  ctx.lineTo(cx - sw / 2, barb)
+  ctx.lineTo(cx - hw / 2, barb)
+  ctx.closePath()
+}
+
+/**
+ * A glowing arrowhead pointing UP, rotated at draw time.
+ *
+ * Drawn in three passes, outside in: a heavy black keyline, the colour, then a
+ * white core. That order is the whole reason this mark survives — the board is
+ * painted art, the arrow lands on slate, on lit tiles, on enemy red and on the
+ * stone being carried, and a single-colour glyph is legible on some of those
+ * and gone on the rest. Outline it and it is legible on all of them.
+ *
+ * It is also a proper ARROW now rather than a chevron: a broad head with a
+ * stub of shaft behind it. A bare chevron is two strokes meeting at a point,
+ * and at HUD size, on a tile that also carries a triangular aim wedge, two
+ * strokes meeting at a point is exactly what everything else on the tile
+ * already looks like.
+ */
 const arrowSprite = (color: string, size: number, dpr: number): HTMLCanvasElement | null => {
   const key = `${color}|${bucket(size)}`
   const hit = arrowCache.get(key)
   if (hit) return hit
-  const side = Math.ceil(size * 0.7)
+  const side = Math.ceil(size * ARROW_BOX)
   const made = makeCanvas(side, side, dpr)
   if (!made) return null
   const [canvas, ctx] = made
   const cx = side / 2
   const cy = side / 2
-  const w = size * 0.22
-  const h = size * 0.16
+  const hh = size * 0.26
+  const nose = cy - hh * 0.62
+  const barb = nose + hh
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
+  // 1 — the keyline, so the mark reads on any background at all.
+  arrowHeadPath(ctx, cx, cy, size)
+  ctx.strokeStyle = rgba('#000000', 0.85)
+  ctx.lineWidth = Math.max(2, size * 0.062)
+  ctx.stroke()
+  // 2 — the colour, with its own halo (a bake, so the blur is paid once).
   ctx.shadowColor = color
-  ctx.shadowBlur = size * 0.12
+  ctx.shadowBlur = size * 0.14
   ctx.fillStyle = color
-  ctx.strokeStyle = rgba('#000000', 0.7)
-  ctx.lineWidth = Math.max(1, size * 0.02)
-  ctx.beginPath()
-  ctx.moveTo(cx - w / 2, cy + h / 2)
-  ctx.lineTo(cx, cy - h / 2)
-  ctx.lineTo(cx + w / 2, cy + h / 2)
-  ctx.lineTo(cx, cy + h * 0.15)
-  ctx.closePath()
+  arrowHeadPath(ctx, cx, cy, size)
   ctx.fill()
   ctx.shadowBlur = 0
-  ctx.stroke()
-  ctx.fillStyle = rgba('#ffffff', 0.55)
+  // 3 — a white core down the middle of the head, which is what makes it read
+  // as lit rather than as a coloured shape.
+  ctx.fillStyle = rgba('#ffffff', 0.8)
   ctx.beginPath()
-  ctx.moveTo(cx - w * 0.22, cy + h * 0.1)
-  ctx.lineTo(cx, cy - h * 0.3)
-  ctx.lineTo(cx + w * 0.22, cy + h * 0.1)
+  ctx.moveTo(cx, nose + hh * 0.2)
+  ctx.lineTo(cx + size * 0.078, barb - hh * 0.1)
+  ctx.lineTo(cx - size * 0.078, barb - hh * 0.1)
   ctx.closePath()
   ctx.fill()
   arrowCache.set(key, canvas)
@@ -598,7 +696,18 @@ const tileSprite = (owner: Owner, faction: Faction | null, tile: number, dpr: nu
   return canvas
 }
 
-/** The reroll chip's body and mark; the label and the count are drawn over it. */
+/**
+ * The reroll chip's body and mark; the label and the count are drawn beside
+ * the mark, in the chip's right-hand part.
+ *
+ * The PAINTING is not a chip body. It was commissioned as the mark alone — a
+ * square pebble with the two arrows round its face (`artSheet.ts`, cell
+ * `reroll`) — and it used to be blitted over the whole chip anyway: stretched
+ * to twice its width into a flat oval, arrows and all, with the caption then
+ * printed across the arrows because the caption goes where the drawn chip
+ * leaves room for it. So the pebble goes where the drawn chip puts its cycle
+ * mark, at its own aspect, and the caption keeps the rest of the chip.
+ */
 const rerollSprite = (w: number, h: number, dpr: number): HTMLCanvasElement | null => {
   const key = `${bucket(w)}|${bucket(h)}`
   const hit = rerollCache.get(key)
@@ -607,8 +716,17 @@ const rerollSprite = (w: number, h: number, dpr: number): HTMLCanvasElement | nu
   if (!made) return null
   const [canvas, ctx] = made
   const painted = spriteFor('ui', 'reroll')
-  if (painted) ctx.drawImage(painted, 0, 0, w, h)
-  else paintRerollChip(ctx, w, h)
+  if (painted?.naturalWidth && painted.naturalHeight) {
+    // A touch under the chip's height and a touch left of the square's middle:
+    // the painted pebble is far bigger than the drawn cycle mark, and at full
+    // size its rim ran into the caption's first letter.
+    const k = Math.min(h / painted.naturalWidth, h / painted.naturalHeight) * 0.94
+    const pw = painted.naturalWidth * k
+    const ph = painted.naturalHeight * k
+    // The same left-square-or-centre rule `paintRerollChip` places its mark by.
+    const cx = w > h * 1.6 ? h * 0.47 : w / 2
+    ctx.drawImage(painted, cx - pw / 2, (h - ph) / 2, pw, ph)
+  } else paintRerollChip(ctx, w, h)
   rerollCache.set(key, canvas)
   return canvas
 }
@@ -833,12 +951,14 @@ export const pebbleBakeProgress01 = (): number => (bakeTotal === 0 ? 1 : bakeDon
 
 const invalidateSprites = (): void => {
   pebbleCache.clear()
+  ornamentCache.clear()
   glowCache.clear()
   arrowCache.clear()
   tintCache.clear()
   flameCache.clear()
   fingerCache.clear()
   rerollCache.clear()
+  damageCache.clear()
   socketCache.clear()
   captionCache.clear()
   bakeQueue = []
@@ -883,6 +1003,10 @@ export const dropBakesFor = (kind: ArtKind, id: string): { backdrop: boolean; pl
   const art = `${kind}/${id}`
   if (kind === 'rune' || (kind === 'fx' && id.startsWith('laurel-'))) {
     for (const key of pebbleCache.keys()) if (paintingsInPebble(key).includes(art)) pebbleCache.delete(key)
+    // The ornament layer is keyed the same way and is made of the same two
+    // paintings: the wreath it blits, and the stone — because whether the
+    // crest is drawn at all depends on whether that stone came back painted.
+    for (const key of ornamentCache.keys()) if (paintingsInPebble(key).includes(art)) ornamentCache.delete(key)
   } else if (kind === 'tile' && id !== 'frame') {
     // `tileSprite` keys lead with the owner, which is the tile painting's id.
     for (const key of tintCache.keys()) if (key.startsWith(`${id}|`)) tintCache.delete(key)
@@ -918,10 +1042,40 @@ interface VisRune {
   shield: number
   /** Deterministic breathing phase. */
   phase: number
+  /**
+   * The angle the stone is CURRENTLY turned to, easing toward the one its
+   * facing asks for (`glyphSpin`). `null` until the rune has been drawn once,
+   * so a stone that arrives already aimed is drawn aimed rather than swinging
+   * round from north on the frame it appears.
+   */
+  spin: number | null
 }
 
 const newVis = (id: number): VisRune =>
-  ({ ox: 0, oy: 0, sx: 1, sy: 1, alpha: 1, flash: 0, crack: 0, shield: 0, phase: (id * 0.61) % (Math.PI * 2) })
+  ({ ox: 0, oy: 0, sx: 1, sy: 1, alpha: 1, flash: 0, crack: 0, shield: 0, phase: (id * 0.61) % (Math.PI * 2), spin: null })
+
+/**
+ * Ease `from` toward `to` the SHORT way round, `k` of the way.
+ *
+ * Angles do not lerp: a stone re-aimed from left to up has to swing a quarter
+ * turn, and the naive lerp between 3.14 and -1.57 takes it three quarters of
+ * the way round the other way, through the facing the player just rejected.
+ */
+const easeAngle = (from: number, to: number, k: number): number => {
+  const d = Math.atan2(Math.sin(to - from), Math.cos(to - from))
+  return Math.abs(d) < 0.002 ? to : from + d * k
+}
+
+/**
+ * How fast a stone swings round to a new facing, as the fraction of the
+ * remaining angle it closes per 16 ms.
+ *
+ * Fast enough that a re-aim inside the correction window looks like a
+ * response to the flick and not an animation the player has to wait out;
+ * slow enough that the eye catches WHICH WAY it turned, which is the whole
+ * reason it turns at all rather than snapping.
+ */
+const SPIN_EASE = 0.26
 
 // ─── Timeline event stages ──────────────────────────────────────────────────
 
@@ -930,8 +1084,11 @@ const STAGE_STARTED = 1
 const STAGE_IMPACTED = 2
 const STAGE_DONE = 3
 
-/** When inside an event's window its damage / mutation lands. */
+/** When inside an event's window its damage / mutation lands. The owning rune module may move it. */
 const impactFrac = (e: ResolveEvent): number => {
+  const owner = ownerOf(e)
+  const own = owner ? RUNE_FX[owner].impactAt?.(e as RuneEvent) : undefined
+  if (own !== undefined) return own
   switch (e.kind) {
     case 'shot': return WEAPON_IMPACT[e.weapon]
     case 'explode': return 0.35
@@ -949,9 +1106,16 @@ const impactFrac = (e: ResolveEvent): number => {
   }
 }
 
-/** How long past `at + dur` an event keeps drawing (trails, fades). */
-const tailMs = (e: ResolveEvent): number =>
-  (e.kind === 'nuke' ? 320 : e.kind === 'shot' || e.kind === 'explode' || e.kind === 'combo' ? 220 : 120)
+/** Bench / test seam: where inside an event's window its blow lands (0…1). */
+export const eventImpactFrac = (e: ResolveEvent): number => impactFrac(e)
+
+/** How long past `at + dur` an event keeps drawing (trails, fades). The owning rune module may extend it. */
+const tailMs = (e: ResolveEvent): number => {
+  const owner = ownerOf(e)
+  const own = owner ? RUNE_FX[owner].tailMs?.(e as RuneEvent) : undefined
+  if (own !== undefined) return own
+  return e.kind === 'nuke' ? 320 : e.kind === 'shot' || e.kind === 'explode' || e.kind === 'combo' ? 220 : 120
+}
 
 // ─── The renderer ───────────────────────────────────────────────────────────
 
@@ -1174,20 +1338,36 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   // ── Bakes bound to this canvas' size ──
 
   /**
-   * The colour of the middle of an image's LAST row, or null if it cannot be
-   * read. Both backdrop layers continue downwards past where their file ends —
-   * the ridge's rock to the bottom of the screen, the sky's night under a tall
+   * The average colour of an image's LAST row, or null if it cannot be read.
+   * Both backdrop layers continue downwards past where their file ends — the
+   * ridge's rock to the bottom of the screen, the sky's night under a tall
    * phone — and both must continue in the painting's own colour rather than a
    * constant that was right for the drawing.
+   *
+   * Sixteen samples across the row, averaged, and not the one pixel in the
+   * middle: on the ridge that pixel can land on an ink line, and then the
+   * whole floor under the screen goes black.
    */
   const bottomColourOf = (img: HTMLImageElement): string | null => {
-    const probe = makeCanvas(1, 1, 1)
+    const n = 16
+    const probe = makeCanvas(n, 1, 1)
     if (!probe) return null
     const [, p] = probe
     try {
-      p.drawImage(img, Math.floor(img.naturalWidth / 2), img.naturalHeight - 1, 1, 1, 0, 0, 1, 1)
-      const px = p.getImageData(0, 0, 1, 1).data
-      return (px[3] ?? 0) > 8 ? `rgb(${px[0]},${px[1]},${px[2]})` : null
+      p.drawImage(img, 0, img.naturalHeight - 1, img.naturalWidth, 1, 0, 0, n, 1)
+      const px = p.getImageData(0, 0, n, 1).data
+      let r = 0
+      let g = 0
+      let bl = 0
+      let seen = 0
+      for (let i = 0; i < n; i++) {
+        if ((px[i * 4 + 3] ?? 0) <= 8) continue
+        r += px[i * 4]!
+        g += px[i * 4 + 1]!
+        bl += px[i * 4 + 2]!
+        seen++
+      }
+      return seen ? `rgb(${Math.round(r / seen)},${Math.round(g / seen)},${Math.round(bl / seen)})` : null
     } catch {
       // A tainted canvas (cross-origin art) — the caller's constant stands.
       return null
@@ -1234,31 +1414,55 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     /**
      * A ridge painting is sky-keyed on top and solid ground below, and it
      * ends where the file ends — a hard band across the backdrop. The ground
-     * is continued to the bottom of the canvas in the painting's own bottom
-     * colour, sampled off the file rather than guessed.
+     * has to go on to the bottom of the canvas, and how it goes on is the
+     * whole difference between rock and a rendering fault:
+     *
+     *   • a flat fill in the file's bottom colour left a hard seam right
+     *     across the viewport — textured rock above, one colour below;
+     *   • the band's bottom eighth STRETCHED to the bottom of the screen
+     *     smeared every brushstroke into a vertical streak, hundreds of pixels
+     *     long on a desktop and most of a phone's lower half. Players read it
+     *     as a badly tiled texture, and they were right to;
+     *   • the lower rock MIRRORED down, flip after flip, joined without a
+     *     seam — but every diagonal ink line met its own reflection at the
+     *     join and the ground came out printed with chevrons.
+     *
+     * So the file's edge is never shown at all. Under the band goes a floor
+     * in the rock's own average colour; over the band's foot goes ONE copy of
+     * its lower third (rock all the way across, clear of the menhirs and the
+     * spires), at the painting's scale, feathered at both ends. Where the
+     * file stops, the copy is fully opaque, so there is no edge to see; above
+     * that it dissolves into the band, below it dissolves into the floor, and
+     * the shadow fade after both bands takes the floor down into darkness.
+     * Nothing is stretched, nothing repeats, nothing is reflected.
      */
     const ground = (img: HTMLImageElement, x: number, y: number, w: number, h: number, alpha: number): void => {
       b.globalAlpha = alpha
       b.drawImage(img, x, y, w, h)
-      const below = cssH - (y + h)
-      if (below <= 0) return
-      /**
-       * The skirt: the band's bottom EIGHTH, stretched down to the bottom of
-       * the screen. A flat fill in the sampled colour was the old way and it
-       * left a hard seam right across the viewport — painted rock with a
-       * texture above, one solid colour below. Stretching a slice keeps the
-       * brushwork going; it smears vertically, which is what rock in shadow
-       * under a fade looks like anyway.
-       */
-      const slice = Math.max(1, Math.floor(img.naturalHeight * 0.12))
-      b.drawImage(img, 0, img.naturalHeight - slice, img.naturalWidth, slice, x, y + h - 1, w, below + 1)
-      const base = bottomColourOf(img)
-      if (base) {
-        // …and under the skirt, the same colour again, so a short band cannot
-        // run out before the screen does.
-        b.fillStyle = base
-        b.fillRect(x, y + h + below - 1, w, 2)
-      }
+      const foot = y + h
+      if (foot >= cssH) return
+      b.fillStyle = bottomColourOf(img) ?? '#0a0e22'
+      b.fillRect(x, foot - 1, w, cssH - foot + 1)
+      const sh = Math.max(1, Math.floor(img.naturalHeight / 3))
+      const dh = h * (sh / img.naturalHeight)
+      const made = makeCanvas(w, dh, dpr)
+      if (!made) return
+      const [copy, k] = made
+      // Slid sideways and wrapped, so the marks in the copy do not sit right
+      // under the same marks in the band and ghost twice through the dissolve.
+      const slide = Math.round(w * 0.37)
+      k.drawImage(img, 0, img.naturalHeight - sh, img.naturalWidth, sh, -slide, 0, w, dh)
+      k.drawImage(img, 0, img.naturalHeight - sh, img.naturalWidth, sh, w - slide, 0, w, dh)
+      // Opaque across the middle, where it straddles the file's last row.
+      k.globalCompositeOperation = 'destination-in'
+      const feather = k.createLinearGradient(0, 0, 0, dh)
+      feather.addColorStop(0, 'rgba(0,0,0,0)')
+      feather.addColorStop(0.42, 'rgba(0,0,0,1)')
+      feather.addColorStop(0.62, 'rgba(0,0,0,1)')
+      feather.addColorStop(1, 'rgba(0,0,0,0)')
+      k.fillStyle = feather
+      k.fillRect(0, 0, w, dh)
+      b.drawImage(copy, x, foot - dh / 2, w, dh)
     }
     /**
      * The drawn ridge, into the SAME rect the painting would be blitted into,
@@ -1299,20 +1503,35 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       if (far) ground(far, x, y, rw, rh, 1)
       else drawnRidge('far', x, y, rw, rh, 1)
     }
+    const nearH = bandH(near)
+    const nearFoot = horizon - nearH * RIDGE_SKYLINE.near + nearH
     {
-      const rh = bandH(near)
       const x = cssW / 2 - rw / 2
-      const y = horizon - rh * RIDGE_SKYLINE.near
-      if (near) ground(near, x, y, rw, rh, 1)
-      else drawnRidge('near', x, y, rw, rh, 1)
+      const y = nearFoot - nearH
+      if (near) ground(near, x, y, rw, nearH, 1)
+      else drawnRidge('near', x, y, rw, nearH, 1)
     }
     b.globalAlpha = 1
     {
-      // …and let the ground fall into the deep bottom, so the board's own
-      // shadow reads over darkness rather than over a flat plate.
+      /**
+       * …and let the ground fall into the deep bottom, so the board's own
+       * shadow reads over darkness rather than over a flat plate.
+       *
+       * Keyed to where the near band's FILE ends, not spread evenly from the
+       * horizon to the screen's foot: half dark at that line, so the rock is
+       * already sinking where its feathered copy takes over, and near-black
+       * most of a band's height further down, so the floor under it reads as
+       * depth rather than as a flat plate. Spread evenly, that line sat at
+       * about half strength on a desktop and about a seventh on a phone —
+       * right where the eye was already looking.
+       */
+      const span = Math.max(1, cssH - horizon)
+      const at = (py: number): number => Math.min(1, Math.max(0, (py - horizon) / span))
       const fade = b.createLinearGradient(0, horizon, 0, cssH)
       fade.addColorStop(0, rgba('#05070f', 0))
-      fade.addColorStop(1, rgba('#05070f', 0.85))
+      fade.addColorStop(at(nearFoot), rgba('#05070f', 0.5))
+      fade.addColorStop(Math.max(at(nearFoot), at(nearFoot + nearH * 0.8)), rgba('#05070f', 0.86))
+      fade.addColorStop(1, rgba('#05070f', 0.9))
       b.fillStyle = fade
       b.fillRect(0, horizon, cssW, cssH - horizon)
     }
@@ -1433,16 +1652,63 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     return bakePebble(type, level, side, skin, faction, key, Math.round(size), bakeDpr(), label)
   }
 
-  /** Blit a pebble centred at (x, y), `size` = the tile it was baked for. */
+  /**
+   * The upright layer that goes over a turned stone. `null` below Lv 2 — there
+   * is none.
+   *
+   * Baked on DEMAND, unlike the stones, which are all primed before the first
+   * frame. Priming these too would be sixty more canvases — every rune, in
+   * every tint — held from boot for a wreath nobody sees until they merge
+   * something, on the device least able to spare the memory. One small bake at
+   * the moment of a merge is hidden inside the merge's own effect.
+   */
+  const ornamentSprite = (type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null, size: number): HTMLCanvasElement | null => {
+    if (level < 2) return null
+    const key = pebbleKey(type, level, tintKey(side, skin, faction), size)
+    const hit = ornamentCache.get(key)
+    if (hit) return hit
+    const label = labels ? labels.level(level) : `Lv.${level}`
+    return bakeOrnaments(type, level, side, skin, faction, key, Math.round(size), bakeDpr(), label)
+  }
+
+  /**
+   * Blit a pebble centred at (x, y), `size` = the tile it was baked for.
+   *
+   * `spin` turns the stone about its own centre — the angle from
+   * `glyphSpin`, so the glyph on it ends up pointing the way the rune fires.
+   * Zero for everything that does not face anywhere, and the untransformed
+   * path is kept for that case because it is nearly every blit on the board.
+   */
   const blitPebble = (
-    sprite: HTMLCanvasElement | null, x: number, y: number, size: number, sx = 1, sy = 1, alpha = 1
+    sprite: HTMLCanvasElement | null, x: number, y: number, size: number, sx = 1, sy = 1, alpha = 1, spin = 0
   ): void => {
     if (!ctx || !sprite) return
     const w = size * PEBBLE_PAD * sx
     const h = size * PEBBLE_PAD * sy
+    if (spin === 0) {
+      if (alpha < 1) ctx.globalAlpha = alpha
+      ctx.drawImage(sprite, x - w / 2, y - h / 2, w, h)
+      if (alpha < 1) ctx.globalAlpha = 1
+      return
+    }
+    ctx.save()
     if (alpha < 1) ctx.globalAlpha = alpha
-    ctx.drawImage(sprite, x - w / 2, y - h / 2, w, h)
-    if (alpha < 1) ctx.globalAlpha = 1
+    ctx.translate(x, y)
+    ctx.rotate(spin)
+    ctx.drawImage(sprite, -w / 2, -h / 2, w, h)
+    ctx.restore()
+  }
+
+  /**
+   * A stone and its Lv 2 finery in one call: the stone turned to its facing,
+   * the wreath and the crest left level over the top.
+   */
+  const blitRuneStone = (
+    type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
+    x: number, y: number, size: number, spin: number, sx = 1, sy = 1, alpha = 1
+  ): void => {
+    blitPebble(pebbleSprite(type, level, side, skin, faction, size), x, y, size, sx, sy, alpha, spin)
+    blitPebble(ornamentSprite(type, level, side, skin, faction, size), x, y, size, sx, sy, alpha)
   }
 
   const drawShadow = (x: number, y: number, size: number, sx = 1, alpha = 0.42): void => {
@@ -1457,7 +1723,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     if (!ctx || dir === 'omni') return
     const spr = arrowSprite(color, size, dpr)
     if (!spr) return
-    const side = size * 0.7 * scale
+    const side = size * ARROW_DRAW * scale
     ctx.save()
     ctx.globalAlpha = alpha
     ctx.translate(x, y)
@@ -1511,7 +1777,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   const nukedIds = new Set<number>()
   /** How much of a normal shatter burst a nuked stone gets. */
   const NUKED_SHATTER_SCALE = 0.35
-  const auraFrom = { x: 0, y: 0 }
 
   /** The stone colour a rune's shards are cut from. */
   const stoneOf = (r: RuneSnapshot): string =>
@@ -1519,11 +1784,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   /** …and the ink its glyph was carved in. */
   const inkOf = (r: RuneSnapshot): string =>
     r.side === 'player' ? (SKINS[lastSkin ?? 'river'] ?? SKINS.river).ink : ENEMY_STONE.ink
-  /** A shot that ended on a shield: the projectile was intercepted. */
-  const wallHit = (hits: Hit[]): boolean => {
-    for (let i = 0; i < hits.length; i++) if (hits[i]!.target.type === 'defense') return true
-    return false
-  }
 
   /**
    * A soft glow around a rounded rectangle, baked once per size and colour:
@@ -1559,21 +1819,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     return out
   }
 
-  const burst = (x: number, y: number, count: number, color: string, speed: number, life: number, size: number, gravity = 0): void => {
-    const n = Math.max(2, Math.round(count * qualityMul()))
-    for (let i = 0; i < n; i++) {
-      const a = Math.random() * Math.PI * 2
-      const v = speed * (0.4 + Math.random() * 0.8)
-      spark(x, y, Math.cos(a) * v, Math.sin(a) * v, life * (0.6 + Math.random() * 0.6), size * (0.6 + Math.random() * 0.8), color, { additive: true, shape: 2, gravity, drag: 2.2 })
-    }
-  }
 
-  /** The angle a shot travels: from the shooter to the last tile of its path. */
-  const shotAngle = (e: Extract<ResolveEvent, { kind: 'shot' }>): number => {
-    const last = e.path[e.path.length - 1]
-    if (!last) return dirAngle(e.from.dir)
-    return Math.atan2(cy(last.col, last.row) - cy(e.from.col, e.from.row), cx(last.col, last.row) - cx(e.from.col, e.from.row))
-  }
 
   const floatText = (x: number, y: number, text: string, color: string, size: number, crit = false, life = 900): void => {
     emitText({ x, y, vy: -size * 0.7, life, text, color, size, crit })
@@ -1637,7 +1883,111 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
 
   const hitColor = (h: Hit): string => (h.amount >= 4 ? '#ffd75e' : h.amount > 0 ? '#ffffff' : SHIELD_COLOR)
 
-  const applyHits = (hits: Hit[], attackerColor: string, size: number): void => {
+  // ── The rune modules' door (see `runeFx/types.ts`) ──
+  //
+  // ONE object for the session. `syncFxApi` rewrites its fields at the top of
+  // every frame, so handing an event to a module allocates nothing. Modules
+  // own the look and the sound; everything that is a FACT of the match (HP,
+  // numbers, the stone a crown turns, where a knockback lands) stays here.
+  const fxApi = {
+    ctx: ctx as CanvasRenderingContext2D,
+    size: 1,
+    tier: 2 as 0 | 1 | 2,
+    mul: 1,
+    canEmit: false,
+    now: 0,
+    board: { x: 0, y: 0, w: 1, h: 1 },
+    scratch: cellScratch,
+    cx: (col: number, row: number): number => cx(col, row),
+    cy: (col: number, row: number): number => cy(col, row),
+    pose: (id: number, ox: number, oy: number, sx?: number, sy?: number): void => {
+      const v = getVis(id)
+      v.ox = ox
+      v.oy = oy
+      if (sx !== undefined) v.sx = sx
+      if (sy !== undefined) v.sy = sy
+    },
+    flash: (id: number, k: number): void => {
+      const v = getVis(id)
+      if (k > v.flash) v.flash = k
+    },
+    shake: (kind: 'small' | 'strong' | 'big'): void => triggerShake(kind),
+    sound: (id: FxSound, power: number, at?: SoundAt): void => {
+      // Where on the board it happens, as a stereo pan: a bow on the left
+      // twangs from the left. Kept inside ±0.8 so nothing is only in one ear.
+      const b = geom.board
+      const pan = at?.x === undefined
+        ? 0
+        : Math.max(-0.8, Math.min(0.8, ((at.x - (b.x + b.w / 2)) / Math.max(1, b.w / 2)) * 0.65))
+      playFx(id, power, { pan, level: at?.level ?? 1, side: at?.side })
+    },
+    sideColor,
+    stoneOf,
+    inkOf,
+    art: (kind: ArtKind, id: string): HTMLImageElement | null => spriteFor(kind, id)
+  }
+  const api: FxApi = fxApi
+  const syncFxApi = (): void => {
+    fxApi.size = geom.tile
+    fxApi.tier = fxQ()
+    fxApi.mul = qualityMul()
+    fxApi.now = now
+    fxApi.canEmit = now - lastEmitAt > 24
+    const b = geom.board
+    fxApi.board.x = b.x
+    fxApi.board.y = b.y
+    fxApi.board.w = b.w
+    fxApi.board.h = b.h
+  }
+
+  // ── The warm-up: each rune's sprites baked during planning, not on the
+  // first frame its effect plays (`runeFx/warm.ts`). One rune per idle slice,
+  // once per tile-size bucket and tier.
+  //
+  // Loaded LAZILY: it plays the FX scenarios, which import the resolver — a
+  // static import here would pull the whole domain into the boot chunk (the
+  // renderer is on the eager path) for something that runs during planning.
+  let warmQueue: RuneType[] = []
+  let warmKey = ''
+  let warmMod: typeof import('@/use/runeFx/warm') | null = null
+  let warmLoading = false
+  const pumpWarm = (): void => {
+    if (disposed || warmQueue.length === 0) return
+    if (!warmMod) {
+      if (warmLoading) return
+      warmLoading = true
+      void import('@/use/runeFx/warm')
+        .then((m) => { warmMod = m; pumpWarm() })
+        .catch(() => { warmLoading = false })
+      return
+    }
+    const run = (): void => {
+      if (disposed) return
+      const t = warmQueue.shift()
+      if (t && warmMod) warmMod.warmRune(t, geom.tile, fxQ(), qualityMul())
+      pumpWarm()
+    }
+    const idle = (globalThis as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    if (typeof idle === 'function') idle(run, { timeout: 2000 })
+    else setTimeout(run, 80)
+  }
+  const scheduleWarm = (): void => {
+    if (!ctx) return
+    const key = `${bucketFor(geom.tile)}|${fxQ()}`
+    if (key === warmKey) return
+    warmKey = key
+    const idle = warmQueue.length === 0
+    warmQueue = RUNE_TYPES.slice()
+    if (idle) pumpWarm()
+  }
+
+  /**
+   * The FACTS of a set of hits: HP, the white flash, the shield tint, the
+   * number. The look of each blow belongs to the attacker's module (`impact`);
+   * a hit a shield ate — in part or whole — is also handed to the SHIELD's
+   * module (`absorb`), whoever threw it.
+   */
+  const applyHits = (hits: Hit[], size: number, flash = 1): void => {
     if (!local) return
     for (let i = 0; i < hits.length; i++) {
       const h = hits[i]!
@@ -1645,17 +1995,15 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       const y = cy(h.target.col, h.target.row)
       setHp(local, h.target.id, h.hpAfter)
       const v = getVis(h.target.id)
-      v.flash = 1
-      if (h.absorbed > 0) {
-        v.shield = 1
-        playFx('shield', 0.5)
-      }
+      // A blow the shield ate WHOLE barely touches the stone: the dome is the
+      // moment, and a full white flash under it would wash it out.
+      v.flash = Math.max(v.flash, h.amount === 0 ? Math.min(flash, 0.35) : flash)
+      if (h.absorbed > 0) v.shield = 1
+      if (h.absorbed > 0 || h.amount === 0) RUNE_FX.defense.absorb?.(h, x, y, api)
       if (h.amount > 0) {
         floatText(x, y - size * 0.3, `-${h.amount}`, hitColor(h), size * (h.amount >= 4 ? 0.34 : 0.26), h.amount >= 4)
-        burst(x, y, h.amount >= 4 ? 16 : 9, attackerColor, size * 2.2, 380, size * 0.06)
       } else {
         floatText(x, y - size * 0.3, `0`, SHIELD_COLOR, size * 0.22)
-        burst(x, y, 6, SHIELD_COLOR, size * 1.4, 300, size * 0.05)
       }
     }
   }
@@ -1681,6 +2029,41 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     if (!local) return
     const size = geom.tile
     const [x, y] = eventCenter(e)
+    // The rune events: the FACTS first, then the owner's look and sound.
+    const owner = ownerOf(e)
+    if (owner) {
+      switch (e.kind) {
+        case 'aura':
+          for (const to of e.to) {
+            const r = local.runes[to.id]
+            if (r) r.shield = to.shield
+            getVis(to.id).shield = 1
+          }
+          break
+        case 'buff': {
+          const r = local.runes[e.to.id]
+          if (r) r.atkBonus = e.bonus
+          break
+        }
+        case 'nuke':
+          // Remember who the blast took, so their own shatters stay quiet.
+          for (let i = 0; i < e.vaporised.length; i++) nukedIds.add(e.vaporised[i]!.id)
+          break
+        case 'crown': {
+          // The stone changes hands HERE, on the local board the resolution is
+          // drawn from, so the pebble is re-cut in its new owner's colours in
+          // front of the player rather than after the dust settles.
+          putRune(local, e.turned)
+          const v = getVis(e.turned.id)
+          v.sx = 1.35; v.sy = 1.35; v.flash = 0.9
+          break
+        }
+        default:
+          break
+      }
+      RUNE_FX[owner].start?.(e as RuneEvent, api)
+      return
+    }
     switch (e.kind) {
       case 'place': {
         putRune(local, e.rune)
@@ -1692,104 +2075,8 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       case 'clash':
         // Both are drawn by the continuous pass until their impact.
         break
-      case 'aura':
-        for (const to of e.to) {
-          const r = local.runes[to.id]
-          if (r) r.shield = to.shield
-          getVis(to.id).shield = 1
-        }
-        playFx('shield', 0.8)
-        break
-      case 'heal':
-        spawnHealMotes(x, y, size, HEAL_COLOR)
-        playFx('heal', 0.7)
-        break
-      case 'buff': {
-        const r = local.runes[e.to.id]
-        if (r) r.atkBonus = e.bonus
-        spawnBuffGlint(x, y, size, BUFF_COLOR)
-        playFx('buff', 0.6)
-        break
-      }
-      case 'shot': {
-        const color = WEAPON_INK[e.weapon] ?? sideColor(e.from.side, e.from.faction)
-        playFx(WEAPON_SWING[e.weapon], e.weapon === 'beam' ? 0.9 : 0.85)
-        switch (e.weapon) {
-          case 'arrow':
-            spawnImpactSparks(x, y, size, color, shotAngle(e), 6)
-            break
-          case 'beam':
-            spawnBurstMotes(x, y, size, RUNES.mage.color, 8)
-            break
-          case 'roll': {
-            // The stone leaves the tile it was standing on: grit under it, and
-            // the tile itself kicks up as the weight comes off.
-            const a = shotAngle(e)
-            spawnRollDust(x, y, Math.cos(a), Math.sin(a), size, 6)
-            spawnTileDust(x, y, size, 4)
-            break
-          }
-          case 'shell': {
-            // The tube's own muzzle blast, straight up out of the barrel: the
-            // round itself is already over the board by the next frame.
-            spawnTileDust(x, y, size, 5)
-            spawnImpactSparks(x, y - size * 0.2, size, color, -Math.PI / 2, 8)
-            break
-          }
-          case 'cleave':
-          case 'blade': {
-            const v = getVis(e.from.id)
-            v.ox = 0; v.oy = 0
-            break
-          }
-        }
-        break
-      }
-      case 'explode':
-        for (const c of e.cells) spawnBurstMotes(cx(c.col, c.row), cy(c.col, c.row), size, RUNES.mage.color)
-        playFx('explode', 1)
-        triggerShake('small')
-        break
-      case 'nuke': {
-        // Remember who the blast took, so their own shatters stay quiet.
-        for (let i = 0; i < e.vaporised.length; i++) nukedIds.add(e.vaporised[i]!.id)
-        const nc = RUNES.nuker.color
-        // The core, at the tile it went off on. Everything else is drawn
-        // per-frame — a board-wide ring made of particles would cost more than
-        // the whole rest of the resolution.
-        spawnBurstMotes(x, y, size, nc, 22)
-        spawnImpactSparks(x, y, size, '#ffffff', -Math.PI / 2, 16)
-        spawnEmbers(x, y, size, nc, 8)
-        playFx('nuke', 1)
-        // The heaviest shake in the game, and the only place `big` is used
-        // outside a match ending.
-        triggerShake('big')
-        break
-      }
-      case 'crown': {
-        // The stone changes hands HERE, on the local board the resolution is
-        // drawn from, so the pebble is re-cut in its new owner's colours in
-        // front of the player rather than after the dust settles.
-        const cc = RUNES.crown.color
-        const tx = cx(e.turned.col, e.turned.row)
-        const ty = cy(e.turned.col, e.turned.row)
-        putRune(local, e.turned)
-        const v = getVis(e.turned.id)
-        v.sx = 1.35; v.sy = 1.35; v.flash = 0.9
-        // Off the crown…
-        spawnBurstMotes(x, y, size, cc, 10)
-        // …and onto the tile it claims, in the colour of its new owner.
-        spawnMergeFountain(tx, ty, size, cc, 18)
-        spawnCaptureSparks(tx, ty, size, ownerColor(e.turned.side, e.turned.faction))
-        triggerShake('small')
-        playFx('crown', 1)
-        break
-      }
       case 'shatter':
         getVis(e.rune.id).crack = 1
-        break
-      case 'knockback':
-        playFx('knockback', 0.7)
         break
       case 'capture':
         if (e.owner !== 'neutral') {
@@ -1804,6 +2091,8 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         triggerShake('strong')
         playFx('combo', Math.min(1, e.count / 4))
         break
+      default:
+        break
     }
   }
 
@@ -1811,6 +2100,44 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     if (!local) return
     const size = geom.tile
     const [x, y] = eventCenter(e)
+    const owner = ownerOf(e)
+    if (owner) {
+      // The FACTS of the blow, then the owner's look and sound.
+      switch (e.kind) {
+        case 'shot':
+          applyHits(e.hits, size)
+          // An arrow, a beam or a blade that stopped ON a shield stone: the
+          // shield draws the wall, whoever threw it.
+          if (intercepted(e)) {
+            const last = e.path[e.path.length - 1]
+            RUNE_FX.defense.interceptImpact?.(e, last ? cx(last.col, last.row) : x, last ? cy(last.col, last.row) : y, api)
+          }
+          break
+        case 'explode':
+          // Softer: five stones going white at once would drown the orb's
+          // violet pillars for three frames.
+          applyHits(e.hits, size, 0.6)
+          break
+        case 'nuke':
+          applyHits(e.hits, size)
+          break
+        case 'heal':
+          setHp(local, e.to.id, e.hpAfter)
+          if (e.amount > 0) floatText(x, y - size * 0.35, `+${e.amount}`, HEAL_COLOR, size * 0.28)
+          getVis(e.to.id).flash = 0.4
+          break
+        case 'knockback': {
+          moveRune(local, e.rune.id, e.to)
+          const v = getVis(e.rune.id)
+          v.ox = 0; v.oy = 0; v.sx = 1; v.sy = 1
+          break
+        }
+        default:
+          break
+      }
+      RUNE_FX[owner].impact?.(e as RuneEvent, api)
+      return
+    }
     switch (e.kind) {
       case 'place':
         spawnTileDust(x, y, size, 5)
@@ -1841,61 +2168,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         playFx('clash', 1)
         break
       }
-      case 'heal': {
-        setHp(local, e.to.id, e.hpAfter)
-        if (e.amount > 0) floatText(x, y - size * 0.35, `+${e.amount}`, HEAL_COLOR, size * 0.28)
-        getVis(e.to.id).flash = 0.4
-        break
-      }
-      case 'shot': {
-        const color = WEAPON_INK[e.weapon] ?? sideColor(e.from.side, e.from.faction)
-        // The shell LANDS whether or not it found anything: the round going off
-        // on bare stone is the feedback that teaches where the thing reaches.
-        if (e.hits.length > 0 || e.weapon === 'shell') playFx(WEAPON_HIT[e.weapon], 0.8)
-        // …and it craters every tile of its footprint, empty ones included.
-        if (e.weapon === 'shell') {
-          for (let i = 0; i < e.path.length; i++) {
-            const c = e.path[i]!
-            spawnTileDust(cx(c.col, c.row), cy(c.col, c.row), size, 6, '#9c8f7a')
-          }
-        }
-        applyHits(e.hits, color, size)
-        if (e.hits.length > 0) {
-          const ang = shotAngle(e)
-          if (canBeIntercepted(e.weapon) && wallHit(e.hits)) {
-            const last = e.path[e.path.length - 1]
-            spawnShieldShards(last ? cx(last.col, last.row) : x, last ? cy(last.col, last.row) : y, size, SHIELD_COLOR)
-          } else {
-            for (let i = 0; i < e.hits.length; i++) {
-              const h = e.hits[i]!
-              const hx = cx(h.target.col, h.target.row)
-              const hy = cy(h.target.col, h.target.row)
-              spawnChips(hx, hy, size, stoneOf(h.target), ang, WEAPON_CHIPS[e.weapon])
-              // The three wide weapons land on several tiles at once, so each
-              // one gets its own sparks — a single burst at the end of the
-              // path would say "one blow over there" instead of "all of these".
-              if (e.weapon === 'cleave' || e.weapon === 'shell') spawnImpactSparks(hx, hy, size, color, ang, 12)
-              else if (e.weapon === 'roll') spawnImpactSparks(hx, hy, size, color, ang, 14)
-            }
-          }
-          if (e.weapon === 'blade') {
-            const last = e.path[e.path.length - 1]
-            spawnImpactSparks(last ? cx(last.col, last.row) : x, last ? cy(last.col, last.row) : y, size, color, ang, 18)
-          }
-          // Weight: a boulder stopping and a shell landing are felt, a fan is not.
-          if (e.weapon === 'roll' || e.weapon === 'shell') triggerShake('small')
-        }
-        break
-      }
-      case 'explode':
-        applyHits(e.hits, RUNES.mage.color, size)
-        break
-      case 'nuke':
-        // The survivors: their damage ink flares in the nuker's colour as the
-        // front passes. Anything the blast VAPORISED is not in `hits` — it has
-        // no damage figure, only a shatter of its own.
-        applyHits(e.hits, RUNES.nuker.color, size)
-        break
       case 'shatter': {
         const nuked = nukedIds.has(e.rune.id)
         removeRune(local, e.rune.id)
@@ -1913,16 +2185,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         }
         break
       }
-      case 'knockback': {
-        moveRune(local, e.rune.id, e.to)
-        const v = getVis(e.rune.id)
-        v.ox = 0; v.oy = 0; v.sx = 1; v.sy = 1
-        const tx = cx(e.to.col, e.to.row)
-        const ty = cy(e.to.col, e.to.row)
-        const n = Math.hypot(tx - x, ty - y) || 1
-        spawnKnockbackDust(tx, ty, (tx - x) / n, (ty - y) / n, size)
-        break
-      }
       case 'capture': {
         const t = local.tiles[cellIndex(e.col, e.row)]
         if (t) { t.owner = e.owner; t.faction = e.faction }
@@ -1934,6 +2196,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   const processTimeline = (tl: NonNullable<ArenaView['timeline']>, view: ArenaView): void => {
+    syncFxApi()
     const el = tl.elapsedMs
     const events = tl.events
     for (let i = 0; i < events.length; i++) {
@@ -1956,7 +2219,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   const drawEvents = (tl: NonNullable<ArenaView['timeline']>): void => {
-    if (!ctx || !local) return
+    if (!ctx) return
     const el = tl.elapsedMs
     const size = geom.tile
     const events = tl.events
@@ -1965,8 +2228,50 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     for (let i = 0; i < events.length; i++) {
       const e = events[i]!
       if (el < e.at || stages[i] === STAGE_DONE) continue
-      const p = clamp01((el - e.at) / Math.max(1, e.dur))
+      const praw = (el - e.at) / Math.max(1, e.dur)
+      const p = clamp01(praw)
       const [x, y] = eventCenter(e)
+      const owner = ownerOf(e)
+      if (owner) {
+        // The facts that MOVE stay here: where a knocked-back stone is, and
+        // which stones a nuke's front has reached.
+        // Only until the impact: `impactEvent` then MOVES the stone to `e.to`
+        // and zeroes its pose, and an offset applied after that would draw it
+        // a whole tile past where it now stands, for the rest of the tail.
+        if (e.kind === 'knockback' && stages[i] === STAGE_STARTED) {
+          const v = getVis(e.rune.id)
+          const k = easeOutCubic(p)
+          v.ox = (cx(e.to.col, e.to.row) - x) * k
+          v.oy = (cy(e.to.col, e.to.row) - y) * k
+          const squash = Math.sin(p * Math.PI) * 0.15
+          v.sx = 1 + squash
+          v.sy = 1 - squash
+        } else if (e.kind === 'nuke') {
+          // The front is what makes the wipe read as one blast travelling
+          // rather than fifteen stones dying at once: a stone starts cracking
+          // when the ring reaches ITS tile. Its own `shatter` finishes it off.
+          // The curve is `runeFx/nuker.ts`'s own (an inhale, then the blast).
+          const front = nukeFrontAt(p, size)
+          for (let j = 0; j < e.vaporised.length; j++) {
+            const r = e.vaporised[j]!
+            const v = vis.get(r.id)
+            if (!v) continue
+            const d = Math.hypot(cx(r.col, r.row) - x, cy(r.col, r.row) - y)
+            if (front >= d) v.crack = Math.max(v.crack, clamp01((front - d) / (size * 0.9)))
+          }
+        }
+        RUNE_FX[owner].paint?.(e as RuneEvent, praw, api)
+        // A projectile that stopped on a shield: the shield rings, whoever threw it.
+        if (e.kind === 'shot' && intercepted(e)) {
+          const ia = impactFrac(e)
+          if (p >= ia) {
+            const last = e.path[e.path.length - 1]
+            const k = clamp01((p - ia) / Math.max(1e-6, 1 - ia))
+            RUNE_FX.defense.interceptPaint?.(e, k, last ? cx(last.col, last.row) : x, last ? cy(last.col, last.row) : y, api)
+          }
+        }
+        continue
+      }
       switch (e.kind) {
         case 'place': {
           const v = getVis(e.rune.id)
@@ -2004,164 +2309,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
           }
           break
         }
-        case 'aura': {
-          auraFrom.x = x
-          auraFrom.y = y
-          const n = Math.min(cellScratch.length, e.to.length)
-          for (let j = 0; j < n; j++) {
-            const c = cellScratch[j]!
-            c.x = cx(e.to[j]!.col, e.to[j]!.row)
-            c.y = cy(e.to[j]!.col, e.to[j]!.row)
-          }
-          paintAuraLink(ctx, p, auraFrom, cellScratch, size, SHIELD_COLOR, n)
-          break
-        }
-        case 'heal': {
-          // The painted ring, when the art layer has one, rides under the flare.
-          const ring = spriteFor('fx', 'ring-heal')
-          if (ring) {
-            const r = size * (0.25 + p * 0.55)
-            ctx.save()
-            ctx.globalCompositeOperation = 'lighter'
-            ctx.globalAlpha = 1 - p
-            ctx.drawImage(ring, x - r, y - r * 0.55, r * 2, r * 1.1)
-            ctx.restore()
-          }
-          paintHealFlare(ctx, p, x, y, size, HEAL_COLOR)
-          break
-        }
-        case 'buff':
-          paintBuffGlint(ctx, p, x, y, size, BUFF_COLOR)
-          break
-        case 'shot': {
-          const color = WEAPON_INK[e.weapon] ?? sideColor(e.from.side, e.from.faction)
-          const last = e.path[e.path.length - 1]
-          const tx = last ? cx(last.col, last.row) : x
-          const ty = last ? cy(last.col, last.row) : y
-          const ang = Math.atan2(ty - y, tx - x)
-          const wall = canBeIntercepted(e.weapon) && wallHit(e.hits)
-          if (e.weapon === 'cleave') {
-            // The attacker leans into the swing while one arc sweeps the rank
-            // ahead. The arc is centred on the FACING, not on the last cell of
-            // the fan — that cell is a corner of it, and aiming there would
-            // swing the axe at the diagonal.
-            const v = getVis(e.from.id)
-            const face = dirAngle(e.from.dir)
-            const lunge = Math.sin(clamp01(p / 0.55) * Math.PI)
-            v.ox = Math.cos(face) * size * 0.16 * lunge
-            v.oy = Math.sin(face) * size * 0.16 * lunge
-            paintCleaveArc(ctx, (p - 0.12) / 0.55, x, y, size, { angle: face, color, reach: 0.95, lean: fx < 2 })
-          } else if (e.weapon === 'roll') {
-            const fly = clamp01(p / impactFrac(e))
-            const px = lerp(x, tx, easeOutQuad(fly))
-            const py = lerp(y, ty, easeOutQuad(fly))
-            if (fly < 1) {
-              paintBoulder(ctx, px, py, size, { color, spin: fly * 7 })
-              if (canEmit && fx > 1) spawnRollDust(px, py, Math.cos(ang), Math.sin(ang), size)
-            } else {
-              // At rest on the tile it could not break: the stone settles and
-              // the dust it pushed ahead of it rolls out.
-              const k = clamp01((p - impactFrac(e)) / (1 - impactFrac(e)))
-              paintBoulder(ctx, tx, ty, size, { color, spin: 7, alpha: 1 - k })
-              if (fx > 0) paintShockwave(ctx, k, tx, ty, size, color, 0.8)
-            }
-          } else if (e.weapon === 'shell') {
-            // The footprint's middle, so the round arcs into the centre of what
-            // it is about to flatten rather than at one corner of it.
-            let sumX = 0
-            let sumY = 0
-            for (let j = 0; j < e.path.length; j++) {
-              sumX += cx(e.path[j]!.col, e.path[j]!.row)
-              sumY += cy(e.path[j]!.col, e.path[j]!.row)
-            }
-            const n = Math.max(1, e.path.length)
-            const fxC = e.path.length > 0 ? sumX / n : tx
-            const fyC = e.path.length > 0 ? sumY / n : ty
-            const flight = impactFrac(e)
-            if (p < flight) {
-              paintShellArc(ctx, p / flight, x, y, fxC, fyC, size, { color, lean: fx < 2 })
-            } else {
-              const k = clamp01((p - flight) / (1 - flight))
-              const m = Math.min(cellScratch.length, e.path.length)
-              for (let j = 0; j < m; j++) {
-                const c = cellScratch[j]!
-                c.x = cx(e.path[j]!.col, e.path[j]!.row)
-                c.y = cy(e.path[j]!.col, e.path[j]!.row)
-              }
-              paintShellBurst(ctx, k, cellScratch, size, color, m)
-            }
-          } else if (e.weapon === 'arrow') {
-            const fly = clamp01(p / impactFrac(e))
-            if (fly < 1) {
-              const px = lerp(x, tx, fly)
-              const py = lerp(y, ty, fly)
-              const bolt = spriteFor('round', 'bolt')
-              if (bolt) {
-                ctx.save()
-                ctx.translate(px, py)
-                ctx.rotate(ang)
-                const bw = size * 0.55
-                const bh = bw * (bolt.naturalHeight / bolt.naturalWidth)
-                ctx.drawImage(bolt, -bw / 2, -bh / 2, bw, bh)
-                ctx.restore()
-                paintGlow(ctx, px + Math.cos(ang) * size * 0.2, py + Math.sin(ang) * size * 0.2, size * 0.16, color, 0.8)
-              } else {
-                paintArrow(ctx, px, py, size, { angle: ang, color })
-              }
-              if (canEmit && fx > 1) spawnArrowTrail(px, py, Math.cos(ang), Math.sin(ang), size, color)
-            } else {
-              const k = clamp01((p - impactFrac(e)) / (1 - impactFrac(e)))
-              if (wall) paintShieldDome(ctx, tx, ty, size, { color: SHIELD_COLOR, alpha: 1 - k, hit: k })
-              else if (e.hits.length > 0) paintArrowImpact(ctx, k, tx, ty, size, color)
-            }
-          } else if (e.weapon === 'beam') {
-            const env = p < 0.15 ? p / 0.15 : p < 0.6 ? 1 : 1 - (p - 0.6) / 0.4
-            paintBeam(ctx, x, y, tx, ty, size, { color: RUNES.mage.color, env, phase: p, seed: e.from.id, lean: fx < 2 })
-            if (canEmit && env > 0.5 && fx > 1) spawnBeamCrackle(x, y, tx, ty, size, RUNES.mage.color)
-            if (wall && p >= impactFrac(e)) {
-              const k = clamp01((p - impactFrac(e)) / (1 - impactFrac(e)))
-              paintShieldDome(ctx, tx, ty, size, { color: SHIELD_COLOR, alpha: (1 - k) * 0.9, hit: k })
-            }
-          } else {
-            // Blade: the attacker lunges, an arc flashes on the target.
-            const v = getVis(e.from.id)
-            const lunge = Math.sin(clamp01(p / 0.6) * Math.PI)
-            v.ox = (tx - x) * 0.2 * lunge
-            v.oy = (ty - y) * 0.2 * lunge
-            paintSlash(ctx, (p - 0.2) / 0.45, tx, ty, size, { angle: ang, color, lean: fx < 2 })
-          }
-          break
-        }
-        case 'explode': {
-          const n = Math.min(cellScratch.length, e.cells.length)
-          for (let j = 0; j < n; j++) {
-            const c = cellScratch[j]!
-            c.x = cx(e.cells[j]!.col, e.cells[j]!.row)
-            c.y = cy(e.cells[j]!.col, e.cells[j]!.row)
-          }
-          paintCrossBurst(ctx, p, cellScratch, size, RUNES.mage.color, n)
-          break
-        }
-        case 'nuke': {
-          // The wash goes over the BOARD only — the HUD lives in the DOM above
-          // this canvas and must not strobe with it.
-          const b = geom.board
-          paintNukeFlash(ctx, p, b.x, b.y, b.w, b.h, RUNES.nuker.color)
-          if (fx > 0) paintNukeWave(ctx, p, x, y, size, RUNES.nuker.color, NUKE_WAVE_TILES)
-          // The front is what makes the wipe read as one blast travelling
-          // rather than fifteen stones dying at once: a stone starts cracking
-          // when the ring reaches ITS tile, so the wave visibly crosses the
-          // board. Its own `shatter` event still finishes it off.
-          const front = size * (0.2 + easeOutCubic(p) * NUKE_WAVE_TILES)
-          for (let j = 0; j < e.vaporised.length; j++) {
-            const r = e.vaporised[j]!
-            const v = vis.get(r.id)
-            if (!v) continue
-            const d = Math.hypot(cx(r.col, r.row) - x, cy(r.col, r.row) - y)
-            if (front >= d) v.crack = Math.max(v.crack, clamp01((front - d) / (size * 0.9)))
-          }
-          break
-        }
         case 'shatter': {
           if (p < impactFrac(e)) {
             const v = getVis(e.rune.id)
@@ -2172,19 +2319,6 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
             const k = clamp01((p - impactFrac(e)) / (1 - impactFrac(e)))
             paintShockwave(ctx, k, x, y, size, RUNES[e.rune.type].color, 0.9)
           }
-          break
-        }
-        case 'knockback': {
-          const v = getVis(e.rune.id)
-          const k = easeOutCubic(p)
-          const tx = cx(e.to.col, e.to.row)
-          const ty = cy(e.to.col, e.to.row)
-          v.ox = (tx - x) * k
-          v.oy = (ty - y) * k
-          const squash = Math.sin(p * Math.PI) * 0.15
-          v.sx = 1 + squash
-          v.sy = 1 - squash
-          if (fx > 0) paintKnockbackStreak(ctx, p, x, y, tx, ty, size, sideColor(e.rune.side, e.rune.faction))
           break
         }
         case 'capture': {
@@ -2346,24 +2480,54 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     ctx.globalAlpha = 1
   }
 
+  /**
+   * ─── What a stone has left, and why a hit did nothing ────────────────────
+   *
+   * Three blind testers in round five, independently, made this their single
+   * biggest complaint — the same one filed two rounds earlier. "Enemy runes
+   * carry no visible health/state info… multi-hit fights are pure guesswork"
+   * (Tom); "7-11 turns of watching nothing visibly change" (Camila); "I can't
+   * see combat happen" (Aisha). The damage numbers and the cracks were there
+   * the whole time; what was missing is anything to read BETWEEN turns, when
+   * nothing is animating.
+   *
+   * Two changes came out of that, both here:
+   *
+   *   • the pips are bigger and a DAMAGED stone prints its number, so "how
+   *     much is left" is readable at phone size rather than inferred from
+   *     four dark slots. Camila asked for exactly this — "like the 8/9 the
+   *     Shield rune already has", which was the one readout that worked for
+   *     her.
+   *   • a defense rune wears its ARMOUR, always. It mitigates
+   *     `DEFENSE_MITIGATION` from every hit, so a Lv 1 rune hitting one takes
+   *     its health to precisely nothing: the stone is undamaged, the cracks
+   *     correctly show nothing, and all three testers read that as the game
+   *     ignoring them. Tom lost a whole level to it — "I misread this as
+   *     'tanky enemy'". A turn that changed nothing now says why.
+   */
   const drawHpPips = (r: Rune, x: number, y: number, size: number, color: string): void => {
     if (!ctx) return
     const hp = Math.max(0, r.hp)
     if (r.maxHp <= 6) {
       const n = r.maxHp
-      const pw = size * 0.075
-      const gap = size * 0.025
+      const pw = size * 0.095
+      const gap = size * 0.028
       const total = n * pw + (n - 1) * gap
       let px = x - total / 2
       const py = y + size * 0.235
       for (let i = 0; i < n; i++) {
-        ctx.fillStyle = i < hp ? color : rgba('#000000', 0.55)
-        ctx.strokeStyle = rgba('#000000', 0.8)
-        ctx.lineWidth = Math.max(1, size * 0.012)
-        roundRect(ctx, px, py, pw, size * 0.04, size * 0.016)
+        ctx.fillStyle = i < hp ? color : rgba('#000000', 0.62)
+        ctx.strokeStyle = rgba('#000000', 0.85)
+        ctx.lineWidth = Math.max(1, size * 0.014)
+        roundRect(ctx, px, py, pw, size * 0.055, size * 0.02)
         ctx.fill()
         ctx.stroke()
         px += pw + gap
+      }
+      // Only once it has been hit: an untouched stone's pips already say
+      // "full", and a number on every rune on the board is noise.
+      if (hp < r.maxHp) {
+        drawText(`${hp}/${r.maxHp}`, x, py + size * 0.125, size * 0.13, '#ffffff')
       }
     } else {
       const bw = size * 0.52
@@ -2404,6 +2568,30 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       ctx.fill()
       ctx.stroke()
     }
+    // The armour a defense rune always carries — the answer to "my hit did
+    // nothing". Drawn opposite the temporary-shield pip so a stone that has
+    // both reads as two different things rather than one doubled one.
+    if (r.type === 'defense' && DEFENSE_MITIGATION > 0) {
+      const ax = x - size * 0.32
+      const ay = y - size * 0.3
+      const rr = size * 0.105
+      ctx.save()
+      ctx.fillStyle = rgba('#0b1220', 0.85)
+      ctx.strokeStyle = SHIELD_COLOR
+      ctx.lineWidth = Math.max(1, size * 0.018)
+      // A shield outline: flat shoulders, a point at the foot.
+      ctx.beginPath()
+      ctx.moveTo(ax - rr, ay - rr * 0.85)
+      ctx.lineTo(ax + rr, ay - rr * 0.85)
+      ctx.lineTo(ax + rr, ay + rr * 0.15)
+      ctx.quadraticCurveTo(ax + rr, ay + rr, ax, ay + rr * 1.15)
+      ctx.quadraticCurveTo(ax - rr, ay + rr, ax - rr, ay + rr * 0.15)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+      ctx.restore()
+      drawText(String(DEFENSE_MITIGATION), ax, ay + rr * 0.1, size * 0.13, SHIELD_COLOR)
+    }
     if (r.atkBonus > 0) {
       drawText(`+${r.atkBonus}`, x - size * 0.34, y - size * 0.3, size * 0.15, BUFF_COLOR)
     }
@@ -2426,9 +2614,27 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     }
     if (v.alpha < 1) v.alpha = Math.min(1, v.alpha + dt / 150)
 
+    // The stone faces the way it fires. A rune drawn for the first time is
+    // already there; one that was re-aimed swings round, short way, so the
+    // turn itself is the news.
+    const want = glyphSpin(r.type, r.dir)
+    v.spin = v.spin === null ? want : easeAngle(v.spin, want, Math.min(1, (dt / 16) * SPIN_EASE))
+    const spin = v.spin
+
     drawShadow(x, y, size, v.sx, 0.42 * v.alpha)
     const spr = pebbleSprite(r.type, r.level, r.side, skin, r.faction, size)
-    blitPebble(spr, x, y, size, v.sx, v.sy, v.alpha)
+    blitPebble(spr, x, y, size, v.sx, v.sy, v.alpha, spin)
+
+    // What the stone has taken, painted ON the stone: three steps from a
+    // hairline to a shattered face. Over the pebble so it reads as the SAME
+    // stone breaking, under the hit flash and the glyph's breathing so a
+    // landing blow still washes over it. See `paintDamage`.
+    const dmg = damageSprite(damageStage(r.hp, r.maxHp), r.id, size, dpr)
+    // Cracks are IN the stone, so they turn with it.
+    if (dmg) blitPebble(dmg, x, y, size, v.sx, v.sy, v.alpha, spin)
+    // The wreath and the level plaque, level — they are hung ON the stone, not
+    // part of it, and a plaque on its side cannot be read.
+    blitPebble(ornamentSprite(r.type, r.level, r.side, skin, r.faction, size), x, y, size, v.sx, v.sy, v.alpha)
 
     if (breathe && qualityTier() !== 'min') {
       const glowColor = r.side === 'player' ? resolveGlow(SKINS[skin] ?? SKINS.river, r.type) : RUNES[r.type].color
@@ -2437,10 +2643,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         const a = (0.12 + 0.12 * Math.sin(age * 0.0025 + v.phase)) * v.alpha
         ctx.save()
         ctx.globalCompositeOperation = 'lighter'
-        ctx.globalAlpha = a
-        const w = size * PEBBLE_PAD * v.sx
-        const h = size * PEBBLE_PAD * v.sy
-        ctx.drawImage(g, x - w / 2, y - h / 2, w, h)
+        blitPebble(g, x, y, size, v.sx, v.sy, a, spin)
         ctx.restore()
       }
     }
@@ -2487,13 +2690,54 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       const rx = size * 0.4
       const ry = size * 0.345
       const n = Math.hypot(dx, dy) || 1
-      drawArrowAt(x + (dx / n) * rx * 1.12, y + (dy / n) * ry * 1.22, r.dir, sideColor(r.side, r.faction), size, v.alpha, 1.05)
+      // A little smaller than it was. The stone itself now turns to face the
+      // way it fires, so this mark no longer has to carry the facing on its
+      // own — and sixteen of them on a full board were competing with the
+      // runes they belong to.
+      drawArrowAt(x + (dx / n) * rx * 1.12, y + (dy / n) * ry * 1.22, r.dir, sideColor(r.side, r.faction), size, v.alpha, 0.92)
     }
     drawHpPips(r, x, y, size, sideColor(r.side, r.faction))
   }
 
   const drawRunes = (skin: SkinId, dt: number, breathe: boolean): void => {
     for (let i = 0; i < runeList.length; i++) drawRune(runeList[i]!, skin, dt, breathe)
+  }
+
+  /**
+   * ─── What your stones are about to do ───────────────────────────────────────
+   *
+   * During PLANNING, a faint line out of every stone of the player's, along the
+   * way it faces — the same trajectory the reveal fans in, at a whisper.
+   *
+   * Two things the blind playtest said this has to answer (2026-09-11). The
+   * strategy player never worked out when or why a rune attacks, because
+   * nothing on a planning board says what the standing stones are aimed at.
+   * And the monetization-savvy one spent his last minute with two back-row
+   * stones facing each other and no way to see it: "nothing on screen told me
+   * this had happened; I only found out by zooming into the sprites". A line
+   * that reaches an enemy is drawn in the player's own blue; a line with
+   * nothing in it goes grey, which is the whole warning.
+   *
+   * Player stones only. The enemy's committed move is secret until the reveal,
+   * and drawing its standing stones' lines as well doubles the ink for
+   * information the player cannot act on this turn.
+   */
+  const drawStandingLines = (view: ArenaView): void => {
+    if (!ctx || view.phase !== 'planning' || view.resetting || view.result) return
+    if (qualityTier() === 'min') return
+    for (let i = 0; i < runeList.length; i++) {
+      const r = runeList[i]!
+      if (r.side !== 'player' || r.dir === 'omni') continue
+      const res = attackCells(r.type, r.level, r.dir, r.col, r.row, hitScratch, skipScratch)
+      if (res.hits === 0) continue
+      let reaches = false
+      for (let h = 0; h < res.hits; h++) {
+        const c = hitScratch[h]!
+        const other = runeAt(view.board, c.col, c.row)
+        if (other && other.side === 'enemy') { reaches = true; break }
+      }
+      drawTrajectory(r.type, r.level, r.dir, r.col, r.row, reaches ? PLAYER_ARROW : NO_TARGET, reaches ? 0.3 : 0.18)
+    }
   }
 
   /** The glowing trajectory line of an attack. */
@@ -2637,7 +2881,18 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   // It is drawn UNDER the runes, as a marking on the floor of the tile: a stack
   // target's stone has to stay readable while its compass is up.
 
-  /** How long the lit wedge takes to travel in from its edge. */
+  /**
+   * The live turn of the two stones that are not on the board yet — the one in
+   * the lock window and the one being carried over a tile. Board runes keep
+   * theirs per-rune in `VisRune.spin`; these two are singular, so they live
+   * here. `null` means "not turning yet": snap to the facing on the next draw.
+   */
+  let lockSpin: number | null = null
+  let dragSpin: number | null = null
+  /** Which cell `lockSpin` belongs to, so a new window never inherits the last one's angle. */
+  let lockCell = -1
+
+  /** How long the lit wedge takes to travel out to its edge. */
   const COMPASS_GROW_MS = 130
   let compassDir: Dir | null = null
   let compassCell = -1
@@ -2663,13 +2918,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       let sx = 0
       let sy = 0
       for (const p of poly) { sx += p[0]; sy += p[1] }
-      // The polygons are wound FROM the region's outer boundary, so its first
-      // two points are the outer edge of a triangle, and its first point is the
-      // outer corner of a quadrant.
-      const a = poly[0]!
-      const b = poly[1]!
-      const outer = aimRegionShape(type) === 'quadrants' ? a : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
-      hit = [sx / poly.length, sy / poly.length, outer[0]!, outer[1]!] as const
+      // Which point of the region faces out is `rules.aimRegionOuterEdge` —
+      // the same fact the lit wedge's chevron is drawn from, so the arrow and
+      // the chevron lean the same way on every facing of every rune.
+      const { ax, ay } = aimRegionOuterEdge(type, dir)
+      hit = [sx / poly.length, sy / poly.length, ax, ay] as const
       anchorCache.set(key, hit)
     }
     return hit
@@ -2677,8 +2930,34 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
 
   /** How far a touch drag pulls each mark from its centre of mass toward the rim. */
   const TOUCH_LEAN = 0.5
-  /** …and how much heavier the chosen region's rim stroke is drawn for it. */
-  const TOUCH_RIM = 1.7
+  /** …and how much heavier the chosen region's chevron is drawn for it. */
+  const TOUCH_RIM = 1.5
+  /**
+   * How far the CHOSEN mark leans out under a cursor.
+   *
+   * A fingertip is not the only thing that covers the middle of a tile: on a
+   * mouse the carried pebble is drawn at the cursor, and the lit arrow sits at
+   * its region's centre of mass — which is exactly where the stone in hand is.
+   * So the one mark that matters was the one hiding under the thing the player
+   * was moving, and a facing chosen by pointing could be missed entirely. The
+   * chosen mark leans clear; the others stay put, because their job is to show
+   * the shape of the menu rather than to be read.
+   */
+  const CURSOR_LEAN = 0.42
+  /** The chosen mark, drawn to be unmissable: bigger, opaque, its own colour. */
+  const LIT_SCALE = 0.82
+  const LIT_ALPHA = 1
+  /**
+   * …and the ones merely on offer.
+   *
+   * They were at 0.22, which on a painted board is not "quiet", it is absent —
+   * the menu the compass exists to show was a rumour, and the tile read as
+   * having one facing rather than four. They are quieter than the chosen one
+   * and that is enough; the chosen one now has a gradient, a chevron and an
+   * arrow twice this size to distinguish it, so the contrast no longer has to
+   * be bought by making three quarters of the control invisible.
+   */
+  const OFFER_ALPHA = 0.6
 
   const drawAimCompass = (view: ArenaView): void => {
     const hover: HoverState | null = view.hover
@@ -2695,6 +2974,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       return
     }
 
+    // Everything below is an overlay on painted slate. Darken the tile once
+    // first and every mark on it gets its contrast from the game rather than
+    // from whatever the art happens to be doing here. See `paintAimScrim`.
+    paintAimScrim(ctx, rect)
+
     // The wedge grows from its edge each time a NEW facing is chosen. Sliding
     // back through the centre un-chooses, so leaving the dead zone again plays
     // the travel afresh rather than snapping to a shape already at full size.
@@ -2706,13 +2990,14 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       compassAt = age
     }
     const grow = easeOutCubic(clamp01((age - compassAt) / COMPASS_GROW_MS))
-    const color = RUNES[hover.type].color
+    // The compass's own green, not the rune's colour — see `AIM_OFFER`.
+    const color = AIM_OFFER
 
     // An omni rune has nothing to aim: light the whole tile once, with no
     // arrows. Four identical marks around a shield would be four lies — and
     // the dead zone does not apply, because there is no facing to withhold.
     if (aimRegionShape(hover.type) === 'whole') {
-      paintAimRegion(ctx, rect, hover.type, 'omni', size, { color, lit: true, grow, alpha: 0.85 })
+      paintAimRegion(ctx, rect, hover.type, 'omni', size, { color: AIM_CHOSEN, lit: true, grow, alpha: 0.85 })
     } else {
       // Under a fingertip the middle of the tile is gone, so every mark moves
       // out toward the rim and the chosen region's white edge — which lies on
@@ -2724,15 +3009,21 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         // while the pointer sits in the middle, and the ones on offer.
         const lit = hover.chosen && d === hover.dir
         const held = !hover.chosen && d === hover.dir
-        paintAimRegion(ctx, rect, hover.type, d, size, { color, lit, held, grow, alpha: lit ? 1 : 0.8, rim })
+        paintAimRegion(ctx, rect, hover.type, d, size, {
+          color: lit ? AIM_CHOSEN : color, lit, held, grow,
+          alpha: lit ? 1 : held ? 0.9 : OFFER_ALPHA, rim: lit ? Math.max(rim, TOUCH_RIM) : rim
+        })
         const [mx, my, ox, oy] = regionAnchors(hover.type, d)
-        const ax = mx + (ox - mx) * lean
-        const ay = my + (oy - my) * lean
+        // The chosen mark leans out from under whatever is covering the middle
+        // — a fingertip, or the pebble being carried on a cursor.
+        const pull = lit ? Math.max(lean, CURSOR_LEAN) : lean
+        const ax = mx + (ox - mx) * pull
+        const ay = my + (oy - my) * pull
         drawArrowAt(
           rect.x + ax * rect.w, rect.y + ay * rect.h, d,
-          lit ? PLAYER_ARROW : color, size,
-          lit ? 0.95 : held ? 0.6 : 0.3,
-          lit ? 0.5 : held ? 0.46 : 0.4
+          lit ? AIM_CHOSEN : color, size,
+          lit ? LIT_ALPHA : held ? 0.85 : 0.55,
+          lit ? LIT_SCALE : held ? 0.54 : 0.46
         )
       }
     }
@@ -2783,9 +3074,19 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   const drawLock = (view: ArenaView): void => {
     if (!ctx) return
     const lock = view.lock
-    if (!lock || view.phase !== 'planning') return
+    if (!lock || view.phase !== 'planning') {
+      // The window closed, so the next stone to open one starts from its own
+      // facing rather than swinging round from where this one finished.
+      lockSpin = null
+      lockCell = -1
+      return
+    }
     const size = geom.tile
     const { col, row } = lock.cell
+    if (cellIndex(col, row) !== lockCell) {
+      lockSpin = null
+      lockCell = cellIndex(col, row)
+    }
     const x = cx(col, row)
     const y = cy(col, row)
     const level = targetLevel(view.board, lock.cell)
@@ -2796,8 +3097,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const aimable = RUNES[lock.type].aim !== 'omni'
     drawAimCone(lock.type, level, dir, col, row, PLAYER_ARROW)
     drawShadow(x, y, size, pulse, 0.4)
-    const spr = pebbleSprite(lock.type, level, 'player', view.skin, null, size)
-    blitPebble(spr, x, y - size * 0.05, size, pulse, pulse)
+    // The stone turns live under a correction stroke: flick the facing and the
+    // sword swings to it before the finger is up, which is the fastest way to
+    // tell someone their re-aim landed.
+    lockSpin = lockSpin === null ? glyphSpin(lock.type, dir) : easeAngle(lockSpin, glyphSpin(lock.type, dir), SPIN_EASE)
+    blitRuneStone(lock.type, level, 'player', view.skin, null, x, y - size * 0.05, size, lockSpin, pulse, pulse)
     // A clean feed keeps the stone and its aim; the countdown ring and the
     // chevron tap targets are interface.
     if (CLEAN_FEED) return
@@ -2865,7 +3169,12 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       const y = cy(drag.over.col, drag.over.row)
       drawAimCone(drag.type, dragLevel, drag.dir, drag.over.col, drag.over.row, PLAYER_ARROW)
       drawShadow(x, y, size, 1, 0.4)
-      blitPebble(spr, x, y - size * 0.06, size, 1.05, 1.05)
+      // Turning WHILE the stone is still in hand is the point: the player sees
+      // the sword swing as they slide across the tile, and lets go when it
+      // points where they want it. The facing stops being a thing you find out
+      // about after you commit.
+      dragSpin = dragSpin === null ? glyphSpin(drag.type, drag.dir) : easeAngle(dragSpin, glyphSpin(drag.type, drag.dir), SPIN_EASE)
+      blitRuneStone(drag.type, dragLevel, 'player', skin, null, x, y - size * 0.06, size, dragSpin, 1.05, 1.05)
       if (drag.dir !== 'omni') {
         const [dx, dy] = DIR_VEC[drag.dir]
         const n = Math.hypot(dx, dy) || 1
@@ -2876,7 +3185,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       // Lifted above the finger so a thumb does not cover it.
       const lift = size * 0.35
       drawShadow(drag.x, drag.y - lift + size * 0.1, size, 1.1, 0.3)
+      // Off the board, a carried stone has no facing yet — it is drawn upright,
+      // and starts turning the moment it is over a tile.
+      dragSpin = null
       blitPebble(spr, drag.x, drag.y - lift, size, 1.15, 1.15, 0.95)
+      blitPebble(ornamentSprite(drag.type, dragLevel, 'player', skin, null, size), drag.x, drag.y - lift, size, 1.15, 1.15, 0.95)
     }
   }
 
@@ -2892,12 +3205,13 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const alpha = clamp01(t / 0.12)
     const drawMove = (m: Move | null): void => {
       if (!m) return
-      const spr = pebbleSprite(m.type, 1, m.side, skin, m.faction, size)
       const x = cx(m.col, m.row)
       const y = cy(m.col, m.row)
       const lift = size * 0.5 * (1 - easeOutCubic(slam))
       drawShadow(x, y, size, scale, 0.4 * alpha * (1 - lift / (size * 0.5) * 0.5))
-      blitPebble(spr, x, y - lift, size, scale, scale, alpha)
+      // The enemy's move lands already facing its target — the slam is the
+      // moment the player is meant to read what is aimed at them.
+      blitRuneStone(m.type, 1, m.side, skin, m.faction, x, y - lift, size, glyphSpin(m.type, m.dir), scale, scale, alpha)
       if (slam >= 1 && !view.timeline) {
         // Landed: a ring of dust once (the reveal has no stage bytes, so gate on time).
         if (rv.elapsedMs - REVEAL_MS * 0.45 < 24) spawnTileDust(x, y, size, 4)
@@ -2929,6 +3243,24 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     }
   }
 
+  /**
+   * ─── The planning ring says what it is counting to ──────────────────────
+   *
+   * It used to be a bare number in a circle. Two blind testers, two rounds
+   * apart, could not work out what it governed — "it counted down
+   * inconsistently across levels, sometimes reset to 5, sometimes ticked to 0
+   * without an obvious trigger I could tie to my actions", and, on sitting
+   * through one deliberately, "a countdown timer pulsed red as if something
+   * urgent was about to happen, hit zero, and… nothing" (2026-09-12).
+   *
+   * Nothing was wrong with the clock. It counts down to the moment every
+   * aimed rune fires — the word this same slot then prints, `reveal` /
+   * "FIRING" — and on a lesson it HOLDS, deliberately, so a slow learner is
+   * never timed out. Both of those are good; neither was ever said. So the
+   * ring now carries the word it is counting toward, and says whose turn it
+   * is waiting on when it is holding. The "inconsistency" was the held state,
+   * which is now the state that explains itself.
+   */
   const drawTimer = (view: ArenaView): void => {
     if (!ctx) return
     const tr = geom.timer
@@ -2938,13 +3270,17 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const size = geom.tile
     if (view.phase === 'planning') {
       if (view.timer.paused) {
-        // No clock while the lesson runs: a quiet ring, no number.
+        // No clock while the lesson runs: a quiet ring, no number — and the
+        // reason, so a held ring reads as "waiting for you" and not as broken.
         ctx.save()
         ctx.globalAlpha = 0.35
         ctx.strokeStyle = '#ffffff'
         ctx.lineWidth = r * 0.16
         ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke()
         ctx.restore()
+        // Above the ring, in the same slot the counting state uses for its
+        // caption — inside it, the words are wider than the circle.
+        if (labels) drawText(labels.yourTurn, x, y - r - size * 0.14, size * 0.14, '#8fa8c8')
         return
       }
       const frac = clamp01(view.timer.leftMs / Math.max(1, view.timer.totalMs))
@@ -2961,8 +3297,14 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac); ctx.stroke()
       ctx.restore()
       drawText(String(secs), x, y + r * 0.04, r * 1.05 * urgent, color)
-      if (labels && view.turn >= view.turnLimit && !view.suddenDeath) {
-        drawText(labels.lastTurn, x, y - r - size * 0.14, size * 0.14, BUFF_COLOR)
+      // Above the ring: what the number means. "LAST TURN" outranks it — it is
+      // the more urgent thing to know and they share the one caption slot.
+      if (labels) {
+        const last = view.turn >= view.turnLimit && !view.suddenDeath
+        drawText(
+          last ? labels.lastTurn : labels.firesIn,
+          x, y - r - size * 0.14, size * 0.14, last ? BUFF_COLOR : '#8fa8c8'
+        )
       }
       return
     }
@@ -2997,13 +3339,31 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         ctx.stroke()
         ctx.restore()
       }
-      const bob = Math.sin(age * (selected ? 0.005 : 0.003) + i * 1.4) * r.h * (selected ? 0.05 : 0.025)
+      // ── Alive, or waiting ──
+      //
+      // The hand is unusable for two to three seconds after every placement
+      // (the correction window, the reveal, the resolution), and the only sign
+      // of it used to be a little less alpha. Testers read a drag in that
+      // window — a drag that does nothing — as a broken game rather than as a
+      // turn still running. So the pebbles STOP: no bob, no rim, dimmer. A
+      // still hand and a breathing hand are telling apart at a glance, which
+      // an alpha step is not.
+      const bob = canAct ? Math.sin(age * (selected ? 0.005 : 0.003) + i * 1.4) * r.h * (selected ? 0.05 : 0.025) : 0
       const x = r.x + r.w / 2
       const y = r.y + r.h / 2 + bob - (selected ? r.h * 0.2 : 0)
       const drawSize = r.w * (selected ? 1.12 : 1.02)
       const spr = pebbleSprite(type, 1, 'player', skin, null, size)
-      drawShadow(x, y + (selected ? r.h * 0.2 : 0), drawSize, 1, canAct ? 0.35 : 0.2)
-      blitPebble(spr, x, y, drawSize, 1, 1, canAct ? 1 : 0.55)
+      // A rim in the player's own colour while the hand is waiting to be
+      // played: on a landscape phone the tray sits beside the board, where a
+      // column of unlit stones reads as scenery — one blind tester spent her
+      // whole session dragging the enemy's stone because it was the only thing
+      // on screen that looked like a game piece (2026-09-11).
+      if (canAct && !selected && view.drag === null) {
+        const pulse = 0.5 + 0.5 * Math.sin(age * 0.0022 + i * 0.9)
+        blit(ctx, glowSprite(PLAYER_ARROW, r.w * 1.7), x, y, r.w * 1.7, r.h * 1.6, 0.1 + 0.12 * pulse, true)
+      }
+      drawShadow(x, y + (selected ? r.h * 0.2 : 0), drawSize, 1, canAct ? 0.35 : 0.18)
+      blitPebble(spr, x, y, drawSize, 1, 1, canAct ? 1 : 0.42)
     }
     // Reroll chip.
     const rr = geom.reroll
@@ -3049,6 +3409,16 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   /**
+   * How far through its turn the re-aim beat is at `t` (0..1 over the beat).
+   *
+   * Shared by the beat itself and by the stone it is turning, so the arrow and
+   * the sword under it swing together — the demonstration has to look like the
+   * thing it is demonstrating.
+   */
+  const reaimTurn = (t: number): number =>
+    t < 0.28 ? 0 : t < 0.62 ? easeOutCubic((t - 0.28) / 0.34) : 1
+
+  /**
    * The ghost's re-aim beat: the finger appears on the stone at (tx, ty),
    * presses, flicks half a tile toward `dir` while the arrow turns that way,
    * lets go and fades. Shared by the `reaim` mode (the player's own stone
@@ -3069,7 +3439,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       press = easeOutQuad((t - 0.12) / 0.16)
     } else if (t < 0.62) {
       press = 1
-      const k = easeOutCubic((t - 0.28) / 0.34)
+      const k = reaimTurn(t)
       fx += (ddx / n) * size * 0.5 * k
       fy += (ddy / n) * size * 0.5 * k
       turn = k
@@ -3116,9 +3486,14 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   const drawGhostCompass = (cell: Cell, type: RuneType, dir: Dir, k: number, size: number): void => {
     if (!ctx || k <= 0) return
     const rect = geom.tileRect(cell.col, cell.row)
-    const color = RUNES[type].color
+    // The compass's own green, exactly as the player's is (`AIM_OFFER`). It
+    // used to be drawn in the RUNE's colour, so the melee lesson — the first
+    // thing a new player ever sees — taught the control in red, which is this
+    // game's word for "you cannot place that here".
+    const color = AIM_OFFER
+    paintAimScrim(ctx, rect, k)
     if (aimRegionShape(type) === 'whole') {
-      paintAimRegion(ctx, rect, type, 'omni', size, { color, lit: true, grow: k, alpha: 0.85 * k })
+      paintAimRegion(ctx, rect, type, 'omni', size, { color: AIM_CHOSEN, lit: true, grow: k, alpha: 0.85 * k })
       return
     }
     // A finger's compass, because the ghost IS a finger: every mark leaned out
@@ -3126,13 +3501,16 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     // chosen wedge's outer edge — the side the rune ends up facing — heavy.
     for (const d of aimRegions(type)) {
       const lit = d === dir
-      paintAimRegion(ctx, rect, type, d, size, { color, lit, grow: k, alpha: (lit ? 1 : 0.75) * k, rim: TOUCH_RIM })
+      paintAimRegion(ctx, rect, type, d, size, {
+        color: lit ? AIM_CHOSEN : color, lit, grow: k, alpha: (lit ? 1 : OFFER_ALPHA) * k, rim: TOUCH_RIM
+      })
       const [mx, my, ox, oy] = regionAnchors(type, d)
-      const ax = mx + (ox - mx) * TOUCH_LEAN
-      const ay = my + (oy - my) * TOUCH_LEAN
+      const pull = lit ? Math.max(TOUCH_LEAN, CURSOR_LEAN) : TOUCH_LEAN
+      const ax = mx + (ox - mx) * pull
+      const ay = my + (oy - my) * pull
       drawArrowAt(
         rect.x + ax * rect.w, rect.y + ay * rect.h, d,
-        lit ? PLAYER_ARROW : color, size, (lit ? 0.95 : 0.3) * k, lit ? 0.5 : 0.4
+        lit ? AIM_CHOSEN : color, size, (lit ? 1 : 0.55) * k, lit ? LIT_SCALE : 0.46
       )
     }
   }
@@ -3146,6 +3524,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
    */
   const drawGhost = (view: ArenaView): void => {
     if (!ctx || !view.ghost || view.drag || view.phase !== 'planning') return
+    // A player who is already aiming at a tile gets their OWN compass on it,
+    // and the demonstration would put a second lit wedge on the same tile
+    // pointing somewhere else — two answers to "which way will this face", one
+    // of them a recording. The lesson stands down as soon as the hover starts.
+    if (view.hover && view.hover.cell.col === view.ghost.to.col && view.hover.cell.row === view.ghost.to.row) return
     const size = geom.tile
     const g = view.ghost
     const tx = cx(g.to.col, g.to.row)
@@ -3187,17 +3570,20 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         const k = easeInOutQuad((t - 0.1) / 0.32)
         const fx = lerp(sx, tx, k)
         const fy = lerp(sy, ty, k) - Math.sin(k * Math.PI) * size * 0.5
-        blitPebble(spr, fx, fy - size * 0.3, size, 1.05, 1.05, 0.5)
+        blitPebble(spr, fx, fy - size * 0.3, size, 1.05, 1.05, 0.92)
         drawFinger(fx, fy, 1, 1, size)
       } else if (t < 0.5) {
         // Released: the stone sits with its default facing.
         const k = (t - 0.42) / 0.08
-        blitPebble(spr, tx, ty - size * 0.06, size, 1.05, 1.05, 0.5)
+        blitPebble(spr, tx, ty - size * 0.06, size, 1.05, 1.05, 0.92, glyphSpin(type, dropDir))
         drawGhostArrow(tx, ty, dropDir, 1, size)
         drawFinger(tx, ty, 1 - easeOutQuad(k), 1 - k * 0.6, size)
       } else if (t < 0.92) {
-        blitPebble(spr, tx, ty - size * 0.06, size, 1.05, 1.05, 0.5)
-        drawReaimBeat((t - 0.5) / 0.42, tx, ty, reaim, dropDir, size)
+        // The stone swings with the arrow, on the beat's own schedule.
+        const beat = (t - 0.5) / 0.42
+        const turned = easeAngle(glyphSpin(type, dropDir), glyphSpin(type, reaim), reaimTurn(beat))
+        blitPebble(spr, tx, ty - size * 0.06, size, 1.05, 1.05, 0.92, turned)
+        drawReaimBeat(beat, tx, ty, reaim, dropDir, size)
       }
       return
     }
@@ -3209,18 +3595,37 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     let showPebble = false
     let press = 0
     let alpha = 1
-    if (t < 0.12) {
-      press = easeOutQuad(t / 0.12)
+    /** The carried stone's turn, so the lesson shows the same cue the game does. */
+    let ghostSpin = 0
+    // ── The pick-up is a third of the loop, not a tenth ──
+    //
+    // The demonstration used to spend about a tenth of its loop at the tray
+    // and the rest at the target tile — which is also where the enemy's lit
+    // stone stands. A tester on a landscape phone, where the tray is a column
+    // of unlit stones beside the board, watched that loop for forty seconds
+    // and spent her whole session trying to drag the ENEMY's stone: it was the
+    // only thing on screen that looked like a game piece, and the finger was
+    // always hovering right beside it (2026-09-11).
+    //
+    // So the finger presses the pebble and STAYS there while its slot lights
+    // up, and only then carries it.
+    if (t < 0.3) {
+      press = easeOutQuad(clamp01(t / 0.12))
       alpha = clamp01(t / 0.08)
-    } else if (t < 0.55) {
+      const pick = 0.35 + 0.65 * Math.sin(clamp01((t - 0.05) / 0.25) * Math.PI)
+      blit(ctx, glowSprite(PLAYER_ARROW, slot.w * 2), sx, sy, slot.w * 2, slot.h * 1.9, 0.5 * pick, true)
+      showPebble = true
+      pebbleX = sx
+      pebbleY = sy - size * 0.06 * press
+    } else if (t < 0.62) {
       press = 1
-      const k = easeInOutQuad((t - 0.12) / 0.43)
+      const k = easeInOutQuad((t - 0.3) / 0.32)
       fx = lerp(sx, tx, k)
       fy = lerp(sy, ty, k) - Math.sin(k * Math.PI) * size * 0.5
       pebbleX = fx
       pebbleY = fy - size * 0.3
       showPebble = true
-    } else if (t < 0.75) {
+    } else if (t < 0.82) {
       // ── The aim, as the game now works ────────────────────────────────
       //
       // The finger does NOT flick away from a stone parked in the middle of
@@ -3228,7 +3633,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       // teaches it is teaching the harder way to play. It CARRIES the stone
       // into the region that faces the target and stops there, because that
       // is the whole move now: where you let go is which way it points.
-      const k = easeOutCubic((t - 0.55) / 0.2)
+      const k = easeOutCubic((t - 0.62) / 0.2)
       press = 1
       fx = tx + (aimX - tx) * k
       fy = ty + (aimY - ty) * k
@@ -3239,20 +3644,27 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       // into — the same mark, from the same painter, that the player sees
       // under their own finger. It carries its own arrow, so no second one.
       drawGhostCompass(g.to, type, g.dir, k, size)
-    } else if (t < 0.88) {
+      ghostSpin = easeAngle(0, glyphSpin(type, g.dir), k)
+    } else if (t < 0.95) {
       // Released THERE. The stone stays where it was let go.
-      press = 1 - easeOutQuad((t - 0.75) / 0.13)
+      press = 1 - easeOutQuad((t - 0.82) / 0.13)
       fx = aimX
       fy = aimY
       pebbleX = aimX
       pebbleY = aimY - size * 0.06
       showPebble = true
-      alpha = 1 - (t - 0.75) / 0.13
+      alpha = 1 - (t - 0.82) / 0.13
       drawGhostCompass(g.to, type, g.dir, 1, size)
+      ghostSpin = glyphSpin(type, g.dir)
     } else {
       return
     }
-    if (showPebble) blitPebble(spr, pebbleX, pebbleY, size, 1.05, 1.05, 0.5 * alpha)
+    // A carried stone at half alpha, dark on a dark board, is barely there —
+    // the tester above never registered that the finger was holding anything.
+    if (showPebble) {
+      blit(ctx, glowSprite(PLAYER_ARROW, size * 1.5), pebbleX, pebbleY, size * 1.5, size * 1.5, 0.22 * alpha, true)
+      blitPebble(spr, pebbleX, pebbleY, size, 1.05, 1.05, 0.92 * alpha, ghostSpin)
+    }
     drawFinger(fx, fy, press, alpha, size)
   }
 
@@ -3316,8 +3728,11 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       const fr = fadeRunes[i]!
       const gone = fr.y < y ? clamp01((y - fr.y) / (size * 0.6)) : 0
       if (gone >= 1) continue
-      const spr = pebbleSprite(fr.rune.type, fr.rune.level, fr.rune.side, view.skin, fr.rune.faction, size)
-      blitPebble(spr, fr.x, fr.y - gone * size * 0.2, size, 1 - gone * 0.3, 1 - gone * 0.3, 1 - gone)
+      blitRuneStone(
+        fr.rune.type, fr.rune.level, fr.rune.side, view.skin, fr.rune.faction,
+        fr.x, fr.y - gone * size * 0.2, size, glyphSpin(fr.rune.type, fr.rune.dir),
+        1 - gone * 0.3, 1 - gone * 0.3, 1 - gone
+      )
     }
     ctx.save()
     ctx.beginPath()
@@ -3414,6 +3829,9 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       if (!drag.aiming) dragDir = null
     } else { lastDragOverKey = -2; lastDragKind = null; dragDir = null }
 
+    // Quiet time: bake the effects' light before any of it is needed.
+    if (view.phase === 'planning') scheduleWarm()
+
     // ── Which board is on screen ──
     if (view.timeline && local) {
       processTimeline(view.timeline, view)
@@ -3439,6 +3857,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     // Under the runes: the compass is a marking on the tile's floor, so a
     // stack target's stone stays readable while its regions are lit.
     drawAimCompass(view)
+    drawStandingLines(view)
 
     // ── The pieces ──
     const breathe = view.phase === 'planning' || view.phase === 'ended'

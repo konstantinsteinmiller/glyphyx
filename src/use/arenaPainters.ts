@@ -57,6 +57,17 @@ export interface PebbleOpts {
    * able to lay ONE wreath over a stone it got as a bitmap.
    */
   laurel?: boolean
+  /**
+   * Draw the Lv 2 crest (the little gold plaque with the level on it) into the
+   * stone. Default true, for the same reason `laurel` is: a DOM preview wants
+   * one self-contained drawing.
+   *
+   * The arena passes `false` and puts the crest on as part of its own upright
+   * ornament layer, because the arena TURNS a stone to face the way it fires
+   * — and a level plaque that rotates with it is unreadable at the two
+   * facings that put it on its side or its head.
+   */
+  crest?: boolean
 }
 
 export interface TileOpts {
@@ -137,6 +148,14 @@ const TYPE_IDX: Record<RuneType, number> =
 const CUT_IDX: Record<StoneCut, number> = {
   carved: 1, knapped: 2, polished: 3, faceted: 4, quarried: 5, slab: 6, step: 7, cabochon: 8, brilliant: 9
 }
+
+/**
+ * The seed `paintPebble` knaps a stone with. Exported so a tool that redraws a
+ * stone outside the canvas (the splash tile, `tools/splash-tile.mjs`) draws
+ * THIS stone and not a sibling with its flakes in other places.
+ */
+export const pebbleSeed = (type: RuneType, cut: StoneCut): number =>
+  seedFrom(TYPE_IDX[type] * 7919 + 17, CUT_IDX[cut] * 104729)
 
 // ─── Outlines ───────────────────────────────────────────────────────────────
 
@@ -992,7 +1011,7 @@ const paintMaterial = (ctx: CanvasRenderingContext2D, b: Body, mat: Material): v
  * under about 0.1 reads as a scratch rather than a border; anything over 0.2
  * leaves the glyph nowhere to go.
  */
-const INSET = 0.155
+export const INSET = 0.155
 
 const paintFrame = (ctx: CanvasRenderingContext2D, b: Body): void => {
   const { cx, cy, R, pts, skin } = b
@@ -1646,7 +1665,7 @@ export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number,
  * fifth more glyph and needs less of the drop that kept the plaque's glyph
  * clear of its rim.
  */
-const glyphFit = (cut: StoneCut, type: RuneType): { scale: number; drop: number } => {
+export const glyphFit = (cut: StoneCut, type: RuneType): { scale: number; drop: number } => {
   const g = RUNE_PROFILES[type]!.glyph
   const framed = cutIsFramed(cut)
   return { scale: g.scale * (framed ? 1 : 1.2), drop: g.drop * (framed ? 1 : 0.8) }
@@ -1667,15 +1686,41 @@ export const paintPebble = (ctx: CanvasRenderingContext2D, w: number, h: number,
     return
   }
   const R = (size / 2) * stoneFill(o.level)
-  const seed = seedFrom(TYPE_IDX[o.type] * 7919 + 17, CUT_IDX[skin.cut] * 104729)
+  const seed = pebbleSeed(o.type, skin.cut)
   const pts = stoneOutline(skin.cut, o.type, seed)
   paintBody(ctx, { cx, cy, R, pts, skin, seed, glow }, o.level)
   const fit = glyphFit(skin.cut, o.type)
   drawStyledGlyph(ctx, cx, cy + R * fit.drop, R * fit.scale, o.type, skin.glyph, skin.ink, glow, skin.hi, pulse)
   if (o.level >= 2) {
     if (o.laurel !== false) paintLaurel(ctx, w, h, o.type)
-    paintCrest(ctx, cx, cy, R, o.label)
+    if (o.crest !== false) paintCrest(ctx, cx, cy, R, o.label)
   }
+  ctx.restore()
+}
+
+/**
+ * The Lv 2 ornaments — wreath and crest — on their own, in the same box the
+ * stone was painted in.
+ *
+ * This is the UPRIGHT half of a stone the arena turns. A wreath is a thing
+ * hung on the rune rather than part of it, and the crest is a label; both stop
+ * meaning what they mean the moment they lie on their side, so the renderer
+ * blits the stone rotated and then this, level, over the top. The geometry is
+ * `paintPebble`'s own, so the two halves land where they did when they were
+ * one drawing.
+ */
+export const paintPebbleOrnaments = (
+  ctx: CanvasRenderingContext2D, w: number, h: number,
+  o: { type: RuneType; level: number; laurel?: boolean; crest?: boolean; label?: string }
+): void => {
+  if (o.level < 2) return
+  const size = Math.min(w, h)
+  const cx = w / 2
+  const cy = h / 2
+  const R = (size / 2) * stoneFill(o.level)
+  ctx.save()
+  if (o.laurel !== false) paintLaurel(ctx, w, h, o.type)
+  if (o.crest !== false) paintCrest(ctx, cx, cy, R, o.label)
   ctx.restore()
 }
 
@@ -2512,6 +2557,230 @@ export const paintRibbon = (ctx: CanvasRenderingContext2D, w: number, h: number)
   ctx.strokeStyle = ink
   ctx.lineWidth = line
   ctx.stroke()
+
+  ctx.restore()
+}
+
+// ─── Damage: the stone breaks before it dies ────────────────────────────────
+//
+// A rune used to give nothing away between the hit that landed and the hit
+// that killed it. Three blind testers in a row said the same thing in their own
+// words — "no crack, no number… until it suddenly died" (Tom), "most of my hits
+// seemed to do nothing" (Camila), "no enemy health bar or attack animation"
+// (Aisha) — so a shielded enemy read as invulnerable rather than as wearing
+// down, and winning felt like something that happened TO the player.
+//
+// So a damaged stone is a BROKEN stone, in three visible steps: a hairline, a
+// split with branches, and a shattered face with chips knocked out of it. The
+// network is generated once per stone from its own seed and each step only
+// reveals more of it, so a rune's damage never redraws itself into a different
+// stone — the crack you saw at a hairline is the crack that widens.
+//
+// Cut, not drawn on: every fissure is painted twice, a warm highlight offset up
+// and left (the light in this whole module comes from the top-left) and the
+// dark fissure over it, so the break reads as depth in the stone rather than
+// ink on top of it.
+
+/** How broken a stone looks. 0 is whole, 3 is about to go. */
+export type DamageStage = 0 | 1 | 2 | 3
+
+/**
+ * The stage a rune's remaining health puts it in. Proportional, so the same
+ * three steps read on a 2 HP dummy and a 12 HP wall: any damage at all shows,
+ * and a stone under a third of its health is visibly falling apart.
+ */
+export const damageStage = (hp: number, maxHp: number): DamageStage => {
+  if (!(maxHp > 0) || !(hp > 0)) return 0
+  const left = hp / maxHp
+  if (left >= 1) return 0
+  if (left > 0.66) return 1
+  if (left > 0.33) return 2
+  return 3
+}
+
+/** One fissure, in a unit box centred on (0, 0): the stone is 1 across. */
+export interface Fissure {
+  pts: Pt[]
+  /** Relative stroke weight — the trunk is heavier than what branches off it. */
+  weight: number
+  /** The first stage that shows this one. */
+  from: DamageStage
+}
+
+/** A chip knocked clean out of the face. Stage 3 only. */
+export interface Chip {
+  pts: Pt[]
+}
+
+export interface CrackNetwork {
+  fissures: Fissure[]
+  chips: Chip[]
+}
+
+/**
+ * The stone's face, in box units: nothing may be drawn outside it. Inside the
+ * narrowest silhouette any cut produces (a pebble is a teardrop, and its point
+ * is well inside a circle), because a break that runs off the rim hangs in the
+ * air over the tile behind the stone.
+ */
+const FACE_RX = 0.26
+const FACE_RY = 0.24
+
+/** Pull a point back onto the face. A clipped fissure is an amputated one. */
+const onFace = (x: number, y: number): Pt => {
+  const d = Math.hypot(x / FACE_RX, y / FACE_RY)
+  if (d <= 1) return { x, y }
+  return { x: (x / d), y: (y / d) }
+}
+
+/** Walk a fissure from `x, y` along `angle`, wandering as stone does. */
+const walk = (
+  x: number, y: number, angle: number, steps: number, reach: number, seed: number
+): [Pt[], number] => {
+  const start = onFace(x, y)
+  const pts: Pt[] = [start]
+  let s = seed
+  let a = angle
+  let px = start.x
+  let py = start.y
+  for (let i = 0; i < steps; i++) {
+    const [t, s1] = rand(s); s = s1
+    const [l, s2] = rand(s); s = s2
+    // A break turns in short, sharp kinks, not a smooth arc.
+    a += (t - 0.5) * 1.15
+    const len = reach * (0.55 + l * 0.7)
+    const next = onFace(px + Math.cos(a) * len, py + Math.sin(a) * len)
+    px = next.x
+    py = next.y
+    pts.push(next)
+  }
+  return [pts, s]
+}
+
+/**
+ * Every fissure a stone will ever have, keyed on `seed`. Deterministic: the
+ * same stone breaks the same way on the field, in the shop and on a sheet.
+ */
+export const crackNetwork = (seed: number): CrackNetwork => {
+  let s = seedFrom(seed, 811)
+  const fissures: Fissure[] = []
+  const chips: Chip[] = []
+
+  // Stage 1 — the trunk. Starts at the rim, because stone gives at its edge,
+  // and runs in toward the middle.
+  const [entry, s1] = rand(s); s = s1
+  const rim = entry * TAU
+  const sx = Math.cos(rim) * FACE_RX
+  const sy = Math.sin(rim) * FACE_RY
+  const inward = Math.atan2(-sy, -sx)
+  const [trunk, s2] = walk(sx, sy, inward, 3, 0.13, s); s = s2
+  fissures.push({ pts: trunk, weight: 1, from: 1 })
+
+  // Stage 2 — the trunk runs on past the middle, and one limb leaves it.
+  const head = trunk[trunk.length - 1]!
+  const prev = trunk[trunk.length - 2]!
+  const heading = Math.atan2(head.y - prev.y, head.x - prev.x)
+  const [run, s3] = walk(head.x, head.y, heading, 3, 0.14, s); s = s3
+  fissures.push({ pts: run, weight: 0.85, from: 2 })
+  const fork = trunk[1]!
+  const [limb, s4] = walk(fork.x, fork.y, heading + 1.25, 2, 0.11, s); s = s4
+  fissures.push({ pts: limb, weight: 0.6, from: 2 })
+
+  // Stage 3 — the face lets go: two more limbs, a second break from the far
+  // rim, and chips knocked out where the fissures meet.
+  const [limbB, s5] = walk(run[1]!.x, run[1]!.y, heading - 1.4, 2, 0.1, s); s = s5
+  fissures.push({ pts: limbB, weight: 0.55, from: 3 })
+  const [far, s6] = rand(s); s = s6
+  const fa = rim + Math.PI + (far - 0.5) * 1.2
+  const [second, s7] = walk(Math.cos(fa) * FACE_RX, Math.sin(fa) * FACE_RY, fa + Math.PI, 3, 0.12, s); s = s7
+  fissures.push({ pts: second, weight: 0.7, from: 3 })
+  const [limbC, s8] = walk(second[1]!.x, second[1]!.y, fa + Math.PI + 1.3, 2, 0.09, s); s = s8
+  fissures.push({ pts: limbC, weight: 0.5, from: 3 })
+
+  for (const at of [trunk[2]!, run[2]!]) {
+    const [r0, s9] = rand(s); s = s9
+    const pts: Pt[] = []
+    const n = 5
+    const rad = 0.035 + r0 * 0.03
+    for (let i = 0; i < n; i++) {
+      const [j, sj] = rand(s); s = sj
+      const a = (i / n) * TAU
+      const rr = rad * (0.6 + j * 0.7)
+      pts.push({ x: at.x + Math.cos(a) * rr, y: at.y + Math.sin(a) * rr })
+    }
+    chips.push({ pts })
+  }
+
+  return { fissures, chips }
+}
+
+/**
+ * Paint a stone's damage into the box (0, 0, w, h). Nothing at stage 0.
+ * Clipped to the stone's face so a fissure never runs off onto the tile.
+ */
+export const paintDamage = (
+  ctx: CanvasRenderingContext2D, w: number, h: number, stage: DamageStage, seed: number
+): void => {
+  if (stage <= 0) return
+  const { fissures, chips } = crackNetwork(seed)
+  const cx = w / 2
+  const cy = h / 2
+  const unit = Math.min(w, h)
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.ellipse(cx, cy, w * 0.32, h * 0.3, 0, 0, TAU)
+  ctx.clip()
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+
+  // A fracture is widest where it started and closes to nothing at its tip, so
+  // every run is stroked SEGMENT BY SEGMENT with a falling width. One even
+  // stroke end to end is what makes a crack read as a drawn line.
+  const trace = (pts: Pt[], wide: number, style: string, nx = 0, ny = 0): void => {
+    for (let i = 1; i < pts.length; i++) {
+      const t = 1 - (i - 1) / Math.max(1, pts.length - 1)
+      ctx.strokeStyle = style
+      ctx.lineWidth = Math.max(0.6, wide * (0.25 + t * 0.75))
+      ctx.beginPath()
+      ctx.moveTo(cx + pts[i - 1]!.x * w + nx, cy + pts[i - 1]!.y * h + ny)
+      ctx.lineTo(cx + pts[i]!.x * w + nx, cy + pts[i]!.y * h + ny)
+      ctx.stroke()
+    }
+  }
+
+  // Chips first: the fissures have to run over their edges, not under them.
+  if (stage >= 3) {
+    for (const chip of chips) {
+      ctx.beginPath()
+      ctx.moveTo(cx + chip.pts[0]!.x * w, cy + chip.pts[0]!.y * h)
+      for (let i = 1; i < chip.pts.length; i++) ctx.lineTo(cx + chip.pts[i]!.x * w, cy + chip.pts[i]!.y * h)
+      ctx.closePath()
+      // A chip is a hole: dark inside, with the fresh broken edge catching the
+      // light along its upper rim.
+      ctx.fillStyle = rgba('#241708', 0.8)
+      ctx.fill()
+      ctx.strokeStyle = rgba('#ffe9c8', 0.38)
+      ctx.lineWidth = Math.max(0.8, unit * 0.007)
+      ctx.stroke()
+    }
+  }
+
+  // The break opens as the stone goes: a hairline at first, a split at the end.
+  const open = stage >= 3 ? 1.45 : stage >= 2 ? 1.15 : 1
+  const lift = Math.max(0.6, unit * 0.011)
+  for (const f of fissures) {
+    if (f.from > stage) continue
+    const wide = unit * 0.015 * f.weight * open
+    // The lip the light catches, offset up and left — the direction every
+    // other highlight in this module comes from — so the break has a near
+    // wall and a far one instead of being a line lying on the surface.
+    trace(f.pts, wide * 0.8, rgba('#fff3dc', 0.42), -lift, -lift)
+    // The shadow in the bottom of it, just past the lip.
+    trace(f.pts, wide * 0.7, rgba('#2a1a0d', 0.35), lift * 0.7, lift * 0.7)
+    // And the break itself.
+    trace(f.pts, wide, rgba('#140c06', stage >= 3 ? 0.9 : 0.8))
+  }
 
   ctx.restore()
 }

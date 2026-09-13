@@ -11579,7 +11579,6 @@
           "y": 256,
           "w": 768,
           "h": 256,
-          "target": "images/ui/ribbon.webp",
           "letterboxed": {
             "w": 597,
             "h": 256

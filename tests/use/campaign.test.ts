@@ -105,6 +105,37 @@ describe('clearing a node', () => {
   })
 })
 
+describe('buying a rune the campaign has not handed over', () => {
+  /**
+   * The shop's early-unlock offer. It used to be a rewarded video and nothing
+   * else, so on every build where no ad provider resolves the ad gate's "no
+   * video to play, so grant it" rule handed a campaign-gated rune over for one
+   * button press. A price is the honest form of that offer.
+   */
+  it('spends the coins and unlocks the rune', async () => {
+    const c = await load({ gx_coins: 900, gx_unlocked_runes: ['melee'] })
+    expect(c.buyRuneUnlock('nuker', 600)).toBe(true)
+    expect(c.unlockedRunes.value).toContain('nuker')
+    expect(c.economy.coins.value).toBe(300)
+  })
+
+  it('refuses — and unlocks NOTHING — when the wallet is short', async () => {
+    const c = await load({ gx_coins: 599, gx_unlocked_runes: ['melee'] })
+    expect(c.buyRuneUnlock('nuker', 600)).toBe(false)
+    // The leak this guards: a refused purchase that still handed the rune over.
+    expect(c.unlockedRunes.value).not.toContain('nuker')
+    expect(c.economy.coins.value).toBe(599)
+  })
+
+  it('charges nothing for a rune already owned, and refuses a nonsense price', async () => {
+    const c = await load({ gx_coins: 900, gx_unlocked_runes: ['melee', 'nuker'] })
+    expect(c.buyRuneUnlock('nuker', 600)).toBe(false)
+    expect(c.buyRuneUnlock('crown', Number.NaN)).toBe(false)
+    expect(c.buyRuneUnlock('crown', -1)).toBe(false)
+    expect(c.economy.coins.value).toBe(900)
+  })
+})
+
 describe('losing a node', () => {
   it('counts the match and moves nothing else', async () => {
     const c = await load({ gx_best_node: 3, gx_node: 4 })

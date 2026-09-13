@@ -4,7 +4,7 @@ import {
   BOMBARD_RANGE, bombardCells, cleaveCells, crownTarget, crownTurns, rollerLane, rollerPierce,
   FREE_RANK_WINDOW_MS, MAX_RUNE_RANK, NUKE_DAMAGE, NUKE_SURVIVES_LEVEL, RANK_HP_PER_RANK, RANK_PRICES,
   clampRank, freeRankWindow, freeRankWindowLeft, nukeVaporises, rankHpBonus, rankOf, rankPrice, statsWithRank,
-  aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, isAimChosen, AIM_CENTRE_DEAD_ZONE,
+  aimRegionOuterEdge, aimRegionPolygon, aimRegionShape, aimRegions, dirFromCellPoint, isAimChosen, AIM_CENTRE_DEAD_ZONE,
   type Cell
 } from '@/game/rules'
 
@@ -325,6 +325,46 @@ describe('the rune roster is the GDD table', () => {
         }
       }
     }
+  })
+
+  it('knows which part of every region faces OUT of the tile', () => {
+    // What the compass draws its chevron over and leans its arrow toward. It
+    // has to be OUTWARD on every facing of every rune, and it used not to be:
+    // the old code took the polygon's first point as the outer one, which is
+    // true of `up` and `ul` and false of the other six. On `dr` the first
+    // point IS the tile's centre, so the mark that was meant to lean clear of
+    // a fingertip leaned straight under it.
+    for (const t of RUNE_TYPES) {
+      for (const dir of aimRegions(t)) {
+        if (dir === 'omni') continue
+        const { a, b, ax, ay } = aimRegionOuterEdge(t, dir)
+        const poly = aimRegionPolygon(t, dir)
+        expect(a, `${t}/${dir}`).not.toBe(b)
+        expect(poly[a], `${t}/${dir} a`).toBeDefined()
+        expect(poly[b], `${t}/${dir} b`).toBeDefined()
+        // The anchor lies away from the centre, along the facing's own vector.
+        const [dx, dy] = DIR_VEC[dir]
+        const n = Math.hypot(dx, dy) || 1
+        const dot = (ax - 0.5) * (dx / n) + (ay - 0.5) * (dy / n)
+        expect(dot, `${t}/${dir} anchor`).toBeGreaterThan(0.4)
+        // …and it is still a point of this region, so the mark cannot stray
+        // onto a neighbouring facing's ground.
+        expect(dirFromCellPoint(t, ax, ay), `${t}/${dir} anchor region`).toBe(dir)
+        // Both arms are further out than the region's inner vertex.
+        const d2 = (x: number, y: number): number => (x - 0.5) ** 2 + (y - 0.5) ** 2
+        const inner = poly.reduce((lo, p) => Math.min(lo, d2(p[0], p[1])), Infinity)
+        expect(d2(poly[a]![0], poly[a]![1]), `${t}/${dir} arm a`).toBeGreaterThan(inner)
+        expect(d2(poly[b]![0], poly[b]![1]), `${t}/${dir} arm b`).toBeGreaterThan(inner)
+      }
+    }
+  })
+
+  it('gives an omni region no outward feature to draw', () => {
+    // A shield fires nowhere, so there is no edge to point a chevron at, and
+    // the caller is told by getting the same index twice.
+    const e = aimRegionOuterEdge('defense', 'omni')
+    expect(e.a).toBe(e.b)
+    expect([e.ax, e.ay]).toEqual([0.5, 0.5])
   })
 
   it('the roller lane runs from the tile ahead to the edge', () => {

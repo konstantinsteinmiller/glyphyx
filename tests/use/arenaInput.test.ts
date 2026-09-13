@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ArenaLayout, BattleApi, HitTarget } from '@/game/view'
 import { LOCK_CHEVRON_HIT_TILES, LOCK_CHEVRON_TILES } from '@/game/rules'
+import { addRune, createBoard } from '@/game/board'
+import { nodeConfig } from '@/game/campaign'
 
 /**
  * ─── Pointer + keyboard → battle ────────────────────────────────────────────
@@ -50,7 +52,13 @@ const fakeBattle = () => {
     selected: -1,
     hand: ['melee', 'mage', 'defense'],
     hover: null as unknown,
-    rerollsLeft: 2
+    rerollsLeft: 2,
+    // A real board, because the input layer reads it: "press anywhere" during
+    // a correction window means anywhere EMPTY, and that question is asked of
+    // the board itself.
+    board: createBoard(nodeConfig(7, 'medium'), {}),
+    phase: 'planning' as string,
+    resetting: false
   }
   const api = {
     view,
@@ -256,9 +264,79 @@ describe('tap-to-place', () => {
   })
 })
 
+describe('a press that arrives while the turn is still resolving', () => {
+  it('is remembered, and becomes the pickup the moment planning opens', () => {
+    // The dead window every tester hit: for two to three seconds after a
+    // placement the hand looks exactly as it does when it can be played, and a
+    // drag started in it used to do nothing at all. The press is held instead,
+    // and the pebble arrives under the finger without a second press.
+    const battle = fakeBattle()
+    battle.view.phase = 'resolve'
+    battle.beginDrag.mockImplementation((i: number) => {
+      if (battle.view.phase !== 'planning') return false
+      battle.view.drag = { mode: 'place', type: battle.view.hand[i]! }
+      return true
+    })
+    const detach = mod.attachArenaInput(canvas, renderer, battle)
+    fire(canvas, 'pointerdown', 60, 440)
+    expect(battle.beginDrag).toHaveBeenCalledTimes(1)
+    expect(battle.view.drag).toBeNull()
+    // Still resolving: a move changes nothing, and says nothing either.
+    fire(canvas, 'pointermove', 80, 300)
+    expect(battle.view.drag).toBeNull()
+    // The turn ends; the very next move picks the pebble up.
+    battle.view.phase = 'planning'
+    fire(canvas, 'pointermove', 100, 250)
+    expect(battle.view.drag).toEqual({ mode: 'place', type: 'melee' })
+    fire(canvas, 'pointerup', 120, 200)
+    expect(battle.endDrag).toHaveBeenCalledWith(true)
+    detach()
+  })
+
+  it('a TAP during the resolution becomes a selection, not a press thrown away', () => {
+    // Same rescue on the other gesture: tap a pebble a beat too early, and by
+    // the time the finger lifts the board is ready — so the tap means what it
+    // would have meant, and one tap on a tile places it.
+    const battle = fakeBattle()
+    battle.view.phase = 'resolve'
+    battle.beginDrag.mockImplementation((i: number) => {
+      if (battle.view.phase !== 'planning') return false
+      battle.view.drag = { mode: 'place', type: battle.view.hand[i]! }
+      return true
+    })
+    const detach = mod.attachArenaInput(canvas, renderer, battle)
+    const t0 = 10_000
+    canvas.dispatchEvent(stamped(new PointerEvent('pointerdown', { clientX: 60, clientY: 440, pointerId: 1, bubbles: true, cancelable: true }), t0))
+    expect(battle.view.drag).toBeNull()
+    battle.view.phase = 'planning'
+    canvas.dispatchEvent(stamped(new PointerEvent('pointerup', { clientX: 61, clientY: 441, pointerId: 1, bubbles: true, cancelable: true }), t0 + 80))
+    expect(battle.selectHand).toHaveBeenCalledWith(0)
+    detach()
+  })
+})
+
 describe('the correction window', () => {
   const lockAt12 = (type = 'melee', dir = 'up') =>
     ({ cell: { col: 1, row: 2 }, type, dir, leftMs: 800, totalMs: 1000 })
+
+  it('a press on ANOTHER stone is not a correction: the stone under the finger is what the player means', () => {
+    // Measured on a blind tester (2026-09-11): they dragged an older stone to
+    // re-aim it, the beam answered their drag, and next turn the stone had not
+    // moved — the correction had turned the newly placed one, somewhere else on
+    // the board. "Press anywhere" now means anywhere the player cannot mistake
+    // for something else.
+    const battle = fakeBattle()
+    battle.view.lock = lockAt12()
+    addRune(battle.view.board, { side: 'player', faction: null, type: 'melee', col: 3, row: 3, dir: 'up' })
+    const detach = mod.attachArenaInput(canvas, renderer, battle)
+    fire(canvas, 'pointerdown', 3 * TILE + 40, 3 * TILE + 40)
+    expect(battle.beginCorrection).not.toHaveBeenCalled()
+    fire(canvas, 'pointerup', 3 * TILE + 40, 3 * TILE + 40)
+    // An empty tile still is one.
+    fire(canvas, 'pointerdown', 40, 40)
+    expect(battle.beginCorrection).toHaveBeenCalledTimes(1)
+    detach()
+  })
 
   it('a press ANYWHERE while the lock is open is a correction stroke, not a drag', () => {
     const battle = fakeBattle()

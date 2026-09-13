@@ -191,6 +191,29 @@ const plattformText = computed(() => getPlattformText())
   // Optional: prevent the "tap highlight" color on mobile
   -webkit-tap-highlight-color: transparent
 
+// ─── The focus ring ─────────────────────────────────────────────────────────
+//
+// The reset above clears `outline` for EVERY element, which is what stops a
+// tapped button wearing a ring on a phone. It also left the game with no focus
+// indicator at all: a keyboard, gamepad or switch-control player moving through
+// the shop's tabs, buy buttons and skin cards could not see where they were,
+// and `:focus-visible` appeared in not one file in the project.
+//
+// `:focus-visible` is the whole answer: the browser only matches it when the
+// focus came from a keyboard-like device, so the pointer stays ringless and
+// everything else gets a mark it cannot miss. Gold, because that is the game's
+// own attention colour, and a dark halo under it so the ring survives on the
+// gold buttons as well as on the dark panels.
+*:focus-visible
+  outline: 3px solid #ffd75e
+  outline-offset: 2px
+
+// The painted controls draw their own body inside the element that takes
+// focus, so the ring is pushed out a little further to clear the bevel.
+.f-button:focus-visible,
+.card:focus-visible
+  outline-offset: 3px
+
 img
   pointer-events: none
 </style>

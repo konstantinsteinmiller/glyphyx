@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': 'Trang phục',
       'runes': 'Rune sức mạnh',
+      'ranks': 'Bậc',
     },
     'title': 'Cửa hàng',
   },
   'gameName': 'Glyphyx',
+  'coins': 'Xu',
   'cancel': 'Hủy',
   'close': 'Đóng',
   'ok': 'Ok',
@@ -49,6 +51,7 @@ export default {
     'stage': 'Cấp độ {c}-{n}',
     'conquest': 'Chinh phục',
     'tiles': '{n} / {total}',
+    'runesLeft': 'Còn {n}',
     'turn': 'Lượt {n}',
     'you': 'Bạn',
     'enemy': 'Địch',
@@ -117,17 +120,37 @@ export default {
       'touch': 'Giữ 8 ô để thắng',
       'desktop': 'Giữ 8 ô để thắng'
     },
+    'conquestClaim': {
+      'touch': 'Mỗi rune bạn đặt sẽ chiếm ô của nó',
+      'desktop': 'Mỗi rune bạn đặt sẽ chiếm ô của nó'
+    },
     'siege': {
       'touch': 'Bị bao vây! Phá vòng vây và giữ 8 ô',
       'desktop': 'Bị bao vây! Phá vòng vây và giữ 8 ô'
+    },
+    'yourMove': {
+      'touch': 'Lượt của bạn — đặt một rune',
+      'desktop': 'Lượt của bạn — đặt một rune'
+    },
+    'busyPlaced': {
+      'touch': 'Mỗi lượt một rune',
+      'desktop': 'Mỗi lượt một rune'
+    },
+    'busyPhase': {
+      'touch': 'Chờ đã — các rune đang tấn công',
+      'desktop': 'Chờ đã — các rune đang tấn công'
+    },
+    'busyTile': {
+      'touch': 'Ô đó không nhận được',
+      'desktop': 'Ô đó không nhận được'
     },
     'mage': {
       'touch': 'Quả cầu bắn tia chéo xuyên hai ô',
       'desktop': 'Quả cầu bắn tia chéo xuyên hai ô'
     },
     'defense': {
-      'touch': 'Khiên chặn mũi tên và tia',
-      'desktop': 'Khiên chặn mũi tên và tia'
+      'touch': 'Khiên của bạn chặn tên và tia của ĐỊCH',
+      'desktop': 'Khiên của bạn chặn tên và tia của ĐỊCH'
     },
     'support': {
       'touch': 'Thập tự chữa lành và tăng sức cho ô kề bên',
@@ -169,13 +192,15 @@ export default {
     'clash': 'VA CHẠM!',
     'victory': 'CHIẾN THẮNG!',
     'defeat': 'THẤT BẠI',
-    'reveal': 'LỘ BÀI',
+    'reveal': 'KHAI HỎA',
     'suddenDeath': 'BÀN THẮNG VÀNG',
     'turn': 'LƯỢT {n}',
     'you': 'BẠN',
     'foe': 'ĐỊCH',
     'reroll': 'RÚT LẠI',
-    'lastTurn': 'LƯỢT CUỐI'
+    'lastTurn': 'LƯỢT CUỐI',
+    'firesIn': 'BẮN SAU',
+    'yourTurn': 'LƯỢT CỦA BẠN'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': 'Phân định theo số ô giữ được',
       'suddenDeath': 'Bàn thắng vàng',
       'siegeHeld': 'Bạn đã giữ vững phòng tuyến',
-      'siegeBroken': 'Vòng vây đã đánh bại bạn'
+      'siegeBroken': 'Vòng vây đã đánh bại bạn',
+      'crumbled': 'Những hình nộm vỡ vụn'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': 'Bậc',
     'title': 'Bậc rune',
     'tagline': 'Mỗi bậc +{n} HP tối đa — mọi rune như nhau.',
     'rank': 'Bậc {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': 'Lò rèn rune — đang rèn',
     'full': 'Lò rèn rune — đã đầy',
     'perHour': '+{n} / giờ'
+  },
+  'skinChest': {
+    'ready': 'Skin miễn phí đã sẵn sàng — chạm để mở',
+    'waiting': 'Skin miễn phí sau {time}',
+    'take': 'Nhận'
   },
 
   'leaderboard': {

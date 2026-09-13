@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import { resolve, dirname } from 'node:path'
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import type { IncomingMessage } from 'node:http'
 import { execFileSync } from 'node:child_process'
 
@@ -146,6 +146,48 @@ const leaderboardSnapshotPlugin = (seeded: boolean): Plugin => ({
     return `export default ${JSON.stringify(readSnapshotFile(seeded ? SEED_FILE : SNAPSHOT_FILE))}`
   }
 })
+
+// ─── The painted-art manifest ───────────────────────────────────────────────
+//
+// The drop-in art layer probes `public/images/<folder>/<id>.webp` for every
+// drawable and treats a 404 as "keep drawing it" (see `src/game/art.ts`). That
+// is exactly right while art is being made — the Art Desk slices a file in and
+// the next reload picks it up with no code change — and exactly wrong in a
+// SHIPPED build, where the set of paintings on disk is already decided.
+//
+// With ~70 paintings currently parked in `art-sheets/painted/stale/` awaiting a
+// repaint, an art-on build opens with ~70 failed requests before it settles on
+// the drawn fallback. CrazyGames' QA console reports each one as "Missing
+// resource detected"; Poki's error scanner sees the same.
+//
+// So a BUILD bakes the list of paintings that actually exist and the art layer
+// asks for nothing else. A dev server defines nothing at all, which leaves the
+// probe-everything behaviour the art pipeline depends on completely untouched.
+const IMAGES_DIR = resolve(fileURLToPath(new URL('./public/images', import.meta.url)))
+
+/** Every painting on disk, as the `<folder>/<id>` key `artTarget` builds. */
+const paintedArtOnDisk = (): string[] => {
+  const out: string[] = []
+  const walk = (dir: string, prefix: string): void => {
+    let entries: import('node:fs').Dirent[]
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      // `stale/` holds parked paintings and `-original.*` are compression
+      // backups; neither is ever requested by the renderer.
+      if (entry.isDirectory()) {
+        if (entry.name !== 'stale') walk(resolve(dir, entry.name), `${prefix}${entry.name}/`)
+      } else if (entry.name.endsWith('.webp') && !entry.name.includes('-original')) {
+        out.push(`images/${prefix}${entry.name.slice(0, -'.webp'.length)}`)
+      }
+    }
+  }
+  walk(IMAGES_DIR, '')
+  return out.sort()
+}
 
 // Read the package version directly so APP_VERSION resolves regardless of
 // how vite is invoked. `process.env.npm_package_version` is only set when
@@ -394,7 +436,19 @@ export default defineConfig(({ mode, command }) => {
           // usePlayerIdentity lazy-loads `@/use/useCrazyGames` to read the
           // portal's player name for the leaderboard. Same failure mode, but on
           // a PLAYER-facing path rather than a dev-only one.
-          /use[\\/]usePlayerIdentity\.ts$/
+          /use[\\/]usePlayerIdentity\.ts$/,
+          // artPreload lazy-loads `./campaign` to read the resumed chapter's
+          // factions. Same failure mode as every entry above, but RELATIVE, so
+          // the mangled specifier resolves against the chunk URL and the browser
+          // asks the server for `/assets/campaign` — a 404 that comes back as
+          // index.html, which surfaces as "Failed to load module script: expected
+          // a JavaScript-or-Wasm module script but the server responded with a
+          // MIME type of text/html" on EVERY obfuscated build. Caught, so the
+          // game runs; the cost is a console error a portal's error scanner
+          // sees, and tier 1 widening to every faction's art because
+          // `chapterFactionsOf` falls back to `ALL_FACTIONS`. Found in the
+          // 2026-09-11 blind playtest of the Poki build.
+          /game[\\/]artPreload\.ts$/
         ],
         // ─── Obfuscation profile (tuned 2026-04-30) ─────────────────────
         // The previous profile enabled every aggressive transform the
@@ -638,7 +692,11 @@ export default defineConfig(({ mode, command }) => {
       port: 2050
     },
     define: {
-      APP_VERSION: JSON.stringify(appVersion)
+      APP_VERSION: JSON.stringify(appVersion),
+      // Builds only (see `paintedArtOnDisk`). On the dev server the identifier
+      // stays undefined, which `art.ts` reads as "probe everything" — the
+      // behaviour the paint → slice → reload loop needs.
+      ...(command === 'build' ? { __PAINTED_ART__: JSON.stringify(paintedArtOnDisk()) } : {})
     },
     plugins: [
       tailwindcss(),
@@ -708,7 +766,14 @@ export default defineConfig(({ mode, command }) => {
           // `resolveAdProvider` statically imports the provider, so those hosts
           // were landing in EVERY other platform's bundle (found in the Poki
           // entry chunk). Same stub-swap fix as the four providers above.
-          '@/use/ads/YandexProvider': fileURLToPath(new URL('./src/use/ads/YandexProvider.stub.ts', import.meta.url))
+          '@/use/ads/YandexProvider': fileURLToPath(new URL('./src/use/ads/YandexProvider.stub.ts', import.meta.url)),
+          // The provider was not the only door. `main.ts` reaches the plugin
+          // DIRECTLY (`await import('@/utils/yandexPlugin')` inside its Yandex
+          // arm), and a dynamic import in a dead branch still enters the graph:
+          // Rollup emitted `yandexPlugin-*.js` — with both ad URLs in it — into
+          // the Poki bundle, where nothing could ever fetch it. Found by the
+          // Poki release audit (2026-09-12). Same stub-swap as gamepixPlugin.
+          '@/utils/yandexPlugin': fileURLToPath(new URL('./src/utils/yandexPlugin.stub.ts', import.meta.url))
         }),
         ...(env.VITE_APP_POKI === 'true' ? {} : {
           '@/use/ads/PokiProvider': fileURLToPath(new URL('./src/use/ads/PokiProvider.stub.ts', import.meta.url)),

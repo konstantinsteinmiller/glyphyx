@@ -21,7 +21,6 @@ const OWNED = [
   'src/views/GameScene.vue',
   ...readdirSync(join(ROOT, 'src/components/game')).filter((f) => f.endsWith('.vue')).map((f) => `src/components/game/${f}`),
   'src/components/organisms/CampaignModal.vue',
-  'src/components/organisms/SkinsModal.vue',
   'src/components/organisms/LeaderboardModal.vue',
   'src/components/organisms/OptionsModal.vue',
   'src/components/atoms/FLogoProgress.vue',
@@ -38,6 +37,15 @@ const hasKey = (path: string): boolean => {
   return cur !== undefined
 }
 
+/**
+ * Components whose only printed text is a string the CALLER already
+ * translated and passed in as a prop. `PebblePreview` prints `{{ label }}` —
+ * the "Lv 3" caption its own canvas also paints, repeated as real text so a
+ * screen reader gets it — and the callers build that string with `t()`. A
+ * `useI18n()` of its own would have nothing to look up.
+ */
+const TRANSLATED_BY_CALLER = new Set(['src/components/game/PebblePreview.vue'])
+
 /** A pug text node that is plain prose: `| Word words` or `tag Word words`. */
 const BARE_TEXT = /^\s*(?:\|\s*)?([A-Z][a-z]{2,}(?:\s+[a-z]+)+)\s*$/
 
@@ -53,7 +61,7 @@ describe('HUD components print only translated strings', () => {
     const prints = /\{\{/.test(tpl) || /^\s*\|\s+\S/m.test(tpl)
 
     it(`${rel} goes through useI18n when it renders text`, () => {
-      if (!prints) return
+      if (!prints || TRANSLATED_BY_CALLER.has(rel)) return
       expect(src).toMatch(/useI18n\(/)
     })
 

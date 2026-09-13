@@ -102,9 +102,26 @@ watch(() => props.animated, (on) => {
     :data-skin="skin"
     :data-level="level"
   )
+  //- The caption is PAINTED into the canvas ("Lv 3" on a power rune), which
+  //- means a screen reader never gets it and a reader who has scaled their
+  //- text up never sees it grow. The same string, once more, as real text
+  //- that only assistive tech reads — the drawing stays the drawing.
+  span.pebble-preview__label(v-if="label") {{ label }}
 </template>
 
 <style scoped lang="sass">
+// Read aloud, never seen: the painted caption's twin.
+.pebble-preview__label
+  position: absolute
+  width: 1px
+  height: 1px
+  margin: -1px
+  padding: 0
+  border: 0
+  overflow: hidden
+  clip-path: inset(50%)
+  white-space: nowrap
+
 .pebble-preview
   display: block
   width: 100%

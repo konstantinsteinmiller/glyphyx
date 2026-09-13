@@ -166,10 +166,12 @@ describe('the rewarded-video mark', () => {
 
   it('hides every one of them where no video can play', () => {
     for (const { file, src } of surfaces) {
-      // `canOfferReward` is false on the CG pre-release build and wherever no
-      // ad provider is resolved. A surface that ignores it either offers a
-      // video that cannot play, or hands the perk over for nothing.
-      expect(src, `${file} does not gate on canOfferReward`).toMatch(/\bcanOfferReward\b/)
+      // `canOfferReward` is false on the CG pre-release build and when no
+      // rewarded ad is ready. A surface that ignores it either offers a video
+      // that cannot play, or hands the perk over for nothing. `canOfferVideo`
+      // is that gate AND a real provider — what the cards with a coin price
+      // use, so that where no video can play the price is the whole offer.
+      expect(src, `${file} does not gate on canOfferReward / canOfferVideo`).toMatch(/\bcanOffer(Reward|Video)\b/)
     }
   })
 })

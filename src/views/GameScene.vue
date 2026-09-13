@@ -27,6 +27,7 @@ import { isMobileLandscape, isShortViewport } from '@/use/useUser'
 import { playFirstStartInterstitial } from '@/use/useFirstStartInterstitial'
 import { leaderboardEnabled } from '@/use/useLeaderboard'
 import { getState, setState } from '@/use/useGlyphyxState'
+import { isLessonNode } from '@/game/campaign'
 import type { Rect } from '@/game/view'
 import { AIMED_KEY, GOAL_SEEN_KEY, RESULTS_SEEN_KEY, TUTORIAL_KEY } from '@/keys'
 import { spawnCoinExplosion } from '@/use/useCoinExplosion'
@@ -35,6 +36,7 @@ import { CHEST_AUTO_CONTINUE_MS, FACTION_DEFS, REWARD_MULTIPLIER, type NodeConfi
 
 import StreakFlame from '@/components/game/StreakFlame.vue'
 import RuneForge from '@/components/game/RuneForge.vue'
+import SkinChest from '@/components/game/SkinChest.vue'
 import StageBadge from '@/components/game/StageBadge.vue'
 import EnemyBadge from '@/components/game/EnemyBadge.vue'
 import ControlHint, { type HintId } from '@/components/game/ControlHint.vue'
@@ -207,6 +209,7 @@ const loop = (now: number): void => {
     phaseStart('step')
     battle.tick(now, dt)
     phaseEnd('step')
+    trackIdle(dt)
   }
 
   phaseStart('draw')
@@ -247,7 +250,9 @@ const applyLabels = (): void => {
     you: t('canvas.you'),
     foe: t('canvas.foe'),
     reroll: t('canvas.reroll'),
-    lastTurn: t('canvas.lastTurn')
+    lastTurn: t('canvas.lastTurn'),
+    firesIn: t('canvas.firesIn'),
+    yourTurn: t('canvas.yourTurn')
   })
 }
 watch(locale, applyLabels)
@@ -262,6 +267,14 @@ const nodeCfg = computed<NodeConfig>(() => battle.node.value ?? nodeConfigFor(cu
 const foeColor = computed(() => FACTION_DEFS[nodeCfg.value.enemies[0]?.faction ?? 'orc'].color)
 const chapter = computed(() => nodeCfg.value.chapter)
 const nodeIndex = computed(() => nodeCfg.value.index)
+/**
+ * What this node is won BY — the HUD's most basic question, and one the tile
+ * counters answered wrongly on every lesson until the 2026-09-11 playtest.
+ * A lesson (`eliminate`) counts enemy stones; everything else counts tiles.
+ */
+const isEliminate = computed(() => nodeCfg.value.objective === 'eliminate')
+/** How many enemy stones the node STARTED with, for the pips that go dark. */
+const enemiesTotal = computed(() => nodeCfg.value.presets.filter((p) => p.side === 'enemy').length)
 const enemies = computed(() => nodeCfg.value.enemies)
 const leadFactionName = computed(() => {
   const lead = enemies.value[0]
@@ -278,11 +291,29 @@ const bannerShown = ref(false)
 const bannerSudden = ref(false)
 let bannerTimer: number | null = null
 
+/**
+ * The stage banner waits for the screen it is replacing.
+ *
+ * A retry tears the result overlay down and starts the next match in the same
+ * breath, and `FReward` fades out over 0.4 s — so the banner's "Level 1-7 /
+ * 1v1 Duel" faded IN through the defeat screen's "The enemy conquered eight
+ * tiles" fading OUT: two transparent texts stacked over the board. Two blind
+ * testers reported it as a rendering glitch that made the game look unfinished
+ * (2026-09-11, 2026-09-12). Sudden death still flashes instantly — it
+ * interrupts a live match, with nothing to wait for.
+ */
+const BANNER_WAIT_MS = 420
+
 const flashBanner = (sudden: boolean): void => {
   if (bannerTimer !== null) clearTimeout(bannerTimer)
   bannerSudden.value = sudden
-  bannerShown.value = true
-  bannerTimer = window.setTimeout(() => { bannerShown.value = false }, BANNER_MS)
+  const show = (): void => {
+    bannerShown.value = true
+    bannerTimer = window.setTimeout(() => { bannerShown.value = false }, BANNER_MS)
+  }
+  if (sudden) { show(); return }
+  bannerShown.value = false
+  bannerTimer = window.setTimeout(show, BANNER_WAIT_MS)
 }
 
 // ─── Control hints ──────────────────────────────────────────────────────────
@@ -296,6 +327,10 @@ const aimedOnce = ref(getState<boolean>(AIMED_KEY, false) === true)
 /** The player has committed on THIS node — retires the node's own lesson. */
 const placedThisNode = ref(false)
 const conquestHintDone = ref(false)
+/** How long the "a rune takes its tile" beat stays up after the first placement. */
+const CLAIM_HINT_MS = 4200
+const claimHintDone = ref(false)
+let claimTimer: number | null = null
 const siegeHintDone = ref(false)
 
 /**
@@ -346,8 +381,66 @@ const STRIP_PILL_PX = 40
 const pillFits = computed(() => isMobileLandscape.value || stripRoomPx.value >= STRIP_PILL_PX)
 const hintInStage = computed(() => !pillFits.value && !tipInStage.value && activeHint.value !== null)
 
+/**
+ * The answer to an action the game just refused, for a second and a half.
+ *
+ * It outranks every primer below because it is the only line that is about
+ * something the player DID. A refused drag was silent before (the hand looks
+ * identical whether it can be played or not), and blind testers read that as a
+ * broken game rather than as "one rune per turn".
+ */
+const REJECT_HINT_MS = 1600
+const rejectHint = ref<HintId | null>(null)
+let rejectTimer = 0
+watch(() => battle.rejected.value, (r) => {
+  if (!r) return
+  rejectHint.value = r.reason === 'placed' ? 'busyPlaced' : r.reason === 'phase' ? 'busyPhase' : 'busyTile'
+  window.clearTimeout(rejectTimer)
+  rejectTimer = window.setTimeout(() => { rejectHint.value = null }, REJECT_HINT_MS)
+})
+// A placement clears it: whatever it was explaining is no longer in the way.
+watch(() => battle.hasPlaced.value, () => { rejectHint.value = null })
+
+/**
+ * ─── "It is your move" ──────────────────────────────────────────────────────
+ *
+ * A LESSON has no clock (`timer: false`): the turn waits for the player, for
+ * as long as it takes. That is the right rule and it looks exactly like a hung
+ * game — a blind tester waited through three 15-second stretches on 1-4,
+ * watched nothing happen, and wrote the level up as frozen (2026-09-12). The
+ * board cannot say "your turn" by standing still, so after a few seconds of
+ * nobody touching anything, the pill says it.
+ */
+const IDLE_HINT_MS = 6000
+const idleHint = ref(false)
+let idleMs = 0
+
+const trackIdle = (dt: number): void => {
+  const waiting = battle.matchActive.value
+    && battle.phase.value === 'planning'
+    && battle.timerPaused.value
+    && !battle.isDragging.value
+    && battle.selectedHand.value < 0
+    && !overlayUp.value
+  if (!waiting) {
+    idleMs = 0
+    if (idleHint.value) idleHint.value = false
+    return
+  }
+  idleMs += dt
+  if (idleMs >= IDLE_HINT_MS && !idleHint.value) idleHint.value = true
+}
+
 const activeHint = computed<HintId | null>(() => {
   if (overlayUp.value || isAnyModalOpen.value || !battle.matchActive.value) return null
+  if (rejectHint.value) return rejectHint.value
+  // Not while the stage banner is riding over the board. They open on the
+  // same beat and land on the same pixels, and a fading banner behind a
+  // fading pill is two low-contrast texts over a busy board — 1-4's orb
+  // hint came back from the 2026-09-12 playtest as unreadable without
+  // zooming in. The pill waits its turn; it outlives the banner anyway.
+  if (bannerShown.value) return null
+  if (idleHint.value) return 'yourMove'
   // The window is the one second after a placement, and the only moment the
   // re-aim hint is true — so it outranks everything else while it is open.
   if (battle.lockOpen.value) return lockWindowsSeen.value <= CORRECT_HINT_WINDOWS ? 'correct' : null
@@ -357,7 +450,15 @@ const activeHint = computed<HintId | null>(() => {
   if (battle.isAiming.value && !aimedOnce.value) return 'aim'
   if (!placedOnce.value) return 'drag'
   const node = battle.node.value
-  if (!node || placedThisNode.value) return null
+  if (!node) return null
+  // ── The one hint that is NOT a primer ──
+  //
+  // Everything below this line is shown BEFORE the player acts and retires the
+  // moment they do. The conquest rule is the opposite: it only means anything
+  // once there is a rune of yours standing on a tile to look at. So it sits
+  // above the guard, and expires on its own clock like the refusal pills do.
+  if (node.objective === 'conquest' && placedThisNode.value && !claimHintDone.value) return 'conquestClaim'
+  if (placedThisNode.value) return null
   // Each rune's lesson names the rune, once per node, until the player has
   // placed on it.
   switch (node.tutorial) {
@@ -372,6 +473,11 @@ const activeHint = computed<HintId | null>(() => {
     default: break
   }
   if (node.mode === 'siege' && !siegeHintDone.value) return 'siege'
+  // Conquest in two beats, because the goal alone was not enough. The banner
+  // and the goal card both say "hold 8 tiles" now, and two blind testers still
+  // could not work out how a tile changes hands — one read the enemy placing
+  // runes as pieces that "spawn and creep onto my side". So: the goal while
+  // they have not placed, then the rule that answers it.
   if (node.objective === 'conquest' && !conquestHintDone.value) return 'conquest'
   return null
 })
@@ -382,7 +488,13 @@ const onPlaced = (): void => {
   if (getState<boolean>(AIMED_KEY, false) === true) aimedOnce.value = true
   const node = battle.node.value
   if (node?.mode === 'siege') siegeHintDone.value = true
-  if (node?.objective === 'conquest') conquestHintDone.value = true
+  if (node?.objective === 'conquest') {
+    conquestHintDone.value = true
+    // The claim beat gets one window of its own, then never again: it is a
+    // rule, and a rule repeated every match is noise.
+    if (claimTimer !== null) window.clearTimeout(claimTimer)
+    claimTimer = window.setTimeout(() => { claimHintDone.value = true; claimTimer = null }, CLAIM_HINT_MS)
+  }
 }
 
 // ─── Result flow ────────────────────────────────────────────────────────────
@@ -409,12 +521,53 @@ const won = computed(() => summary.value?.result.won === true)
 const RESULT_AD_DELAY_MS = 500
 
 /**
+ * How long the finished board is left alone before the ad, the chest or the
+ * result screen arrives. Long enough to read the stamp the canvas draws over
+ * the board and to watch the last stone come apart; short enough that nobody
+ * waits for the reward. A defeat gets less — there is nothing to enjoy.
+ */
+const VICTORY_BEAT_MS = 1100
+const DEFEAT_BEAT_MS = 700
+const beat = (ms: number): Promise<void> => new Promise((resolve) => { window.setTimeout(resolve, ms) })
+/** False once the scene has gone, so a beat cannot land on a dead component. */
+let alive = true
+
+/**
  * Show an interstitial, if one is due. The pacing rule (121 s between ads, a
  * no-fill refunds the gap) lives in `useAdGate.showPacedInterstitial`; this is
  * the match-end placement, delayed a beat so the verdict lands first.
  */
-const maybeShowInterstitial = async (): Promise<void> => {
+/**
+ * ─── Where an interstitial may NOT go ───────────────────────────────────────
+ *
+ * Both rules come from watching blind testers meet them (2026-09-11/12).
+ *
+ * NOT INSIDE THE TUTORIAL. A lesson hands over silently — the coins fly, the
+ * next lesson starts — so an ad at a lesson boundary reads as an ad dropped
+ * into the middle of one. Camila's fired at a clean 1-6 → 1-7 handover and she
+ * reported it as "it cut into an active fight". The whole six-lesson arc is
+ * about two minutes long and is the part of the game that decides whether
+ * anybody plays the rest of it.
+ *
+ * NOT IN FRONT OF A DEFEAT. The ad-before-the-overlay ordering exists so a WIN
+ * is never celebrated and then guillotined mid-jingle, and for a win it stays
+ * exactly as it was. A loss is the other case: the player has just lost and
+ * still does not know why, and both desktop testers called an ad there the
+ * worst possible moment. So a defeat shows its result screen first, and the ad
+ * comes with the player's own next tap — Retry or Next, in `onRetry`/`onNext`.
+ */
+const adsAllowedAfter = (s: MatchSummary): boolean => !isLessonNode(s.node.id)
+
+const maybeShowInterstitial = async (s: MatchSummary): Promise<void> => {
+  if (!adsAllowedAfter(s) || !s.result.won) return
   await showPacedInterstitial({ delayMs: RESULT_AD_DELAY_MS })
+}
+
+/** The break the player asked for: their tap off a result screen. */
+const interstitialOnLeavingResult = async (): Promise<void> => {
+  const s = summary.value
+  if (!s || !adsAllowedAfter(s)) return
+  await showPacedInterstitial()
 }
 
 /**
@@ -468,8 +621,20 @@ const presentResult = async (s: MatchSummary): Promise<void> => {
   chestOpened.value = false
   if (s.result.won) triggerHappytime()
 
-  // Ad FIRST, overlay second. See the header note.
-  await maybeShowInterstitial()
+  // ── The board keeps the win for a moment ──
+  //
+  // The canvas stamps VICTORY over the board the instant the match ends, and
+  // until now the chest landed on top of it in the same breath. Three of the
+  // five blind testers described the chest as arriving "out of nowhere" and one
+  // could not tell he had won at all — the ceremony was covering the only
+  // moment that said so (2026-09-11). A beat of nothing is the fix: the last
+  // stone is still shattering, the stamp is legible, and the reward follows it
+  // rather than replacing it.
+  await beat(s.result.won ? VICTORY_BEAT_MS : DEFEAT_BEAT_MS)
+  if (!alive) return
+
+  // Ad FIRST, overlay second — for a WIN. See `adsAllowedAfter`.
+  await maybeShowInterstitial(s)
 
   // The ceremony is for a GIFT — a new rune, a new skin. Coins alone were
   // banked the moment the node was cleared; they show on the result screen.
@@ -594,18 +759,22 @@ watch(canOfferReward, (can) => {
 const onNext = async (): Promise<void> => {
   if (adInFlight.value) return
   cancelAutoAdvance()
-  // The second natural break: a new node from the result screen. A no-op
-  // inside the 121 s gap, so it only ever fires when the player lingered.
-  await showPacedInterstitial()
+  // The natural break: leaving a result screen on the player's own tap. A
+  // no-op inside the 121 s gap, and never during the tutorial.
+  await interstitialOnLeavingResult()
   showChest.value = false
   showResult.value = false
   playFx('reset')
   battle.nextNode()
 }
 
-const onRetry = (): void => {
+const onRetry = async (): Promise<void> => {
   if (adInFlight.value) return
   cancelAutoAdvance()
+  // A defeat's ad waits for this tap rather than standing in front of the
+  // screen that says what happened.
+  await interstitialOnLeavingResult()
+  if (!alive) return
   showChest.value = false
   showResult.value = false
   playFx('reset')
@@ -746,8 +915,11 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  alive = false
   cancelAnimationFrame(rafId)
   cancelAutoAdvance()
+  window.clearTimeout(rejectTimer)
+  if (claimTimer !== null) clearTimeout(claimTimer)
   if (bannerTimer !== null) clearTimeout(bannerTimer)
   window.removeEventListener('resize', resize)
   window.removeEventListener('orientationchange', onOrientationChange)
@@ -777,20 +949,29 @@ onUnmounted(() => {
       //- The conquest readout, positioned from the renderer's own layout. It
       //- was `drawCounters` on the canvas until it turned out to be 39 % of
       //- render time to redraw two numbers that change a few times a match.
+      //- Tiles held decide `conquest` and `siege` nodes. On a LESSON they
+      //- decide nothing, and showing them there is what left four blind
+      //- testers with four different theories about what YOU and FOE meant.
       ConquestCounters(
-        v-if="!overlayUp"
+        v-if="!overlayUp && !isEliminate"
         :you="battle.playerTiles.value"
         :foe="battle.enemyTiles.value"
         :foe-color="foeColor"
         :rects="counterRects"
       )
       div.scene__top(ref="topBarRef")
-        //- The player's column: the streak flame, the wallet, and under it
-        //- the forge whose coins fly INTO the wallet.
+        //- The player's column: the streak flame, the wallet, under it the
+        //- forge whose coins fly INTO the wallet, and under THAT the skin
+        //- chest. The two timed collectables sit together on purpose — they
+        //- make the same promise, and a player who has learned to tap one has
+        //- learned the other. The chest is last because it is the loudest when
+        //- ready, and a gold halo belongs at the end of a column rather than
+        //- in the middle of it.
         div.scene__player
           StreakFlame
           CoinBadge(ref="coinBadgeRef")
           RuneForge(:target-el="coinBadgeEl")
+          SkinChest.scene__chest
 
         div.scene__stage
           //- On a short phone the rune card borrows this slot while it shows
@@ -803,6 +984,9 @@ onUnmounted(() => {
             :node="nodeIndex"
             :player-tiles="battle.playerTiles.value"
             :enemy-tiles="battle.enemyTiles.value"
+            :objective="nodeCfg.objective"
+            :enemies-left="battle.enemyRunes.value"
+            :enemies-total="enemiesTotal"
             :locked="overlayUp || adInFlight"
           )
 
@@ -827,6 +1011,7 @@ onUnmounted(() => {
         :chapter="chapter"
         :node="nodeIndex"
         :mode="nodeCfg.mode"
+        :objective="nodeCfg.objective"
         :foe="leadFactionName"
         :sudden-death="bannerSudden"
       )
@@ -984,6 +1169,14 @@ onUnmounted(() => {
   gap: clamp(0.3rem, 1.6vw, 0.55rem)
   min-width: 0
   pointer-events: auto
+
+// The forge hangs its payout chip BELOW itself out of flow (`position:
+// absolute`), so the column's gap does not reserve a pixel for it and the next
+// thing down wears it. The chest clears it by hand; the relationship lives
+// here rather than in either component, because neither of them knows the
+// other exists.
+.scene__chest
+  margin-top: clamp(0.5rem, 2.4vw, 0.8rem)
 
 .scene__stage
   display: flex

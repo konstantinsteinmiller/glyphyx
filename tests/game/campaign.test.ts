@@ -58,14 +58,19 @@ describe('chapter 1 is the onboarding', () => {
     expect(chestIsGift(null)).toBe(false)
   })
 
-  it('1-2 teaches the bow: your sword in front, a dummy behind a dummy in column 1', () => {
+  it('1-2 teaches the bow: your own sword in front of the one dummy the arrow can reach', () => {
     const n = nodeConfig(2, 'medium')
     expect(n.tutorial).toBe('archer')
     expect(n.objective).toBe('eliminate')
     const cells = n.presets.map((p) => `${p.side}:${p.col},${p.row}`)
     expect(cells).toContain('player:1,2')
     expect(cells).toContain('enemy:1,1')
-    expect(cells).toContain('enemy:1,0')
+    // And NOTHING at (1,0). A second dummy there was the lesson's dead end: an
+    // arrow from the ghost's tile skips (1,2) and lands on (1,1), so (1,0)
+    // survived a lesson that never taught a move which could reach it. See
+    // `floor.test.ts` — the ghost's move must finish its own lesson.
+    expect(cells).not.toContain('enemy:1,0')
+    expect(n.presets.filter((p) => p.side === 'enemy')).toHaveLength(1)
     expect(n.ghost).toEqual({ type: 'archer', to: { col: 1, row: 3 }, dir: 'up' })
     expect(n.playerDeck).toEqual(['melee', 'archer'])
   })

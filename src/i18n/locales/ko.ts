@@ -19,10 +19,12 @@ export default {
     'tabs': {
       'skins': '스킨',
       'runes': '파워 룬',
+      'ranks': '등급',
     },
     'title': '상점',
   },
   'gameName': 'Glyphyx',
+  'coins': '코인',
   'cancel': '취소',
   'close': '닫기',
   'ok': '확인',
@@ -49,6 +51,7 @@ export default {
     'stage': '레벨 {c}-{n}',
     'conquest': '정복',
     'tiles': '{n} / {total}',
+    'runesLeft': '{n}개 남음',
     'turn': '턴 {n}',
     'you': '나',
     'enemy': '적',
@@ -117,17 +120,37 @@ export default {
       'touch': '8칸을 차지하면 승리',
       'desktop': '8칸을 차지하면 승리'
     },
+    'conquestClaim': {
+      'touch': '놓은 룬은 그 칸을 차지한다',
+      'desktop': '놓은 룬은 그 칸을 차지한다'
+    },
     'siege': {
       'touch': '포위됐다! 돌파해서 8칸을 차지하세요',
       'desktop': '포위됐다! 돌파해서 8칸을 차지하세요'
+    },
+    'yourMove': {
+      'touch': '당신 차례 — 룬을 놓으세요',
+      'desktop': '당신 차례 — 룬을 놓으세요'
+    },
+    'busyPlaced': {
+      'touch': '턴당 룬 하나',
+      'desktop': '턴당 룬 하나'
+    },
+    'busyPhase': {
+      'touch': '잠깐 — 룬이 공격 중',
+      'desktop': '잠깐 — 룬이 공격 중'
+    },
+    'busyTile': {
+      'touch': '그 칸에는 놓을 수 없어요',
+      'desktop': '그 칸에는 놓을 수 없어요'
     },
     'mage': {
       'touch': '오브는 대각선으로 두 칸까지 광선을 쏩니다',
       'desktop': '오브는 대각선으로 두 칸까지 광선을 쏩니다'
     },
     'defense': {
-      'touch': '방패는 화살과 광선을 막습니다',
-      'desktop': '방패는 화살과 광선을 막습니다'
+      'touch': '방패는 적의 화살과 광선을 막는다',
+      'desktop': '방패는 적의 화살과 광선을 막는다'
     },
     'support': {
       'touch': '십자가는 이웃을 치유하고 공격을 강화합니다',
@@ -169,13 +192,15 @@ export default {
     'clash': '충돌!',
     'victory': '승리!',
     'defeat': '패배',
-    'reveal': '공개',
+    'reveal': '공격',
     'suddenDeath': '서든데스',
     'turn': '턴 {n}',
     'you': '나',
     'foe': '적',
     'reroll': '다시 뽑기',
-    'lastTurn': '마지막 턴'
+    'lastTurn': '마지막 턴',
+    'firesIn': '발사까지',
+    'yourTurn': '당신 차례'
   },
 
   'banner': {
@@ -209,7 +234,8 @@ export default {
       'turnLimit': '점령한 칸 수로 결정',
       'suddenDeath': '서든데스',
       'siegeHeld': '전선을 지켰습니다',
-      'siegeBroken': '포위에 무너졌습니다'
+      'siegeBroken': '포위에 무너졌습니다',
+      'crumbled': '허수아비가 부서졌다'
     }
   },
 
@@ -268,7 +294,6 @@ export default {
   },
 
   'ranks': {
-    'tab': '등급',
     'title': '룬 등급',
     'tagline': '등급마다 최대 HP +{n} — 모든 룬에 동일합니다.',
     'rank': '등급 {n}/{max}',
@@ -296,6 +321,11 @@ export default {
     'filling': '룬 대장간 — 제작 중',
     'full': '룬 대장간 — 가득 참',
     'perHour': '+{n} / 시간'
+  },
+  'skinChest': {
+    'ready': '무료 스킨 준비 완료 — 눌러서 열기',
+    'waiting': '무료 스킨까지 {time}',
+    'take': '받기'
   },
 
   'leaderboard': {

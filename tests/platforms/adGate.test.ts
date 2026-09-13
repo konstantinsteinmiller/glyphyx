@@ -86,6 +86,26 @@ describe('reward gating', () => {
     expect(gate.showRewardedAd).not.toHaveBeenCalled()
   })
 
+  it('offers a VIDEO beside a coin price only where one can really play', async () => {
+    // `canOfferVideo` is what the rank, power-rune and skin cards put their
+    // video half behind. Where no provider can play — local dev, plain web,
+    // the CG pre-release build — the coin price is the whole offer, even though
+    // `canOfferReward` would still grant a no-coin perk (the ×3) for free.
+    const local = await loadGate({ crazy: false, provider: 'noop' })
+    expect(local.canOfferReward.value).toBe(true)
+    expect(local.canOfferVideo.value).toBe(false)
+
+    const preRelease = await loadGate({ crazy: true, fullRelease: false })
+    expect(preRelease.canOfferVideo.value).toBe(false)
+
+    const portal = await loadGate({ crazy: false, provider: 'gamepix' })
+    expect(portal.canOfferVideo.value).toBe(true)
+
+    // A real provider with nothing loaded offers nothing either.
+    const unfilled = await loadGate({ crazy: false, provider: 'gamepix', rewardedReady: false })
+    expect(unfilled.canOfferVideo.value).toBe(false)
+  })
+
   it('plays a rewarded video on the CrazyGames full release', async () => {
     const gate = await loadGate({ crazy: true, fullRelease: true })
     const grant = vi.fn()

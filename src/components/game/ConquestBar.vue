@@ -35,7 +35,22 @@ const cells = computed(() => {
   }
   return out
 })
-const label = computed(() => t('hud.tiles', { n: clamp(props.player), total: CONQUEST_TILES }))
+/**
+ * ─── One number, not two ────────────────────────────────────────────────────
+ *
+ * This rail used to PRINT "4 / 8" under itself while `ConquestCounters`
+ * printed "YOU 4" a few pixels away — the same tile count, twice, and one of
+ * them under a crown. A blind tester read the pair as two different resources
+ * and could not tell which decided the match: "I could not tell if losing a
+ * piece cost me a trophy, a life, or a square" (2026-09-12).
+ *
+ * So the rail is a PICTURE now — sixteen tiles filling from both ends, the
+ * crown standing on the win line with the number it takes to reach it — and
+ * the counters own the live numbers. The text survives as this rail's
+ * accessible name, where it competes with nothing — still clamped at the
+ * goal, because "9 / 8" is a contradiction whoever reads it.
+ */
+const label = computed(() => t('hud.tiles', { n: Math.min(CONQUEST_TILES, clamp(props.player)), total: CONQUEST_TILES }))
 const nearWin = computed(() => clamp(props.player) >= CONQUEST_TILES - 1)
 
 // ─── The pulse ──────────────────────────────────────────────────────────────
@@ -81,7 +96,7 @@ onUnmounted(() => {
     :aria-valuenow="player"
     :aria-valuemin="0"
     :aria-valuemax="CONQUEST_TILES"
-    :aria-label="t('hud.conquest')"
+    :aria-label="`${t('hud.conquest')}: ${label}`"
     :class="{ 'is-pulse': pulsing }"
     @click="showTip"
     @keydown.enter.prevent="showTip"
@@ -94,7 +109,6 @@ onUnmounted(() => {
       span.conquest__crown
         ArtIcon(kind="ui" id="crown" fallback="trophy")
       span.conquest__goal-num {{ CONQUEST_TILES }}
-    span.conquest__label {{ label }}
     Transition(name="tip")
       span.conquest__tip(v-if="tipShown" role="status") {{ tip }}
 </template>
@@ -183,14 +197,6 @@ onUnmounted(() => {
   color: #ffd93c
   font-weight: 900
   font-size: clamp(0.5rem, 2.4vw, 0.72rem)
-  text-shadow: 1px 1px 0 #000
-
-.conquest__label
-  color: #cfe6ff
-  font-weight: 900
-  font-size: clamp(0.5rem, 2.3vw, 0.7rem)
-  line-height: 1
-  letter-spacing: 0.04em
   text-shadow: 1px 1px 0 #000
 
 // The rule in words, under the rail, for as long as a glance takes.

@@ -64,6 +64,33 @@ export const loadLocaleMessages = async (
  * On load failure, the promise resolves *without* switching so the UI
  * keeps rendering the previously active locale.
  */
+/**
+ * The locales that read right to left. Arabic is the only one the game ships;
+ * Hebrew, Persian and Urdu would join it here.
+ */
+const RTL_LOCALES = new Set(['ar', 'he', 'fa', 'ur'])
+
+/**
+ * Stamp the document with the language and its direction.
+ *
+ * Neither was ever set, so `<html>` shipped with no `lang` at all and every
+ * locale — Arabic included — computed `direction: ltr` (release audit,
+ * 2026-09-12). Arabic text runs still rendered joined, because the browser's
+ * bidi algorithm orders each RUN on its own, which is exactly why this is easy
+ * to miss by looking at it. What was actually missing: `lang` drives font
+ * selection and is what a screen reader reads the page as, and `dir` is what
+ * mirrors the layout and orders MIXED-direction text correctly.
+ *
+ * Called on every switch AND on the first paint, because a portal can report
+ * its language before the player has touched anything.
+ */
+export const applyDocumentLocale = (code: string): void => {
+  if (typeof document === 'undefined') return
+  const el = document.documentElement
+  el.setAttribute('lang', code)
+  el.setAttribute('dir', RTL_LOCALES.has(code) ? 'rtl' : 'ltr')
+}
+
 export const setI18nLocale = async (
   i18n: I18n<any, any, any, string, false>,
   code: string
@@ -73,12 +100,14 @@ export const setI18nLocale = async (
   // Already-loaded locales can switch synchronously.
   if (g.availableLocales.includes(target)) {
     g.locale.value = target
+    applyDocumentLocale(target)
     return
   }
   try {
     const msgs = await loadLocaleMessages(target)
     g.setLocaleMessage(target, msgs)
     g.locale.value = target
+    applyDocumentLocale(target)
   } catch (e) {
     console.error(`[i18n] failed to load locale "${target}"`, e)
   }

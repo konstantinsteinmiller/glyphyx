@@ -248,6 +248,24 @@ export const canOfferReward = computed(
   () => !isCrazyPreRelease && (!isRewardGated || (isRewardedReady.value && !isRewardRateLimited()))
 )
 
+/**
+ * Can a VIDEO be offered as the other way to pay for something that also has
+ * a coin price — a rune rank, a power rune, a skin?
+ *
+ * Only where one can really play: a real ad provider resolved (`isRewardGated`)
+ * AND `canOfferReward`. On a build with no callable provider — local dev, the
+ * CrazyGames pre-release build, itch, plain web — `canOfferReward` would still
+ * say yes and grant the perk for nothing, and the button it offered could not
+ * wear the film mark (`RewardAdIcon` draws it only where a video plays), so it
+ * came out as an empty blue half beside the price. There the coin price is the
+ * whole control instead.
+ *
+ * The perks with NO coin price (the result screen's ×3, the nuker's early
+ * unlock) keep `canOfferReward`: on an ad-free build they are simply granted,
+ * because otherwise they would be unreachable there.
+ */
+export const canOfferVideo = computed(() => isRewardGated && canOfferReward.value)
+
 // ─── Interstitial pacing ────────────────────────────────────────────────────
 
 /**

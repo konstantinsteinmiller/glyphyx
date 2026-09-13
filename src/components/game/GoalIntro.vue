@@ -45,6 +45,8 @@ let doneFired = false
 const isTouch = computed(() => mobileCheck() || isMobilePortrait.value
   || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0))
 const countLabel = computed(() => t('hud.tiles', { n: count.value, total: CONQUEST_TILES }))
+/** The same sentence the conquest rail says when tapped. */
+const rule = computed(() => t(`hints.conquest.${isTouch.value ? 'touch' : 'desktop'}`))
 
 /**
  * Which tiles are lit at `count`: the player's two home rows, filled from the
@@ -126,6 +128,12 @@ onUnmounted(clear)
             ArtIcon(kind="ui" id="crown" fallback="trophy")
         div.goal__count
           span.goal__count-num {{ countLabel }}
+        //- The rule, in words, under the animation of it. "Shown once, without
+        //- a word" was the intent and the animation is good — but a blind
+        //- tester watched the whole thing and wrote "no label, no explanation
+        //- of what it was tracking. I still don't know what it meant"
+        //- (2026-09-12). The mime keeps the beat; this says what it mimed.
+        div.goal__rule {{ rule }}
       span.goal__hint {{ isTouch ? t('tapToContinue') : t('clickToContinue') }}
 </template>
 
@@ -215,6 +223,18 @@ onUnmounted(clear)
   line-height: 1
   letter-spacing: 0.04em
   text-shadow: 3px 3px 0 #000
+
+.goal__rule
+  max-width: 22ch
+  color: #cfe6ff
+  font-weight: 800
+  font-size: clamp(0.7rem, 3.2vmin, 0.98rem)
+  line-height: 1.2
+  text-align: center
+  text-transform: uppercase
+  letter-spacing: 0.05em
+  text-shadow: 2px 2px 0 #000
+  text-wrap: balance
 
 .goal__hint
   color: #fff

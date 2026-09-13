@@ -127,12 +127,23 @@ const fire = (): void => {
 
 watch(() => [props.modelValue, props.opened] as const, ([open, opened]) => {
   stopTimers()
+  // ── Leaving: change NOTHING ──
+  //
+  // `FReward`'s root fades out over its own transition, and everything inside
+  // it has to fade WITH it, as one picture. Tearing the rays and the confetti
+  // down the instant `modelValue` goes false killed the backdrop while the
+  // prize's text was still fading on top of it — so "REWARDS / UNLOCKED / BOW"
+  // and the description hung in mid-air over the next level's board for the
+  // length of the fade. Two testers, two rounds apart, both filed it as a
+  // rendering glitch (2026-09-12). The beats reset when the overlay next
+  // OPENS, which is the only time anybody can see them reset.
+  if (!open) return
   canContinue.value = false
   stageLit.value = false
   confettiFired.value = false
   autoLeftMs.value = CHEST_AUTO_CONTINUE_MS
   fired = false
-  if (!(open && opened)) return
+  if (!opened) return
 
   // The sequence.
   beatTimers.push(window.setTimeout(() => { stageLit.value = true }, BEATS.stage))
