@@ -85,6 +85,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -176,6 +185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -267,6 +285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -358,6 +385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -449,6 +485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -540,6 +585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -631,6 +685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -722,6 +785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -813,6 +885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -904,6 +985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -995,6 +1085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1086,6 +1185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1177,6 +1285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1268,6 +1385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1359,6 +1485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1450,6 +1585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1541,6 +1685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1632,6 +1785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1723,6 +1885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1814,6 +1985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1905,6 +2085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -1996,6 +2185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2087,6 +2285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2178,6 +2385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2269,6 +2485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2360,6 +2585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2451,6 +2685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2542,6 +2785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2633,6 +2885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2724,6 +2985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2815,6 +3085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2906,6 +3185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -2997,6 +3285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3088,6 +3385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3179,6 +3485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3270,6 +3585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3301,7 +3625,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3361,6 +3685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3392,7 +3725,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3452,6 +3785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3483,7 +3825,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3543,6 +3885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3574,7 +3925,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3634,6 +3985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3665,7 +4025,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3725,6 +4085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3756,7 +4125,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3816,6 +4185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3847,7 +4225,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3907,6 +4285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -3938,7 +4325,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -3998,6 +4385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4029,7 +4425,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4089,6 +4485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4120,7 +4525,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4180,6 +4585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4211,7 +4625,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4271,6 +4685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4302,7 +4725,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4362,6 +4785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4393,7 +4825,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4453,6 +4885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4484,7 +4925,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4544,6 +4985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4575,7 +5025,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4635,6 +5085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4666,7 +5125,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4726,6 +5185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4757,7 +5225,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4817,6 +5285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4848,7 +5325,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -4908,6 +5385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -4999,6 +5485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5090,6 +5585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5181,6 +5685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5272,6 +5785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5363,6 +5885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5454,6 +5985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5545,6 +6085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5636,6 +6185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5727,6 +6285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5818,6 +6385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -5909,6 +6485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6000,6 +6585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6091,6 +6685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6182,6 +6785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6273,6 +6885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6364,6 +6985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6455,6 +7085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6546,6 +7185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6637,6 +7285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6728,6 +7385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6819,6 +7485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -6910,6 +7585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7001,6 +7685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7092,6 +7785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7183,6 +7885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7274,6 +7985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7365,6 +8085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7456,6 +8185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7547,6 +8285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7638,6 +8385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7729,6 +8485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7820,6 +8585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -7911,6 +8685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8002,6 +8785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8093,6 +8885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8184,6 +8985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8275,6 +9085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8366,6 +9185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8457,6 +9285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8548,6 +9385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8639,6 +9485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8730,6 +9585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8821,6 +9685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -8912,6 +9785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9003,6 +9885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9094,6 +9985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9185,6 +10085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9276,6 +10185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9367,6 +10285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9458,6 +10385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9549,6 +10485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9640,6 +10585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9731,6 +10685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9822,6 +10785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -9913,6 +10885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10004,6 +10985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10095,6 +11085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10186,6 +11185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10277,6 +11285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10368,6 +11385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10459,6 +11485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10550,6 +11585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10641,6 +11685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10732,6 +11785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10823,6 +11885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -10914,6 +11985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11005,6 +12085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11096,6 +12185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11187,6 +12285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11278,6 +12385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11369,6 +12485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11460,6 +12585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11551,6 +12685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11642,6 +12785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11733,6 +12885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11824,6 +12985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -11915,6 +13085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12006,6 +13185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12097,6 +13285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12188,6 +13385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12279,6 +13485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12370,6 +13585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12461,6 +13685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12552,6 +13785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12643,6 +13885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12734,6 +13985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12825,6 +14085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -12916,6 +14185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13007,6 +14285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13098,6 +14385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13189,6 +14485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13280,6 +14585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13371,6 +14685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13462,6 +14785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13553,6 +14885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13644,6 +14985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13735,6 +15085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13826,6 +15185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -13917,6 +15285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14008,6 +15385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14099,6 +15485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14190,6 +15585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14281,6 +15685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14372,6 +15785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14463,6 +15885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14554,6 +15985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14645,6 +16085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14736,6 +16185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14827,6 +16285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -14918,6 +16385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15009,6 +16485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15100,6 +16585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15191,6 +16685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15282,6 +16785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15373,6 +16885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15464,6 +16985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15555,6 +17085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15646,6 +17185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15737,6 +17285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15828,6 +17385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -15919,6 +17485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16010,6 +17585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16101,6 +17685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16192,6 +17785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16283,6 +17885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16374,6 +17985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16465,6 +18085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16556,6 +18185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16647,6 +18285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16738,6 +18385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16829,6 +18485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -16920,6 +18585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17011,6 +18685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17102,6 +18785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17193,6 +18885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17284,6 +18985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17375,6 +19085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17466,6 +19185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17557,6 +19285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17648,6 +19385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17739,6 +19485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17830,6 +19585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17861,7 +19625,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -17921,6 +19685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -17952,7 +19725,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18012,6 +19785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18043,7 +19825,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18103,6 +19885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18134,7 +19925,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18194,6 +19985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18225,7 +20025,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18285,6 +20085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18316,7 +20125,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18376,6 +20185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18407,7 +20225,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18467,6 +20285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18498,7 +20325,7 @@ Keep that outline exactly. Every rune in this game has an outline of its own,
 and it is how a player tells one rune from another across the board — do not
 tidy it toward a plain oval or a rounded rectangle.
 
-THE GLYPH is an arcane orb: a solid core inside a ring, four diagonal sparks. Keep its shape exactly.
+THE GLYPH is an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune. Keep its shape exactly.
 
 WHAT IT IS NOT:
 · NO laurel wreath, no leafy branches, no ribbon, banner, badge or medal
@@ -18558,6 +20385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18649,6 +20485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18740,6 +20585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18831,6 +20685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -18922,6 +20785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19013,6 +20885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19104,6 +20985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19195,6 +21085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19286,6 +21185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19377,6 +21285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19468,6 +21385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19559,6 +21485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19650,6 +21585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19741,6 +21685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19832,6 +21785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -19923,6 +21885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20014,6 +21985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20105,6 +22085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20196,6 +22185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20287,6 +22285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20378,6 +22385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20469,6 +22485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20560,6 +22585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20651,6 +22685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20742,6 +22785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20833,6 +22885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -20924,6 +22985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21015,6 +23085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21106,6 +23185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21197,6 +23285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21288,6 +23385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21379,6 +23485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21470,6 +23585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21561,6 +23685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21652,6 +23785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21743,6 +23885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21834,6 +23985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -21925,6 +24085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22016,6 +24185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22107,6 +24285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22198,6 +24385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22289,6 +24485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22380,6 +24585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22471,6 +24685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22562,6 +24785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22653,6 +24885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22744,6 +24985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22835,6 +25085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -22926,6 +25185,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23017,6 +25285,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23108,6 +25385,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23199,6 +25485,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23290,6 +25585,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23381,6 +25685,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23472,6 +25785,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23563,6 +25885,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23654,6 +25985,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23733,6 +26073,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23812,6 +26161,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23836,7 +26194,7 @@ Repaint ONE glyph icon, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the Orb glyph ALONE, no stone: an arcane orb: a solid core inside a ring, four diagonal sparks, one bold flat pictogram. Colour identity (keep the HUE, muted and paper-toned): ink #2c2218 with a tight amethyst violet (about #b57bff, kept muted and paper-toned, never neon) glow
+WHAT IT IS: the Orb glyph ALONE, no stone: an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four sparks is the WRONG glyph and reads as a different rune, one bold flat pictogram. Colour identity (keep the HUE, muted and paper-toned): ink #2c2218 with a tight amethyst violet (about #b57bff, kept muted and paper-toned, never neon) glow
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -23891,6 +26249,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -23970,6 +26337,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24049,6 +26425,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24128,6 +26513,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24207,6 +26601,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24286,6 +26689,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24365,6 +26777,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24444,6 +26865,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24523,6 +26953,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24599,6 +27038,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24675,6 +27123,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24751,6 +27208,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24827,6 +27293,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24906,6 +27381,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -24985,6 +27469,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25064,6 +27557,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25143,6 +27645,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25222,6 +27733,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25301,6 +27821,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25380,6 +27909,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25459,6 +27997,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25538,6 +28085,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25617,6 +28173,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25696,6 +28261,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25775,6 +28349,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25854,6 +28437,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -25933,6 +28525,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26012,6 +28613,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26091,6 +28701,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26170,6 +28789,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26249,6 +28877,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26328,6 +28965,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26407,6 +29053,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26431,7 +29086,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Sword stone (a BLADE-TIP plaque: a sharp point at the top, shoulders sweeping down into a full belly and a round base — the tallest and pointiest stone of the set): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Sword stone (a BLADE-TIP plaque: a sharp point at the top, shoulders sweeping down into a full belly and a round base — the tallest and pointiest stone of the set): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26486,6 +29141,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26510,7 +29174,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Bow stone (a SLENDER SPINDLE: narrow and tall, drawn out to a long taper at the top AND at the foot, its belly barely two thirds as wide as the stone is tall — the thinnest stone of the set): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Bow stone (a SLENDER SPINDLE: narrow and tall, drawn out to a long taper at the top AND at the foot, its belly barely two thirds as wide as the stone is tall — the thinnest stone of the set): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26565,6 +29229,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26589,7 +29262,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Orb stone (a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Orb stone (a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26644,6 +29317,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26668,7 +29350,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Shield stone (a BLOCKY SHIELD tablet: a FLAT top with square shoulders and straight vertical sides, drawn down to a blunt point at the FOOT — a heater shield lying on its face, and the only stone of the set whose point is at the bottom): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Shield stone (a BLOCKY SHIELD tablet: a FLAT top with square shoulders and straight vertical sides, drawn down to a blunt point at the FOOT — a heater shield lying on its face, and the only stone of the set whose point is at the bottom): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26723,6 +29405,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26747,7 +29438,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Cross stone (a FOUR-LOBED medallion: four shallow rounded arms, one up, one down and one to each side, with a soft notch between them — the stone is already a cross before any glyph is cut into it): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Cross stone (a FOUR-LOBED medallion: four shallow rounded arms, one up, one down and one to each side, with a soft notch between them — the stone is already a cross before any glyph is cut into it): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26802,6 +29493,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26826,7 +29526,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Axe stone (an AXE BIT: narrow across the top, flaring out and down into a broad crescent whose two HORNS are the lowest points on the stone, the cutting edge sweeping back UP between them — an axe head seen face on): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Axe stone (an AXE BIT: narrow across the top, flaring out and down into a broad crescent whose two HORNS are the lowest points on the stone, the cutting edge sweeping back UP between them — an axe head seen face on): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26881,6 +29581,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26905,7 +29614,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Boulder stone (a SQUAT BOULDER: wider than it is tall, heavy and round, with one long flat plane knocked off each side): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Boulder stone (a SQUAT BOULDER: wider than it is tall, heavy and round, with one long flat plane knocked off each side): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -26942,7 +29651,7 @@ AVOID — this is exactly how earlier attempts went wrong:
   a RESTYLE, not a redesign: the reference decides what is there.
 
 SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 86%
+Do not enlarge it to fill the frame. In the reference it spans about 87%
 of the image's width, centred, with flat magenta on every side. Keep it the
 same fraction of the frame, in the same place. Bigger is not clearer here.
 
@@ -26960,6 +29669,15 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
@@ -26984,165 +29702,7 @@ Repaint ONE effect, in a single square image 512 x 512 pixels.
 The attached reference is exactly what to paint, at exactly the size and
 position it is drawn at. Match both.
 
-WHAT IT IS: the level-2 laurel for the Mortar stone (a MORTAR on its base plate: narrow and flat across the top, flaring the whole way down to a broad heavy plate with SQUARE bottom corners and a dead-flat foot — bottom-heavy, like something meant to stay put): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 90%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
-## Laurel · Warhead — Lv 2 wreath  (single-laurel-nuker.png → images/fx/laurel-nuker.webp)
-
-```text
-Repaint ONE effect, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the level-2 laurel for the Warhead stone (a WARHEAD SPIKE: a needle-sharp apex over a narrow body, stepping abruptly OUT to a square collar just above a flat foot — tall, thin and top-heavy): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
-
-THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
-from the top-left.
-
-STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
-bestiary or a hand-painted board-game piece. Match this in every panel:
-· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
-  weight varying like a real pen, a little uneven. The drawing should look
-  DRAWN, with the linework still showing through the paint.
-· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
-  brush texture, softly mottled, a gentle sense of volume from ONE light
-  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
-· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
-  at thumbnail size; small detail is suggested with a few confident marks.
-· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
-  desaturated — with the arcane accents (the glyph glows, the violet grid
-  light) as the ONLY saturated notes. Rich, not candy-bright.
-· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
-  the grooves. Charming craft rather than slick rendering.
-
-AVOID — this is exactly how earlier attempts went wrong:
-· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
-  edges, no smooth 3D-rendered shading, no lens flares.
-· NO photorealism and no vector-flat icon look either — it is a painting.
-· NO heavy uniform black outlines, no hard cel-shaded banding.
-· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
-· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
-  it is wrong; if the GLOW looks vivid, that part is right.
-· NO frames, borders, cards, vignettes, matting or paper background behind
-  the drawing. Nothing but flat magenta behind it, right up to its outline.
-· Do not invent content for a panel that is blank in the reference. Leave
-  it blank — flat magenta and nothing else.
-· Keep each object the same subject and silhouette it already has. This is
-  a RESTYLE, not a redesign: the reference decides what is there.
-
-SIZE AND PLACEMENT — this is the part that goes wrong.
-Do not enlarge it to fill the frame. In the reference it spans about 76%
-of the image's width, centred, with flat magenta on every side. Keep it the
-same fraction of the frame, in the same place. Bigger is not clearer here.
-
-BACKGROUND — read this before anything else. It matters more than the style.
-Fill every pixel that is not the object itself with solid, flat, pure magenta
-#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
-· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
-  pink, not mauve, not a soft or tinted version of it. Only the true colour
-  can be cut away cleanly; a near miss has to be flood-filled instead, and a
-  flood fill eats any pale paint it can reach.
-· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
-  and then baked into the artwork as though the squares were paint.
-· NOT white, cream, parchment, paper, or any tinted or textured ground.
-· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
-  of any kind. The magenta must touch the outline of the object on every side.
-· No drop shadow onto the background, and no vignette.
-· The object itself must contain no magenta or hot pink.
-· The muted, earthy palette above is for the OBJECT. The ground is not part
-  of the painting and is not toned down with it: it stays a vivid,
-  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
-  and mauve are the failure this whole clause is about.
-· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
-  measured as part of the object when the return is fitted back onto the
-  reference — a wide aura comes back as a tiny stone inside a huge smear —
-  and it cannot be keyed: soft light over magenta turns pink, not
-  transparent. A glow belongs inside the shape's own outline, or within a
-  hair of it.
-
-OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
-captions or watermarks.
-```
-
----
-
-## Laurel · Crown — Lv 2 wreath  (single-laurel-crown.png → images/fx/laurel-crown.webp)
-
-```text
-Repaint ONE effect, in a single square image 512 x 512 pixels.
-The attached reference is exactly what to paint, at exactly the size and
-position it is drawn at. Match both.
-
-WHAT IT IS: the level-2 laurel for the Crown stone (a CROWNED band: a heavy rounded band whose TOP EDGE rises into three peaks, a tall one on the axis and a shorter one to each side, with a V-shaped valley between them): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+WHAT IT IS: the level-2 laurel for the Mortar stone (a MORTAR on its base plate: narrow and flat across the top, flaring the whole way down to a broad heavy plate with SQUARE bottom corners and a dead-flat foot — bottom-heavy, like something meant to stay put): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
 
 THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
 from the top-left.
@@ -27197,6 +29757,191 @@ Fill every pixel that is not the object itself with solid, flat, pure magenta
   of any kind. The magenta must touch the outline of the object on every side.
 · No drop shadow onto the background, and no vignette.
 · The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## Laurel · Warhead — Lv 2 wreath  (single-laurel-nuker.png → images/fx/laurel-nuker.webp)
+
+```text
+Repaint ONE effect, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the level-2 laurel for the Warhead stone (a WARHEAD SPIKE: a needle-sharp apex over a narrow body, stepping abruptly OUT to a square collar just above a flat foot — tall, thin and top-heavy): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 76%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
+· The muted, earthy palette above is for the OBJECT. The ground is not part
+  of the painting and is not toned down with it: it stays a vivid,
+  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink
+  and mauve are the failure this whole clause is about.
+· KEEP ANY GLOW TIGHT. A halo or bloom spreading into the background is
+  measured as part of the object when the return is fitted back onto the
+  reference — a wide aura comes back as a tiny stone inside a huge smear —
+  and it cannot be keyed: soft light over magenta turns pink, not
+  transparent. A glow belongs inside the shape's own outline, or within a
+  hair of it.
+
+OUTPUT: one image, exactly 512 x 512 pixels (square, 1:1). PNG. No labels,
+captions or watermarks.
+```
+
+---
+
+## Laurel · Crown — Lv 2 wreath  (single-laurel-crown.png → images/fx/laurel-crown.webp)
+
+```text
+Repaint ONE effect, in a single square image 512 x 512 pixels.
+The attached reference is exactly what to paint, at exactly the size and
+position it is drawn at. Match both.
+
+WHAT IT IS: the level-2 laurel for the Crown stone (a CROWNED band: a heavy rounded band whose TOP EDGE rises into three peaks, a tall one on the axis and a shorter one to each side, with a V-shaped valley between them): a gold laurel wreath of two leafy branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — the panel's flat magenta, visible straight through, exactly the magenta that is outside the wreath. Colour identity (keep the HUE, muted and paper-toned): polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge
+
+THE VIEW — seen from straight above, flat, no perspective, no tilt. Light
+from the top-left.
+
+STYLE — hand-drawn, stylized MYTHICAL FANTASY, like a plate from an illuminated
+bestiary or a hand-painted board-game piece. Match this in every panel:
+· INK FIRST. Visible hand-drawn contour lines in dark warm umber, the line
+  weight varying like a real pen, a little uneven. The drawing should look
+  DRAWN, with the linework still showing through the paint.
+· PAINTERLY WASHES inside the lines — gouache and watercolour with visible
+  brush texture, softly mottled, a gentle sense of volume from ONE light
+  (top-left), a warm rim light on the shadow side. No airbrush, no gloss.
+· CHUNKY, READABLE SILHOUETTES. Every object is one strong shape that reads
+  at thumbnail size; small detail is suggested with a few confident marks.
+· PALETTE: warm sandstone, ochre, umber and slate, earthy and slightly
+  desaturated — with the arcane accents (the glyph glows, the violet grid
+  light) as the ONLY saturated notes. Rich, not candy-bright.
+· Mythic, weathered, a little worn: chipped edges, hairline cracks, dust in
+  the grooves. Charming craft rather than slick rendering.
+
+AVOID — this is exactly how earlier attempts went wrong:
+· NO glossy, plasticky, airbrushed mobile-game look. No bevelled plastic
+  edges, no smooth 3D-rendered shading, no lens flares.
+· NO photorealism and no vector-flat icon look either — it is a painting.
+· NO heavy uniform black outlines, no hard cel-shaded banding.
+· NO text, letters, numbers, runes-as-alphabet, watermarks or captions.
+· NO neon-bright saturation outside the glyph glow. If a stone looks vivid,
+  it is wrong; if the GLOW looks vivid, that part is right.
+· NO frames, borders, cards, vignettes, matting or paper background behind
+  the drawing. Nothing but flat magenta behind it, right up to its outline.
+· Do not invent content for a panel that is blank in the reference. Leave
+  it blank — flat magenta and nothing else.
+· Keep each object the same subject and silhouette it already has. This is
+  a RESTYLE, not a redesign: the reference decides what is there.
+
+SIZE AND PLACEMENT — this is the part that goes wrong.
+Do not enlarge it to fill the frame. In the reference it spans about 88%
+of the image's width, centred, with flat magenta on every side. Keep it the
+same fraction of the frame, in the same place. Bigger is not clearer here.
+
+BACKGROUND — read this before anything else. It matters more than the style.
+Fill every pixel that is not the object itself with solid, flat, pure magenta
+#FF00FF. Treat it as a green-screen: one flat chroma-key colour, edge to edge.
+· EXACTLY #FF00FF — red 255, green 0, blue 255. Not pink, not rose, not dusty
+  pink, not mauve, not a soft or tinted version of it. Only the true colour
+  can be cut away cleanly; a near miss has to be flood-filled instead, and a
+  flood fill eats any pale paint it can reach.
+· NOT transparent. Transparency gets exported as a grey-and-white CHECKERBOARD
+  and then baked into the artwork as though the squares were paint.
+· NOT white, cream, parchment, paper, or any tinted or textured ground.
+· The object must NOT sit on a card, panel, sheet, badge, frame or rectangle
+  of any kind. The magenta must touch the outline of the object on every side.
+· No drop shadow onto the background, and no vignette.
+· The object itself must contain no magenta or hot pink.
+· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a
+  shape closes around an empty middle — a ring, an arch, a horseshoe, a
+  closed loop, an open crescent — the magenta inside it is the SAME ground as
+  the magenta outside it: one continuous colour that happens to be
+  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no
+  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer
+  wash of the object's own colour. If you cannot see the panel's flat
+  magenta straight through the middle of the shape, that panel is wrong and
+  the whole sheet has to be painted again.
 · The muted, earthy palette above is for the OBJECT. The ground is not part
   of the painting and is not toned down with it: it stays a vivid,
   eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink

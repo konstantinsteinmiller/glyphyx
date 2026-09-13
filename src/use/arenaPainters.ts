@@ -1837,6 +1837,9 @@ export const paintTile = (ctx: CanvasRenderingContext2D, w: number, h: number, o
     ctx.fill()
   }
   if (!neutral) {
+    // The owner's edge glow. The TERRITORY wash — the one that makes the board
+    // readable as a scoreboard — lives in `useArenaArt.tileSprite` instead,
+    // because a painted tile never reaches this function at all.
     const v = ctx.createRadialGradient(x0 + t / 2, y0 + t / 2, t * 0.1, x0 + t / 2, y0 + t / 2, t * 0.72)
     v.addColorStop(0, rgba(edge, 0.1))
     v.addColorStop(1, rgba(edge, 0.42))

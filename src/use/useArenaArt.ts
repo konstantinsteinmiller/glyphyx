@@ -86,6 +86,8 @@ const PLAYER_ARROW = '#7fd0ff'
 /** A facing with nothing of the enemy's in it — see `drawStandingLines`. */
 const NO_TARGET = '#8c93a6'
 const ENEMY_ARROW = '#ff5a5a'
+/** Enemy GROUND — one colour for every faction, so side reads before identity. */
+const ENEMY_TERRITORY = '#e03a4e'
 const NEUTRAL_COLOR = '#7b8397'
 const GOLD = '#ffd75e'
 const GOLD_DARK = '#b8860b'
@@ -724,6 +726,33 @@ const tileSprite = (owner: Owner, faction: Faction | null, tile: number, dpr: nu
   const painted = spriteFor('tile', owner)
   if (painted) ctx.drawImage(painted, 0, 0, tile, tile)
   else paintTile(ctx, tile, tile, { owner, faction })
+  // ── The board IS the scoreboard ──
+  //
+  // Conquest is won by holding tiles, so "am I winning" should be answerable
+  // by looking at the board — whose colour covers more of it — with nothing to
+  // count. Owned tiles used to differ from neutral ones by a rim and a faint
+  // vignette, so every square read as the same grey stone and five rounds of
+  // blind testers took the territory off nothing at all; one could not
+  // reconcile the counters with the board in front of her (2026-09-13).
+  //
+  // It goes HERE rather than in `paintTile` because the tiles are painted:
+  // `spriteFor` returns the painting and the drawn painter is never called, so
+  // a wash added there changes nothing a player ever sees. Baked once per
+  // owner into the same cached sprite, so it costs nothing per frame.
+  if (owner !== 'neutral') {
+    // Two colours on this board and no more: yours and theirs. The FACTION's
+    // colour stays where identity belongs — the portrait, its rim, its name —
+    // but territory is a scoreboard, and a scoreboard that speaks goblin-green
+    // on the board and enemy-red on the goal bar is asking a player to learn
+    // that those are the same side. Green is also already this game's word for
+    // "you may place here", which is the last thing enemy ground should say.
+    const edge = owner === 'player' ? PLAYER_COLOR : ENEMY_TERRITORY
+    const g = ctx.createRadialGradient(tile / 2, tile / 2, tile * 0.1, tile / 2, tile / 2, tile * 0.75)
+    g.addColorStop(0, rgba(edge, 0.22))
+    g.addColorStop(1, rgba(edge, 0.5))
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, tile, tile)
+  }
   tintCache.set(key, canvas)
   return canvas
 }

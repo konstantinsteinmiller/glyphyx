@@ -193,17 +193,23 @@
       "painting": "f81989e9b437",
       "at": "2026-09-11T14:56:29.195Z"
     },
-    "sheet-laurels.jpg": {
-      "sheet": "laurels",
-      "rev": "7ba394d96817",
-      "painting": "65fc04714a4c",
-      "at": "2026-09-11T14:58:42.161Z"
-    },
     "sheet-fx.jpg": {
       "sheet": "fx",
       "rev": "64c7694938e4",
       "painting": "2b76a966e58f",
       "at": "2026-09-11T15:00:29.178Z"
+    },
+    "sheet-laurels.jpg": {
+      "sheet": "laurels",
+      "rev": "523489560983",
+      "painting": "3d5fee157a53",
+      "at": "2026-09-13T12:32:58.933Z"
+    },
+    "sheet-runes-mage.jpg": {
+      "sheet": "runes-mage",
+      "rev": "17d9ee033fa8",
+      "painting": "aa419ee61c14",
+      "at": "2026-09-13T12:36:40.110Z"
     }
   }
 }

@@ -177,7 +177,16 @@ const RUNE_WORDS: Record<RuneType, { name: string; glyph: string; hue: string; s
     shapeShort: 'the SLENDER SPINDLE silhouette — narrow and tall, drawn to a long taper at both ends'
   },
   mage: {
-    name: 'Orb', glyph: 'an arcane orb: a solid core inside a ring, four diagonal sparks', hue: 'amethyst violet',
+    // Counted, not described. "A solid core inside a ring, four diagonal
+    // sparks" came back twice as a bare ring with a stem — no core, no sparks
+    // — because a list of parts reads as a mood rather than an inventory. The
+    // three parts are numbered now, and the count is the thing to check.
+    name: 'Orb', glyph: 'an arcane orb in THREE parts, all three required: (1) a RING, an open circle of even '
+      + 'thickness; (2) a SOLID ROUND CORE floating at its centre, filled in, not an outline, about a third of '
+      + 'the ring across, with a clear gap of stone between core and ring; (3) FOUR SMALL SPARKS, one at each '
+      + 'diagonal — upper-left, upper-right, lower-left, lower-right — sitting just OUTSIDE the ring. A ring on '
+      + 'its own, a ring with a stem or tail, a ring with the middle left empty, or a ring with fewer than four '
+      + 'sparks is the WRONG glyph and reads as a different rune', hue: 'amethyst violet',
     shape: 'a SMOOTH UPRIGHT EGG: one unbroken oval, taller than it is wide, with no point and no corner anywhere on it',
     shapeShort: 'the SMOOTH EGG silhouette — one unbroken upright oval, no point and no corner'
   },
@@ -734,7 +743,8 @@ const laurelSheet = (): SheetSpec => {
       + 'branches curving up from a small tie at the bottom, OPEN at the top like a horseshoe, its branches hugging the FOOT of that '
       + 'stone shape — the drawn reference shows exactly where they sit, and they differ from panel to panel because the stone under '
       + 'them differs. The game lays the wreath around an upgraded rune stone, so paint the wreath ALONE with nothing inside it and '
-      + 'nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph',
+      + 'nothing behind it: no stone, no shield, no medal, no ribbon banner, no glyph. The space the branches curve around is a HOLE — '
+      + 'the panel\'s flat magenta, visible straight through, exactly the magenta that is outside the wreath',
     colour: 'polished gold, light #ffefb0 through #e6b53a to a deep #a8741a, with a dark #5a3a06 edge',
     col: i % COLS, row: Math.floor(i / COLS), cw: 1, ch: 1,
     target: artTarget('fx', `laurel-${type}`),
@@ -749,7 +759,10 @@ const laurelSheet = (): SheetSpec => {
     brief: 'The gold laurel wreath the game lays around a level-2 rune stone, one per rune. Every panel is the SAME wreath — two leafy '
       + 'branches rising from a tie at the bottom, open at the top like a horseshoe — but each is bent around a DIFFERENT stone '
       + 'silhouette, which is the whole reason there are ten of them. Follow the reference panel for how wide each one opens and how far '
-      + 'up its branches reach. Paint the wreath alone: the middle of every panel is empty magenta, because the stone goes there in play.',
+      + 'up its branches reach. Paint the wreath alone: the middle of every panel is empty magenta, because the stone goes there in play. '
+      + 'THE MIDDLE IS A HOLE, not a filled shape — the last two attempts at this sheet both came back with a stone painted inside the '
+      + 'ring, which covers the very thing the wreath is meant to frame. Before you finish, look through the middle of all ten: if any '
+      + 'one of them has paint in it rather than flat magenta, paint the sheet again.',
     panels: `Left to right, top to bottom: ${RUNE_TYPES.map((t) => RUNE_WORDS[t].name).join(', ')} — the wreath for that rune's stone. `
       + 'Every panel carries a wreath; none is blank.',
     cells
@@ -1027,6 +1040,15 @@ export const BACKGROUND_RULE = [
   '  of any kind. The magenta must touch the outline of the object on every side.',
   '· No drop shadow onto the background, and no vignette.',
   '· The object itself must contain no magenta or hot pink.',
+  '· A HOLE THROUGH THE OBJECT IS BACKGROUND, not part of the object. Where a',
+  '  shape closes around an empty middle — a ring, an arch, a horseshoe, a',
+  '  closed loop, an open crescent — the magenta inside it is the SAME ground as',
+  '  the magenta outside it: one continuous colour that happens to be',
+  '  surrounded. Paint NOTHING in there. No stone, no disc, no plate, no',
+  '  shield, no medal, no emblem, no glow, no tint, not even a paler or warmer',
+  '  wash of the object\'s own colour. If you cannot see the panel\'s flat',
+  '  magenta straight through the middle of the shape, that panel is wrong and',
+  '  the whole sheet has to be painted again.',
   '· The muted, earthy palette above is for the OBJECT. The ground is not part',
   '  of the painting and is not toned down with it: it stays a vivid,',
   '  eye-hurting #FF00FF however soft everything else is. Dusty rose, pale pink',

@@ -6,6 +6,7 @@ import useEconomy from '@/use/useEconomy'
 import { useRuneForge } from '@/use/useRuneForge'
 import { spawnCoinExplosion } from '@/use/useCoinExplosion'
 import { playFx } from '@/use/useGameAudio'
+import { useArtImage } from '@/use/useArtImage'
 
 /**
  * The offline Rune Forge, on the wallet column.
@@ -17,6 +18,20 @@ import { playFx } from '@/use/useGameAudio'
  *
  * It sits UNDER the coin badge because that is where its coins go: the payout
  * is a short journey the eye can follow rather than a number that changes.
+ *
+ * ── The anvil is painted when there is a painting ──
+ *
+ * `ui/forge` has been painted since the first art pass and this component was
+ * still drawing its own SVG, which made the forge the one thing on a HUD of
+ * painted chips that was visibly vector. The drawing stays as the fallback —
+ * that is the whole drop-in contract, and with the art flag off it is what
+ * runs — but when the file is there, it wins.
+ *
+ * The DRAIN is the only part that needed thinking about. On the SVG it is a
+ * rect clipped to the anvil's own path, so an empty forge reads as cold iron
+ * rather than as a dark box. A bitmap has no path, but it has an alpha
+ * channel, so the painted drain is the same rect masked by the PAINTING —
+ * same effect, same shape, from the file itself.
  */
 interface Props {
   /** Element the coin explosion flies to (the coin badge). */
@@ -29,6 +44,8 @@ const { addCoins } = useEconomy()
 const { accrued, fill01, isReady, isFull, timeDisplay, ratePerHour, collect } = useRuneForge()
 
 const rootEl = ref<HTMLElement | null>(null)
+/** The painted anvil, or `null` while the SVG stands in. */
+const painted = useArtImage('ui', 'forge')
 
 const onClick = (): void => {
   const won = collect()
@@ -60,10 +77,17 @@ const onClick = (): void => {
     :aria-label="isReady ? t('forge.ready', { n: accrued }) : (isFull ? t('forge.full') : t('forge.filling'))"
     @click="onClick"
   )
+    //- The painting, when there is one: the anvil as a bitmap, with the drain
+    //- masked to its own alpha so an empty forge is still anvil-shaped.
+    span.forge__art(v-if="painted" aria-hidden="true")
+      img.forge__img(:src="painted" alt="")
+      span.forge__drain(
+        :style="{ height: `${(1 - fill01) * 100}%`, '--art': `url(\"${painted}\")` }"
+      )
     //- The drawing: an anvil on a stone block with a rune glowing on its face,
-    //- an ember sitting on the horn. Drop-in paintable later (`art-todo.md`);
-    //- for now the SVG is the whole thing.
-    svg.forge__svg(viewBox="0 0 64 64" aria-hidden="true")
+    //- an ember sitting on the horn. The fallback whenever the painting is
+    //- missing or the art layer is off.
+    svg.forge__svg(v-else viewBox="0 0 64 64" aria-hidden="true")
       defs
         linearGradient(id="forgeIron" x1="0" y1="0" x2="0" y2="1")
           stop(offset="0" stop-color="#6c7791")
@@ -142,6 +166,49 @@ const onClick = (): void => {
   width: 100%
   height: clamp(2.6rem, 11vw, 3.4rem)
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))
+
+// ─── The painted anvil ──────────────────────────────────────────────────────
+.forge__art
+  position: relative
+  display: block
+  width: 100%
+  height: clamp(2.6rem, 11vw, 3.4rem)
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))
+
+.forge__img
+  display: block
+  width: 100%
+  height: 100%
+  object-fit: contain
+
+// The drain, over the painting and cut to its silhouette. `--art` is the same
+// file the `<img>` shows, so the mask can never drift from the drawing under
+// it; the mask is sized and positioned exactly as `object-fit: contain` puts
+// the image, and anchored to the BOX rather than to the drain, so the shape
+// stays still while the drain's height falls.
+.forge__drain
+  position: absolute
+  left: 0
+  right: 0
+  top: 0
+  background-color: rgba(4, 6, 14, 0.62)
+  transition: height 0.4s linear
+  pointer-events: none
+  -webkit-mask-image: var(--art)
+  mask-image: var(--art)
+  -webkit-mask-repeat: no-repeat
+  mask-repeat: no-repeat
+  -webkit-mask-position: top center
+  mask-position: top center
+  -webkit-mask-size: 100% clamp(2.6rem, 11vw, 3.4rem)
+  mask-size: 100% clamp(2.6rem, 11vw, 3.4rem)
+
+.is-ready .forge__art
+  animation: forge-bob 1s ease-in-out infinite alternate
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 8px rgba(255, 160, 0, 0.75))
+
+.is-full .forge__art
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 12px rgba(255, 200, 60, 0.95))
 
 .forge__shutter
   transition: y 0.4s linear, height 0.4s linear

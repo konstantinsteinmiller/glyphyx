@@ -4,13 +4,13 @@ A report, not a contract: it is a picture of `art-sheets/painted/` and the
 slicer's receipt at the moment it was written. Re-run `pnpm art:prompts`
 after painting or slicing anything.
 
-**33 sliced · 2 need a repaint · 0 painted, unreceipted · 0 outstanding**
+**35 sliced · 0 need a repaint · 0 painted, unreceipted · 0 outstanding**
 
 | | Sheet | Prompt block in | Reference | State |
 | --- | --- | --- | --- | --- |
 | ✓ | **Sword stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-melee.png` (rev `13a111f767e8`) | sliced 2026-09-11 |
 | ✓ | **Bow stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-archer.png` (rev `bc1b3aa9e346`) | sliced 2026-09-11 |
-| ! | **Orb stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-mage.png` (rev `17d9ee033fa8`) | REPAINT — the old one is parked in `painted/stale/` |
+| ✓ | **Orb stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-mage.png` (rev `17d9ee033fa8`) | sliced 2026-09-13 |
 | ✓ | **Shield stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-defense.png` (rev `0f8232d1c264`) | sliced 2026-09-11 |
 | ✓ | **Cross stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-support.png` (rev `7367f6ad9245`) | sliced 2026-09-11 |
 | ✓ | **Axe stones — the player's 9 skins** | `PROMPTS-RUNES.md` | `sheet-runes-cleave.png` (rev `680f6943f2f6`) | sliced 2026-09-11 |
@@ -34,7 +34,7 @@ after painting or slicing anything.
 | ✓ | **The board frame** | `PROMPTS-BOARD.md` | `sheet-frame.png` (rev `820671f54b59`) | sliced 2026-09-11 |
 | ✓ | **HUD chips — chest, elite mark, coin, forge, reroll, ribbon, the two conquest plaques** | `PROMPTS-BOARD.md` | `sheet-ui.png` (rev `49535b551ba6`) | sliced 2026-09-11 |
 | ✓ | **Effects — rings, dome, smoke, scorch, flashes, the beam spark and the arrow** | `PROMPTS-BOARD.md` | `sheet-fx.png` (rev `64c7694938e4`) | sliced 2026-09-11 |
-| ! | **Laurels — the Lv 2 wreath, one per rune** | `PROMPTS-BOARD.md` | `sheet-laurels.png` (rev `7ba394d96817`) | REPAINT — the old one is parked in `painted/stale/` |
+| ✓ | **Laurels — the Lv 2 wreath, one per rune** | `PROMPTS-BOARD.md` | `sheet-laurels.png` (rev `523489560983`) | sliced 2026-09-13 |
 | ✓ | **Bone Dummies commander** | `PROMPTS-CAST.md` | `walk-bonecap.png` (rev `5f29d26eaf60`) | sliced 2026-09-11 |
 | ✓ | **Goblin Archers commander** | `PROMPTS-CAST.md` | `walk-nibbler.png` (rev `2f2e131e28fc`) | sliced 2026-09-11 |
 | ✓ | **Orc Berserkers commander** | `PROMPTS-CAST.md` | `walk-snaggletusk.png` (rev `e11733ce09a2`) | sliced 2026-09-11 |

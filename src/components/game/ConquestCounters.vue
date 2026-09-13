@@ -2,6 +2,7 @@
 import { computed, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { onArtChanged, spriteFor } from '@/game/art'
+import ArtIcon from '@/components/icons/ArtIcon.vue'
 import { CONQUEST_TILES } from '@/game/rules'
 import type { Rect } from '@/game/view'
 
@@ -90,24 +91,65 @@ const fontStyle = (r: Rect | undefined): Record<string, string> =>
 
 const youReached = computed(() => props.you >= CONQUEST_TILES)
 const foeReached = computed(() => props.foe >= CONQUEST_TILES)
+
+/**
+ * ─── Fill the bar to win ────────────────────────────────────────────────────
+ *
+ * This used to be two numbers — "4 YOU" and "FOE 5" — and a number is a thing
+ * you have to do arithmetic with. Five rounds of blind testers never once said
+ * they knew whether they were winning. One of them could not even reconcile the
+ * counters with the board in front of her: "the YOU/FOE tile-count numbers
+ * never matched the number of tiles I could actually see" (2026-09-13). She was
+ * not wrong — tiles are owned by standing on them AND by the two home rows, so
+ * counting the stones gives a different answer to counting the tiles.
+ *
+ * So the numbers stop being the message. Each side gets a TRACK with the crown
+ * at the end of it, and the whole rule becomes one sentence a six-year-old can
+ * act on: *fill your bar to the crown*. Both tracks grow toward the middle of
+ * the screen, so the pair also reads as a tug of war at a glance, and the side
+ * that is ahead is simply the one whose bar is longer — no counting, no
+ * comparing, nothing to remember between turns.
+ *
+ * The numbers stay, small, inside the track. They are no longer the thing being
+ * read, they cannot disagree with the bar beside them (same source, same
+ * element), and a player who wants the exact figure still has it.
+ */
+const pct = (n: number): string =>
+  `${Math.max(0, Math.min(1, n / CONQUEST_TILES)) * 100}%`
+
+/** Who is ahead right now — the only comparison the player should ever make. */
+const youLead = computed(() => props.you > props.foe)
+const foeLead = computed(() => props.foe > props.you)
 </script>
 
 <template lang="pug">
   //- Non-interactive: the plaques are a readout, and a finger that lands on one
   //- is a finger aiming at the board behind it.
   div.conquest(v-if="rects" aria-hidden="false")
+    //- Yours: the bar grows toward the crown in the middle.
     div.conquest__plate.conquest__plate--you(
-      :class="{ 'is-reached': youReached }"
+      :class="{ 'is-reached': youReached, 'is-lead': youLead }"
       :style="{ ...boxStyle(rects.you), ...fontStyle(rects.you), backgroundImage: plate('you') }"
+      role="img"
+      :aria-label="`${t('canvas.you')}: ${t('hud.tiles', { n: you, total: CONQUEST_TILES })}`"
     )
-      span.conquest__n {{ you }}
-      span.conquest__label {{ t('canvas.you') }}
+      span.conquest__n(aria-hidden="true") {{ you }}
+      span.conquest__track(aria-hidden="true")
+        span.conquest__fill(:style="{ width: pct(you) }")
+      span.conquest__crown(aria-hidden="true")
+        ArtIcon(kind="ui" id="crown" fallback="trophy")
+    //- Theirs: mirrored, so the two bars race toward each other.
     div.conquest__plate.conquest__plate--foe(
-      :class="{ 'is-reached': foeReached }"
+      :class="{ 'is-reached': foeReached, 'is-lead': foeLead }"
       :style="{ ...boxStyle(rects.foe), ...fontStyle(rects.foe), backgroundImage: plate('foe'), '--foe': foeColor }"
+      role="img"
+      :aria-label="`${t('canvas.foe')}: ${t('hud.tiles', { n: foe, total: CONQUEST_TILES })}`"
     )
-      span.conquest__label {{ t('canvas.foe') }}
-      span.conquest__n {{ foe }}
+      span.conquest__crown(aria-hidden="true")
+        ArtIcon(kind="ui" id="crown" fallback="trophy")
+      span.conquest__track(aria-hidden="true")
+        span.conquest__fill.is-foe(:style="{ width: pct(foe) }")
+      span.conquest__n(aria-hidden="true") {{ foe }}
 </template>
 
 <style lang="sass" scoped>
@@ -134,8 +176,8 @@ const foeReached = computed(() => props.foe >= CONQUEST_TILES)
   display: flex
   align-items: center
   justify-content: center
-  padding: 0 0.5em
-  gap: 0.34em
+  padding: 0 0.45em
+  gap: 0.3em
   border-radius: 999px
   font-family: 'Angry', sans-serif
   font-weight: 900
@@ -150,6 +192,60 @@ const foeReached = computed(() => props.foe >= CONQUEST_TILES)
   background-position: center
   border: 2px solid var(--rim)
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.5)
+
+// ── The track: the thing that is actually read ──
+//
+// A trough with a fill and a crown at the end of it. The fill is the ONLY
+// moving part, so a tile won or lost is a visible jump rather than a digit
+// that changed while nobody was looking.
+.conquest__track
+  position: relative
+  flex: 1 1 auto
+  min-width: 0
+  height: 0.42em
+  border-radius: 999px
+  background-color: rgba(0, 0, 0, 0.55)
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7)
+  overflow: hidden
+
+.conquest__fill
+  position: absolute
+  top: 0
+  bottom: 0
+  left: 0
+  border-radius: 999px
+  background-image: linear-gradient(to bottom, #a0f0ff, #4fd0ff)
+  box-shadow: 0 0 0.3em rgba(79, 208, 255, 0.8)
+  // Slow enough to SEE, fast enough not to lag the board.
+  transition: width 280ms ease-out
+
+  &.is-foe
+    left: auto
+    right: 0
+    background-image: linear-gradient(to bottom, #ff8a72, #ec1f22)
+    box-shadow: 0 0 0.3em rgba(236, 31, 34, 0.75)
+
+// The goal, at the end of the bar it belongs to. A crown you are filling
+// toward says "win" without a word or a number in it.
+.conquest__crown
+  display: block
+  flex: 0 0 auto
+  width: 0.9em
+  height: 0.9em
+  color: rgba(255, 217, 60, 0.45)
+  filter: drop-shadow(0 1px 0 #000)
+  transition: color 200ms ease, transform 200ms ease
+
+// ── Who is ahead, without a comparison ──
+//
+// The leader's plate lifts out of the dark and its crown lights. Two bars and
+// one lit crown answer "am I winning" in a glance, which is the whole point.
+.conquest__plate.is-lead
+  border-color: rgba(255, 217, 60, 0.75)
+
+  .conquest__crown
+    color: #ffd93c
+    transform: scale(1.12)
 
 .conquest__plate--you
   --rim: rgba(79, 208, 255, 0.7)
@@ -167,7 +263,12 @@ const foeReached = computed(() => props.foe >= CONQUEST_TILES)
 $ink: 0 0 2px rgba(4, 8, 18, 0.98), 1px 0 0 rgba(4, 8, 18, 0.92), -1px 0 0 rgba(4, 8, 18, 0.92), 0 1px 0 rgba(4, 8, 18, 0.92), 0 -1px 0 rgba(4, 8, 18, 0.92), 0 2px 3px rgba(0, 0, 0, 0.65)
 
 .conquest__n
-  color: #ffffff
+  // Demoted on purpose: the bar is the message, this is the footnote. It rides
+  // inside the same plate so the two can never tell different stories, which
+  // is what the old pair of big numbers did against the board.
+  flex: 0 0 auto
+  font-size: 0.66em
+  color: rgba(255, 255, 255, 0.82)
   text-shadow: $ink
   font-variant-numeric: tabular-nums
 

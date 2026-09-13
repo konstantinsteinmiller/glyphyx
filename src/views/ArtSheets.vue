@@ -415,9 +415,13 @@ const nativeSize = (src: string): { w: number; h: number } | undefined => {
   return img?.naturalWidth ? { w: img.naturalWidth, h: img.naturalHeight } : undefined
 }
 
-// `target` defaults to the cell's own; a sheet passes `sheetTarget(c)`, which
-// is empty for a `singleOnly` cell, so the slicer never cuts it from the sheet.
-const cellEntry = (c: SheetCell, fits: FitMap, x: number, y: number, w: number, h: number, target = c.target) => ({
+// `target` is passed EXPLICITLY by both callers, and must not have a default.
+// A sheet passes `sheetTarget(c)`, which is `undefined` for a `singleOnly`
+// cell — and a JS default parameter fires on an explicit `undefined`, so the
+// cell got its own target back and the index told the slicer to cut the
+// ribbon out of the UI sheet after all. That is the one thing `singleOnly`
+// exists to prevent, and `artSheet.test.ts` is what noticed.
+const cellEntry = (c: SheetCell, fits: FitMap, x: number, y: number, w: number, h: number, target: string | undefined) => ({
   id: c.id,
   label: c.label,
   variant: c.sub,
@@ -464,7 +468,7 @@ const buildIndex = (fits: FitMap) => ({
           file: `singles/${t.file}.png`,
           width: SINGLE_SIZE,
           height: SINGLE_SIZE,
-          cells: [cellEntry(t.cell, fits, 0, (SINGLE_SIZE - boxH) / 2, SINGLE_SIZE, boxH)]
+          cells: [cellEntry(t.cell, fits, 0, (SINGLE_SIZE - boxH) / 2, SINGLE_SIZE, boxH, t.cell.target)]
         }
       })
     }
