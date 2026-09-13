@@ -176,6 +176,10 @@ export default {
       'touch': 'Mortir menembaki tiga petak, tiga baris di depan',
       'desktop': 'Mortir menembaki tiga petak, tiga baris di depan'
     },
+    'clash': {
+      'touch': 'Dua rune di satu petak bertabrakan — yang lebih kuat bertahan',
+      'desktop': 'Dua rune di satu petak bertabrakan — yang lebih kuat bertahan'
+    },
     'correct': {
       'touch': 'Ketuk panah atau geser untuk membidik ulang',
       'desktop': 'Klik dan seret di mana saja, atau tekan tombol panah / WASD, untuk membidik ulang'

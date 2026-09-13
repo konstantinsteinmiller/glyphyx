@@ -126,8 +126,8 @@ const glow = computed(() => (isRune.value ? RUNES[runeType.value].color : SKINS[
   height: 34%
   translate: -50% 0
   border-radius: 50%
-  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--glow) 70%, transparent), transparent 68%)
-  filter: blur(2px)
+  // The gradient already falls off; a blur on top of it only cost a raster.
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--glow) 70%, transparent), transparent 72%)
   pointer-events: none
 
 // The stone itself, rim-lit rather than boxed, floating as though held out.

@@ -18,9 +18,9 @@ import {
 import { onArtChanged, spriteFor, type ArtKind } from '@/game/art'
 import { CLEAN_FEED } from '@/game/cleanFeed'
 import {
-  blit, bucketFor, glowSprite, paintAimRefused, paintAimRegion, paintAimScrim, paintBeam, paintCaptureWave, paintClashFlash, paintGlow,
-  paintLanding, paintMergeRing, paintRing, paintShockwave, spawnCaptureSparks, spawnChips, spawnDefeatAsh,
-  spawnImpactSparks, spawnMergeFountain, spawnShatter, spawnTileDust, spawnVictoryShower
+  blit, bucketFor, glowSprite, paintAimRefused, paintAimRegion, paintAimScrim, paintBeam, paintCaptureWave, paintClashFlash,
+  paintComet, paintGlow, paintLanding, paintMergeRing, paintRing, paintShockwave, spawnCaptureSparks, spawnChips,
+  spawnCometEmbers, spawnDefeatAsh, spawnImpactSparks, spawnMergeFountain, spawnShatter, spawnTileDust, spawnVictoryShower
 } from '@/use/arenaFx'
 import { rand, seedFrom } from '@/game/rng'
 import {
@@ -3254,6 +3254,51 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     }
   }
 
+  /** Shortest flight a falling star is allowed, in tiles. */
+  const MIN_COMET_TILES = 3.4
+
+  /**
+   * ─── Where the enemy's stone comes from ─────────────────────────────────
+   *
+   * Out of the sky on the enemy's side, leaning along the line the rune will
+   * shoot down — so the tail is already pointing at what the stone is aimed
+   * at before it has landed. `up` is the one facing that would have the star
+   * rise out of the PLAYER's half, so the vertical component is pinned
+   * upward and only the lean is taken from the direction.
+   */
+  const cometEntry = (m: Move, x: number, y: number, out: { x: number; y: number }): void => {
+    const [dx] = DIR_VEC[m.dir]
+    // A dead-vertical fall reads as a drop, not a star: a rune with no
+    // sideways aim comes in over whichever half of the sky is wider.
+    const ux = dx !== 0 ? -dx * 0.9 : (m.col * 2 < GRID ? 0.6 : -0.6)
+    const uy = -1.15
+    const mag = Math.hypot(ux, uy)
+    const nx = ux / mag
+    const ny = uy / mag
+    const f = geom.frame
+    const pad = geom.tile * 0.9
+    // Out to the NEAREST side the ray leaves by — not the furthest. Taking the
+    // furthest sends a star aimed at the bottom rank six tiles above the
+    // canvas, and the player sees the last third of a flight that already
+    // happened off screen.
+    let d = (f.y - pad - y) / ny
+    if (nx > 0) d = Math.min(d, (f.x + f.w + pad - x) / nx)
+    else if (nx < 0) d = Math.min(d, (f.x - pad - x) / nx)
+    // …but never so short that the arrival is over before it reads. A stone
+    // dropped on the enemy's OWN back rank is barely a tile from the edge, and
+    // that is the commonest placement they make; it starts off the canvas and
+    // comes in from there, which is what a falling star does anyway.
+    out.x = x + nx * Math.max(d, geom.tile * MIN_COMET_TILES)
+    out.y = y + ny * Math.max(d, geom.tile * MIN_COMET_TILES)
+  }
+
+  const entry = { x: 0, y: 0 }
+
+  /** Of the reveal, the share an incoming enemy stone spends in the air. */
+  const COMET_FLIGHT = 0.6
+  /** Each extra enemy stone is held back this much, so two arrivals are two events. */
+  const COMET_STAGGER = 0.09
+
   const drawReveal = (view: ArenaView): void => {
     if (!ctx) return
     const rv = view.reveal
@@ -3261,27 +3306,92 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const t = clamp01(rv.elapsedMs / REVEAL_MS)
     const size = geom.tile
     const skin = view.skin
-    const slam = clamp01(t / 0.45)
-    const scale = lerp(1.7, 1, easeOutBack(slam))
-    const alpha = clamp01(t / 0.12)
-    const drawMove = (m: Move | null): void => {
+    const fx = fxQ()
+    const quiet = view.timeline != null
+
+    /**
+     * Both sides reached for the same tile. Drawn side by side rather than one
+     * on top of the other, because the clash that follows is about to pull
+     * them apart and smash them together, and a player who never saw TWO
+     * stones arrive has no idea what broke their rune. (The lesson for this is
+     * 2-3; the rule applies on every board.)
+     */
+    const contested = (m: Move): boolean => {
+      const p = rv.player
+      if (!p) return false
+      if (m.side === 'player') {
+        for (let i = 0; i < rv.enemies.length; i++) {
+          const e = rv.enemies[i]!
+          if (e.col === m.col && e.row === m.row) return true
+        }
+        return false
+      }
+      return p.col === m.col && p.row === m.row
+    }
+    const lean = (m: Move): number => (contested(m) ? size * (m.side === 'player' ? -0.3 : 0.3) : 0)
+
+    /** The player's own stone: it was already under their finger, so it just slams. */
+    const drawOwn = (m: Move | null): void => {
       if (!m) return
-      const x = cx(m.col, m.row)
+      const x = cx(m.col, m.row) + lean(m)
       const y = cy(m.col, m.row)
+      const slam = clamp01(t / 0.35)
+      const scale = lerp(1.7, 1, easeOutBack(slam))
+      const alpha = clamp01(t / 0.1)
       const lift = size * 0.5 * (1 - easeOutCubic(slam))
       drawShadow(x, y, size, scale, 0.4 * alpha * (1 - lift / (size * 0.5) * 0.5))
-      // The enemy's move lands already facing its target — the slam is the
-      // moment the player is meant to read what is aimed at them.
       blitRuneStone(m.type, 1, m.side, skin, m.faction, x, y - lift, size, glyphSpin(m.type, m.dir), scale, scale, alpha)
-      if (slam >= 1 && !view.timeline) {
-        // Landed: a ring of dust once (the reveal has no stage bytes, so gate on time).
-        if (rv.elapsedMs - REVEAL_MS * 0.45 < 24) spawnTileDust(x, y, size, 4)
+      if (slam >= 1 && !quiet && rv.elapsedMs - REVEAL_MS * 0.35 < 24) spawnTileDust(x, y, size, 4)
+    }
+
+    /**
+     * An enemy stone: a falling star that crosses the sky and lands on the
+     * tile it chose. The pebble rides the head of the comet, small and far
+     * off at first, at full size when it touches down.
+     */
+    const drawIncoming = (m: Move, i: number): void => {
+      const x = cx(m.col, m.row) + lean(m)
+      const y = cy(m.col, m.row)
+      const delay = COMET_STAGGER * i
+      const k = clamp01((t - delay) / Math.max(0.05, COMET_FLIGHT - delay))
+      const color = sideColor(m.side, m.faction)
+      if (k <= 0) return
+      if (k < 1) {
+        cometEntry(m, x, y, entry)
+        // Slightly quicker at the end than the start: a stone falling, not a balloon.
+        const f = k * (0.68 + 0.32 * k)
+        const px = lerp(entry.x, x, f)
+        const py = lerp(entry.y, y, f)
+        const ang = Math.atan2(y - entry.y, x - entry.x)
+        // Painted on every tier: an enemy stone that simply appears is the
+        // thing this exists to stop. `min` gets the head without the tail.
+        paintComet(ctx, f, entry.x, entry.y, x, y, size, color, { lean: fx < 1 })
+        // Small and far off at first, full size as it touches down — the trail
+        // is what the eye follows, not the stone.
+        const scale = lerp(0.42, 1.2, easeOutCubic(k))
+        // The glyph is already turned the way it will fire, so the facing is
+        // readable for the whole flight, not only after it lands.
+        blitRuneStone(m.type, 1, m.side, skin, m.faction, px, py, size, glyphSpin(m.type, m.dir), scale, scale, clamp01(k / 0.18))
+        if (fx > 0 && !quiet) spawnCometEmbers(px, py, ang, size, color, 4)
+        return
+      }
+      // Landed. Every star touches down at `COMET_FLIGHT` whatever its
+      // stagger — a held-back stone flies faster, it does not arrive late.
+      const land = clamp01((t - COMET_FLIGHT) / Math.max(0.06, 1 - COMET_FLIGHT))
+      const scale = lerp(1.2, 1, easeOutBack(land))
+      drawShadow(x, y, size, scale, 0.4)
+      blitRuneStone(m.type, 1, m.side, skin, m.faction, x, y, size, glyphSpin(m.type, m.dir), scale, scale, 1)
+      if (fx > 0) paintLanding(ctx, land, x, y, size, color)
+      if (!quiet && land < 0.12) {
+        spawnTileDust(x, y, size, 5)
+        spawnImpactSparks(x, y, size, color, Math.PI / 2, 10)
       }
     }
-    drawMove(rv.player)
-    for (let i = 0; i < rv.enemies.length; i++) drawMove(rv.enemies[i]!)
-    // Every rune's trajectory, fanning in after the slam.
-    const arrowAlpha = clamp01((t - 0.4) / 0.6)
+
+    drawOwn(rv.player)
+    for (let i = 0; i < rv.enemies.length; i++) drawIncoming(rv.enemies[i]!, i)
+    // Every rune's trajectory, fanning in once the last star is down.
+    const arrowAlpha = clamp01((t - COMET_FLIGHT) / Math.max(0.08, 1 - COMET_FLIGHT))
     if (arrowAlpha > 0) {
       const board = view.board
       for (const id in board.runes) {
@@ -3299,8 +3409,8 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     // The word, briefly, in the timer slot.
     if (labels) {
       const tr = geom.timer
-      const pop = easeOutBack(clamp01(t / 0.3))
-      drawText(labels.reveal, tr.x + tr.w / 2, tr.y + tr.h / 2, geom.tile * 0.28 * pop, '#ffffff', 'center', true, 1 - clamp01((t - 0.7) / 0.3))
+      const pop = easeOutBack(clamp01(t / 0.25))
+      drawText(labels.reveal, tr.x + tr.w / 2, tr.y + tr.h / 2, geom.tile * 0.28 * pop, '#ffffff', 'center', true, 1 - clamp01((t - 0.72) / 0.28))
     }
   }
 
@@ -3344,6 +3454,14 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
         if (labels) drawText(labels.yourTurn, x, y - r - size * 0.14, size * 0.14, '#8fa8c8')
         return
       }
+      // ── There is no clock any more ──
+      //
+      // Planning waits for the player, so `view.timer` never counts down and
+      // this branch is only reached by a node that opts back into a timed
+      // window. The held state above — a quiet ring and "YOUR MOVE" — is what
+      // every node shows today. Kept rather than deleted because the state is
+      // still honest if a timed variant is ever wanted, and because deleting
+      // it would take the countdown's whole vocabulary with it.
       const frac = clamp01(view.timer.leftMs / Math.max(1, view.timer.totalMs))
       const secs = Math.ceil(view.timer.leftMs / 1000)
       const color = view.timer.leftMs <= 1000 ? INVALID : view.timer.leftMs <= 3000 ? BUFF_COLOR : '#8fd0ff'

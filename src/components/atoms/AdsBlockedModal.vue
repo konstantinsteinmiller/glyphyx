@@ -57,7 +57,7 @@ const host = computed(() => {
         @click="dismissAdsBlockedModal"
       )
         //- Backdrop
-        div.absolute.inset-0(class="bg-black/70 backdrop-blur-sm")
+        div.absolute.inset-0(class="bg-black/70")
 
         //- Card
         div.relative.w-full.max-w-md.rounded-2xl.text-white.shadow-2xl.text-center(

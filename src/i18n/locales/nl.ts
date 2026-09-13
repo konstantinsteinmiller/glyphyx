@@ -176,6 +176,10 @@ export default {
       'touch': 'De mortier beschiet drie vakken, drie rijen verder',
       'desktop': 'De mortier beschiet drie vakken, drie rijen verder'
     },
+    'clash': {
+      'touch': 'Twee runen op één vakje botsen — de sterkste overleeft',
+      'desktop': 'Twee runen op één vakje botsen — de sterkste overleeft'
+    },
     'correct': {
       'touch': 'Tik op een pijl of veeg om opnieuw te richten',
       'desktop': 'Klik en sleep ergens, of gebruik de pijltjestoetsen / WASD, om opnieuw te richten'

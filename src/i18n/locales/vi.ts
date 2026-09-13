@@ -176,6 +176,10 @@ export default {
       'touch': 'Súng cối nã ba ô cách ba hàng',
       'desktop': 'Súng cối nã ba ô cách ba hàng'
     },
+    'clash': {
+      'touch': 'Hai rune trên cùng một ô sẽ va nhau — cái cứng hơn sống sót',
+      'desktop': 'Hai rune trên cùng một ô sẽ va nhau — cái cứng hơn sống sót'
+    },
     'correct': {
       'touch': 'Chạm vào mũi tên hoặc vuốt để ngắm lại',
       'desktop': 'Nhấp và kéo ở bất kỳ đâu, hoặc bấm phím mũi tên / WASD, để ngắm lại'

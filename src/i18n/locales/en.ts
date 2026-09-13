@@ -194,6 +194,10 @@ export default {
       'touch': 'The mortar shells three tiles, three ranks away',
       'desktop': 'The mortar shells three tiles, three ranks away'
     },
+    'clash': {
+      'touch': 'Two runes on one tile smash — the tougher one survives',
+      'desktop': 'Two runes on one tile smash — the tougher one survives'
+    },
     'correct': {
       'touch': 'Tap an arrow or swipe to re-aim',
       'desktop': 'Click & drag anywhere, or press an arrow key / WASD, to re-aim'

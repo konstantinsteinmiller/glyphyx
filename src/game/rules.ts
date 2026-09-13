@@ -37,7 +37,14 @@ export const REROLLS_PER_MATCH = 2
 // ─── Phase timings (ms) ─────────────────────────────────────────────────────
 
 export const PLANNING_MS = 5000
-export const REVEAL_MS = 300
+/**
+ * The beat between the last placement and the resolution. It is not dead air:
+ * the player's stone slams down, and then the ENEMY's flies in from off the
+ * board as a falling star and lands on the tile it chose. A blind tester read
+ * the enemy's placements as pieces that "spawn and creep onto my side"
+ * (2026-09-12 round 4), so the arrival got a flight long enough to watch.
+ */
+export const REVEAL_MS = 520
 export const RESOLVE_MS = 1200
 /** The "play again" board wipe. */
 export const RESET_MS = 200
@@ -980,6 +987,25 @@ export interface EnemySetup {
    * places and aims (so the reveal teaches something) but can never hurt.
    */
   atkMul: number
+  /**
+   * ─── A scripted opening ───────────────────────────────────────────────────
+   *
+   * A lesson normally faces dummies that never place (`ai: 'passive'`), because
+   * a lesson must not have anything moving on the board but the player. One
+   * rule cannot be taught that way: two runes dropped on the SAME tile in the
+   * same turn smash, and the tougher one walks out of it wounded. Nobody can be
+   * shown that by a dummy that places nothing, and it cannot be left to an AI's
+   * dice either — a lesson has to happen.
+   *
+   * So a faction may carry a script: the move it plays on turn 1, turn 2, and
+   * so on, with the LAST entry repeating for every turn after. A scripted move
+   * is played only while its tile is still empty; otherwise the faction falls
+   * back to its usual behaviour (for a `passive` dummy, to placing nothing).
+   * It outranks `passive`, and nothing else: the adaptive relief's skip roll
+   * still comes first, and a scripted faction's hits are still scaled by
+   * `atkMul`.
+   */
+  script?: readonly Move[]
 }
 
 /** A rune standing on the board before turn 1. */
@@ -1038,6 +1064,10 @@ export const chestIsGift = (chest: ChestReward | null | undefined): boolean =>
 export type TutorialBeat =
   | 'drag' | 'archer' | 'stack' | 'mage' | 'defense' | 'support'
   | 'cleave' | 'roller' | 'bombard' | 'nuker' | 'crown'
+  // The one beat named after a RULE rather than a rune or a gesture: what
+  // happens when both sides drop on the same tile in the same turn. It is the
+  // only lesson whose dummy places anything (see `EnemySetup.script`).
+  | 'clash'
   | null
 
 /** The ghost hand's script for a tutorial node: which rune, onto which tile, facing where. */
@@ -1092,7 +1122,16 @@ export interface NodeConfig {
    * into. The node stays a fight; it just opens by showing you one move.
    */
   guide?: GhostSpec
-  /** `false` on the tutorial nodes: planning waits for the player. */
+  /**
+   * Kept at `false` everywhere: planning waits for the player, always.
+   *
+   * There used to be a five-second window per move, and it was the wrong
+   * pressure for this game — the board is a puzzle you read, and a clock on it
+   * turns reading into panic. It also produced a rule nobody could see
+   * happening: a window that expired played your turn for you. The field kept
+   * the flag rather than deleting it, because a future node might want a timed
+   * variant and the machinery around it is already honest about being paused.
+   */
   timer: boolean
   turnLimit: number
   reward: ChestReward

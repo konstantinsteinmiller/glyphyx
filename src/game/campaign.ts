@@ -13,7 +13,7 @@
 
 import {
   FACTION_DEFS, TURN_LIMIT, TUTORIAL_TURN_LIMIT, type AiLevel, type EnemySetup, type Faction, type GhostSpec,
-  type NodeConfig, type PresetRune, type RuneType, type SkinId
+  type Move, type NodeConfig, type PresetRune, type RuneType, type SkinId
 } from './rules'
 import { seedFrom } from './rng'
 
@@ -23,12 +23,16 @@ export const chapterOf = (id: number): number => Math.floor((Math.max(1, id) - 1
 export const indexInChapter = (id: number): number => ((Math.max(1, id) - 1) % NODES_PER_CHAPTER) + 1
 export const nodeId = (chapter: number, index: number): number => (chapter - 1) * NODES_PER_CHAPTER + index
 
-const enemy = (faction: Faction, post: EnemySetup['post'], ai: AiLevel, opts: { atkMul?: number; deck?: RuneType[] } = {}): EnemySetup => ({
+const enemy = (
+  faction: Faction, post: EnemySetup['post'], ai: AiLevel,
+  opts: { atkMul?: number; deck?: RuneType[]; script?: readonly Move[] } = {}
+): EnemySetup => ({
   faction,
   post,
   deck: opts.deck ?? FACTION_DEFS[faction].deck.slice(),
   ai,
-  atkMul: opts.atkMul ?? 1
+  atkMul: opts.atkMul ?? 1,
+  ...(opts.script ? { script: opts.script } : {})
 })
 
 const base = (id: number): Omit<NodeConfig, 'mode' | 'objective' | 'enemies' | 'reward'> => ({
@@ -38,7 +42,8 @@ const base = (id: number): Omit<NodeConfig, 'mode' | 'objective' | 'enemies' | '
   presets: [],
   playerDeck: null,
   tutorial: null,
-  timer: true,
+  // No clock, on any node. See `NodeConfig.timer`.
+  timer: false,
   turnLimit: TURN_LIMIT,
   seed: seedFrom(id, 7)
 })
@@ -349,7 +354,7 @@ export const LATE_LESSON_NODES: Readonly<Record<number, RuneType>> = {
 const lateLesson = (gen: NodeConfig, rune: RuneType): NodeConfig => {
   const b: Omit<NodeConfig, 'mode' | 'objective' | 'enemies' | 'reward'> = {
     id: gen.id, chapter: gen.chapter, index: gen.index, seed: gen.seed,
-    presets: [], playerDeck: null, tutorial: null, timer: true, turnLimit: TURN_LIMIT
+    presets: [], playerDeck: null, tutorial: null, timer: false, turnLimit: TURN_LIMIT
   }
   const duel = (
     beat: NonNullable<NodeConfig['tutorial']>, ghost: GhostSpec, playerDeck: RuneType[],
@@ -461,6 +466,56 @@ const lateLesson = (gen: NodeConfig, rune: RuneType): NodeConfig => {
   }
 }
 
+// ─── The clash lesson ───────────────────────────────────────────────────────
+//
+// Both sides plan at once and reveal at once, which means both can reach for
+// the SAME tile in the same turn. When they do the two stones smash: the one
+// with more health is the one still standing, minus what the other one had,
+// and two equal stones break each other. It is the only rule in the game whose
+// cause is invisible — the player watches a rune they just paid for come apart
+// on the tile they chose, with nothing on that tile to blame.
+//
+// It cannot be taught the way every other lesson is, because a lesson's
+// dummies never place and this lesson NEEDS the enemy to place. So 2-3's dummy
+// carries a script (`EnemySetup.script`) and dives for (1,2) every turn until
+// somebody is standing there.
+//
+// It sits at 2-3 rather than earlier because the enemy does not place a single
+// rune until 1-7, and a rule explained before it can happen is a rule nobody
+// remembers. By 2-3 the player has fought three real matches and has most
+// likely already had this happen to them once.
+export const CLASH_LESSON_NODE = nodeId(2, 3)
+
+/**
+ * The board: the player's sword (3 HP) and the dummy's bow (2 HP) both dropped
+ * on (1,2).
+ *
+ * The sword wins on health and comes out of it on 1 — hurt, which is the half
+ * of the rule that costs matches — and then swings up into the 1-HP skeleton
+ * on (1,1) in the same resolution, so the ghost's single move still clears the
+ * node in one turn like every other lesson. A bow on the enemy's side rather
+ * than a second sword on purpose: two swords would have broken each other, the
+ * player would have ended the turn with nothing on the board and no idea which
+ * stone had won, and there would have been no survivor to read the wound on.
+ */
+const clashLesson = (gen: NodeConfig): NodeConfig => {
+  const b: Omit<NodeConfig, 'mode' | 'objective' | 'enemies' | 'reward'> = {
+    id: gen.id, chapter: gen.chapter, index: gen.index, seed: gen.seed,
+    presets: [], playerDeck: null, tutorial: null, timer: false, turnLimit: TURN_LIMIT
+  }
+  return {
+    ...lesson(b, 'clash', { type: 'melee', to: { col: 1, row: 2 }, dir: 'up' }, ['melee']),
+    mode: '1v1', objective: 'eliminate',
+    enemies: [enemy('skeleton', 'top', 'passive', {
+      atkMul: 0,
+      deck: ['archer'],
+      script: [{ side: 'enemy', faction: 'skeleton', type: 'archer', col: 1, row: 2, dir: 'down' }]
+    })],
+    presets: [skeleton('melee', 1, 1, 1)],
+    reward: gen.reward
+  }
+}
+
 /**
  * Is node `id` a LESSON — one of the scripted, clockless, cannot-be-lost nodes?
  *
@@ -477,6 +532,7 @@ export const nodeConfig = (id: number, _difficulty: 'easy' | 'medium' | 'hard'):
   const safe = Math.max(1, Math.floor(id))
   if (chapterOf(safe) === 1) return chapterOne(safe)
   const gen = generated(safe)
+  if (safe === CLASH_LESSON_NODE) return clashLesson(gen)
   const late = LATE_LESSON_NODES[safe]
   return late ? lateLesson(gen, late) : gen
 }

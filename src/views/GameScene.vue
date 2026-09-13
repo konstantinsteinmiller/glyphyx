@@ -473,6 +473,7 @@ const activeHint = computed<HintId | null>(() => {
     case 'cleave': return 'cleave'
     case 'roller': return 'roller'
     case 'bombard': return 'bombard'
+    case 'clash': return 'clash'
     default: break
   }
   if (node.mode === 'siege' && !siegeHintDone.value) return 'siege'

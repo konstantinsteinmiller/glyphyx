@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { LATE_LESSON_NODES, nodeConfig } from '@/game/campaign'
+import { CLASH_LESSON_NODE, LATE_LESSON_NODES, nodeConfig } from '@/game/campaign'
 import { LESSON_RESCUE_TURNS } from '@/game/rules'
 import { rewardOf } from '@/use/useCampaign'
-import { beginPlanning, commitPlayerMove, createMatch, resolveCurrentTurn } from '@/game/match'
+import { beginPlanning, commitPlayerMove, createMatch, nextTurn, resolveCurrentTurn } from '@/game/match'
 import { runesOf } from '@/game/board'
 import type { Dir } from '@/game/rules'
 import { careless, clearRate, ghostThen, greedy, inputBiased, playNode, zeroInput } from './policies'
@@ -220,6 +220,106 @@ describe('the late lessons', () => {
   })
 })
 
+/**
+ * ─── The clash lesson ───────────────────────────────────────────────────────
+ *
+ * 2-3, and the only lesson in the game whose dummy PLACES anything — it has
+ * to, because the rule is what happens when both sides reach for one tile in
+ * the same turn, and a dummy that places nothing can never demonstrate it.
+ *
+ * So the invariant the late lessons are held to ("every enemy is passive and
+ * places nothing") is deliberately broken here, and these tests stand in its
+ * place: the dummy still cannot HURT anything (`atkMul: 0`), it places exactly
+ * what the script says and nowhere else, and the node is still cleared by the
+ * ghost's single move in one turn.
+ */
+describe('the clash lesson', () => {
+  const id = CLASH_LESSON_NODE
+  const cfg = () => nodeConfig(id, 'medium')
+
+  it('is a lesson: clockless, scripted, a 1v1 against a dummy that cannot hurt', () => {
+    const c = cfg()
+    expect(c.tutorial).toBe('clash')
+    expect(c.timer).toBe(false)
+    expect(c.mode).toBe('1v1')
+    expect(c.playerDeck).toContain(c.ghost!.type)
+    for (const e of c.enemies) expect(e.atkMul).toBe(0)
+  })
+
+  it("sends its dummy at the ghost hand's own tile — the collision is the lesson", () => {
+    const c = cfg()
+    const written = c.enemies[0]!.script!
+    expect(written.length).toBeGreaterThan(0)
+    for (const m of written) {
+      expect(m.side).toBe('enemy')
+      expect({ col: m.col, row: m.row }).toEqual({ col: c.ghost!.to.col, row: c.ghost!.to.row })
+    }
+  })
+
+  it('the dummy really does dive for that tile on turn 1, whatever the dice say', () => {
+    const c = cfg()
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = beginPlanning(createMatch(c, ['melee'], seed, 0), 'medium')
+      expect(s.enemyMoves, `seed ${seed}`).toHaveLength(1)
+      expect({ col: s.enemyMoves[0]!.col, row: s.enemyMoves[0]!.row })
+        .toEqual({ col: c.ghost!.to.col, row: c.ghost!.to.row })
+    }
+  })
+
+  it("the player's sword wins the tile and walks out of it WOUNDED", () => {
+    // The half of the rule that costs matches: you keep the tile and you do
+    // NOT keep the stone you paid for. 3 HP against the bow's 2 leaves 1.
+    const c = cfg()
+    const g = c.ghost!
+    for (let seed = 1; seed <= 10; seed++) {
+      let s = beginPlanning(createMatch(c, ['melee'], seed, 0), 'medium')
+      s = commitPlayerMove(s, { side: 'player', faction: null, type: g.type, col: g.to.col, row: g.to.row, dir: g.dir })
+      const { state, events } = resolveCurrentTurn(s)
+      const clash = events.find((e) => e.kind === 'clash')
+      expect(clash, `seed ${seed}`).toBeDefined()
+      expect(clash!.kind === 'clash' && clash!.survivor?.side, `seed ${seed}`).toBe('player')
+      expect(clash!.kind === 'clash' && clash!.survivor?.hp, `seed ${seed}`).toBe(1)
+      // …and the enemy's stone is gone, with nothing but the sword standing.
+      const mine = runesOf(state.board, 'player')
+      expect(mine, `seed ${seed}`).toHaveLength(1)
+      expect(mine[0]!.hp, `seed ${seed}`).toBeLessThan(mine[0]!.maxHp)
+    }
+  })
+
+  it("is won by the ghost's move alone, in a single turn, on every seed", () => {
+    // The wounded survivor still swings: the 1-HP skeleton above it falls in
+    // the same resolution, so the lesson clears in one turn like every other.
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = playNode(id, 'medium', seed, ghostThen(greedy))
+      expect(s.result?.won, `seed ${seed}`).toBe(true)
+      expect(s.result!.turns, `seed ${seed}`).toBe(1)
+    }
+  })
+
+  it("cannot be lost once the ghost's move is made, whatever comes after it", () => {
+    expect(clearRate(id, 'hard', 20, (seed) => ghostThen(careless(seed)))).toBe(1)
+  })
+
+  it('is still cleared by a player who taps at random — the dummy cannot win', () => {
+    expect(clearRate(id, 'medium', 20, (seed) => careless(seed))).toBeGreaterThanOrEqual(0.5)
+  })
+
+  it('a script never overwrites a tile somebody is already standing on', () => {
+    // The guard in `planEnemyMove`: the dummy dives only while the tile is
+    // free. A player who took it on turn 1 is not evicted on turn 2.
+    const c = cfg()
+    const g = c.ghost!
+    let s = beginPlanning(createMatch(c, ['melee'], 3, 0), 'medium')
+    s = commitPlayerMove(s, { side: 'player', faction: null, type: g.type, col: g.to.col, row: g.to.row, dir: g.dir })
+    s = nextTurn(resolveCurrentTurn(s).state, 0, 'medium')
+    // The node is already won by here, so plan a turn on the resulting board
+    // directly: the tile is occupied, and the passive dummy falls back to
+    // placing nothing rather than to placing on top of the sword.
+    const after = beginPlanning({ ...s, phase: 'planning', result: null, turn: 2 }, 'medium')
+    expect(after.enemyMoves).toHaveLength(0)
+  })
+})
+
 describe('the first real fights', () => {
   it('1-7 is lost by a player who never places', () => {
     expect(clearRate(7, 'easy', 10, () => zeroInput())).toBe(0)
@@ -394,13 +494,14 @@ describe('the conquest guide', () => {
     expect(home.runeId).toBeNull()
   })
 
-  it('is NOT a lesson — the node keeps its clock, its limit and its relief', () => {
+  it('is NOT a lesson — the node keeps its limit and its relief', () => {
     const cfg = nodeConfig(FIRST_CONQUEST, 'medium')
     // The distinction the whole design turns on: a tutorial beat would switch
     // off the adaptive relief (the ghost is the relief there), and the relief
     // on this node is measured and tuned. See `FAIL_TIERS`.
     expect(cfg.tutorial).toBeNull()
-    expect(cfg.timer).toBe(true)
+    // No clock anywhere now; the turn LIMIT is what still bounds this node.
+    expect(cfg.timer).toBe(false)
     expect(cfg.turnLimit).toBe(10)
     expect(computeHandicap({
       difficulty: 'medium', nodeFails: 2, lossStreak: 2, playerPassedLastTurn: false,

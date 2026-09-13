@@ -3,13 +3,13 @@ import {
   bakeSprite, bakedSpriteCount, blit, bucketFor, chipSprite, clearFxSprites, confettiSprite, coreSprite, crackSprite,
   domeSprite, glintSprite, glowSprite, glyphShardSprite, hash01, hexRgb, hexSprite, mix, moteSprite, paintArrow,
   paintArrowImpact, paintAuraLink, paintBeam, paintBoulder, paintBuffGlint, paintCaptureWave, paintCleaveArc,
-  paintClashFlash, paintCrossBurst,
+  paintClashFlash, paintComet, paintCrossBurst,
   paintAimRefused, paintAimRegion, paintAimScrim,
   paintGlow, paintHealFlare, paintKnockbackStreak, paintLanding, paintMergeRing, paintPopText, paintRing,
   paintNukeFlash, paintNukeWave,
   paintShellArc, paintShellBurst, paintShieldDome, paintShockwave, paintSlash, qualityMul, rgba, ringSprite,
   spawnArrowTrail, spawnBeamCrackle,
-  spawnBuffGlint, spawnBurstMotes, spawnCaptureSparks, spawnChips, spawnDefeatAsh, spawnEmbers, spawnHealMotes,
+  spawnBuffGlint, spawnBurstMotes, spawnCaptureSparks, spawnChips, spawnCometEmbers, spawnDefeatAsh, spawnEmbers, spawnHealMotes,
   spawnImpactSparks, spawnKnockbackDust, spawnMergeFountain, spawnRollDust, spawnShatter, spawnShieldShards, spawnTileDust,
   spawnVictoryShower, streakSprite
 } from '@/use/arenaFx'
@@ -212,6 +212,12 @@ describe('the painters', () => {
     ['nuke flash', (c, t) => paintNukeFlash(c, t, 0, 0, 300, 300, '#e8ff3d')],
     ['clash', (c, t) => paintClashFlash(c, t, 50, 50, SIZE)],
     ['knockback', (c, t) => paintKnockbackStreak(c, t, 10, 10, 90, 10, SIZE, '#ff3b4a')],
+    // The enemy's arrival. `t` is the flight, so t = 0 is the degenerate
+    // zero-length tail and t = 1 the burnt-out head at the target tile.
+    ['comet', (c, t) => paintComet(c, t, 140, -60, 50, 50, SIZE, '#ff3b4a')],
+    ['comet (lean)', (c, t) => paintComet(c, t, 140, -60, 50, 50, SIZE, '#ff3b4a', { lean: true })],
+    ['comet (straight down)', (c, t) => paintComet(c, t, 50, -60, 50, 50, SIZE, '#ff3b4a')],
+    ['comet (no travel)', (c, t) => paintComet(c, t, 50, 50, 50, 50, SIZE, '#ff3b4a')],
     ['capture', (c, t) => paintCaptureWave(c, t, rect, SIZE, '#4aa8ff')],
     ['pop text', (c, t) => paintPopText(c, t, 50, 50, SIZE, { text: '×3', color: '#ffd24a' })],
     ['aura', (c, t) => paintAuraLink(c, t, { x: 50, y: 50 }, cells, SIZE, '#4aa8ff')],
@@ -523,7 +529,8 @@ describe('the spawners', () => {
       ['capture sparks', () => spawnCaptureSparks(50, 50, SIZE, '#4aa8ff')],
       ['victory shower', () => spawnVictoryShower(0, 0, 300, 300, SIZE, ['#ffd24a', '#ff3b4a'])],
       ['defeat ash', () => spawnDefeatAsh(0, 0, 300, 300, SIZE)],
-      ['embers', () => spawnEmbers(50, 50, SIZE, '#ff9a4a')]
+      ['embers', () => spawnEmbers(50, 50, SIZE, '#ff9a4a')],
+      ['comet embers', () => spawnCometEmbers(50, 50, 1.1, SIZE, '#ff3b4a')]
     ]
     for (const [name, spawn] of spawners) {
       clearParticles()

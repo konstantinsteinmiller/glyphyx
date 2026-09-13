@@ -176,6 +176,10 @@ export default {
       'touch': 'Le mortier pilonne trois cases à trois rangs',
       'desktop': 'Le mortier pilonne trois cases à trois rangs'
     },
+    'clash': {
+      'touch': 'Deux runes sur une case se brisent — la plus solide survit',
+      'desktop': 'Deux runes sur une case se brisent — la plus solide survit'
+    },
     'correct': {
       'touch': 'Touchez une flèche ou balayez pour réorienter',
       'desktop': 'Cliquez-glissez n\'importe où, ou utilisez les flèches / WASD, pour réorienter'

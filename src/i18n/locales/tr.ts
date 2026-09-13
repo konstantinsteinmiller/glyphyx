@@ -176,6 +176,10 @@ export default {
       'touch': 'Havan üç sıra ötedeki üç kareyi bombalar',
       'desktop': 'Havan üç sıra ötedeki üç kareyi bombalar'
     },
+    'clash': {
+      'touch': 'Aynı karedeki iki rün çarpışır — sağlam olan hayatta kalır',
+      'desktop': 'Aynı karedeki iki rün çarpışır — sağlam olan hayatta kalır'
+    },
     'correct': {
       'touch': 'Yeniden nişan almak için bir oka dokun ya da kaydır',
       'desktop': 'Yeniden nişan almak için herhangi bir yere tıklayıp sürükle ya da ok tuşları / WASD kullan'

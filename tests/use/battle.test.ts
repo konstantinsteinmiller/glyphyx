@@ -114,6 +114,26 @@ const REAIM_LESSON: LoadOptions = {
   patchNode: (cfg) => (cfg.id === 1 && cfg.ghost ? { ...cfg, ghost: { ...cfg.ghost, reaim: 'left' } } : cfg)
 }
 
+/**
+ * Play one whole turn: place wherever `at` says, then run the turn out.
+ *
+ * A turn used to be able to end on its own when the planning window expired.
+ * There is no window any more — planning waits for the player — so every test
+ * that wants turn 2 has to actually take turn 1. Passing is still a legal
+ * domain move (`commitPlayerMove(s, null)`, which the headless policies use),
+ * it simply has no path through the UI.
+ */
+const playTurn = (battle: BattleModule['battle'], at: { col: number; row: number } = { col: 1, row: 2 }): void => {
+  const slot = battle.view.hand.length > 0 ? 0 : -1
+  if (slot >= 0) {
+    battle.beginDrag(slot, 100, 600)
+    battle.updateDrag(at.col * TILE + TILE / 2, at.row * TILE + TILE / 2, at)
+    advance(battle, AIM_LAND_MS + 10)
+    battle.endDrag(true)
+  }
+  advance(battle, LOCK_WINDOW_MS + REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 100)
+}
+
 /** The metrics an 85 px tile hands over, with the board's origin at (0, 0). */
 const TILE = 85
 const tileMetrics = () => ({
@@ -177,12 +197,18 @@ describe('starting a node', () => {
     expect(campaign.currentNode.value).toBe(2)
   })
 
-  it('does not hold the clock for a returning player on a normal node', async () => {
+  it('holds the clock on every node — planning waits for the player', async () => {
+    // There is no per-move clock any more. The window exists in the state and
+    // is simply never released, so a turn ends when it is PLAYED and at no
+    // other time. A returning player on a real fight is held exactly as a
+    // first-timer in a lesson is.
     const { battle } = await load(normalBlob())
     battle.startNode(NORMAL)
     expect(battle.ghostActive.value).toBe(false)
-    expect(battle.timerPaused.value).toBe(false)
-    expect(battle.timerLeftMs.value).toBe(PLANNING_MS)
+    expect(battle.timerPaused.value).toBe(true)
+    advance(battle, PLANNING_MS * 3)
+    expect(battle.phase.value).toBe('planning')
+    expect(battle.hasPlaced.value).toBe(false)
   })
 })
 
@@ -774,11 +800,14 @@ describe('the correction window', () => {
     expect(battle.beginCorrection(100, 100)).toBe(false)
   })
 
-  it('a pass has nothing to correct', async () => {
+  it('a turn cannot pass on its own any more — there is nothing to correct', async () => {
+    // This used to prove that an EXPIRED window opened no correction window.
+    // A window can no longer expire, so what it proves now is the stronger
+    // thing: waiting is not a move, and the board holds.
     const { battle } = await load(normalBlob())
     battle.startNode(NORMAL)
-    advance(battle, PLANNING_MS + 20)
-    expect(battle.phase.value).toBe('reveal')
+    advance(battle, PLANNING_MS * 4)
+    expect(battle.phase.value).toBe('planning')
     expect(battle.lockOpen.value).toBe(false)
   })
 
@@ -859,51 +888,24 @@ describe('the turn clock', () => {
     expect(state.getState('gx_failed_nodes', {})).toEqual({})
   })
 
-  it('passes the turn when the planning window runs out', async () => {
-    const { battle, events } = await load(normalBlob())
-    battle.startNode(NORMAL)
-    expect(battle.timerPaused.value).toBe(false)
-    advance(battle, PLANNING_MS + 20)
-    expect(battle.phase.value).toBe('reveal')
-    expect(battle.view.reveal?.player).toBeNull()
-    expect(events).not.toContain('placed')
-    advance(battle, REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 40)
-    expect(battle.phase.value).toBe('planning')
-    expect(battle.turn.value).toBe(2)
-    expect(battle.hasPlaced.value).toBe(false)
-    // The advance overshoots the transition by a frame or two.
-    expect(battle.view.timer.leftMs).toBeGreaterThan(PLANNING_MS - 100)
-    expect(battle.view.hand).toHaveLength(3)
-  })
 
-  it('freezes every clock while paused', async () => {
+  it('a pause changes nothing while planning, because nothing was running', async () => {
+    // The planning window is held open for the player now, so there is no
+    // countdown for a pause to freeze. What a pause still has to freeze is the
+    // correction window — see "an external pause freezes the window".
     const { battle } = await load(normalBlob())
     battle.startNode(NORMAL)
-    battle.setPaused(true)
     expect(battle.timerPaused.value).toBe(true)
+    battle.setPaused(true)
     advance(battle, PLANNING_MS * 2)
     expect(battle.phase.value).toBe('planning')
     expect(battle.view.timer.leftMs).toBe(PLANNING_MS)
     battle.setPaused(false)
-    expect(battle.timerPaused.value).toBe(false)
     advance(battle, 500)
-    expect(battle.view.timer.leftMs).toBeLessThan(PLANNING_MS)
+    expect(battle.view.timer.leftMs).toBe(PLANNING_MS)
+    expect(battle.timerPaused.value).toBe(true)
   })
 
-  it('publishes the DOM timer at ten hertz, not sixty', async () => {
-    const { battle } = await load(normalBlob())
-    battle.startNode(NORMAL)
-    let now = Date.now()
-    vi.spyOn(Date, 'now').mockImplementation(() => now)
-    battle.tick(now, 16)
-    const first = battle.timerLeftMs.value
-    now += 16
-    battle.tick(now, 16)
-    expect(battle.timerLeftMs.value).toBe(first)
-    now += 200
-    battle.tick(now, 16)
-    expect(battle.timerLeftMs.value).toBeLessThan(first)
-  })
 })
 
 describe('the adaptive relief', () => {
@@ -916,39 +918,36 @@ describe('the adaptive relief', () => {
       turn: 1, suddenDeath: false, tutorial: false
     })
     expect(mod.__relief()).toEqual({ playerPassedLastTurn: false, passesThisMatch: 0 })
-    // Let the clock run out: a pass.
-    advance(battle, PLANNING_MS + REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 60)
+    // A turn ends when it is PLAYED — the clock cannot end it any more.
+    playTurn(battle)
     expect(battle.turn.value).toBe(2)
     expect(computeHandicap).toHaveBeenCalledTimes(2)
-    expect(computeHandicap.mock.calls[1]![0]).toMatchObject({ playerPassedLastTurn: true, passesThisMatch: 1, turn: 2 })
-    // Place this turn: the next input says so.
-    battle.beginDrag(0, 100, 600)
-    battle.updateDrag(100, 440, { col: 1, row: 2 })
-    advance(battle, AIM_LAND_MS + 10)
-    battle.endDrag(true)
-    advance(battle, LOCK_WINDOW_MS + REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 80)
+    expect(computeHandicap.mock.calls[1]![0]).toMatchObject({ playerPassedLastTurn: false, passesThisMatch: 0, turn: 2 })
+    playTurn(battle, { col: 2, row: 2 })
     expect(battle.turn.value).toBe(3)
-    expect(computeHandicap.mock.calls[2]![0]).toMatchObject({ playerPassedLastTurn: false, passesThisMatch: 1, turn: 3 })
+    expect(computeHandicap.mock.calls[2]![0]).toMatchObject({ playerPassedLastTurn: false, passesThisMatch: 0, turn: 3 })
   })
 
   it('the rule\'s answer reaches the match and the clock', async () => {
     const { battle, mod } = await load(normalBlob(), {
-      handicap: (i) => i.playerPassedLastTurn
+      // Keyed on the TURN rather than on a pass: a player can no longer pass,
+      // because a turn ends only when it is played.
+      handicap: (i) => i.turn > 1
         ? { skipChance: 1, extraRandom: 0.2, atkMul: 0.8, timerMs: 7000 }
         : { ...NO_HANDICAP }
     })
     battle.startNode(NORMAL)
     expect(battle.view.timer.totalMs).toBe(PLANNING_MS)
     expect(mod.__matchState()!.handicap).toEqual(NO_HANDICAP)
-    advance(battle, PLANNING_MS + REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 60)
+    playTurn(battle)
     expect(battle.turn.value).toBe(2)
-    // The enemy mirrors the pass: it planned nothing this turn.
     const s = mod.__matchState()!
     expect(s.handicap).toEqual({ skipChance: 1, extraRandom: 0.2, atkMul: 0.8, timerMs: 7000 })
+    // A total skip chance means it planned nothing this turn.
     expect(s.enemyMoves).toEqual([])
+    // The published window still follows the relief; it is simply never
+    // counted down, because planning waits for the player.
     expect(battle.view.timer.totalMs).toBe(7000)
-    expect(battle.view.timer.leftMs).toBeGreaterThan(7000 - 100)
-    expect(battle.timerLeftMs.value).toBeGreaterThan(7000 - 100)
   })
 
   it('the clock never stretches past the rules\' ceiling', async () => {
@@ -1027,9 +1026,9 @@ describe('play again and next', () => {
   it('a loss zeroes the streak, pays the consolation and is remembered for the relief', async () => {
     const { battle, streak, economy, campaign, state } = await load(normalBlob({ gx_streak: 2 }))
     battle.startNode(NORMAL)
-    // Pass every turn; the goblins take the board.
-    for (let turn = 0; turn < 12 && battle.matchActive.value; turn++) {
-      advance(battle, PLANNING_MS + REVEAL_MS + RESOLVE_MS + BETWEEN_TURNS_MS + 100)
+    // Play badly into a corner every turn; the goblins take the board.
+    for (let turn = 0; turn < 14 && battle.matchActive.value; turn++) {
+      playTurn(battle, { col: 0, row: 3 })
     }
     expect(battle.matchActive.value).toBe(false)
     const r = battle.result.value!

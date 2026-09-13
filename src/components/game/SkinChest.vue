@@ -135,8 +135,7 @@ defineOptions({ inheritAttrs: false })
   align-items: center
   justify-content: center
   padding: 1rem
-  background-color: rgba(4, 6, 14, 0.72)
-  backdrop-filter: blur(2px)
+  background-color: rgba(4, 6, 14, 0.86)
   cursor: pointer
 
 .won__card

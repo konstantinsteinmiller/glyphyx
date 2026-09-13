@@ -19,12 +19,14 @@ import { mobileCheck } from '@/utils/function'
  *   mage      — the orb beams two tiles diagonally (node 1-4)
  *   defense   — the shield blocks arrows and beams (node 1-5)
  *   support   — the cross heals and sharpens its neighbours (node 1-6)
+ *   clash     — both sides dropped on one tile (node 2-3)
  *   correct   — the re-aim window after a placement, the first few times
  *   conquest  — the win rule, on the first real match
  *   siege     — the first time the player is surrounded
  */
 export type HintId =
   | 'drag' | 'tap' | 'aim' | 'archer' | 'stack' | 'mage' | 'defense' | 'support' | 'correct' | 'conquest'
+  | 'clash'
   // The conquest pair: the GOAL, then the RULE that gets you there.
   | 'conquestClaim' | 'siege'
   | 'cleave' | 'roller' | 'bombard'
@@ -84,8 +86,11 @@ const text = computed(() => {
   padding: clamp(0.22rem, 1.2vw, 0.45rem) clamp(0.55rem, 3vw, 1rem)
   border: 2px solid rgba(255, 255, 255, 0.18)
   border-radius: 999px
-  background-color: rgba(8, 14, 28, 0.72)
-  backdrop-filter: blur(3px)
+  // No blur. A `backdrop-filter` smears the painted art behind it — the
+  // board, the stones, the backdrop — and the art is the thing people came
+  // for. Separation comes from the plate's own opacity instead, which is
+  // also free where a blur re-rasterises everything underneath it.
+  background-color: rgba(8, 14, 28, 0.88)
   animation: hint-breathe 2.4s ease-in-out infinite
 
 .control-hint__icon

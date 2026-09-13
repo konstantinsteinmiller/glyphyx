@@ -540,6 +540,17 @@ export const spawnChips = (x: number, y: number, size: number, stone: string, an
   }
 }
 
+/** Sparks shed by a falling star, thrown back down its own flight line. */
+export const spawnCometEmbers = (x: number, y: number, ang: number, size: number, color: string, n = 3): void => {
+  const k = count(n, 1)
+  for (let i = 0; i < k; i++) {
+    const a = ang + Math.PI + (Math.random() - 0.5) * 1
+    const v = size * (0.9 + Math.random() * 2.4)
+    spawn(x, y, Math.cos(a) * v, Math.sin(a) * v, 260 + Math.random() * 300, size * (0.07 + Math.random() * 0.09), color,
+      { shape: 2, drag: 2.6, gravity: size * 1.2, fade: 1 })
+  }
+}
+
 /** The arrow's ribbon: a streak particle left behind each frame it flies. */
 export const spawnArrowTrail = (x: number, y: number, dirX: number, dirY: number, size: number, color: string): void => {
   spawn(x, y, -dirX * size * 0.5, -dirY * size * 0.5, 160, size * 0.06, color, { shape: 2, drag: 4 })
@@ -1183,6 +1194,67 @@ export const paintKnockbackStreak = (ctx: CanvasRenderingContext2D, t: number, x
   if (!blit(ctx, streak, px - Math.cos(ang) * len * 0.5, py - Math.sin(ang) * len * 0.5, len, size * 0.5, a * 0.7, true, ang)) {
     paintGlow(ctx, px, py, size * 0.3, color, a * 0.6)
   }
+}
+
+/**
+ * The enemy's stone arriving out of the sky: a burning head with a tail
+ * behind it, flying from `(x0, y0)` to `(x1, y1)` over the window. Nothing
+ * here knows what a rune is — the renderer rides the pebble on the head.
+ *
+ * The tail is the whole point. A blind tester read the enemy's placements as
+ * pieces that "spawn and creep onto my side" (2026-09-12 round 4) — which is
+ * what a stone appearing out of nothing looks like. A stone that arrives FROM
+ * somewhere, along a line, is a move somebody made.
+ */
+export const paintComet = (
+  ctx: CanvasRenderingContext2D, t: number, x0: number, y0: number, x1: number, y1: number,
+  size: number, color: string, o: { alpha?: number; lean?: boolean } = {}
+): void => {
+  const alpha = o.alpha ?? 1
+  const k = clamp01(t)
+  // In over the first sliver, burning out as it touches down.
+  const a = alpha * clamp01(k / 0.1) * (1 - clamp01((k - 0.78) / 0.22))
+  if (a <= 0.005) return
+  const flight = Math.hypot(x1 - x0, y1 - y0)
+  const px = x0 + (x1 - x0) * k
+  const py = y0 + (y1 - y0) * k
+  // The tail grows as it picks up speed, then is swallowed by the landing.
+  const reach = Math.min(flight * 0.8, size * 4.2)
+  const len = reach * (0.32 + 0.68 * Math.sin(Math.min(1, k / 0.5) * Math.PI * 0.5))
+  // On the leanest tier the tail is dropped and the head carries the arrival on
+  // its own: two baked blits, and the stone still comes FROM somewhere.
+  if (len > 1 && !o.lean) {
+    // A wedge, not a sprite: wide and white at the head, tapering to a point
+    // behind it. A baked streak fades over its whole length whatever length it
+    // is drawn at, which at four tiles long reads as a lens rather than a
+    // trail. The gradient is built in the comet's OWN rotated space, so it is
+    // one object a frame and the geometry is a straight triangle.
+    const ang = Math.atan2(y1 - y0, x1 - x0)
+    const h = size * 0.2
+    // Starts BEHIND the stone, not over it: a wedge drawn across the pebble
+    // turns a round rune into a leaf.
+    const back = size * 0.3
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.translate(px, py)
+    ctx.rotate(ang)
+    const g = ctx.createLinearGradient(-len - back, 0, -back, 0)
+    g.addColorStop(0, rgba(color, 0))
+    g.addColorStop(0.3, rgba(color, 0.2 * a))
+    g.addColorStop(0.66, rgba(color, 0.5 * a))
+    g.addColorStop(0.92, rgba(color, 0.9 * a))
+    g.addColorStop(1, `rgba(255, 255, 255, ${0.95 * a})`)
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.moveTo(-back, -h)
+    ctx.lineTo(-back, h)
+    ctx.lineTo(-len - back, 0)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+  }
+  paintGlow(ctx, px, py, size * 0.44, color, a * 0.65)
+  paintGlow(ctx, px, py, size * 0.2, '#ffffff', a * 0.8)
 }
 
 /**

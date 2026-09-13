@@ -176,6 +176,10 @@ export default {
       'touch': 'El mortero bombardea tres casillas a tres filas',
       'desktop': 'El mortero bombardea tres casillas a tres filas'
     },
+    'clash': {
+      'touch': 'Dos runas en una casilla chocan: sobrevive la más resistente',
+      'desktop': 'Dos runas en una casilla chocan: sobrevive la más resistente'
+    },
     'correct': {
       'touch': 'Toca una flecha o desliza para reorientar',
       'desktop': 'Haz clic y arrastra en cualquier sitio, o usa las flechas / WASD, para reorientar'

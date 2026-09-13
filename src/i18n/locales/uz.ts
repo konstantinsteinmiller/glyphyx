@@ -176,6 +176,10 @@ export default {
       'touch': 'Mortira uch qator oldindagi uchta katakni otadi',
       'desktop': 'Mortira uch qator oldindagi uchta katakni otadi'
     },
+    'clash': {
+      'touch': 'Bitta katakdagi ikki runa bir-birini sindiradi — bardoshlisi omon qoladi',
+      'desktop': 'Bitta katakdagi ikki runa bir-birini sindiradi — bardoshlisi omon qoladi'
+    },
     'correct': {
       'touch': 'Qayta nishonga olish uchun strelkaga teging yoki suring',
       'desktop': 'Qayta nishonga olish uchun istalgan joyda bosib torting yoki strelka / WASD tugmalarini bosing'

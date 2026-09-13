@@ -100,16 +100,25 @@ describe('the reward frame', () => {
   })
 
   it('dresses the backdrop for a celebration only in fit mode', () => {
+    // Darkness, and no blur at all any more: a `backdrop-filter` smears the
+    // painted art behind it, and the art is what people came for. The rays
+    // still need contrast to read as light, so the celebration's ground is the
+    // darker of the two.
     wrapper = mountReward()
     expect(root(wrapper).classes()).toContain('bg-black/60')
-    expect(root(wrapper).classes()).toContain('backdrop-blur-md')
     wrapper.unmount()
 
-    // Darker and less blurred: light rays need contrast to read as light, and a
-    // full-screen backdrop-filter is repainted under every confetti frame.
     wrapper = mountReward({ fit: true })
     expect(root(wrapper).classes()).toContain('bg-black/80')
-    expect(root(wrapper).classes()).toContain('backdrop-blur-sm')
+  })
+
+  it('blurs nothing, anywhere', () => {
+    for (const fit of [false, true]) {
+      wrapper = mountReward({ fit })
+      expect(root(wrapper).classes().filter((c) => c.includes('blur'))).toEqual([])
+      wrapper.unmount()
+    }
+    wrapper = null
   })
 
   it('gives full-bleed layers a home OUTSIDE the body, so nothing scales or clips them', () => {

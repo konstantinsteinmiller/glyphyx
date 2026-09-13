@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  LATE_LESSON_NODES, NODES_PER_CHAPTER, RUNE_UNLOCK_NODES, chapterOf, indexInChapter, nodeConfig, nodeId
+  CLASH_LESSON_NODE, LATE_LESSON_NODES, NODES_PER_CHAPTER, RUNE_UNLOCK_NODES, chapterOf, indexInChapter,
+  nodeConfig, nodeId
 } from '@/game/campaign'
 import {
   NUKE_DAMAGE, RUNE_TYPES, SKIN_IDS, STARTING_RUNES, TUTORIAL_TURN_LIMIT, chestIsGift, crownTurns, dirsFor,
@@ -142,13 +143,13 @@ describe('chapter 1 is the onboarding', () => {
 
   it('1-7 and 1-8 are the first real fights, with the two chapter skins', () => {
     const duel = nodeConfig(7, 'medium')
-    expect(duel).toMatchObject({ mode: '1v1', objective: 'conquest', timer: true, tutorial: null, turnLimit: 10 })
+    expect(duel).toMatchObject({ mode: '1v1', objective: 'conquest', timer: false, tutorial: null, turnLimit: 10 })
     expect(duel.ghost).toBeUndefined()
     expect(duel.enemies[0]).toMatchObject({ faction: 'goblin', ai: 'easy', atkMul: 1 })
     expect(duel.playerDeck).toBeNull()
     expect(duel.reward).toMatchObject({ coins: 45, unlockSkin: 'obsidian' })
     const siege = nodeConfig(8, 'medium')
-    expect(siege).toMatchObject({ mode: 'siege', objective: 'siege', timer: true, tutorial: null, turnLimit: 10 })
+    expect(siege).toMatchObject({ mode: 'siege', objective: 'siege', timer: false, tutorial: null, turnLimit: 10 })
     expect(siege.enemies.map((e) => e.post)).toEqual(['north', 'west', 'east'])
     for (const e of siege.enemies) expect(e).toMatchObject({ ai: 'medium', atkMul: 1 })
     expect(siege.reward).toMatchObject({ coins: 100, unlockSkin: 'jade', big: true })
@@ -158,15 +159,16 @@ describe('chapter 1 is the onboarding', () => {
 describe('later chapters are generated', () => {
   it('alternate duel and siege and escalate the AI per chapter', () => {
     for (let id = 9; id <= 40; id++) {
-      // …everywhere the three late lessons have not been carved out of the
-      // pattern. Those are authored (see the block below) and deliberately
-      // break the duel/siege alternation: a lesson is always a 1v1.
-      if (LATE_LESSON_NODES[id]) continue
+      // …everywhere a lesson has not been carved out of the pattern. Those are
+      // authored (see the block below) and deliberately break the duel/siege
+      // alternation: a lesson is always a 1v1 against dummies.
+      if (LATE_LESSON_NODES[id] || id === CLASH_LESSON_NODE) continue
       const n = nodeConfig(id, 'medium')
       expect(n.mode).toBe(indexInChapter(id) % 2 === 1 ? '1v1' : 'siege')
       expect(n.objective).toBe(n.mode === '1v1' ? 'conquest' : 'siege')
       expect(n.turnLimit).toBe(10)
-      expect(n.timer).toBe(true)
+      // No node carries a clock any more — planning waits for the player.
+      expect(n.timer).toBe(false)
       expect(n.tutorial).toBeNull()
       for (const e of n.enemies) {
         expect(e.atkMul).toBe(1)

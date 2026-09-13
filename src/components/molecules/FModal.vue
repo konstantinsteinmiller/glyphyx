@@ -304,8 +304,11 @@ const handleTabChange = (val: string | number): void => emit('update:activeTab',
 .f-modal__backdrop
   position: absolute
   inset: 0
-  background-color: rgba(0, 0, 0, 0.7)
-  backdrop-filter: blur(4px)
+  // No blur. A `backdrop-filter` smears the painted art behind it — the
+  // board, the stones, the backdrop — and the art is the thing people came
+  // for. Separation comes from the plate's own opacity instead, which is
+  // also free where a blur re-rasterises everything underneath it.
+  background-color: rgba(0, 0, 0, 0.82)
 
 .f-modal__container
   position: relative

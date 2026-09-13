@@ -176,6 +176,10 @@ export default {
       'touch': 'O morteiro bombardeia três casas, três fileiras à frente',
       'desktop': 'O morteiro bombardeia três casas, três fileiras à frente'
     },
+    'clash': {
+      'touch': 'Duas runas na mesma casa se chocam — a mais forte sobrevive',
+      'desktop': 'Duas runas na mesma casa se chocam — a mais forte sobrevive'
+    },
     'correct': {
       'touch': 'Toque numa seta ou deslize para reorientar',
       'desktop': 'Clique e arraste em qualquer lugar, ou use as setas / WASD, para reorientar'

@@ -176,6 +176,10 @@ export default {
       'touch': 'Il mortaio bombarda tre caselle a tre file',
       'desktop': 'Il mortaio bombarda tre caselle a tre file'
     },
+    'clash': {
+      'touch': 'Due rune sulla stessa casella si scontrano: resta la più resistente',
+      'desktop': 'Due rune sulla stessa casella si scontrano: resta la più resistente'
+    },
     'correct': {
       'touch': 'Tocca una freccia o scorri per rimirare',
       'desktop': 'Clicca e trascina ovunque, o usa le frecce / WASD, per rimirare'

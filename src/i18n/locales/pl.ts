@@ -176,6 +176,10 @@ export default {
       'touch': 'Moździerz ostrzeliwuje trzy pola trzy rzędy dalej',
       'desktop': 'Moździerz ostrzeliwuje trzy pola trzy rzędy dalej'
     },
+    'clash': {
+      'touch': 'Dwie runy na jednym polu rozbijają się — zostaje twardsza',
+      'desktop': 'Dwie runy na jednym polu rozbijają się — zostaje twardsza'
+    },
     'correct': {
       'touch': 'Dotknij strzałki lub przesuń, aby zmienić kierunek',
       'desktop': 'Kliknij i przeciągnij gdziekolwiek lub użyj strzałek / WASD, aby zmienić kierunek'

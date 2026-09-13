@@ -24,7 +24,7 @@ const onMobile = mobileCheck()
 
 <template lang="pug">
   div.flex.flex-col.items-end.gap-1
-    button.mute-btn.rounded-full.backdrop-blur-sm.transition-all.cursor-pointer(
+    button.mute-btn.rounded-full.transition-all.cursor-pointer(
       v-if="!onMobile"
       type="button"
       class="bg-black/20 hover:bg-black/40 pointer-events-auto"
@@ -33,7 +33,7 @@ const onMobile = mobileCheck()
       @click="toggleMute"
     )
       GameIcon.mute-btn__icon(:name="isMuted ? 'sound-off' : 'sound'")
-    button.mute-btn.rounded-full.backdrop-blur-sm.transition-all.cursor-pointer(
+    button.mute-btn.rounded-full.transition-all.cursor-pointer(
       v-else-if="isMobilePortrait || isMobileLandscape"
       type="button"
       class="bg-black/20 hover:bg-black/40 pointer-events-auto"

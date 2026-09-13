@@ -121,6 +121,17 @@ export const scoreMove = (board: BoardState, candidate: Candidate, enemy: EnemyS
 export const planEnemyMove = (
   state: MatchState, enemy: EnemySetup, rng: number, difficulty: Difficulty, extraRandom = 0
 ): [Move | null, number] => {
+  // A scripted faction (see `EnemySetup.script`) plays its written move and
+  // spends no dice doing it, so a lesson built on one is the same every time.
+  // The last entry repeats: the clash lesson's dummy keeps diving for the same
+  // tile until the player meets it there.
+  const script = enemy.script
+  if (script && script.length > 0) {
+    const written = script[Math.min(Math.max(0, state.turn - 1), script.length - 1)]!
+    // Only onto an empty tile. Anything else was never a legal placement, and
+    // a script is not a licence to break the board.
+    if (!runeAt(state.board, written.col, written.row)) return [{ ...written }, rng]
+  }
   if (enemy.ai === 'passive') return [null, rng]
   let s = rng
   const [hand, afterDraw] = drawHand(enemy.deck, s)

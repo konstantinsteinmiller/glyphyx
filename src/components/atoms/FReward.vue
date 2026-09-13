@@ -4,7 +4,7 @@
       v-if="modelValue"
       :class="[\
         isAdShowing ? 'z-0' : 'z-[100]',\
-        fit ? 'is-fit backdrop-blur-sm' : 'backdrop-blur-md',\
+        fit ? 'is-fit' : '',\
         fit ? 'bg-black/80' : 'bg-black/60'\
       ]"
       @click="handleOverlayClick"

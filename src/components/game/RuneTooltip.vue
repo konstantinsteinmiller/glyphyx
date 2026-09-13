@@ -61,8 +61,11 @@ const stats = computed(() => (lastType.value ? statsFor(lastType.value, 1) : nul
   padding: clamp(0.22rem, 1.1vw, 0.45rem) clamp(0.5rem, 2.4vw, 0.8rem)
   border: 2px solid rgba(255, 255, 255, 0.18)
   border-radius: clamp(0.55rem, 2.2vw, 0.85rem)
-  background-color: rgba(8, 14, 28, 0.84)
-  backdrop-filter: blur(3px)
+  // No blur. A `backdrop-filter` smears the painted art behind it — the
+  // board, the stones, the backdrop — and the art is the thing people came
+  // for. Separation comes from the plate's own opacity instead, which is
+  // also free where a blur re-rasterises everything underneath it.
+  background-color: rgba(8, 14, 28, 0.94)
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.55), 0 0 1rem rgba(0, 0, 0, 0.35)
   pointer-events: none
   user-select: none

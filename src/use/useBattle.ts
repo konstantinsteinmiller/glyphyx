@@ -685,7 +685,10 @@ const syncPlanning = (s: MatchState, firstTurn: boolean): void => {
   // No clock while the ghost is teaching, and none on a tutorial node until the
   // player has placed once — a lazy learner must never be timed out of the
   // lesson.
-  tutorialHold = view.ghost !== null || (!s.config.timer && !placedThisMatch)
+  // Held for the whole of planning on a clockless node — not merely until the
+  // first placement. The turn ends when the player plays it and at no other
+  // time, which is the entire point of having no clock.
+  tutorialHold = view.ghost !== null || !s.config.timer
   syncTimerPaused()
   syncCounts()
 

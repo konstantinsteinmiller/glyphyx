@@ -176,6 +176,10 @@ export default {
       'touch': 'Der Mörser beschießt drei Felder, drei Reihen entfernt',
       'desktop': 'Der Mörser beschießt drei Felder, drei Reihen entfernt'
     },
+    'clash': {
+      'touch': 'Zwei Runen auf einem Feld zerschellen — die stärkere überlebt',
+      'desktop': 'Zwei Runen auf einem Feld zerschellen — die stärkere überlebt'
+    },
     'correct': {
       'touch': 'Pfeil antippen oder wischen zum Neuausrichten',
       'desktop': 'Irgendwo klicken & ziehen oder Pfeiltasten / WASD zum Neuausrichten'
