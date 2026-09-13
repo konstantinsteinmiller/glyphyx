@@ -108,6 +108,36 @@ describe('losing the same node again', () => {
   })
 })
 
+describe('the first real fight', () => {
+  it('opens at the one-loss tier, with no loss behind it', () => {
+    expect(computeHandicap(fine({ firstFight: true })))
+      .toEqual(computeHandicap(fine({ nodeFails: 1 })))
+  })
+
+  it('is the tier and no more — a real loss on top still moves up', () => {
+    expect(computeHandicap(fine({ firstFight: true, nodeFails: 2 })))
+      .toEqual(computeHandicap(fine({ nodeFails: 2 })))
+    expect(computeHandicap(fine({ firstFight: true, nodeFails: 5 })))
+      .toEqual(computeHandicap(fine({ nodeFails: 5 })))
+  })
+
+  it('never reaches a lesson — the ghost hand is the relief there', () => {
+    expect(computeHandicap(fine({ firstFight: true, tutorial: true }))).toEqual(NO_HANDICAP)
+  })
+
+  it('is scaled by the difficulty setting like every other relief', () => {
+    for (const difficulty of ['easy', 'medium', 'hard'] as const) {
+      expect(computeHandicap(fine({ firstFight: true, difficulty })))
+        .toEqual(computeHandicap(fine({ nodeFails: 1, difficulty })))
+    }
+  })
+
+  it('is absent by default, so every other node is untouched', () => {
+    expect(computeHandicap(fine())).toEqual(NO_HANDICAP)
+    expect(computeHandicap(fine({ firstFight: false }))).toEqual(NO_HANDICAP)
+  })
+})
+
 describe('a losing streak', () => {
   it('two losses in a row: a little randomness and a second on the clock', () => {
     expect(computeHandicap(fine({ lossStreak: 2 }))).toEqual({ skipChance: 0, extraRandom: 0.1, atkMul: 1, timerMs: 6000 })

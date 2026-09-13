@@ -527,6 +527,28 @@ const clashLesson = (gen: NodeConfig): NodeConfig => {
  */
 export const isLessonNode = (id: number): boolean => nodeConfig(id, 'medium').tutorial !== null
 
+/**
+ * The first node that is a FIGHT — 1-7, the one the six lessons lead up to.
+ *
+ * It is named because it is the game's steepest step, and the step is
+ * structural rather than a tuning miss. Every node before it is won by making
+ * ONE correct move against dummies that never place; this one is a full match
+ * against an opponent trying to win it, and the player arrives having never
+ * planned a turn against anybody. Measured with the scripted stand-ins for a
+ * player who has not mastered the controls (`tests/game/floor.test.ts`), a
+ * first attempt here is won 25 % of the time — and in the 2026-09-12 round-2
+ * blind playtest four of the five testers who reached it lost it.
+ *
+ * `adaptive.ts` answers that; the node itself is left alone. Its goblins are
+ * already the gentlest real opponent in the game (`easy`, the only single-
+ * faction duel), so there is nothing left to soften here that would not make
+ * it a seventh lesson.
+ */
+export const FIRST_FIGHT_NODE = nodeId(1, 7)
+
+/** Is `id` the first real fight? `adaptive.ts` gives it the one-loss relief up front. */
+export const isFirstFightNode = (id: number): boolean => Math.floor(id) === FIRST_FIGHT_NODE
+
 /** The full setup of global node `id`. Chapter 1 is authored; later chapters are generated. Pure and deterministic. */
 export const nodeConfig = (id: number, _difficulty: 'easy' | 'medium' | 'hard'): NodeConfig => {
   const safe = Math.max(1, Math.floor(id))

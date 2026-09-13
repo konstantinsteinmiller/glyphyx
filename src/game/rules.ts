@@ -1175,6 +1175,12 @@ export interface HandicapInput {
   suddenDeath: boolean
   /** A tutorial node never needs relief and never gets any (the stall-breaker excepted). */
   tutorial: boolean
+  /**
+   * This is the player's first real fight (`campaign.FIRST_FIGHT_NODE`), where
+   * the relief starts at the one-loss tier instead of at nothing. Optional: an
+   * absent flag is a normal node.
+   */
+  firstFight?: boolean
   /** ms since the match began — feeds the stall-breaker. */
   matchElapsedMs: number
 }

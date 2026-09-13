@@ -1,5 +1,6 @@
 import { computeHandicap } from '@/game/adaptive'
 import { countTiles, runesOf } from '@/game/board'
+import { isFirstFightNode } from '@/game/campaign'
 import type { Handicap, HandicapInput, MatchState } from '@/game/rules'
 import { getState, setState } from '@/use/useGlyphyxState'
 import { FAILED_NODES_KEY, LOSS_STREAK_KEY } from '@/keys'
@@ -79,7 +80,8 @@ export const buildHandicapInput = (state: MatchState, relief: MatchRelief, now: 
     runeDeficit: runesOf(board, 'enemy').length - runesOf(board, 'player').length,
     turn: state.turn,
     suddenDeath: state.suddenDeath,
-    tutorial: state.config.tutorial !== null
+    tutorial: state.config.tutorial !== null,
+    firstFight: isFirstFightNode(state.config.id)
   }
 }
 

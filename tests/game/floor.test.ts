@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { CLASH_LESSON_NODE, LATE_LESSON_NODES, nodeConfig } from '@/game/campaign'
+import {
+  CLASH_LESSON_NODE, FIRST_FIGHT_NODE, LATE_LESSON_NODES, isFirstFightNode, isLessonNode, nodeConfig, nodeId
+} from '@/game/campaign'
 import { LESSON_RESCUE_TURNS } from '@/game/rules'
 import { rewardOf } from '@/use/useCampaign'
 import { beginPlanning, commitPlayerMove, createMatch, nextTurn, resolveCurrentTurn } from '@/game/match'
@@ -7,7 +9,7 @@ import { runesOf } from '@/game/board'
 import type { Dir } from '@/game/rules'
 import { careless, clearRate, ghostThen, greedy, inputBiased, playNode, zeroInput } from './policies'
 import { MIRROR_PATIENCE, PASS_MIRROR, computeHandicap } from '@/game/adaptive'
-import { NO_HANDICAP, cellIndex, type Handicap } from '@/game/rules'
+import { NO_HANDICAP, cellIndex, type Handicap, type HandicapInput } from '@/game/rules'
 import type { Policy } from './policies'
 
 /** Clear rate for one policy instance, reused across the conquest-wall tests. */
@@ -336,6 +338,66 @@ describe('the first real fights', () => {
   })
 })
 
+/**
+ * ─── The step from the last lesson to the first fight ───────────────────────
+ *
+ * The tests above measure 1-7 UNRELIEVED, which is the ceiling and stays put.
+ * These measure what a player actually meets there on their first attempt,
+ * which since `FIRST_FIGHT_FAILS` is the one-loss tier rather than nothing.
+ *
+ *                        careless   inputBiased   greedy   zero
+ *     first attempt         25 %        25 %       98 %     0 %
+ *     …at the tier          70 %        75 %      100 %     0 %
+ *
+ * (40 seeds each, medium, 2026-09-14. The before column is the same 25 % the
+ * `FAIL_TIERS` ledger recorded, and the reason four of five round-2 blind
+ * testers lost this node.)
+ */
+describe('the first fight opens one tier in', () => {
+  const input = (over: Partial<HandicapInput> = {}): HandicapInput => ({
+    difficulty: 'medium', nodeFails: 0, lossStreak: 0, playerPassedLastTurn: false, passesThisMatch: 0,
+    tileDeficit: 0, runeDeficit: 0, turn: 1, suddenDeath: false, tutorial: false, matchElapsedMs: 0, ...over
+  })
+  /** What 1-7 hands a player who has not lost it yet. */
+  const firstFight = computeHandicap(input({ firstFight: isFirstFightNode(FIRST_FIGHT_NODE) }))
+
+  it('is 1-7: the first node that is a fight and not a lesson', () => {
+    expect(isLessonNode(FIRST_FIGHT_NODE)).toBe(false)
+    for (let id = 1; id < FIRST_FIGHT_NODE; id++) expect(isLessonNode(id), `node ${id}`).toBe(true)
+    expect(isFirstFightNode(FIRST_FIGHT_NODE)).toBe(true)
+  })
+
+  /** A fresh policy per seed, as everywhere else in this file — 40 matches, 40 players. */
+  const firstFightRate = (policy: (seed: number) => Policy, h: Handicap): number =>
+    clearRate(FIRST_FIGHT_NODE, 'medium', 40, policy, h)
+
+  it('lifts the players who were losing it out of the quit point', () => {
+    // The cliff, as the blind testers met it…
+    expect(firstFightRate((seed) => careless(seed), NO_HANDICAP)).toBeLessThanOrEqual(0.35)
+    expect(firstFightRate((seed) => inputBiased(seed), NO_HANDICAP)).toBeLessThanOrEqual(0.35)
+    // …and what the same seeds do once the first fight opens one tier in.
+    expect(firstFightRate((seed) => careless(seed), firstFight)).toBeGreaterThanOrEqual(0.6)
+    expect(firstFightRate((seed) => inputBiased(seed), firstFight)).toBeGreaterThanOrEqual(0.6)
+  })
+
+  it('is a thumb on the scale, not a hand: a player who never places still loses', () => {
+    expect(clearRate(FIRST_FIGHT_NODE, 'medium', 10, () => zeroInput(), firstFight)).toBe(0)
+    expect(clearRate(FIRST_FIGHT_NODE, 'easy', 10, () => zeroInput(), firstFight)).toBe(0)
+  })
+
+  it('leaves the ceiling where it was: a player who plays takes it either way', () => {
+    expect(firstFightRate(() => greedy, NO_HANDICAP)).toBeGreaterThanOrEqual(0.8)
+    expect(firstFightRate(() => greedy, firstFight)).toBeGreaterThanOrEqual(0.8)
+  })
+
+  it('is one node wide — 1-8 and every node after it start at nothing', () => {
+    for (const id of [FIRST_FIGHT_NODE + 1, nodeId(2, 1), nodeId(3, 4)]) {
+      expect(isFirstFightNode(id), `node ${id}`).toBe(false)
+      expect(computeHandicap(input({ firstFight: isFirstFightNode(id) }))).toEqual(NO_HANDICAP)
+    }
+  })
+})
+
 describe('1-1 teaches the aim, not just the drop', () => {
   /**
    * One turn of 1-1: the sword on the ghost's tile, facing `dir`.
@@ -385,7 +447,7 @@ describe('1-1 teaches the aim, not just the drop', () => {
  * Measured with `careless`, the scripted stand-in for someone who has not
  * understood the controls yet:
  *
- *     attempt 1   25 %      ← left alone; the first loss is allowed to teach
+ *     attempt 1   25 %      ← see below; no longer what 1-7 itself serves
  *     attempt 2   28 % → 70 %
  *     attempt 3   75 % → 93 %
  *
@@ -395,6 +457,15 @@ describe('1-1 teaches the aim, not just the drop', () => {
  *
  * These tests pin BOTH halves — that the second attempt is genuinely easier,
  * and that none of it made the game playable by not playing.
+ *
+ * The 25 % first attempt was left alone here on the reasoning that a first
+ * loss teaches. Round 2 of the blind playtest priced that reasoning: four of
+ * the five testers who reached 1-7 lost it, and a first loss only teaches
+ * somebody who plays again. The CURVE is unchanged — what moved is where 1-7
+ * enters it (`FIRST_FIGHT_FAILS`, and 'the first fight opens one tier in'
+ * above). So the rates below are the curve's own, measured by handing a
+ * handicap straight to the harness; only 1-7's first attempt is served
+ * differently, and no other node's is.
  */
 describe('the conquest wall', () => {
   /** What the game holds back by, after `fails` losses on this node. */
@@ -411,7 +482,10 @@ describe('the conquest wall', () => {
     return wins / 40
   }
 
-  it('leaves the first attempt alone — a loss that teaches is the point', () => {
+  it('starts at a real fight: with nothing held back, 1-7 is mostly lost', () => {
+    // The curve's own zero point, and what every node except 1-7 serves on a
+    // first attempt. 1-7 itself now opens one tier in — see 'the first fight
+    // opens one tier in' above, which measures the same node the other way.
     const first = rate(7, NO_HANDICAP)
     expect(first).toBeGreaterThan(0.1)
     expect(first).toBeLessThan(0.45)

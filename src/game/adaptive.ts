@@ -4,7 +4,7 @@
  * The enemy plays WORSE — and sometimes not at all — when the player is
  * struggling. Pure and total: any input yields a valid, clamped `Handicap`.
  *
- * Three signals, three answers:
+ * Four signals, four answers:
  *
  *   • the player let the clock run out last turn → the enemy MIRRORS the pass
  *     and skips (always on easy, usually on medium, sometimes on hard). A
@@ -13,6 +13,9 @@
  *     sometimes passes.
  *   • the player has lost this node before, or is on a losing streak → the
  *     enemy hits softer, plays worse, and the planning clock runs longer.
+ *   • it is the player's FIRST real fight → that same curve starts one tier
+ *     in, because the loss it would otherwise wait for is the one that ends
+ *     the session (see `FIRST_FIGHT_FAILS`).
  *
  * Never announced; never on a tutorial (the ghost hand is the relief there);
  * never a skip in sudden death (the match has to end); and scaled by the
@@ -89,6 +92,45 @@ const FAIL_TIERS: ReadonlyArray<readonly [number, number, number, number, number
   [2, 0.35, 0.4, 0.3, 3000],
   [1, 0.25, 0.3, 0.2, 2000]
 ]
+
+/**
+ * ─── The first real fight starts one tier in ────────────────────────────────
+ *
+ * The curve above answers a player who has LOST. That is the right shape for
+ * every node but one: 1-7, where the loss it waits for is the one that ends
+ * the session. Six lessons precede it, each won with a single correct move
+ * against dummies that never place, and then the game asks for a planned match
+ * against an opponent trying to win — the steepest step it ever takes, and the
+ * only one where the player has no prior fight to have learned from.
+ *
+ * Measured on 1-7 with the scripted stand-ins for a player who has not
+ * mastered the controls (40 seeds each, medium, `tests/game/floor.test.ts`):
+ *
+ *                        careless   inputBiased   greedy   zero
+ *     first attempt         25 %        25 %       98 %     0 %
+ *     …at this tier         70 %        75 %      100 %     0 %
+ *
+ * Four of the five round-2 blind testers reached 1-7 and lost it (2026-09-12).
+ * Three quarters of weak players losing the first fight is not a difficulty
+ * curve, it is the quit point.
+ *
+ * So the first fight opens at the ONE-LOSS tier rather than at nothing: the
+ * enemy passes now and then, plays worse, and hits at three quarters. Nothing
+ * new is invented — it is the tier the same player would have been given one
+ * loss later, moved to where the loss actually costs something. A quarter of
+ * them still lose it and then get the two-loss tier exactly as before, the
+ * ceiling is untouched (a player who plays takes it either way), and a player
+ * who never places still cannot win: relief is a thumb on the scale, never a
+ * hand.
+ *
+ * Node-keyed on purpose, and one node wide. 1-8 keeps its own numbers.
+ *
+ * (The tier's clock bonus rides along and does nothing: no node has a planning
+ * clock any more. It is left in so the rule stays "the one-loss tier" whole,
+ * and so a timed variant would inherit it without a second decision.)
+ */
+const FIRST_FIGHT_FAILS = 1
+
 /**
  * How many windows a player may let run out before the pass mirror stops
  * answering. Generous — a beginner reading the board is the case it exists
@@ -153,7 +195,10 @@ const baseHandicap = (input: HandicapInput): Handicap => {
     skip = Math.max(skip, deficitTier[2])
   }
 
-  const fails = num(input.nodeFails)
+  // The first fight enters the curve at `FIRST_FIGHT_FAILS`; a player who has
+  // really lost more than that keeps the larger tier, so relief stays monotonic
+  // in the losses whatever the node.
+  const fails = Math.max(num(input.nodeFails), input.firstFight === true ? FIRST_FIGHT_FAILS : 0)
   const failTier = FAIL_TIERS.find(([at]) => fails >= at)
   if (failTier) {
     attackCut = Math.max(attackCut, failTier[1])
