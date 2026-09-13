@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} 金币',
     'suddenDeath': '骤死赛！',
     'reroll': '重抽',
-    'rerollsLeft': '剩余 {n} 次'
+    'rerollsLeft': '剩余 {n} 次',
+    'enemyRunes': {
+      'label': '敌方符文',
+      'aria': '敌方符文 — 仅供查看，无法放置'
+    },
   },
 
   'factions': {

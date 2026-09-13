@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} алтын',
     'suddenDeath': 'Кенет өлім!',
     'reroll': 'Ауыстыру',
-    'rerollsLeft': '{n} қалды'
+    'rerollsLeft': '{n} қалды',
+    'enemyRunes': {
+      'label': 'Олардың рундары',
+      'aria': 'Жаудың рундары — тек қарауға, қоюға болмайды'
+    },
   },
 
   'factions': {

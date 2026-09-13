@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} золота',
     'suddenDeath': 'Внезапная смерть!',
     'reroll': 'Сменить',
-    'rerollsLeft': 'Осталось: {n}'
+    'rerollsLeft': 'Осталось: {n}',
+    'enemyRunes': {
+      'label': 'Их руны',
+      'aria': 'Руны врага — только для просмотра, ставить нельзя'
+    },
   },
 
   'factions': {

@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} altın',
     'suddenDeath': 'Ani ölüm!',
     'reroll': 'Yenile',
-    'rerollsLeft': '{n} kaldı'
+    'rerollsLeft': '{n} kaldı',
+    'enemyRunes': {
+      'label': 'Onların rünleri',
+      'aria': 'Düşmanın rünleri — sadece bakmak için, yerleştirilemez'
+    },
   },
 
   'factions': {

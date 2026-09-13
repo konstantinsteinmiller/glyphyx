@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} złota',
     'suddenDeath': 'Nagła śmierć!',
     'reroll': 'Przetasuj',
-    'rerollsLeft': 'Zostało: {n}'
+    'rerollsLeft': 'Zostało: {n}',
+    'enemyRunes': {
+      'label': 'Ich runy',
+      'aria': 'Runy wroga — tylko do wglądu, nie do stawiania'
+    },
   },
 
   'factions': {

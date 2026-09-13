@@ -73,7 +73,11 @@ export default {
     'streakMult': '×{n} gold',
     'suddenDeath': 'Sudden death!',
     'reroll': 'Reroll',
-    'rerollsLeft': '{n} left'
+    'rerollsLeft': '{n} left',
+    'enemyRunes': {
+      'label': 'Their runes',
+      'aria': "The enemy's runes — for reading, not for placing"
+    },
   },
 
   // ─── Factions ─────────────────────────────────────────────────────────────

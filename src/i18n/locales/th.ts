@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} ทอง',
     'suddenDeath': 'ซัดเดนเดธ!',
     'reroll': 'สุ่มใหม่',
-    'rerollsLeft': 'เหลือ {n}'
+    'rerollsLeft': 'เหลือ {n}',
+    'enemyRunes': {
+      'label': 'รูนของศัตรู',
+      'aria': 'รูนของศัตรู — ดูได้อย่างเดียว วางไม่ได้'
+    },
   },
 
   'factions': {

@@ -1529,23 +1529,99 @@ const rayHit = (pts: readonly Pt[], a: number): number => {
 }
 
 /**
- * The outline the laurel of a rune hugs — that rune in the DEFAULT cut, so all
- * nine skins of one rune wear the same wreath.
+ * The reference cut every painted wreath is drawn against.
  *
- * Keyed by the rune and not by the skin, because the silhouette is the rune's:
- * a wreath cut for a plaque sits half inside a shield and half in mid-air under
- * an axe. Nine skins × ten runes would be ninety wreaths to paint; ten is the
- * set that actually differs.
+ * The wreath is ONE painting per rune — ninety would be ninety paintings — so
+ * the sheet has to draw it against a definite stone, and this is that stone.
+ * The arena then fits that one painting onto whichever cut it is actually
+ * covering; see `laurelFit`.
  */
-const laurelOutline = (type: RuneType): Pt[] =>
-  convexHull(stoneOutline('carved', type, seedFrom(TYPE_IDX[type] * 7919 + 17, CUT_IDX.carved * 104729)))
+export const LAUREL_REF_CUT: StoneCut = 'carved'
+
+/**
+ * The outline the laurel of a rune hugs: that rune, in that cut, as it is
+ * actually drawn.
+ *
+ * ── It used to hug the CONVEX HULL of it, and that was the bug ──
+ *
+ * A hull bridges every dent in a silhouette, so on a rune whose lower half is
+ * narrower than its upper half the wreath was cut to the width of the WIDEST
+ * part and then hung at the bottom, where the stone is not that wide. It sat in
+ * mid-air with a gap you could see through. The axe was the worst of them — its
+ * bit spans the whole box and its haft is a stick, so the wreath stood off the
+ * haft by half the stone's radius — and the trefoil, the mortar and the radiant
+ * cross were all wrong the same way. It was not a skin problem: the axe was 21%
+ * out in `carved`, the very cut the wreath was cut against.
+ *
+ * The rim is SMOOTHED over a few degrees either side rather than read raw,
+ * which is what the hull was really there for: a knapped stone's outline has
+ * random jitter in it, and a branch that followed it point for point would
+ * come out serrated. An average over ±5° follows the shape and loses the
+ * flakes.
+ */
+const laurelOutline = (type: RuneType, cut: StoneCut): Pt[] =>
+  stoneOutline(cut, type, pebbleSeed(type, cut))
+
+/** How wide either side of a ray the rim is averaged, in radians. */
+const LAUREL_SMOOTH: readonly number[] = [-0.09, -0.045, 0, 0.045, 0.09]
+
+const laurelRimCache = new Map<string, Pt[]>()
+const laurelPts = (type: RuneType, cut: StoneCut): Pt[] => {
+  const key = `${type}|${cut}`
+  let hit = laurelRimCache.get(key)
+  if (!hit) { hit = laurelOutline(type, cut); laurelRimCache.set(key, hit) }
+  return hit
+}
 
 /**
  * The rim of a `type` stone at absolute angle `a` (0 = right, π/2 = down), as a
  * fraction of the stone's radius. Exported so the tests can pin that the bow's
  * wreath sits closer in at the sides than the shield's.
  */
-export const laurelRimAt = (type: RuneType, a: number): number => rayHit(laurelOutline(type), a)
+export const laurelRimAt = (type: RuneType, a: number, cut: StoneCut = LAUREL_REF_CUT): number => {
+  const pts = laurelPts(type, cut)
+  let sum = 0
+  for (const d of LAUREL_SMOOTH) sum += rayHit(pts, a + d)
+  return sum / LAUREL_SMOOTH.length
+}
+
+/** The arc one branch of the wreath sweeps, either side of straight down. */
+const LAUREL_A0 = 0.07 * Math.PI
+const LAUREL_A1 = 0.48 * Math.PI
+
+/**
+ * How much to scale a wreath PAINTED against `LAUREL_REF_CUT` so it lands on a
+ * stone of `cut` instead.
+ *
+ * A painting cannot be reshaped, only moved and resized — so this is the one
+ * number that puts it closest: the least-squares scale between the reference
+ * rim and this cut's rim, over the arc the wreath actually occupies. Nine cuts
+ * widen, blunt, round off and knap the same outline by up to a tenth of its
+ * radius, which at a 90 px tile is a visible gap under the leaves.
+ *
+ * Drawn wreaths do not need it — they are cut to the stone directly.
+ */
+const laurelFitCache = new Map<string, number>()
+export const laurelFit = (type: RuneType, cut: StoneCut): number => {
+  if (cut === LAUREL_REF_CUT) return 1
+  const key = `${type}|${cut}`
+  const hit = laurelFitCache.get(key)
+  if (hit !== undefined) return hit
+  let num = 0
+  let den = 0
+  for (const s of [-1, 1]) {
+    for (let k = 0; k <= 16; k++) {
+      const a = Math.PI / 2 + s * (LAUREL_A0 + (LAUREL_A1 - LAUREL_A0) * (k / 16))
+      const ref = laurelRimAt(type, a, LAUREL_REF_CUT)
+      num += ref * laurelRimAt(type, a, cut)
+      den += ref * ref
+    }
+  }
+  // Clamped: a fit is a correction, not a licence to resize the art by half.
+  const k = den > 0 ? Math.min(1.25, Math.max(0.8, num / den)) : 1
+  laurelFitCache.set(key, k)
+  return k
+}
 
 /**
  * The Lv 2 laurel, drawn into the SAME box as the stone it wraps —
@@ -1558,7 +1634,9 @@ export const laurelRimAt = (type: RuneType, a: number): number => rayHit(laurelO
  * around a stone that already has one, and at hand-tray size the two merge
  * into a hoop.
  */
-export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number, type: RuneType = 'melee'): void => {
+export const paintLaurel = (
+  ctx: CanvasRenderingContext2D, w: number, h: number, type: RuneType = 'melee', cut: StoneCut = LAUREL_REF_CUT
+): void => {
   const size = Math.min(w, h)
   const cx = w / 2
   const cy = h / 2
@@ -1566,17 +1644,18 @@ export const paintLaurel = (ctx: CanvasRenderingContext2D, w: number, h: number,
   // follows the SILHOUETTE: a bow's foot is a narrow taper, a shield's is a
   // blunt point, a mortar's is a flat plate. One wreath per RUNE, never a
   // circle floating under a stone that is not one.
+  //
+  // `cut` is the stone it is going over. The reference sheet leaves it at the
+  // default and paints one wreath per rune; the arena passes the real cut, so
+  // a drawn wreath is cut to the stone rather than fitted to it.
   const R = (size / 2) * stoneFill(2)
-  const pts = laurelOutline(type)
-  const rimAt = (a: number): number => R * rayHit(pts, a) * 1.06
+  const rimAt = (a: number): number => R * laurelRimAt(type, a, cut) * 1.06
   const gold = ctx.createLinearGradient(cx - R, cy, cx + R, cy + R * 1.2)
   gold.addColorStop(0, GOLD_LIGHT)
   gold.addColorStop(0.5, '#e6b53a')
   gold.addColorStop(1, GOLD_DEEP)
 
-  const A0 = 0.07 * Math.PI
-  const A1 = 0.48 * Math.PI
-  const angle = (s: number, t: number): number => Math.PI / 2 + s * (A0 + (A1 - A0) * t)
+  const angle = (s: number, t: number): number => Math.PI / 2 + s * (LAUREL_A0 + (LAUREL_A1 - LAUREL_A0) * t)
   const at = (s: number, t: number, extra = 0): [number, number] => {
     const a = angle(s, t)
     const r = rimAt(a) + extra
@@ -1711,7 +1790,7 @@ export const paintPebble = (ctx: CanvasRenderingContext2D, w: number, h: number,
  */
 export const paintPebbleOrnaments = (
   ctx: CanvasRenderingContext2D, w: number, h: number,
-  o: { type: RuneType; level: number; laurel?: boolean; crest?: boolean; label?: string }
+  o: { type: RuneType; level: number; cut?: StoneCut; laurel?: boolean; crest?: boolean; label?: string }
 ): void => {
   if (o.level < 2) return
   const size = Math.min(w, h)
@@ -1719,7 +1798,7 @@ export const paintPebbleOrnaments = (
   const cy = h / 2
   const R = (size / 2) * stoneFill(o.level)
   ctx.save()
-  if (o.laurel !== false) paintLaurel(ctx, w, h, o.type)
+  if (o.laurel !== false) paintLaurel(ctx, w, h, o.type, o.cut ?? LAUREL_REF_CUT)
   if (o.crest !== false) paintCrest(ctx, cx, cy, R, o.label)
   ctx.restore()
 }

@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} ゴールド',
     'suddenDeath': 'サドンデス！',
     'reroll': '引き直し',
-    'rerollsLeft': '残り {n} 回'
+    'rerollsLeft': '残り {n} 回',
+    'enemyRunes': {
+      'label': '敵のルーン',
+      'aria': '敵のルーン — 確認用で、置くことはできません'
+    },
   },
 
   'factions': {

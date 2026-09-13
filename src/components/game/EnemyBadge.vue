@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FACTION_DEFS, type EnemySetup } from '@/game/rules'
+import { FACTION_DEFS, RUNE_TYPES, STARTING_SKIN, type EnemySetup, type RuneType } from '@/game/rules'
+import PebblePreview from '@/components/game/PebblePreview.vue'
 import { mobileCheck, prependBaseUrl } from '@/utils/function'
 import { windowHeight, windowWidth } from '@/use/useUser'
 
@@ -27,6 +28,29 @@ const props = defineProps<Props>()
 const { t } = useI18n()
 
 const lead = computed(() => props.enemies[0] ?? null)
+
+/**
+ * ─── What the enemy can field ───────────────────────────────────────────────
+ *
+ * The faction's DECK, not its hand. The hand is drawn fresh inside
+ * `planEnemyMove` every turn and is never stored — and the move it produces is
+ * deliberately hidden until the reveal, so showing it would hand the player
+ * the one thing the turn is built on not knowing. The deck is the honest
+ * answer to the same question: these are the runes that can come at you, which
+ * is what a plan is made of. An archer skips a tile; knowing they field
+ * archers is why you do not line up behind your own stone.
+ *
+ * De-duplicated and in catalogue order, so a deck of three archers reads as
+ * "archers" rather than as three identical slots that look like a hand.
+ */
+const roster = computed<RuneType[]>(() => {
+  const seen = new Set<RuneType>()
+  for (const e of props.enemies) for (const type of e.deck) seen.add(type)
+  return RUNE_TYPES.filter((t) => seen.has(t))
+})
+
+/** Their stone, never the player's — side has to read before anything else. */
+const enemySkin = STARTING_SKIN
 const others = computed(() => props.enemies.slice(1))
 
 const avatarSrc = (e: EnemySetup): string =>
@@ -66,6 +90,21 @@ export const isRoomyViewport = (width: number, height: number, mobile: boolean):
         div.enemy__window
           img.enemy__strip(:src="avatarSrc(lead)" :alt="factionName(lead)" decoding="async" draggable="false")
     span.enemy__name {{ factionName(lead) }}
+    //- ── What they field ────────────────────────────────────────────────
+    //- Read-only, and it has to LOOK read-only: no socket to drop into, no
+    //- breathing rim, half the size of the player's tray, behind a pane.
+    //- `pointer-events: none` means it cannot be grabbed even by accident,
+    //- and the whole strip is one labelled group to a screen reader rather
+    //- than a row of things that might be controls.
+    div.enemy__runes(
+      v-if="roster.length"
+      role="img"
+      :aria-label="t('hud.enemyRunes.aria')"
+    )
+      span.enemy__runes-label(aria-hidden="true") {{ t('hud.enemyRunes.label') }}
+      div.enemy__runes-row(aria-hidden="true")
+        span.enemy__rune(v-for="type in roster" :key="type")
+          PebblePreview(:type="type" :skin="enemySkin" :level="1")
     div.enemy__chips
       span.enemy__turn {{ turnLabel }}
       Transition(name="sd")
@@ -73,6 +112,48 @@ export const isRoomyViewport = (width: number, height: number, mobile: boolean):
 </template>
 
 <style scoped lang="sass">
+// ─── Their runes: a display, and it must never look like a tray ─────────────
+//
+// The player's hand sits in lit sockets, breathes, and carries a cyan rim that
+// means "playable". This is the opposite of all three on purpose — a pane of
+// dark glass with small dimmed stones behind it and no affordance anywhere —
+// because the one thing worse than not showing the enemy's runes is showing
+// them in a way that invites a drag that can never work.
+.enemy__runes
+  display: flex
+  flex-direction: column
+  align-items: flex-end
+  gap: 0.1rem
+  margin-top: 0.2rem
+  padding: 0.18rem 0.3rem
+  border: 1px solid rgba(255, 120, 120, 0.28)
+  border-radius: 0.35rem
+  background-color: rgba(10, 8, 14, 0.55)
+  // Not grabbable, not clickable, not focusable — by construction.
+  pointer-events: none
+  user-select: none
+
+.enemy__runes-label
+  color: #d79aa0
+  font-weight: 800
+  font-size: clamp(0.38rem, 1.7vw, 0.5rem)
+  letter-spacing: 0.08em
+  text-transform: uppercase
+  text-shadow: 1px 1px 0 #000
+
+.enemy__runes-row
+  display: flex
+  flex-direction: row
+  gap: 0.16rem
+
+// Half the player's tray size, and dimmed: a reference, not a resource.
+.enemy__rune
+  display: block
+  width: clamp(0.85rem, 3.6vw, 1.25rem)
+  height: clamp(0.85rem, 3.6vw, 1.25rem)
+  opacity: 0.72
+  filter: grayscale(0.25) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7))
+
 .enemy
   display: flex
   flex-direction: column

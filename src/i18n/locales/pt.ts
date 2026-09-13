@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} ouro',
     'suddenDeath': 'Morte súbita!',
     'reroll': 'Trocar',
-    'rerollsLeft': '{n} restantes'
+    'rerollsLeft': '{n} restantes',
+    'enemyRunes': {
+      'label': 'Runas deles',
+      'aria': 'As runas do inimigo — apenas para consulta, não para colocar'
+    },
   },
 
   'factions': {

@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} 골드',
     'suddenDeath': '서든데스!',
     'reroll': '다시 뽑기',
-    'rerollsLeft': '{n}회 남음'
+    'rerollsLeft': '{n}회 남음',
+    'enemyRunes': {
+      'label': '적의 룬',
+      'aria': '적의 룬 — 확인용이며 놓을 수 없습니다'
+    },
   },
 
   'factions': {

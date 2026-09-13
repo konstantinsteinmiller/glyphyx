@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PebblePreview from '@/components/game/PebblePreview.vue'
+import RuneUnlockCard from '@/components/game/RuneUnlockCard.vue'
 import { useSkinChest } from '@/use/useSkinChest'
 import { equipSkin } from '@/use/useSkins'
 import { playFx } from '@/use/useGameAudio'
@@ -37,10 +38,25 @@ import type { SkinId } from '@/game/rules'
 const { t } = useI18n()
 const { isReady, fill01, timeDisplay, hasRewards, nextSkin, collect } = useSkinChest()
 
-/** The material just won, held for the flash of celebration. */
+/**
+ * The material just won, held up to be looked at.
+ *
+ * It used to be held only for a flash of animation on the chest itself, which
+ * meant the chest gave a player something and never said what: two blind
+ * testers tapped it and came away not knowing. Aisha — "it just went
+ * dark/disabled with no visible popup… not sure what TAKE actually gave me";
+ * Camila noticed only the side effect, "it silently reskinned the whole board"
+ * (2026-09-13). The loud half worked — the gold halo got all three of them to
+ * press an unlabelled button — and then the moment the mechanic had to sell
+ * itself was silent.
+ *
+ * So the prize is shown on the same card the reward chest uses for a new rune,
+ * which those testers call the clearest teaching in the game. Dismissed by a
+ * tap or by its own clock, whichever comes first.
+ */
 const won = ref<SkinId | null>(null)
 let wonTimer: number | null = null
-const WON_MS = 1500
+const WON_MS = 2600
 
 const onClick = (): void => {
   const got = collect()
@@ -54,11 +70,27 @@ const onClick = (): void => {
   playFx('skinBuy')
   won.value = got
   if (wonTimer !== null) window.clearTimeout(wonTimer)
-  wonTimer = window.setTimeout(() => { won.value = null; wonTimer = null }, WON_MS)
+  wonTimer = window.setTimeout(dismiss, WON_MS)
 }
+
+const dismiss = (): void => {
+  won.value = null
+  if (wonTimer !== null) { window.clearTimeout(wonTimer); wonTimer = null }
+}
+
+onBeforeUnmount(() => { if (wonTimer !== null) window.clearTimeout(wonTimer) })
 </script>
 
 <template lang="pug">
+  //- ── The prize, held up ──────────────────────────────────────────────────
+  //- Teleported to the body so it is not clipped by the HUD column it lives
+  //- in, and so its stacking has nothing to do with the badges around it.
+  //- Dismissed by a tap anywhere or by its own clock.
+  Teleport(to="body")
+    Transition(name="won")
+      div.won(v-if="won !== null" role="status" @click="dismiss")
+        RuneUnlockCard.won__card(:skin="won")
+
   //- A real button: reachable by keyboard, and its label says which of the two
   //- states it is in rather than leaving a screen reader to read a countdown.
   button.chest(
@@ -81,6 +113,34 @@ const onClick = (): void => {
 </template>
 
 <style scoped lang="sass">
+// ─── The prize, held up ──────────────────────────────────────────────────────
+.won
+  position: fixed
+  inset: 0
+  z-index: 120
+  display: flex
+  align-items: center
+  justify-content: center
+  padding: 1rem
+  background-color: rgba(4, 6, 14, 0.72)
+  backdrop-filter: blur(2px)
+  cursor: pointer
+
+.won__card
+  animation: won-in 420ms cubic-bezier(0.22, 1.2, 0.36, 1)
+
+.won-enter-active, .won-leave-active
+  transition: opacity 200ms ease
+
+.won-enter-from, .won-leave-to
+  opacity: 0
+
+@keyframes won-in
+  0%
+    transform: scale(0.7) translateY(0.6rem)
+  100%
+    transform: scale(1) translateY(0)
+
 .chest
   position: relative
   display: flex
@@ -195,7 +255,8 @@ const onClick = (): void => {
 @media (prefers-reduced-motion: reduce)
   .chest__halo,
   .chest.is-ready .chest__stone,
-  .chest.is-won .chest__stone
+  .chest.is-won .chest__stone,
+  .won__card
     animation: none
 
   // Still unmistakably ready — it simply stops moving.

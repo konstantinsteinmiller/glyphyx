@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} ذهب',
     'suddenDeath': 'الموت المفاجئ!',
     'reroll': 'تبديل',
-    'rerollsLeft': 'متبقٍ {n}'
+    'rerollsLeft': 'متبقٍ {n}',
+    'enemyRunes': {
+      'label': 'رونياتهم',
+      'aria': 'رونيات العدو — للاطلاع فقط، لا يمكن وضعها'
+    },
   },
 
   'factions': {

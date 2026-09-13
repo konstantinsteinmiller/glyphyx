@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} oltin',
     'suddenDeath': 'Toʻsatdan oʻlim!',
     'reroll': 'Almashtirish',
-    'rerollsLeft': '{n} ta qoldi'
+    'rerollsLeft': '{n} ta qoldi',
+    'enemyRunes': {
+      'label': 'Ularning runalari',
+      'aria': "Dushman runalari — faqat ko'rish uchun, qo'yib bo'lmaydi"
+    },
   },
 
   'factions': {

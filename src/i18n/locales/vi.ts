@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} vàng',
     'suddenDeath': 'Bàn thắng vàng!',
     'reroll': 'Rút lại',
-    'rerollsLeft': 'Còn {n}'
+    'rerollsLeft': 'Còn {n}',
+    'enemyRunes': {
+      'label': 'Rune của địch',
+      'aria': 'Rune của địch — chỉ để xem, không thể đặt'
+    },
   },
 
   'factions': {

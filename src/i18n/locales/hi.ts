@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} सोना',
     'suddenDeath': 'सडन डेथ!',
     'reroll': 'फिर से बाँटें',
-    'rerollsLeft': '{n} बाकी'
+    'rerollsLeft': '{n} बाकी',
+    'enemyRunes': {
+      'label': 'उनकी रून',
+      'aria': 'दुश्मन की रून — सिर्फ़ देखने के लिए, रखने के लिए नहीं'
+    },
   },
 
   'factions': {

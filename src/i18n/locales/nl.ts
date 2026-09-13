@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} goud',
     'suddenDeath': 'Sudden death!',
     'reroll': 'Herpakken',
-    'rerollsLeft': '{n} over'
+    'rerollsLeft': '{n} over',
+    'enemyRunes': {
+      'label': 'Hun runen',
+      'aria': 'De runen van de vijand — alleen om te bekijken, niet om te plaatsen'
+    },
   },
 
   'factions': {

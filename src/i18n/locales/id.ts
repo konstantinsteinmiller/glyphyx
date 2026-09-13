@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} emas',
     'suddenDeath': 'Sudden death!',
     'reroll': 'Kocok ulang',
-    'rerollsLeft': 'Sisa {n}'
+    'rerollsLeft': 'Sisa {n}',
+    'enemyRunes': {
+      'label': 'Rune mereka',
+      'aria': 'Rune musuh — hanya untuk dilihat, tidak bisa ditaruh'
+    },
   },
 
   'factions': {

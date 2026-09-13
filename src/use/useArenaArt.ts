@@ -12,8 +12,8 @@ import type { ArenaLayout, ArenaView, CanvasLabels, DragState, HitTarget, HoverS
 import { drawGlyph, glyphSpin } from '@/game/glyphs'
 import { placementKind, runeAt } from '@/game/board'
 import {
-  ENEMY_STONE, GRID_GLOW, RIDGE_SKYLINE, damageStage, paintBoardFrame, paintDamage, paintLaurel, paintPebble,
-  paintPebbleOrnaments, paintRerollChip, paintRidge, paintSky, paintTile, resolveGlow, type DamageStage
+  ENEMY_STONE, GRID_GLOW, RIDGE_SKYLINE, damageStage, enemyStone, laurelFit, paintBoardFrame, paintDamage, paintLaurel,
+  paintPebble, paintPebbleOrnaments, paintRerollChip, paintRidge, paintSky, paintTile, resolveGlow, type DamageStage
 } from '@/use/arenaPainters'
 import { onArtChanged, spriteFor, type ArtKind } from '@/game/art'
 import { CLEAN_FEED } from '@/game/cleanFeed'
@@ -480,12 +480,30 @@ const bakeOrnaments = (
   const made = makeCanvas(sideLen, sideLen, dpr)
   if (!made) return null
   const [canvas, ctx] = made
+  // The wreath goes round THIS stone, and nine cuts give the same rune nine
+  // different rims: marble is quarried broader, obsidian is knapped in off a
+  // flake, ruby is a plump cabochon. A wreath that ignores which one it is
+  // hanging on floats off the narrow ones and bites into the wide ones.
+  const cut = (side === 'player' ? SKINS[skin] ?? SKINS.river : enemyStone(faction)).cut
   const wreath = spriteFor('fx', `laurel-${type}`)
-  if (wreath) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
-  else paintLaurel(ctx, sideLen, sideLen, type)
+  if (wreath) {
+    // A painting cannot be re-cut, only re-sized: `laurelFit` is the one scale
+    // that puts a wreath painted against the reference cut closest to this
+    // stone's rim. It is 1 for the reference cut itself, and for every enemy
+    // stone, which is carved.
+    const k = laurelFit(type, cut)
+    if (k === 1) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
+    else {
+      ctx.save()
+      ctx.translate(sideLen / 2, sideLen / 2)
+      ctx.scale(k, k)
+      ctx.drawImage(wreath, -sideLen / 2, -sideLen / 2, sideLen, sideLen)
+      ctx.restore()
+    }
+  } else paintLaurel(ctx, sideLen, sideLen, type, cut)
   if (!spriteFor('rune', runeArtId(type, level, side, skin, faction))) {
     paintPebbleOrnaments(ctx, sideLen, sideLen, {
-      type, level, laurel: false, label: CLEAN_FEED ? '' : levelLabel
+      type, level, cut, laurel: false, label: CLEAN_FEED ? '' : levelLabel
     })
   }
   ornamentCache.set(key, canvas)
@@ -3364,6 +3382,28 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       }
       drawShadow(x, y + (selected ? r.h * 0.2 : 0), drawSize, 1, canAct ? 0.35 : 0.18)
       blitPebble(spr, x, y, drawSize, 1, 1, canAct ? 1 : 0.42)
+      // ── The glyph again, lit, on the tray only ──
+      //
+      // On the board a rune is a big stone read at leisure; in the hand it is
+      // a thumbnail read in a hurry, and the same drawing was doing both jobs.
+      // A glyph CARVED into stone is a shadow, and at tray size the shadows
+      // for the bow, the orb and the sword are the same smudge — two blind
+      // testers picked the wrong rune and lost turns to it, and it was the one
+      // change one of them asked for: "bow and arcane-orb icons look
+      // near-identical at inventory thumbnail size… I wasted ~4 turns shooting
+      // an empty lane" (2026-09-13).
+      //
+      // So the tray lights its glyph in the rune's own colour over a dark
+      // backing, which restores the two things a thumbnail can carry — SHAPE
+      // and HUE — without touching the stone on the board.
+      ctx.save()
+      ctx.globalAlpha = canAct ? 1 : 0.42
+      ctx.translate(x, y)
+      ctx.fillStyle = rgba('#04060e', 0.9)
+      drawGlyph(ctx, type, drawSize * 0.52)
+      ctx.fillStyle = RUNES[type].color
+      drawGlyph(ctx, type, drawSize * 0.44)
+      ctx.restore()
     }
     // Reroll chip.
     const rr = geom.reroll

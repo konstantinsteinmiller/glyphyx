@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} or',
     'suddenDeath': 'Mort subite !',
     'reroll': 'Relancer',
-    'rerollsLeft': '{n} restant(s)'
+    'rerollsLeft': '{n} restant(s)',
+    'enemyRunes': {
+      'label': 'Leurs runes',
+      'aria': "Les runes de l'ennemi — à consulter, pas à poser"
+    },
   },
 
   'factions': {

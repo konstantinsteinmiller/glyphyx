@@ -59,7 +59,11 @@ export default {
     'streakMult': '×{n} oro',
     'suddenDeath': 'Morte improvvisa!',
     'reroll': 'Ripesca',
-    'rerollsLeft': '{n} rimasti'
+    'rerollsLeft': '{n} rimasti',
+    'enemyRunes': {
+      'label': 'Le loro rune',
+      'aria': 'Le rune del nemico: solo da consultare, non da posare'
+    },
   },
 
   'factions': {

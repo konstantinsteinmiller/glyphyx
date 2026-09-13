@@ -280,6 +280,36 @@ onUnmounted(() => {
 .fade-enter-from, .fade-leave-to
   opacity: 0
 
+// ─── Leaving: the words go first, the dark goes last ────────────────────────
+//
+// The host starts the next match as soon as this overlay is dismissed, so for
+// the length of the leave the next level is already drawn UNDERNEATH it. With
+// one fade on the root, the backdrop thinned at exactly the same rate as the
+// text it was hiding — so "REWARDS", the rune's description and "tap to
+// continue" hung legibly over a fully lit board for four hundred milliseconds.
+// Two blind testers filed that as a rendering glitch, a round apart, and a
+// round-four verdict called it fixed on the strength of nobody mentioning it
+// (2026-09-13, Camila, screenshot 007).
+//
+// So the CONTENT leaves in a tenth of the time and the backdrop keeps the
+// rest: the board is revealed from behind a dimming veil with nothing written
+// on it. Cheaper and more robust than sequencing the next match behind the
+// transition, which would put a transition's timing in the scene's critical
+// path.
+.fade-leave-active .reward-frame,
+.fade-leave-active .reward-layers
+  transition: opacity 0.12s ease-out
+
+.fade-leave-to .reward-frame,
+.fade-leave-to .reward-layers
+  opacity: 0
+
+@media (prefers-reduced-motion: reduce)
+  .fade-enter-active, .fade-leave-active,
+  .fade-leave-active .reward-frame,
+  .fade-leave-active .reward-layers
+    transition-duration: 0.01s
+
 .brawl-text
   text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000
 
