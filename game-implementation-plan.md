@@ -76,7 +76,8 @@ argument resumes `gx_node`. Proven by `tests/save/GlyphyxStateCloudHydrate.test.
 
 ### The arena is ONE canvas
 
-Board, runes, hand, timer ring, tile counters, reveal arrows, projectiles,
+Board, runes, hand, the planning ring (which holds rather than counts down
+since round 18), tile counters, reveal arrows, projectiles,
 particles and the ghost-hand tutorial all draw on one canvas with one pointer
 capture. The DOM owns the HUD: top bar (streak flame + coins + forge column,
 stage badge + conquest bar, enemy badge), control hint pill, bottom bar
@@ -107,8 +108,13 @@ the corners) and the hint pill moves to the free column left of the board.
   `siege` (player 8 → win; player 0 tiles → overrun; at the limit the player
   wins if ≥ the biggest single faction, ties count as held).
 * Siege factions place round-robin (N→W→E); every enemy rune fires every turn.
-* Planning window 5 s; committing ends it early; the timer ticks at 3-2-1.
-  Lesson nodes (1-1 … 1-6) have no clock at all.
+* **No planning clock, anywhere** (round 18). `NodeConfig.timer` is false on
+  every node, the window is never released, and a turn ends when it is PLAYED
+  and at no other time. The machinery is kept dormant for a timed variant:
+  `PLANNING_MS` / `PLANNING_MAX_MS`, `view.timer`, the 3-2-1 countdown cues and
+  `adaptive.ts`'s `timerMs` all still exist, but `useBattle` sets
+  `tutorialHold = view.ghost !== null || !s.config.timer` — always true now —
+  so the tick returns early and `leftMs` never moves.
 * **The shield is a wall** (`SHIELD_BLOCKS_PROJECTILES`): defense hp 9 / 18, so a
   Lv 1 shield stands through four Lv 1 hits of any type; a mage beam stops at the
   first enemy shield (a Lv 2 cross bursts around the shield's tile); an arrow is
@@ -121,7 +127,10 @@ the corners) and the hint pill moves to the free column left of the board.
   0.65, add random moves and +1 / +2 / +3 s of planning time; a loss streak ≥ 2
   adds more; hard halves every delta, easy ×1.25; clamps skip ≤ 0.8, random ≤ 0.6,
   atk ≥ ×0.6, timer ≤ 9 s. `useAdaptive` persists `gx_failed_nodes` /
-  `gx_loss_streak` and feeds `beginPlanning` / `nextTurn` every turn.
+  `gx_loss_streak` and feeds `beginPlanning` / `nextTurn` every turn. (The
+  planning-time half of that relief — the +1/+2/+3 s and the ≤ 9 s clamp — is
+  computed but inert since round 18 took the clock out; every other delta is
+  live.)
 * **Stacking to Lv 8** (`MAX_LEVEL`): a same-type pebble dropped on a friendly rune
   of any level below 8 raises it one level; every stacked pebble adds its own
   Lv 1 body (`hp = min(max, hp + lv1.hp)`), stats extrapolate the GDD's Lv 1/2 pair
@@ -194,10 +203,10 @@ Chapter 1 is authored (onboarding), later chapters generated:
 | 1-4 | `mage` — orb → (1,2) ur, one beam sweeps both | skeleton dummies (2,1) / (3,0), hp 3 | 30 coins + Shield |
 | 1-5 | `defense` — shield → (1,1): intercepts the arrow, your bow shoots over it | your archer (1,2) hp 2; enemy archer (1,0) hp 4 fires every turn, never places | 35 coins + Radiant Cross |
 | 1-6 | `support` — cross → (0,2): the heal lets your wounded sword win | your sword (1,2) hp 1/3; orc sword (1,1) hp 6, atk ×0.5 | 40 coins |
-| 1-7 | first clocked duel: Goblins, easy | conquest 8 | 45 coins + Obsidian skin |
+| 1-7 | first real duel: Goblins, easy — and the first node where the enemy places at all. Opens with one taught move (`guide`) without being a lesson | conquest 8 | 45 coins + Obsidian skin |
 | 1-8 | 1v3 siege, medium factions, big chest | siege | 100 coins + Jade skin |
 
-Lessons 1-1 … 1-6: no clock, passive enemies, `objective: 'eliminate'`, turn
+Lessons 1-1 … 1-6: passive enemies, `objective: 'eliminate'`, turn
 limit 30, an AUTHORED deck that hands out the rune being taught
 (`tutorialHand` guarantees the ghost's rune in the opening hand — which is why
 save fixtures that assert "hand ⊆ unlocked" must sit on node 7 or later), a
@@ -733,6 +742,203 @@ alone. Together they were a pile.
       repainting whole — eight of twelve panels changed — and `art-todo.md`
       says so
 
+### Round 14 — five strangers play it blind (2026-09-11 → 2026-09-13)
+
+> The numbered "rounds" below are this plan's own; the blind playtest has its
+> own round numbering (five of them, same five personas each time). Round 14
+> here is the work that came out of playtest rounds 1–5 — one 505-file commit,
+> `5d98272`. Reports were published as artifacts; the reasoning for each change
+> lives in the comment above it.
+
+- [x] **Teaching and feel.** Lessons aim by POSITION with useful default
+      facings and a stall rescue behind them; every match names its objective
+      and the goal card gained the line it mimes; 1-7 opens with one taught
+      move (`guide`) without becoming a lesson; damage is visible as a fracture
+      network that deepens in three steps; the planning ring says what it
+      counts to and why it holds; enemies show what they have left, and a
+      defense rune WEARS its armour
+- [x] **Difficulty.** The adaptive relief arrives one loss earlier — measured,
+      a weak player's second attempt at 1-7 went 28 % → 70 % — and the first
+      loss still teaches. The pass mirror expires, so an absent player can no
+      longer walk the siege
+- [x] **Desktop.** A mouse never gets a correction window; the compass is green
+      and the chosen facing leans clear of the carried stone
+- [x] **Ads and release.** No interstitial on a tutorial node; the defeat
+      screen precedes its ad; the Yandex ad SDK no longer ships inside the Poki
+      bundle; `lang`/`dir` are stamped, so Arabic is RTL; images compressed and
+      `scripts/poki-release-audit.mjs` added
+- [x] **The skin chest** — a free material every ten minutes, on the wallet
+      column (`SkinChest.vue`, `gx_skin_chest_at`)
+
+### Round 15 — readable combat state, and the enemy's roster (2026-09-13)
+
+- [x] **The unanimous complaint, three rounds running** (`1f99220`): enemies
+      said nothing about what they had taken, so several turns of real progress
+      read as a stall. Pips are larger, a damaged stone prints its number, and a
+      defense rune now wears its armour — it mitigates 1 from every hit, so a
+      Lv 1 rune takes its health to precisely nothing, and all three testers
+      read that correct behaviour as the game ignoring them
+- [x] **The reward text stopped ghosting** over the next level. Reopened after
+      a round-four verdict had called it fixed on nobody mentioning it. The
+      cause was not the celebration beats — those are one-shot animations, long
+      finished by the time anyone taps continue — but the overlay fading at the
+      same rate as the backdrop hiding it. The content now leaves in a tenth of
+      the time; the dark keeps the rest
+- [x] **The skin chest names its prize**, held up on the same card the reward
+      chest uses, where before it gave a material and never said which
+- [x] **Tray glyphs carry at tray size.** Bow, orb and sword were one smudge; a
+      carved glyph is a shadow, so the hand LIGHTS its glyph. The board's stones
+      are untouched
+- [x] **The enemy's runes, shown** (`EnemyBadge.vue`): the faction's DECK, not
+      its hand — the hand is drawn per turn and its move is hidden until the
+      reveal, so showing that would hand over the one thing the turn is built on
+      not knowing. Read-only by construction: no socket, no rim, no breath, half
+      size, behind glass, `pointer-events: none`
+
+### Round 16 — teach the triangle: the drop is the aim (2026-09-13)
+
+- [x] **The gesture the game does not have** (`3f23e8e`). Playtesters place a
+      rune, see it facing the wrong way, and drag from the stone toward where
+      they wanted it. The rule was demonstrated — the ghost has always aimed at
+      the region's own anchor — but never emphasised, and never explained when
+      it failed
+  - the lit wedge is far brighter and glows along the edge the rune fires
+        through, so the facing is the loudest thing on the tile while the stone
+        is still in hand. Through `paintGlow`, never `shadowBlur`: blur on the
+        frame path is banned here and `tests/use/arenaPainters.test.ts` enforces it
+  - the drag hint names the rule — "drop it on the SIDE of a tile it should
+        face" — instead of "drag a rune onto the board", which is the sentence
+        players were taking literally
+  - the panic-drag answers itself: pressing the stone just played, with no
+        correction window, says "already down — the side you drop on sets the
+        facing". Detected against `playerMove`, not the board, because a
+        committed placement is not a rune on the board until the turn resolves
+        — which is also what a round-five tester reported as a stone that
+        "vanished for a full turn"
+  - tray glyphs are the player's cyan, not the rune's own hue: melee's colour
+        is red, and SIDE has to read before anything else
+- [x] Mobile keeps its correction window, and a stroke from the stone itself
+      re-aims it — verified left-to-right on a touch context
+
+### Round 17 — winning and losing, readable without counting (2026-09-13)
+
+- [x] **Five rounds of blind testers never once said they knew whether they
+      were winning** (`a6cfd54`). The goal was stated in words and shown as
+      numbers, and both ask for arithmetic — one tester could not reconcile
+      "YOU 6 / FOE 5" with the board in front of her, correctly, since a tile is
+      owned by standing on it AND by the two home rows, so counting stones gives
+      another answer
+- [x] **The counters became TRACKS** with the crown at the end, growing toward
+      the middle. The rule is now "fill your bar to the cup", which is a thing a
+      six-year-old can act on, and the pair reads as a tug of war at a glance.
+      The leader's plate takes a gold rim and lights its crown, so "am I ahead"
+      needs no comparison. The numbers stay as a footnote inside the same
+      element, where they can no longer disagree with it
+- [x] **The BOARD is the scoreboard**: owned tiles carry their owner's colour
+      across the whole square instead of a rim and a vignette. This had to go in
+      `tileSprite` and not in `paintTile` — the tiles are painted, so the drawn
+      painter is never called and a wash added there changes nothing anybody
+      sees. Baked once per owner; free per frame
+- [x] **And it speaks two colours only.** Territory was the FACTION's colour, so
+      the same side was goblin-green on the board and red on its goal bar — and
+      green is already this game's word for "you may place here". Identity keeps
+      the faction colour where it belongs, on the portrait (`ENEMY_TERRITORY` in
+      `useArenaArt.ts`; "one colour for every faction, so side reads before
+      identity")
+
+### Round 18 — no clock, no blur, and an enemy you can watch move (2026-09-13)
+
+- [x] **The per-move clock is gone** (`32a9146`). `timer` is false on every
+      node and the planning window is simply never released: a turn ends when it
+      is PLAYED and at no other time. The five-second window was the wrong
+      pressure for a board you read rather than race, and it produced a rule
+      nobody could see happening — a window that expired played your turn for
+      you
+  - The field and the countdown's vocabulary STAY, dormant and documented,
+        for a timed variant that may never come. `adaptive.ts` still computes a
+        `timerMs`; `useBattle` holds the window open because
+        `tutorialHold = view.ghost !== null || !s.config.timer` is now always
+        true, so the tick at the bottom of the loop returns early forever
+- [x] **Every blur went with it** — four `backdrop-filter`s, one `filter` and
+      the tailwind blur utilities. A blur smears the painted art behind it,
+      which is the thing people came for, and it re-rasterises everything
+      underneath on every frame. Separation now comes from the plate's own
+      opacity. (What is left in the tree is `shadowBlur` on baked-once sprites
+      and a set of comments explaining the ban.)
+- [x] **The enemy's move arrives as a falling star.** It used to slam down
+      exactly like the player's, out of nothing, on a tile that simply changed —
+      one blind tester read the enemy's placements as pieces that "spawn and
+      creep onto my side" (round 4). Now the stone flies in from off the board
+      with a tail behind it, leaning along the line it will shoot down, and
+      lands with a ring of dust (`spawnCometEmbers` in `arenaFx.ts`); the reveal
+      was lengthened to 520 ms to give the flight room to be watched. When both
+      sides reach for one tile the two stones arrive side by side rather than on
+      top of each other, so the clash that follows has two stones to be about
+- [x] **2-3 is now the lesson for that clash** (`CLASH_LESSON_NODE`). It is the
+      only rule in the game whose cause is invisible — a rune you just paid for
+      comes apart on the tile you chose with nothing on it to blame — and the
+      only lesson whose dummy has to PLACE something, which no passive dummy can
+      do. So a faction may now carry a `script` (`EnemySetup.script`): the move
+      it plays each turn, played only while its tile is still empty
+  - 2-3's dummy dives for (1,2) every turn. The player's sword (3 HP) wins on
+        health over the dummy's bow (2 HP) and walks out of it on 1 — hurt,
+        which is the half of the rule that costs matches — and the wounded sword
+        still swings up into the 1-HP skeleton on (1,1) in the same resolution,
+        so the node clears in one turn like every other lesson
+  - A bow rather than a second sword on purpose: two swords would have broken
+        each other, the player would have ended the turn with nothing on the
+        board and no idea which stone had won, and there would have been no
+        survivor to read the wound on
+  - It sits at 2-3 rather than earlier because the enemy does not place a
+        single rune until 1-7, and a rule explained before it can happen is a
+        rule nobody remembers
+- [x] Full suite green (the three UI files that time out under load pass in
+      isolation); Poki build audited 16/16 at 3.8 s to playable
+
+### Round 19 — the orb is painted, in four sheets (2026-09-13/14)
+
+- [x] **Eighteen panels is more than the painter holds at once** (`b9eb970`).
+      The orb proved it four times: three rolls refused for a re-composed grid,
+      and the one that sliced came back with the glyph flattened to a bare ring
+      — no core, no sparks — on every panel. The enemy orb sheet, the same glyph
+      over four factions on eight panels, has been right since its first roll.
+      The difference is not the model or the wording; it is how much of the
+      sheet the painter is holding in its head
+- [x] **`STONE_SPLITS` in `artSheet.ts`** lets a rune be painted as several
+      smaller sheets, and the orb is painted as four: river/obsidian/jade/amber,
+      marble/ember, sapphire/ruby, diamond. Every group lands on a legal grid —
+      the column count stays even so a material's two levels sit side by side,
+      and `cols/rows` is an aspect an image tool can be asked for
+- [x] **The split goes WITH the grain of the grid.** The first attempt laid its
+      groups out the way the full sheet does, adjacent pairs of one material at
+      two levels, and the painter ignored it: handed four materials on a 4×2 it
+      did the obvious thing, a material per COLUMN with level 1 along the top
+      row and level 2 along the bottom, swapping two materials on the way. That
+      reading is the natural one — four columns and two rows for four materials
+      and two levels is a table, and a table's rows mean something — so the
+      sheet is laid out that way now and the prompt says so. Fighting the
+      instinct cost a generation; agreeing with it costs nothing
+- [x] **Two prompts hardened alongside it:** the laurel sheet says the middle of
+      the wreath is a HOLE (two rolls painted a stone inside the ring, covering
+      the thing the wreath frames), and the enemy orb spells its glyph out in
+      three required parts, because a bare ring with a stem reads as a different
+      rune
+- [x] **The painted set is complete.** The orb was the last rune still drawing
+      itself at both levels while its four faction stones were painted.
+      `PAINT-STATUS.md` reads **38 sliced · 0 need a repaint · 0 painted,
+      unreceipted · 0 outstanding**, and every one of the ten runes has its 26
+      files in `public/images/runes/`
+- [x] **`sheet-index.json` carries only the split.** `art:export` also
+      re-measured the fits of `fx`, `ui` and the laurels — all three already
+      painted, none of their drawings touched — and those measurements were
+      reverted before the commit. This is the standing trap with that command:
+      patch in the sheet you actually changed, never adopt the whole file
+- [x] Two loose ends after it (`a52be98`): `placeholderConfig` still said
+      `timer: true` — nothing was ever timed by it, its `id: 0` is never a real
+      node, but it is the config somebody copies — and `scripts/audit/`, where
+      the Poki release audit drops a screenshot per graded viewport, joined
+      `.gitignore`
+
 ## 3. Known trade-offs / follow-ups
 
 * The leaderboard worker is reused unchanged: `score` = best node reached,
@@ -745,17 +951,38 @@ alone. Together they were a pile.
   (`window.__glyphyx.battle.view.ageMs`, published when `localStorage.cheat` is
   set) and uses a trusted tap instead of the old steer drag; run it against a
   built bundle before a portal submission.
-* Painted art is still procedural: the pipeline is in place (`pnpm art:prompts`
-  → `pnpm art:export` → paint → `pnpm art:slice` → `/#/playground`), see
-  `art-sheets/README.md` and `art-todo.md`; keep `VITE_ENABLE_ART_OVERRIDES`
-  off until paintings exist. The PWA logo files are still the previous game's mark.
-* The leaderboard Worker under `glyphyx-leaderboard.hyperg8.workers.dev` answers
-  404 until it is deployed from a logged-in shell (`worker/SETUP.md`); the client
-  already speaks its wire shape and shows the baked board meanwhile.
-* Renderer nits to judge with real art: the Lv 2 crest sits as a diagonal tag at
-  the stone's top-right edge (the reference had a bottom emblem); enemy tiles
-  keep the FACTION colour rather than a universal red. `CampaignModal`'s reward
-  column still uses icon glyphs, not `PebblePreview`.
+* **The art is painted and the flag is ON** (verified 2026-09-14): `.env` sets
+  `VITE_ENABLE_ART_OVERRIDES=true`, and `art-sheets/PAINT-STATUS.md` reports 38
+  sheets sliced, 0 needing a repaint, 0 unreceipted and 0 outstanding. The
+  pipeline (`pnpm art:prompts` → `pnpm art:export` → paint → `pnpm art:slice` →
+  `/#/playground`, or `pnpm art:desk` for the whole round trip) stays for
+  repaints; see `art-sheets/README.md` and `art-todo.md`.
+* The PWA icons are Glyphyx's own mark now (`public/manifest.json` names
+  `images/logo/logo_192x192.png` and `_512x512.png`; both are the carved
+  wordmark slab, checked by opening them). One nit stands: they are the
+  WORDMARK letterboxed into a square canvas rather than a square icon, so a
+  home-screen install shows a wide mark with air above and below it.
+* The leaderboard Worker still needs a `wrangler deploy` from a logged-in shell
+  (`worker/SETUP.md`); the client already speaks its wire shape and shows the
+  baked board meanwhile. **The URL in this note was wrong:** `.env` points at
+  `https://glyphyx-leaderboard.rodent-race.workers.dev`, not the
+  `hyperg8.workers.dev` subdomain this file used to name. Whether it answers was
+  not tested by this pass.
+* Renderer nits, re-checked against the painted art (2026-09-14):
+  * **Resolved** — enemy tiles no longer keep the faction colour. Territory is
+    one `ENEMY_TERRITORY` colour for every faction (round 17), and identity
+    lives on the portrait.
+  * **Still open** — `CampaignModal`'s reward column still uses icon glyphs
+    (`GLYPH: Record<RuneType, GameIconName>`), not `PebblePreview`.
+  * **Changed shape** — the Lv 2 crest note was written against the drawn
+    stone. Painted drop-ins now exist for lv1/lv2 only, and levels 3+ blit the
+    lv2 painting with a `labels.level(n)` crest, so the question is now where
+    THAT crest sits over a painting, not where the drawn tag sat.
+* A stale comment worth a one-line fix next time `useArenaArt.ts` is open: at
+  the laurel guard (~line 477) it still says "the player's orb has no painting
+  yet (only the four faction ones do)". The logic is right and general — a
+  painted wreath goes on a painted stone and nothing else — but the orb has been
+  painted since `b9eb970`, so the example no longer holds.
 * Dev seams: `window.__glyphyx = { battle, campaign, economy, streak, skins,
   overlays, winNow, layout, stripRoom }` and `window.__arena`; `localStorage.cheat`.
 * Follow-ups after round 3: the campaign map's reward column still uses icon
@@ -771,11 +998,20 @@ alone. Together they were a pile.
   watch it in a real playtest.
 * The late lessons replace three generated fights (2-2 and 2-6 were sieges,
   3-2 a siege), which is why `tests/game/campaign.test.ts` skips
-  `LATE_LESSON_NODES` in its duel/siege alternation check and reads the
-  chapter-3 deck widening off 3-3 instead of 3-2. A save fixture or an e2e that
-  needs a planning CLOCK must now avoid nodes 10, 14 and 18 as well as 1–6.
+  `LATE_LESSON_NODES` — and, since round 18, `CLASH_LESSON_NODE` (2-3) with
+  them (`if (LATE_LESSON_NODES[id] || id === CLASH_LESSON_NODE) continue`) — in
+  its duel/siege alternation check and reads the
+  chapter-3 deck widening off 3-3 instead of 3-2. (The clause this note used to
+  end on — "a fixture or an e2e that needs a planning CLOCK must avoid nodes 10,
+  14 and 18 as well as 1–6" — is void since round 18: no node has a clock, so
+  there is no longer a test that can need one.)
 * `npx biome check` aborts on a pre-existing configuration error (`biome.json`
   lists `useVue*` rules the installed Biome does not know). It fails the same
-  way on an untouched tree, but nobody can lint until it is fixed.
-* The art manifest's largest gap is now the 63 files of the three new runes
-  (21 each: 12 player stones, 8 enemy stones, 1 glyph) — see `art-todo.md`.
+  way on an untouched tree, but nobody can lint until it is fixed. **Being
+  fixed in the same session as this doc pass — check `biome.json` before
+  trusting this entry.**
+* The art manifest has no gap left. The entry here used to name "the 63 files
+  of the three new runes" as the largest one; all ten runes now have their 26
+  files (18 player stones, 8 enemy stones) plus a glyph single, and
+  `PAINT-STATUS.md` is at 0 outstanding. `art-todo.md` is the manifest of what
+  each file IS, not a to-do list any more.

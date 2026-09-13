@@ -22,8 +22,20 @@ needs a new engine: everything sits on `src/game/*` (pure rules), `useBattle`,
 
 ## Tier 1 — build these first (highest impact, ≤ 1 day each)
 
-### 1. Auto-advance on the result screen
+### 1. Auto-advance on the result screen — **HALF SHIPPED** (audited 2026-09-14)
 **Moves:** put-down resistance, APT · **Effort:** 2 h · **Risk:** low
+
+> **What exists.** Two of the three hand-over paths advance on their own, both
+> in `GameScene.vue`: a LESSON's result screen (the no-chest replay path) calls
+> `scheduleAutoAdvance()` — gated on `s.node.tutorial`, so ordinary nodes are
+> excluded — and a lesson cleared for coins alone calls `scheduleHandover()`
+> after `LESSON_HANDOVER_MS`. The chest step runs its own clock in
+> `ChestOverlay.vue` (`CHEST_AUTO_CONTINUE_MS`) and already draws the progress
+> this item asks for, as a thin bar rather than a conic ring (`autoFraction`).
+> **Still open:** the ORDINARY result screen — the one after a real duel or
+> siege — never advances itself. There is no `autoAfterMs` prop on `FButton`,
+> no cancel-on-pointer-down, and no "off for the first three result screens"
+> rule (`resultsSeen` is persisted, but for the one-shot pointers, not for this).
 
 A result screen is a full stop. The next match should start before the decision
 to stop is made.
@@ -35,8 +47,16 @@ paints a conic ring under the glyph) and fire `battle.nextNode()` /
 Keep it off on the first three result screens (the player is still reading).
 Measure: matches per session.
 
-### 2. "One more turn" undo of a mis-drop, once per match
+### 2. "One more turn" undo of a mis-drop, once per match — **NOT BUILT** (audited 2026-09-14)
 **Moves:** pick-up, D1 · **Effort:** 3 h · **Risk:** low
+
+> No `undoLast`, no `undosLeft`, nothing on `MatchState`. What the game has
+> instead is the CORRECTION WINDOW, and `useBattle.ts` is explicit that the two
+> are not the same thing: "it exists to undo a facing the player could not see
+> before committing", and the window "was never an undo" for the placement
+> itself. Round 16 went further in the opposite direction — pressing the stone
+> just played now ANSWERS the panic-drag with "already down", rather than
+> taking it back. Decide whether this item survives that before building it.
 
 The single most common first-session frustration in drag-to-place games is a
 pebble landing one tile off. A committed placement cannot be taken back today.
@@ -51,6 +71,13 @@ start), so there is nothing to re-plan.
 ### 3. Milestone chests every 4 nodes on the campaign map
 **Moves:** D1, put-down resistance · **Effort:** 3 h · **Risk:** low
 
+> **Still half shipped — re-audited 2026-09-14, no change.** The SKIN half is
+> still open: `campaign.ts` marks every 4th and 8th node with a skin
+> (`LATER_SKINS[slot]`, surfaced only when the node is reached), there is no
+> `campaign.toGo` key in `en.ts`, and neither `ConquestBar.vue` nor
+> `StageBadge.vue` carries a chest chip. The rune half below is unchanged and
+> still live.
+>
 > **Half of this shipped (2026-09-09).** The RUNE half is built: the campaign
 > now hands out three more runes (axe 2-1, boulder 2-5, mortar 3-1) and
 > `NextUnlockTeaser` advertises the next one — stone, name and "Win Level 2-1
@@ -109,8 +136,13 @@ is for campaign-gated content only. Do not re-litigate this without a test.
 If session recordings show players tapping them expecting something, give them a
 one-shot toast pointing at the campaign map rather than making them buyable.
 
-### 4. Daily first-win double gold
+### 4. Daily first-win double gold — **NOT BUILT** (audited 2026-09-14)
 **Moves:** D1 · **Effort:** 2 h · **Risk:** low
+
+> No `gx_first_win_day` in `keys.ts` and no `firstWin` anywhere in `src/`. The
+> day-window helper this would reuse does exist — `gx_forge_at` and
+> `gx_skin_chest_at` are both offline clocks, and the free rank window
+> (`freeRankWindow(now)`) is the closest pattern to copy.
 
 The classic D1 hook, and it needs one key.
 
@@ -120,8 +152,16 @@ same helper as the forge uses) in `keys.ts`; `useBattle.finishMatch` doubles
 gold "First win today ×2" pill (`t('result.firstWin')`) and, on boot, a small
 "×2 waiting" badge on `StageBadge` so the player knows before they play.
 
-### 5. Streak insurance for one loss
+### 5. Streak insurance for one loss — **NOT BUILT** (audited 2026-09-14)
 **Moves:** APT, put-down resistance · **Effort:** 2 h · **Risk:** medium (softens the streak)
+
+> No `gx_streak_saved` key and no `restore` on `useStreak`. Note before
+> building it: the rewarded-button conventions have moved since this was
+> written — a card gates its video half on `canOfferVideo`
+> (`isRewardGated && canOfferReward`), and
+> `tests/platforms/rewardedAdIcon.test.ts` derives the rewarded surfaces by
+> transitive closure, so a new rewarded button without the film mark fails
+> there rather than shipping.
 
 A five-win streak that dies to one bad clash is a session ender. Let the player
 keep it ONCE — behind the rewarded ×3 button's sibling.
@@ -134,6 +174,19 @@ Cap at once per streak via `gx_streak_saved` = the streak value it was used at.
 ---
 
 ## Tier 2 — the session-length engine (1–2 days each)
+
+> **Audit note (2026-09-14).** Tier 2 and Tier 3 were swept by NAME only —
+> grepping `src/` for each item's own identifiers — where Tier 1 above was read
+> against the code. Nothing in either tier is built: no `gauntlet`, no
+> `mastery`, no replay scrub (the only `replay` in the tree is an icon name),
+> no `taunt` (the enemy badge shows the FACTION's name, not a rival's), no
+> `vibrate`/`haptic` call anywhere, no threat preview (`holdMs` exists, but it
+> serves `LESSON_REAIM_HOLD_MS`), no weekly modifier, no board-image share, no
+> commander levels, and no `boss`/signature rune in `campaign.ts` or `rules.ts`.
+> Two partial exceptions, both noted on their items: **12** is half built, and
+> **14**'s relief exists in a different shape (`adaptive.ts`) than the "Rally
+> node" this item describes. A name-level sweep can miss a feature built under
+> another name — treat an unmarked item here as "not found", not as proven absent.
 
 ### 6. Endless "Gauntlet" mode after chapter 1
 **Moves:** APT, hard-to-put-down · **Effort:** 1 d · **Risk:** low
@@ -203,8 +256,14 @@ pattern: place `[12]`, merge `[8, 20, 24]`, shatter `[30]`, victory
 `[20, 40, 60]`. One map in `useGameAudio` next to `SAMPLE_CUES`, called from
 `playFx` when `power` passes the throttle.
 
-### 12. Smart hand: never three identical, never zero legal moves
+### 12. Smart hand: never three identical, never zero legal moves — **HALF SHIPPED** (audited 2026-09-14)
 **Moves:** pick-up · **Effort:** 2 h · **Risk:** low
+
+The no-triples half is built and has its reason written down in `src/game/hand.ts`:
+"a hand of three identical pebbles is a turn with no decision in it, so when the
+deck has any variety at all the third pebble is redrawn once"
+(`distinct(d) >= 2 && out.every(t => t === out[0])`). The legal-move guarantee
+and the stack-target bias below are still open.
 
 `hand.ts` already avoids triples. Extend `fillHand` to reject a hand whose
 every rune has zero legal placements (possible late in a siege) and to bias the
@@ -219,13 +278,23 @@ Add the same cone for ENEMY runes on a 400 ms long-press of a tile
 (`useArenaInput` → `battle.peek(cell)`), so a player can read what will fire
 at them before committing. Free depth, no new rules.
 
-### 14. Better first-loss recovery: "Rally" node relief
+### 14. Better first-loss recovery: "Rally" node relief — **SHIPPED, in a different shape** (audited 2026-09-14)
 **Moves:** D1 · **Effort:** 3 h · **Risk:** medium
 
 Losing the same node three times is the churn point. Copy the Survivalist
 relief curve: `gx_failed_nodes: { [id]: n }`; `nodeConfigFor` lowers the AI a
 level after 2 losses and reduces `atkMul` by 15 % after 3, never announced
 mid-match, reset on a clear.
+
+> **What was actually built** is `src/game/adaptive.ts`, and it goes further
+> than this sketch: `gx_failed_nodes` / `gx_loss_streak` are persisted as
+> described, 1 / 2 / ≥ 3 losses on the same node scale enemy attacks
+> ×0.85 / 0.75 / 0.65 and add random moves and a skip chance, a tile deficit
+> feeds the same curve, and the whole thing is never announced and never runs
+> on a lesson. Round 14 moved the relief one loss EARLIER (measured: a weak
+> player's second attempt at 1-7 went 28 % → 70 %). There is no node called
+> "Rally" and no separate relief node — the curve is applied in place. What is
+> genuinely still open from this item: nothing that changes play. Close it.
 
 ### 15. Leaderboard as a "beat your rival" chip
 **Moves:** put-down resistance · **Effort:** 3 h · **Risk:** low

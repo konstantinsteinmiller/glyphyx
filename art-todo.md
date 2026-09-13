@@ -1,5 +1,14 @@
 # Art todo — drop-in manifest
 
+> **Status, 2026-09-14: there is nothing left to paint.** `art-sheets/PAINT-STATUS.md`
+> reads 38 sliced · 0 need a repaint · 0 painted-unreceipted · 0 outstanding,
+> `.env` has `VITE_ENABLE_ART_OVERRIDES=true`, and every one of the ten runes
+> has its 26 files in `public/images/runes/` (18 player stones, 8 enemy stones)
+> plus its glyph single. The "still un-painted" and "has to be repainted"
+> passages below are the history of how the manifest got here — they were true
+> when written and are kept for the reasoning, not as a queue. `PAINT-STATUS.md`
+> is the live answer; this file is the contract for WHAT each path holds.
+
 Glyphyx draws its whole board from code: the slate tiles, the stone frame, the
 sandstone runes with their engraved glyphs, the reveal arrows, projectiles,
 beams, shards and rings are Canvas 2D (`src/use/arenaPainters.ts`), baked to
@@ -56,9 +65,9 @@ Ids: `<type>` ∈ `melee` (Sword), `archer` (Bow), `mage` (Orb), `defense`
 `undead`.
 
 The last FIVE are the campaign's late unlocks and were added after the first
-art pass, so **every one of their 105 files is still un-painted** (21 each: 12
-player stones, 8 enemy stones, 1 glyph) — they are the
-largest single gap in this manifest. Their glyphs, in the same words the
+art pass. **They were the largest gap in this manifest — 105 files — and they
+are painted now** (2026-09-13; the orb was the last rune to land, split across
+four sheets). Their glyphs, in the same words the
 prompts use: the Axe is a broad crescent bit with drooping horns on a short
 haft; the Boulder is a chipped round rock mid-roll with two cracks and speed
 bars behind it; the Mortar is a squat tube canted up-right on a base plate with
@@ -82,11 +91,17 @@ slab, step cut, domed, brilliant cut.
 
 Three more skins arrived with it — **sapphire, ruby and diamond**, the gem tier
 — so a stone sheet is nine skins × two levels on a 6×3 grid (1536×768) where it
-was six on 4×3. Every `sheet-runes-*` painting is therefore a picture of a
-different grid AND a different stone, and every one of them has to be repainted
-from the re-exported reference.
+was six on 4×3. Every `sheet-runes-*` painting was therefore a picture of a
+different grid AND a different stone, and every one of them had to be repainted
+from the re-exported reference — which is what the 2026-09-11 to -13 passes
+did. All 20 stone sheets are sliced against their current references; the
+orb's needed splitting into four (`STONE_SPLITS` in `artSheet.ts`) before it
+would come back on the lattice.
 
-**The Bow's painted stones were REMOVED and have to be repainted.** The bow was
+**The Bow's painted stones were REMOVED and had to be repainted** — they were,
+on 2026-09-11 (`sheet-runes-archer`, rev `bc1b3aa9e346`), and the 26 archer
+files are back in `public/images/runes/`. The reasoning is kept because it is
+the clearest case of why a re-cut drawing invalidates its painting. The bow was
 re-cut (a crescent of even thickness instead of a filled belly — see
 `glyphs.ts`), because the old drawing only read as a bow while a skin OUTLINED
 its glyph: every skin that fills one — jade's inlay, marble's carved ink,
@@ -94,8 +109,9 @@ amber's lit interior, obsidian's neon — turned the belly into a solid sail, an
 the painted returns copied that faithfully, so the same rune was a bow on two
 materials and a blob on four.
 
-So the twelve `public/images/runes/archer-*.webp` are gone (the renderer falls
-back to the drawing, which is the corrected bow), and the three paintings that
+So the twelve `public/images/runes/archer-*.webp` went (the renderer fell back
+to the drawing, which is the corrected bow) until the repaint landed, and the
+three paintings that
 are pictures of the old drawing — the bow's player and enemy sheets, and the
 glyph sheet, whose lattice was re-laid from 3 columns to 5 for the tenth rune —
 are parked in `art-sheets/painted/stale/`, which the slicer does not read. The

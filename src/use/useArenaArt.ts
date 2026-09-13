@@ -473,8 +473,7 @@ const bakePebble = (
     // flake, ruby is a plump cabochon. A wreath that ignores which one it is
     // hanging on floats off the narrow ones and bites into the wide ones.
     const cut = (side === 'player' ? SKINS[skin] ?? SKINS.river : enemyStone(faction)).cut
-    // A painted wreath goes on a PAINTED stone and nothing else. The player's
-    // orb has no painting yet (only the four faction ones do), so a stone that
+    // A painted wreath goes on a PAINTED stone and nothing else. A stone that
     // falls back to the drawing would otherwise get a painted wreath laid over
     // it — two different hands, and two different silhouettes, on one rune. The
     // drawn wreath is cut to the drawn stone exactly, so a rune whose painting

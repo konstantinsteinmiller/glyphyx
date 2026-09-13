@@ -68,11 +68,12 @@ pnpm art:slice    # cut painted returns in art-sheets/painted/ into public/image
   picks random moves, hits softer, and the planning window grows — scaled by
   the difficulty setting and switched off in sudden death and on every lesson
   (`src/game/adaptive.ts`).
-* **Simultaneous turns.** Both sides plan in secret in a 5-second window, the
+* **Simultaneous turns.** Both sides plan in secret — with no clock on it: the
+  turn ends when it is played and at no other time. The
   board reveals every trajectory at once, then one deterministic resolution
   plays out in 1.2 s: shields → heals → ranged → melee → tile control.
   `src/game/resolve.ts` is a pure function with 90 tests behind it.
-* **One canvas, one loop.** Board, runes, hand, timer, arrows, projectiles,
+* **One canvas, one loop.** Board, runes, hand, the planning ring, arrows, projectiles,
   shards and the ghost hand are all drawn by `useArenaArt.ts` on one canvas
   with one pointer capture — no browser drag/drop, no selectable images, ~2 ms
   of JS per frame. Pebble sprites are baked once behind the splash.
@@ -105,7 +106,7 @@ pnpm art:slice    # cut painted returns in art-sheets/painted/ into public/image
 | Beat | What happens |
 | --- | --- |
 | **Learn** | 1-1: a ghost finger drags the sword under a 1-HP skeleton and swipes up. Do it, the skeleton shatters, a chest pops, the Bow is yours, 1-2 starts on its own. |
-| **Plan** | Three pebbles in your hand. Drag one onto any free tile — or onto your own rune of the same type to merge it into a **Lv 2** stone with double health and damage. Keep holding and flick to aim; release to lock — then you have one second to press anywhere and flick again if it faces the wrong way. The enemy is choosing at the same time, unseen. |
+| **Plan** | Three pebbles in your hand, and no clock to play them under. Drag one onto any free tile — or onto your own rune of the same type to merge it into a **Lv 2** stone with double health and damage. **The side you drop on is the way it faces:** each tile is carved into four wedges plus a dead middle that means "no choice made", and the lit wedge glows along the edge the rune will fire through while the stone is still in your hand. On touch, releasing gives you a one-second window (`LOCK_WINDOW_MS`) to press anywhere and flick again; a mouse or pen skips that window when the drop already chose a side, because you could see the answer before letting go. The enemy is choosing at the same time, unseen. |
 | **Reveal** | Both placements slam down and every rune on the board shows its trajectory. |
 | **Resolve** | Everything fires together, in a fixed order. **Sword** hits the tile it faces (Lv 2 knocks back). **Bow** skips a tile and hits the next (Lv 2: two tiles). **Arcane Orb** beams two diagonal tiles (Lv 2 explodes in a cross at the end). **Shield** absorbs 1 from every hit, stops beams and intercepts arrows (Lv 2 shields neighbours). **Radiant Cross** heals neighbours (Lv 2 also buffs their attack). |
 | **Clash** | Two pebbles dropped on the same free tile collide — the tougher survives with the difference in health; equal, both shatter. |
@@ -136,7 +137,7 @@ src/game/          pure, testable domain — no Vue, no DOM
   art.ts           drop-in bitmap probe (public/images/<kind>/<id>.webp)
 
 src/use/           reactive layer (module-level singletons)
-  useBattle        the live match: clocks, drag protocol, payout, events
+  useBattle        the live match: phase timeline, drag protocol, payout, events
   useArenaArt      the Canvas 2D renderer + pebble sprite bake seam
   useArenaInput    pointer state machine → BattleApi
   useCampaign      node progress, unlocked runes, chests
@@ -237,7 +238,10 @@ baked boards.
 * **Art pipeline** (dev only): `/#/art-sheets` bakes every drawable through the
   game's own painters onto magenta-keyed lattice sheets and exports them with a
   ready-to-paste prompt per sheet; `/#/playground` shows every drawable in
-  motion with a live painted-vs-drawn toggle (`?art=on|off`). The loop is in
+  motion with a live painted-vs-drawn toggle (`?art=on|off`). Every sheet is
+  painted as of 2026-09-13 — 38 sliced, 0 outstanding — and
+  `VITE_ENABLE_ART_OVERRIDES` is on, so what ships is the painting with the
+  drawing underneath it as the fallback. The loop is in
   [`art-sheets/README.md`](./art-sheets/README.md); the drop-in ids in
   [`art-todo.md`](./art-todo.md).
 * **Image compression** — `pnpm art:compress` runs `scripts/compress-images.mjs`
