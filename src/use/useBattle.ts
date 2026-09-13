@@ -239,7 +239,7 @@ const blankBoard = (): BoardState => {
 /** Stands in until the first `startNode`. `id: 0` is never a real node. */
 const placeholderConfig = (): NodeConfig => ({
   id: 0, chapter: 1, index: 1, mode: '1v1', objective: 'conquest', enemies: [], presets: [],
-  playerDeck: null, tutorial: null, timer: true, turnLimit: TURN_LIMIT,
+  playerDeck: null, tutorial: null, timer: false, turnLimit: TURN_LIMIT,
   reward: { coins: 0, unlockRune: null, unlockSkin: null, big: false }, seed: 0
 })
 
