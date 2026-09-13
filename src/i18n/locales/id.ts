@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Seret rune ke papan',
-      'desktop': 'Seret rune ke papan'
+      'touch': 'Lepaskan di SISI petak yang harus dihadapinya',
+      'desktop': 'Lepaskan di SISI petak yang harus dihadapinya'
     },
     'aim': {
       'touch': 'Lepas di sisi yang dituju',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Petak itu tidak menerimanya',
       'desktop': 'Petak itu tidak menerimanya'
+    },
+    'lateAim': {
+      'touch': 'Sudah ditaruh — sisi tempat kamu melepas menentukan arahnya',
+      'desktop': 'Sudah ditaruh — sisi tempat kamu melepas menentukan arahnya'
     },
     'mage': {
       'touch': 'Orb menembak diagonal menembus dua petak',

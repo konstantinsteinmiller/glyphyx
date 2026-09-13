@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Przeciągnij runę na planszę',
-      'desktop': 'Przeciągnij runę na planszę'
+      'touch': 'Puść ją po tej STRONIE pola, w którą ma patrzeć',
+      'desktop': 'Puść ją po tej STRONIE pola, w którą ma patrzeć'
     },
     'aim': {
       'touch': 'Puść przy krawędzi, w którą ma patrzeć',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'To pole jej nie przyjmie',
       'desktop': 'To pole jej nie przyjmie'
+    },
+    'lateAim': {
+      'touch': 'Już postawiona — strona, na której ją puścisz, ustala kierunek',
+      'desktop': 'Już postawiona — strona, na której ją puścisz, ustala kierunek'
     },
     'mage': {
       'touch': 'Kula strzela po skosie przez dwa pola',

@@ -102,13 +102,27 @@ const onClick = (): void => {
 </template>
 
 <style scoped lang="sass">
+// ── The anvil and its chip are ONE box ──
+//
+// The chip used to hang below the button out of flow, which meant the column
+// this sits in reserved not one pixel for it and whatever came next wore it:
+// the skin chest's gold halo landed straight on the forge's countdown. The
+// compensating margin lived two files away, on a class Vue was silently
+// dropping (see `SkinChest`), so the whole arrangement was held together by a
+// rule that never applied.
+//
+// So the button owns both, stacked, exactly the way the skin chest below it
+// already does — two collectables that behave alike are one thing to learn,
+// and now they are laid out alike too. The tap target growing to include the
+// chip is a bonus on a phone, not a cost.
 .forge
   position: relative
-  display: block
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: 0.1rem
   width: clamp(2.6rem, 11vw, 3.4rem)
-  height: clamp(2.6rem, 11vw, 3.4rem)
   min-width: 2.6rem
-  min-height: 2.6rem
   padding: 0
   border: 0
   background: none
@@ -126,7 +140,7 @@ const onClick = (): void => {
 .forge__svg
   display: block
   width: 100%
-  height: 100%
+  height: clamp(2.6rem, 11vw, 3.4rem)
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))
 
 .forge__shutter
@@ -168,12 +182,13 @@ const onClick = (): void => {
 
 // ─── Status label ───────────────────────────────────────────────────────────
 .forge__label
-  position: absolute
-  top: calc(100% + 0.1rem)
-  left: 50%
-  translate: -50% 0
   display: flex
+  align-items: center
   justify-content: center
+  // Reserved whether or not there is anything in it, so the anvil never
+  // shifts between the countdown and the payout chip.
+  min-height: 1.1em
+  line-height: 1
   white-space: nowrap
   pointer-events: none
 

@@ -123,8 +123,8 @@ export default {
   // One pill at a time, retired the moment the thing it names has happened.
   'hints': {
     'drag': {
-      'touch': 'Drag a rune onto the board',
-      'desktop': 'Drag a rune onto the board'
+      'touch': 'Drop it on the SIDE of a tile it should face',
+      'desktop': 'Drop it on the SIDE of a tile it should face'
     },
     'aim': {
       'touch': 'Let go on the edge it should face',
@@ -165,6 +165,10 @@ export default {
     'busyTile': {
       'touch': 'That tile will not take it',
       'desktop': 'That tile will not take it'
+    },
+    'lateAim': {
+      'touch': 'Already down — the side you drop on sets the facing',
+      'desktop': 'Already down — the side you drop on sets the facing'
     },
     'mage': {
       'touch': 'The orb beams two tiles diagonally',

@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Arraste uma runa para o tabuleiro',
-      'desktop': 'Arraste uma runa para o tabuleiro'
+      'touch': 'Solte no LADO da casa para onde ela deve apontar',
+      'desktop': 'Solte no LADO da casa para onde ela deve apontar'
     },
     'aim': {
       'touch': 'Solte na borda para onde deve olhar',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Essa casa não aceita',
       'desktop': 'Essa casa não aceita'
+    },
+    'lateAim': {
+      'touch': 'Já colocada — o lado onde você solta define a direção',
+      'desktop': 'Já colocada — o lado onde você solta define a direção'
     },
     'mage': {
       'touch': 'O orbe dispara na diagonal através de duas casas',

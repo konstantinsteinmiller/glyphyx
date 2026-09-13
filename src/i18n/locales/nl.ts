@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Sleep een rune op het bord',
-      'desktop': 'Sleep een rune op het bord'
+      'touch': 'Laat hem los op de KANT van het vakje waarheen hij moet wijzen',
+      'desktop': 'Laat hem los op de KANT van het vakje waarheen hij moet wijzen'
     },
     'aim': {
       'touch': 'Laat los bij de rand waar hij heen moet wijzen',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Dat vak neemt hem niet',
       'desktop': 'Dat vak neemt hem niet'
+    },
+    'lateAim': {
+      'touch': 'Al geplaatst — de kant waarop je loslaat bepaalt de richting',
+      'desktop': 'Al geplaatst — de kant waarop je loslaat bepaalt de richting'
     },
     'mage': {
       'touch': 'De bol schiet diagonaal door twee vakjes',

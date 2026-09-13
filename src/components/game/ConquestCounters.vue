@@ -116,13 +116,26 @@ const foeReached = computed(() => props.foe >= CONQUEST_TILES)
   inset: 0
   pointer-events: none
 
+// ── Why the pair sits in the MIDDLE ──
+//
+// It used to be `space-between`, which pinned the number to one end of the
+// plaque and the caption to the other. Both ends of a pill are its rounded
+// caps, so the two things you actually have to read were sitting on the one
+// part of the plate that is curving away, dimmest and narrowest — and on the
+// painted plaque, right on its bevel. The middle is flat, evenly lit and has
+// the room; the pair goes there as one group, and the plate's width becomes
+// breathing space rather than a gap that pushes them apart.
+//
+// The ORDER still mirrors the board: the player's number is on the left of its
+// pair and the enemy's on the right of its own, so each count sits on the side
+// of the screen that side is playing from.
 .conquest__plate
   position: absolute
   display: flex
   align-items: center
-  justify-content: space-between
-  padding: 0 0.55em
-  gap: 0.4em
+  justify-content: center
+  padding: 0 0.5em
+  gap: 0.34em
   border-radius: 999px
   font-family: 'Angry', sans-serif
   font-weight: 900
@@ -144,23 +157,37 @@ const foeReached = computed(() => props.foe >= CONQUEST_TILES)
 .conquest__plate--foe
   --rim: var(--foe)
 
+// A ring of dark offsets, not a blur.
+//
+// One soft shadow under light type on a mid-value painted stone is worth
+// almost nothing — it darkens the plate a little and leaves the glyph edges
+// touching it. Four hard offsets plus one tight blur give every edge its own
+// contrast, which is what the canvas did with `strokeText` before this became
+// DOM, and it is the difference between a caption you read and one you decode.
+$ink: 0 0 2px rgba(4, 8, 18, 0.98), 1px 0 0 rgba(4, 8, 18, 0.92), -1px 0 0 rgba(4, 8, 18, 0.92), 0 1px 0 rgba(4, 8, 18, 0.92), 0 -1px 0 rgba(4, 8, 18, 0.92), 0 2px 3px rgba(0, 0, 0, 0.65)
+
 .conquest__n
   color: #ffffff
-  // The canvas drew this with a stroked outline; a text-shadow ring is the
-  // cheap DOM equivalent and survives over a painted plate.
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.7)
+  text-shadow: $ink
   font-variant-numeric: tabular-nums
 
 .conquest__label
-  font-size: 0.7em
-  letter-spacing: 0.04em
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 0 2px 0 rgba(0, 0, 0, 0.7)
+  font-size: 0.62em
+  letter-spacing: 0.05em
+  // The caption is the quieter half of the pair — the number is the readout,
+  // the word only says whose it is — so it takes a little of the plate back.
+  opacity: 0.92
+  text-shadow: $ink
 
+// The caption keeps the side's hue but lightened well past it: a saturated
+// mid-tone word on a mid-tone plate is the lowest-contrast thing the HUD had.
+// Whose plaque it is was never carried by the caption's colour anyway — the
+// rim, the position and the word itself all say it already.
 .conquest__plate--you .conquest__label
-  color: #4fd0ff
+  color: #cdeeff
 
 .conquest__plate--foe .conquest__label
-  color: var(--foe)
+  color: #ffe2ea
 
 // At the conquest threshold the plaque goes gold: one side is a move away from
 // taking the board, and that has to be visible without reading a number.

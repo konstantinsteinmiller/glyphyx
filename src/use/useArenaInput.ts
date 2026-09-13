@@ -301,6 +301,19 @@ export const attachArenaInput = (
         return
       }
     }
+    // No correction window (a precise pointer never gets one) and the press
+    // landed on the tile just played: this is the panic-drag — the player
+    // trying to turn a stone that is already down. Answer it.
+    //
+    // Against `playerMove`, NOT against the board: a committed placement is not
+    // a rune on the board yet. The stone is only added when the turn resolves,
+    // so for the whole reveal — which is exactly when the player looks at the
+    // facing and reaches for it — `runeAt` on that tile is null.
+    const played = battle.view.playerMove
+    if (!battle.view.lock && played && downTarget && downTarget.kind === 'tile'
+      && downTarget.col === played.col && downTarget.row === played.row) {
+      battle.noteLateAim()
+    }
     if (downTarget && downTarget.kind === 'hand') {
       if (battle.beginDrag(downTarget.index, x, y, downPrecise)) {
         dragging = true

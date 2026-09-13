@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Glissez une rune sur le plateau',
-      'desktop': 'Glissez une rune sur le plateau'
+      'touch': 'Lâche-la sur le CÔTÉ de la case vers lequel elle doit viser',
+      'desktop': 'Lâche-la sur le CÔTÉ de la case vers lequel elle doit viser'
     },
     'aim': {
       'touch': 'Relâche sur le bord qu’elle doit viser',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': "Cette case ne l'accepte pas",
       'desktop': "Cette case ne l'accepte pas"
+    },
+    'lateAim': {
+      'touch': "Déjà posée — le côté où tu la lâches fixe l'orientation",
+      'desktop': "Déjà posée — le côté où tu la lâches fixe l'orientation"
     },
     'mage': {
       'touch': "L'orbe tire en diagonale à travers deux cases",

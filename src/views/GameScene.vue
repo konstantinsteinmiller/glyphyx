@@ -394,7 +394,10 @@ const rejectHint = ref<HintId | null>(null)
 let rejectTimer = 0
 watch(() => battle.rejected.value, (r) => {
   if (!r) return
-  rejectHint.value = r.reason === 'placed' ? 'busyPlaced' : r.reason === 'phase' ? 'busyPhase' : 'busyTile'
+  rejectHint.value = r.reason === 'placed' ? 'busyPlaced'
+    : r.reason === 'phase' ? 'busyPhase'
+    : r.reason === 'lateAim' ? 'lateAim'
+    : 'busyTile'
   window.clearTimeout(rejectTimer)
   rejectTimer = window.setTimeout(() => { rejectHint.value = null }, REJECT_HINT_MS)
 })
@@ -1170,13 +1173,14 @@ onUnmounted(() => {
   min-width: 0
   pointer-events: auto
 
-// The forge hangs its payout chip BELOW itself out of flow (`position:
-// absolute`), so the column's gap does not reserve a pixel for it and the next
-// thing down wears it. The chest clears it by hand; the relationship lives
-// here rather than in either component, because neither of them knows the
-// other exists.
+// The chest's ready-state halo is a soft glow that reaches about two thirds of
+// a stone beyond its own box, so it needs a little more room above it than the
+// column's gap gives. That is all this is now: the forge's payout chip used to
+// hang out of flow and this margin was covering for it, which it could never
+// do — the class was being dropped on the floor (see `SkinChest`). The chip is
+// in flow now and the column measures it like everything else.
 .scene__chest
-  margin-top: clamp(0.5rem, 2.4vw, 0.8rem)
+  margin-top: clamp(0.35rem, 1.6vw, 0.6rem)
 
 .scene__stage
   display: flex

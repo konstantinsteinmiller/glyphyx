@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Kéo một rune lên bàn cờ',
-      'desktop': 'Kéo một rune lên bàn cờ'
+      'touch': 'Thả vào PHÍA của ô mà nó cần hướng tới',
+      'desktop': 'Thả vào PHÍA của ô mà nó cần hướng tới'
     },
     'aim': {
       'touch': 'Thả ở cạnh muốn hướng tới',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Ô đó không nhận được',
       'desktop': 'Ô đó không nhận được'
+    },
+    'lateAim': {
+      'touch': 'Đã đặt rồi — phía bạn thả sẽ quyết định hướng',
+      'desktop': 'Đã đặt rồi — phía bạn thả sẽ quyết định hướng'
     },
     'mage': {
       'touch': 'Quả cầu bắn tia chéo xuyên hai ô',

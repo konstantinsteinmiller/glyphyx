@@ -331,7 +331,7 @@ const lastSummary = ref<MatchSummary | null>(null)
  *
  * `seq` only exists so the scene can tell two identical refusals apart.
  */
-export type RejectReason = 'placed' | 'phase' | 'tile'
+export type RejectReason = 'placed' | 'phase' | 'tile' | 'lateAim'
 const rejected = ref<{ reason: RejectReason; seq: number } | null>(null)
 let rejectSeq = 0
 
@@ -1416,6 +1416,32 @@ const aimKey = (dir: Dir): boolean => {
   return false
 }
 
+/**
+ * ─── The gesture the game does not have ─────────────────────────────────────
+ *
+ * A stone that is down is down: WHERE inside the tile it was released is what
+ * turned it, and on a precise pointer there is no correction window afterwards
+ * because the compass was lit under the cursor the whole time.
+ *
+ * Players do not know that yet. The observed failure is consistent: place a
+ * rune, notice it faces the wrong way, and try to drag FROM the stone toward
+ * the direction it should face — a gesture that does nothing at all, silently,
+ * which reads as a broken game rather than as a rule. Saying so is the only
+ * way anybody learns that the drop is the aim.
+ *
+ * Only worth saying while it could still be acted on — during planning, for a
+ * stone placed this turn.
+ */
+const noteLateAim = (): boolean => {
+  // NOT gated on `planning`. On a precise pointer a placement goes straight to
+  // the reveal — there is no correction window to wait in — so by the time the
+  // player has seen the facing and reached for the stone, the turn has already
+  // moved on. That moment IS the one worth explaining; requiring the planning
+  // phase meant the hint could never fire on the input it was written for.
+  if (view.phase === 'ended' || !hasPlaced.value || view.lock !== null) return false
+  return refuse('lateAim')
+}
+
 const beginCorrection = (x: number, y: number): boolean => {
   const lock = view.lock
   if (!state || !lock || view.phase !== 'planning' || view.drag || view.resetting) return false
@@ -1641,7 +1667,8 @@ watch(activeSkin, (skin) => { if (!state?.config.skin) view.skin = skin })
 
 export const battle: Battle = {
   view,
-  beginDrag, updateDrag, setAim, endDrag, beginCorrection, selectHand, placeSelected, setHover, aimKey, reroll, tick,
+  beginDrag, updateDrag, setAim, endDrag, beginCorrection, noteLateAim, selectHand, placeSelected, setHover, aimKey,
+  reroll, tick,
   phase, turn, turnLimit, suddenDeath, playerTiles, enemyTiles, enemyRunes, rerollsLeft, timerLeftMs, timerPaused,
   result, node, matchActive, hasPlaced, isDragging, isAiming, lockOpen, selectedHand, activeRune, ghostActive, lastSummary,
   rejected,

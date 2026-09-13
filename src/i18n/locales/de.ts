@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Zieh eine Rune aufs Brett',
-      'desktop': 'Zieh eine Rune aufs Brett'
+      'touch': 'Lege sie auf die SEITE des Feldes, zu der sie zeigen soll',
+      'desktop': 'Lege sie auf die SEITE des Feldes, zu der sie zeigen soll'
     },
     'aim': {
       'touch': 'Auf der Seite loslassen, in die sie zeigen soll',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Dieses Feld nimmt sie nicht',
       'desktop': 'Dieses Feld nimmt sie nicht'
+    },
+    'lateAim': {
+      'touch': 'Schon gesetzt — die Seite, auf die du legst, bestimmt die Richtung',
+      'desktop': 'Schon gesetzt — die Seite, auf die du legst, bestimmt die Richtung'
     },
     'mage': {
       'touch': 'Die Kugel feuert diagonal durch zwei Felder',

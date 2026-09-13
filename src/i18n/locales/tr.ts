@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Bir rünü tahtaya sürükle',
-      'desktop': 'Bir rünü tahtaya sürükle'
+      'touch': 'Karenin, bakmasını istediğin TARAFINA bırak',
+      'desktop': 'Karenin, bakmasını istediğin TARAFINA bırak'
     },
     'aim': {
       'touch': 'Bakması gereken kenarda bırak',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'O kare bunu kabul etmiyor',
       'desktop': 'O kare bunu kabul etmiyor'
+    },
+    'lateAim': {
+      'touch': 'Zaten yerleşti — bıraktığın taraf yönü belirler',
+      'desktop': 'Zaten yerleşti — bıraktığın taraf yönü belirler'
     },
     'mage': {
       'touch': 'Küre çapraz iki kare boyunca ışın atar',

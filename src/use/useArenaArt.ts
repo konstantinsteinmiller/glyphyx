@@ -427,16 +427,26 @@ const runeArtId = (type: RuneType, level: number, side: Side, skin: SkinId, fact
   side === 'player' ? `${type}-${skin}-lv${Math.min(2, level)}` : `${type}-e-${faction ?? 'orc'}-lv${Math.min(2, level)}`
 
 /**
- * The stone alone, baked — a painted file when the art layer has one, the
- * painter otherwise, and NOTHING that has to stay the right way up.
+ * One stone and the wreath round it, baked together — a painted file when the
+ * art layer has one, the painter otherwise.
  *
  * This is the layer the arena TURNS. A rune fires along the way it faces, and
  * since every glyph was drawn facing somewhere already (`glyphs.GLYPH_HEADING`
  * — the sword's point up, the bow's arrow right) the renderer can simply spin
- * the stone until the drawing agrees with the facing. That only works if the
- * things hung ON a stone come off it first, which is what `bakeOrnaments` is
- * for: a wreath and a level plaque lying on their side are two lies, and the
- * plaque is not even readable.
+ * the stone until the drawing agrees with the facing.
+ *
+ * ── Why the wreath turns WITH it ──
+ *
+ * It was briefly a separate upright layer, on the reasoning that a wreath hung
+ * on a stone should not lie on its side. That is true of a LABEL and false of
+ * this: the wreath is cut to the stone's own silhouette, so the moment the
+ * stone turned a quarter and the wreath did not, it was hugging a shape that
+ * had rotated out from under it — leaves biting into the rock down one side
+ * and hanging in mid-air down the other. A stone and its wreath are one medal.
+ * Turn the medal.
+ *
+ * What genuinely cannot turn is the crest — a small plaque with the level
+ * written on it — and that is all `bakeCrest` is left holding.
  */
 const bakePebble = (
   type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
@@ -455,24 +465,49 @@ const bakePebble = (
       laurel: false, crest: false
     })
   }
+  if (level >= 2) {
+    // The wreath goes round THIS stone, and nine cuts give the same rune nine
+    // different rims: marble is quarried broader, obsidian is knapped in off a
+    // flake, ruby is a plump cabochon. A wreath that ignores which one it is
+    // hanging on floats off the narrow ones and bites into the wide ones.
+    const cut = (side === 'player' ? SKINS[skin] ?? SKINS.river : enemyStone(faction)).cut
+    // A painted wreath goes on a PAINTED stone and nothing else. The player's
+    // orb has no painting yet (only the four faction ones do), so a stone that
+    // falls back to the drawing would otherwise get a painted wreath laid over
+    // it — two different hands, and two different silhouettes, on one rune. The
+    // drawn wreath is cut to the drawn stone exactly, so a rune whose painting
+    // is missing, parked, or still decoding simply wears the drawn pair until
+    // its stone arrives, and then both swap together.
+    const wreath = painted ? spriteFor('fx', `laurel-${type}`) : null
+    if (wreath) {
+      // A painting cannot be re-cut, only re-sized: `laurelFit` is the one
+      // scale that puts a wreath painted against the reference cut closest to
+      // this stone's rim. It is 1 for the reference cut itself, and for every
+      // enemy stone, which is carved.
+      const k = laurelFit(type, cut)
+      if (k === 1) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
+      else {
+        ctx.save()
+        ctx.translate(sideLen / 2, sideLen / 2)
+        ctx.scale(k, k)
+        ctx.drawImage(wreath, -sideLen / 2, -sideLen / 2, sideLen, sideLen)
+        ctx.restore()
+      }
+    } else paintLaurel(ctx, sideLen, sideLen, type, cut)
+  }
   pebbleCache.set(key, canvas)
   return canvas
 }
 
 /**
- * The Lv 2 finery, baked on its own so it can be blitted LEVEL over a stone
- * that has turned: the wreath, then the crest.
+ * The one thing on a Lv 2 stone that must stay the right way up: the crest, a
+ * little gold plaque with the level written across it. Baked apart from the
+ * stone and blitted level over it, because a word on its side is not a word.
  *
- * One wreath per RUNE, not per skin: the rune owns the silhouette the wreath
- * hugs and the skin only decides how that silhouette is finished, so both
- * sides wear the same wreath for the same rune. (It is a separate drawable at
- * all because a wreath described in the stone prompts came back a different
- * wreath on every sheet — see `arenaPainters.paintLaurel`.)
- *
- * The crest is painter-only: a painted stone that came back with its level
- * already written on it keeps the one it has.
+ * Painter-only. A painted stone that came back with its level already written
+ * on it keeps the one it has, and gets nothing from here.
  */
-const bakeOrnaments = (
+const bakeCrest = (
   type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
   key: string, size: number, dpr: number, levelLabel: string
 ): HTMLCanvasElement | null => {
@@ -480,30 +515,9 @@ const bakeOrnaments = (
   const made = makeCanvas(sideLen, sideLen, dpr)
   if (!made) return null
   const [canvas, ctx] = made
-  // The wreath goes round THIS stone, and nine cuts give the same rune nine
-  // different rims: marble is quarried broader, obsidian is knapped in off a
-  // flake, ruby is a plump cabochon. A wreath that ignores which one it is
-  // hanging on floats off the narrow ones and bites into the wide ones.
-  const cut = (side === 'player' ? SKINS[skin] ?? SKINS.river : enemyStone(faction)).cut
-  const wreath = spriteFor('fx', `laurel-${type}`)
-  if (wreath) {
-    // A painting cannot be re-cut, only re-sized: `laurelFit` is the one scale
-    // that puts a wreath painted against the reference cut closest to this
-    // stone's rim. It is 1 for the reference cut itself, and for every enemy
-    // stone, which is carved.
-    const k = laurelFit(type, cut)
-    if (k === 1) ctx.drawImage(wreath, 0, 0, sideLen, sideLen)
-    else {
-      ctx.save()
-      ctx.translate(sideLen / 2, sideLen / 2)
-      ctx.scale(k, k)
-      ctx.drawImage(wreath, -sideLen / 2, -sideLen / 2, sideLen, sideLen)
-      ctx.restore()
-    }
-  } else paintLaurel(ctx, sideLen, sideLen, type, cut)
   if (!spriteFor('rune', runeArtId(type, level, side, skin, faction))) {
     paintPebbleOrnaments(ctx, sideLen, sideLen, {
-      type, level, cut, laurel: false, label: CLEAN_FEED ? '' : levelLabel
+      type, level, laurel: false, label: CLEAN_FEED ? '' : levelLabel
     })
   }
   ornamentCache.set(key, canvas)
@@ -1025,6 +1039,7 @@ export const dropBakesFor = (kind: ArtKind, id: string): { backdrop: boolean; pl
     // paintings: the wreath it blits, and the stone — because whether the
     // crest is drawn at all depends on whether that stone came back painted.
     for (const key of ornamentCache.keys()) if (paintingsInPebble(key).includes(art)) ornamentCache.delete(key)
+
   } else if (kind === 'tile' && id !== 'frame') {
     // `tileSprite` keys lead with the owner, which is the tile painting's id.
     for (const key of tintCache.keys()) if (key.startsWith(`${id}|`)) tintCache.delete(key)
@@ -1671,12 +1686,12 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   /**
-   * The upright layer that goes over a turned stone. `null` below Lv 2 — there
+   * The upright crest that goes over a turned stone. `null` below Lv 2 — there
    * is none.
    *
    * Baked on DEMAND, unlike the stones, which are all primed before the first
    * frame. Priming these too would be sixty more canvases — every rune, in
-   * every tint — held from boot for a wreath nobody sees until they merge
+   * every tint — held from boot for a plaque nobody sees until they merge
    * something, on the device least able to spare the memory. One small bake at
    * the moment of a merge is hidden inside the merge's own effect.
    */
@@ -1686,7 +1701,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const hit = ornamentCache.get(key)
     if (hit) return hit
     const label = labels ? labels.level(level) : `Lv.${level}`
-    return bakeOrnaments(type, level, side, skin, faction, key, Math.round(size), bakeDpr(), label)
+    return bakeCrest(type, level, side, skin, faction, key, Math.round(size), bakeDpr(), label)
   }
 
   /**
@@ -1718,8 +1733,8 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   }
 
   /**
-   * A stone and its Lv 2 finery in one call: the stone turned to its facing,
-   * the wreath and the crest left level over the top.
+   * A stone and its Lv 2 finery in one call: the stone and its wreath turned
+   * to the facing together, the crest left level over the top.
    */
   const blitRuneStone = (
     type: RuneType, level: number, side: Side, skin: SkinId, faction: Faction | null,
@@ -2650,8 +2665,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
     const dmg = damageSprite(damageStage(r.hp, r.maxHp), r.id, size, dpr)
     // Cracks are IN the stone, so they turn with it.
     if (dmg) blitPebble(dmg, x, y, size, v.sx, v.sy, v.alpha, spin)
-    // The wreath and the level plaque, level — they are hung ON the stone, not
-    // part of it, and a plaque on its side cannot be read.
+    // The level plaque, level: a word on its side is not a word.
     blitPebble(ornamentSprite(r.type, r.level, r.side, skin, r.faction, size), x, y, size, v.sx, v.sy, v.alpha)
 
     if (breathe && qualityTier() !== 'min') {
@@ -3401,7 +3415,12 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       ctx.translate(x, y)
       ctx.fillStyle = rgba('#04060e', 0.9)
       drawGlyph(ctx, type, drawSize * 0.52)
-      ctx.fillStyle = RUNES[type].color
+      // The PLAYER's cyan, not the rune's own hue. Colouring each rune
+      // differently told them apart and cost more than it bought: melee's
+      // colour is red, which is this game's word for "the enemy", and side has
+      // to read before anything else does. The glyph's SHAPE is what
+      // distinguishes a bow from an orb; its colour says whose it is.
+      ctx.fillStyle = PLAYER_ARROW
       drawGlyph(ctx, type, drawSize * 0.44)
       ctx.restore()
     }

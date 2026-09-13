@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': '把符石拖到棋盘上',
-      'desktop': '把符石拖到棋盘上'
+      'touch': '放在格子上你想让它朝向的那一侧',
+      'desktop': '放在格子上你想让它朝向的那一侧'
     },
     'aim': {
       'touch': '在要朝向的一边松手',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': '那格放不下',
       'desktop': '那格放不下'
+    },
+    'lateAim': {
+      'touch': '已经放下了 — 放在哪一侧就朝哪个方向',
+      'desktop': '已经放下了 — 放在哪一侧就朝哪个方向'
     },
     'mage': {
       'touch': '法球沿对角线射穿两格',

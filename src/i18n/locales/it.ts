@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Trascina una runa sul tabellone',
-      'desktop': 'Trascina una runa sul tabellone'
+      'touch': 'Lasciala sul LATO della casella verso cui deve guardare',
+      'desktop': 'Lasciala sul LATO della casella verso cui deve guardare'
     },
     'aim': {
       'touch': 'Rilascia sul lato verso cui deve guardare',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Quella casella non la accetta',
       'desktop': 'Quella casella non la accetta'
+    },
+    'lateAim': {
+      'touch': 'Già posata: il lato su cui la lasci decide la direzione',
+      'desktop': 'Già posata: il lato su cui la lasci decide la direzione'
     },
     'mage': {
       'touch': 'La sfera spara in diagonale attraverso due caselle',

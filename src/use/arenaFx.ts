@@ -1492,11 +1492,23 @@ export const paintAimRegion = (
     const ey = (regionScratch[1]! + regionScratch[3]!) / 2
     const grad = ctx.createLinearGradient(cx, cy, ex, ey)
     grad.addColorStop(0, rgba(o.color, 0))
-    grad.addColorStop(0.45, rgba(o.color, 0.16 * a))
-    grad.addColorStop(1, rgba(o.color, 0.7 * a))
+    grad.addColorStop(0.4, rgba(o.color, 0.28 * a))
+    grad.addColorStop(1, rgba(o.color, 0.98 * a))
     ctx.globalCompositeOperation = 'lighter'
     ctx.fillStyle = grad
     ctx.fill()
+    // …and it GLOWS at that edge. Players were dropping runes in the middle of
+    // a tile and only then discovering which way the stone had turned — the
+    // wedge was legible once you knew to look for it, and the whole rule of
+    // the game hangs on noticing it while the stone is still in your hand. So
+    // the side the rune will fire through is the brightest thing on the board
+    // (2026-09-13).
+    //
+    // Through `paintGlow`, which is a BAKED sprite (or a radial gradient where
+    // there is no canvas to bake into) — never `shadowBlur`. A blur on the
+    // frame path is banned here and the ban is enforced by a test: this draws
+    // every frame a pebble is in hand.
+    paintGlow(ctx, ex, ey, size * 0.34, o.color, 0.5 * a)
     // The outer edge — the side the rune will face — carries the weight, and
     // carries it as an arrow rather than as a bar. See `layoutAimChevron`.
     const rim = o.rim === undefined ? 1 : Math.max(0, o.rim)

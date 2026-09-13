@@ -3,10 +3,10 @@ import {
   ENEMY_STONE, STONE_FILL, enemyStone, materialOf, mixHex, paintBoardFrame, paintForge, paintGlyph,
   paintLaurel, paintPebble, paintRerollChip, paintRidge, paintSky, paintStoneShape, paintTile, resolveGlow,
   stoneFill, stoneOutline,
-  laurelRimAt,
+  LAUREL_REF_CUT, laurelFit, laurelRimAt, pebbleSeed,
 } from '@/use/arenaPainters'
 import { MAX_LEVEL } from '@/game/rules'
-import { FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, type Faction, type GlyphStyle, type RuneType, type SkinId, type StoneCut } from '@/game/rules'
+import { FACTION_DEFS, RUNES, RUNE_TYPES, SKINS, SKIN_IDS, type Faction, type GlyphStyle, type RuneType, type SkinId, type StoneCut } from '@/game/rules'
 
 /**
  * jsdom has no rasteriser, so the painters are exercised against a RECORDING
@@ -308,6 +308,81 @@ describe('painters on a recording context', () => {
       paintLaurel(ctx, 96, 96, type)
       balanced(ctx)
     }
+  })
+
+  /**
+   * ─── …and it hugs the STONE, not an idea of one ──────────────────────────
+   *
+   * Nine cuts take the same rune and widen it, blunt it, round it off or knap
+   * a flake out of it, so "the wreath fits this rune" is ninety statements and
+   * not ten. This walks all ninety and measures the gap between the radius the
+   * wreath sits at and the radius the stone's rim is actually at, along the
+   * arc a branch sweeps.
+   *
+   * It is a regression guard with a real number behind it: the wreath used to
+   * hug the CONVEX HULL of one reference cut, which on the axe — whose bit
+   * spans the box and whose haft is a stick — stood the branches half a radius
+   * clear of the stone, in `carved`, the very cut it was cut against.
+   */
+  it('hugs the stone it is actually hung on, for every rune in every skin', () => {
+    // The wreath's own arc, and the sliver it deliberately stands proud by.
+    const A0 = 0.07 * Math.PI
+    const A1 = 0.48 * Math.PI
+    const PROUD = 1.06
+    const rimOf = (pts: readonly { x: number; y: number }[], a: number): number => {
+      const dx = Math.cos(a)
+      const dy = Math.sin(a)
+      let best = 0
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i]!
+        const q = pts[(i + 1) % pts.length]!
+        const ex = q.x - p.x
+        const ey = q.y - p.y
+        const den = dx * ey - dy * ex
+        if (Math.abs(den) < 1e-9) continue
+        const t = (p.x * ey - p.y * ex) / den
+        const u = (p.x * dy - p.y * dx) / den
+        if (t > 0 && u >= -1e-6 && u <= 1 + 1e-6 && t > best) best = t
+      }
+      return best > 0 ? best : 1
+    }
+    let worstPair = ''
+    let worst = 0
+    for (const type of RUNE_TYPES) {
+      for (const id of SKIN_IDS) {
+        const cut = SKINS[id]!.cut
+        const stone = stoneOutline(cut, type, pebbleSeed(type, cut))
+        for (const s of [-1, 1]) {
+          for (let k = 0; k <= 12; k++) {
+            const a = Math.PI / 2 + s * (A0 + (A1 - A0) * (k / 12))
+            const gap = laurelRimAt(type, a, cut) * PROUD - rimOf(stone, a)
+            if (Math.abs(gap) > Math.abs(worst)) { worst = gap; worstPair = `${type}/${id}` }
+          }
+        }
+      }
+    }
+    // A wreath rests ON a stone: a little proud of the rim is right, a sixth
+    // of the radius of daylight under the leaves is the bug this replaced.
+    expect(Math.abs(worst), `worst at ${worstPair}`).toBeLessThan(0.16)
+  })
+
+  it('fits a PAINTED wreath onto a cut it was not painted for', () => {
+    // One painting per rune cannot be reshaped per skin, only resized, and
+    // `laurelFit` is that one number. It is exactly 1 for the cut the painting
+    // was made against — a wreath that needs no correction must get none.
+    for (const type of RUNE_TYPES) {
+      expect(laurelFit(type, LAUREL_REF_CUT), type).toBe(1)
+      for (const id of SKIN_IDS) {
+        const k = laurelFit(type, SKINS[id]!.cut)
+        expect(Number.isFinite(k), `${type}/${id}`).toBe(true)
+        // A correction, never a resize: the art keeps its own scale.
+        expect(k, `${type}/${id}`).toBeGreaterThanOrEqual(0.8)
+        expect(k, `${type}/${id}`).toBeLessThanOrEqual(1.25)
+      }
+    }
+    // And it moves in the right direction: a quarried stone is broader than
+    // the reference, a knapped one is flaked in off it.
+    expect(laurelFit('melee', 'quarried')).toBeGreaterThan(laurelFit('melee', 'knapped'))
   })
 
   it('draws the Lv 2 laurel on its own, at any size, and leaves the context balanced', () => {

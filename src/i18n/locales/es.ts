@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Arrastra una runa al tablero',
-      'desktop': 'Arrastra una runa al tablero'
+      'touch': 'Suéltala en el LADO de la casilla hacia el que deba mirar',
+      'desktop': 'Suéltala en el LADO de la casilla hacia el que deba mirar'
     },
     'aim': {
       'touch': 'Suelta en el borde al que debe mirar',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Esa casilla no la acepta',
       'desktop': 'Esa casilla no la acepta'
+    },
+    'lateAim': {
+      'touch': 'Ya está puesta: el lado donde la sueltas fija la dirección',
+      'desktop': 'Ya está puesta: el lado donde la sueltas fija la dirección'
     },
     'mage': {
       'touch': 'El orbe dispara en diagonal a través de dos casillas',

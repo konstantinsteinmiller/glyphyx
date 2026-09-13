@@ -275,6 +275,12 @@ export interface BattleApi {
    */
   beginCorrection: (x: number, y: number) => boolean
   /**
+   * The player tried to turn a stone that is already down. Says why, once, and
+   * only while it could still matter. Returns false when there was nothing to
+   * say. See `useBattle.noteLateAim`.
+   */
+  noteLateAim: () => boolean
+  /**
    * Tap-to-place, the alternative to dragging: select hand slot `index` (a
    * second tap on the same slot, or `-1`, clears it). Returns false when
    * nothing can be selected now.

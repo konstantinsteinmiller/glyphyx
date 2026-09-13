@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { SKIN_CHEST_MINUTES, SKIN_IDS } from '@/game/rules'
 import { SKIN_CHEST_AT_KEY } from '@/keys'
@@ -98,6 +98,65 @@ describe('the skin chest', () => {
     expect(chest.hasRewards.value).toBe(false)
     // …and being "due" is not enough to make it pay out of an empty pool.
     expect(chest.isReady.value).toBe(false)
+    expect(chest.collect()).toBeNull()
+    unmount()
+  })
+
+  /**
+   * ─── It never offers what the player already has ─────────────────────────
+   *
+   * The pool is "every material not owned", and a material can leave that pool
+   * from three directions that have nothing to do with this chest: the shop
+   * sells it, a rewarded video unlocks it, or the campaign hands it over for
+   * clearing a node. All three land in the same place (`useSkins.own`), and the
+   * chest has to notice — a chest previewing a stone the player already owns is
+   * a button that plays a rejection noise when they press it, because
+   * `grantSkin` refuses the duplicate and `collect` returns null.
+   */
+  it('moves its preview off a material bought in the shop', async () => {
+    const { chest, unmount } = await withChest()
+    const { buySkin, isSkinOwned } = await import('@/use/useSkins')
+    const eco = (await import('@/use/useEconomy')).default
+    const previewed = chest.nextSkin.value!
+    expect(previewed).not.toBeNull()
+
+    eco().addCoins(99_999)
+    expect(buySkin(previewed)).toBe(true)
+    await nextTick()
+
+    expect(isSkinOwned(previewed)).toBe(true)
+    expect(chest.nextSkin.value).not.toBe(previewed)
+    // …and it is still a working chest, not a button that rejects the tap.
+    const won = chest.collect()
+    expect(won).not.toBeNull()
+    expect(won).not.toBe(previewed)
+    unmount()
+  })
+
+  it('moves its preview off a material the campaign gave away', async () => {
+    // The reward chest at the end of a node grants through `grantSkin`, the
+    // same door this one uses.
+    const { chest, unmount } = await withChest()
+    const { grantSkin } = await import('@/use/useSkins')
+    const previewed = chest.nextSkin.value!
+    expect(grantSkin(previewed)).toBe(true)
+    await nextTick()
+    expect(chest.nextSkin.value).not.toBe(previewed)
+    expect(chest.collect()).not.toBeNull()
+    unmount()
+  })
+
+  it('closes for good when the last material is won somewhere else', async () => {
+    // Owning the pool out from under an OPEN chest has to hide it, not leave a
+    // ready button with nothing behind it.
+    const { chest, unmount } = await withChest()
+    expect(chest.hasRewards.value).toBe(true)
+    const { grantSkin } = await import('@/use/useSkins')
+    for (const id of SKIN_IDS) grantSkin(id)
+    await nextTick()
+    expect(chest.hasRewards.value).toBe(false)
+    expect(chest.isReady.value).toBe(false)
+    expect(chest.nextSkin.value).toBeNull()
     expect(chest.collect()).toBeNull()
     unmount()
   })

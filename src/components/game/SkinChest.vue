@@ -79,6 +79,18 @@ const dismiss = (): void => {
 }
 
 onBeforeUnmount(() => { if (wonTimer !== null) window.clearTimeout(wonTimer) })
+
+/**
+ * This component has two roots — a `Teleport` for the prize card and the
+ * button itself — so Vue cannot decide which one an inherited `class` belongs
+ * to, and drops it with a warning nobody reads. A parent that wrote
+ * `SkinChest.scene__chest` got nothing, which is how the HUD column ended up
+ * spacing this against a rule that never applied.
+ *
+ * So the button takes them, explicitly. Anything a parent puts on this
+ * component lands on the thing a parent means: the chest.
+ */
+defineOptions({ inheritAttrs: false })
 </script>
 
 <template lang="pug">
@@ -95,6 +107,7 @@ onBeforeUnmount(() => { if (wonTimer !== null) window.clearTimeout(wonTimer) })
   //- states it is in rather than leaving a screen reader to read a countdown.
   button.chest(
     v-if="hasRewards"
+    v-bind="$attrs"
     type="button"
     :class="{ 'is-ready': isReady, 'is-won': won !== null }"
     :disabled="!isReady"

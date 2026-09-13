@@ -105,8 +105,8 @@ export default {
 
   'hints': {
     'drag': {
-      'touch': 'Runani taxtaga torting',
-      'desktop': 'Runani taxtaga torting'
+      'touch': "Katakning qaysi TOMONIGA qo'ysangiz, o'sha tomonga qaraydi",
+      'desktop': "Katakning qaysi TOMONIGA qo'ysangiz, o'sha tomonga qaraydi"
     },
     'aim': {
       'touch': 'Qaratmoqchi boʻlgan chetda qoʻyib yuboring',
@@ -147,6 +147,10 @@ export default {
     'busyTile': {
       'touch': 'Bu katak uni qabul qilmaydi',
       'desktop': 'Bu katak uni qabul qilmaydi'
+    },
+    'lateAim': {
+      'touch': "Allaqachon qo'yilgan — qaysi tomonga qo'ysangiz, o'sha tomonga qaraydi",
+      'desktop': "Allaqachon qo'yilgan — qaysi tomonga qo'ysangiz, o'sha tomonga qaraydi"
     },
     'mage': {
       'touch': "Shar diagonal bo'ylab ikki katak orqali nur otadi",

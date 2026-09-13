@@ -33,6 +33,9 @@ export type HintId =
   // their own. A refused drag used to be completely silent, which reads as a
   // broken game rather than as a rule.
   | 'busyPlaced' | 'busyPhase' | 'busyTile'
+  // …and the one that answers a gesture the game deliberately does not have:
+  // dragging a stone that is already down, to turn it. See `lateAim`.
+  | 'lateAim'
   // …and the one that says the game is waiting for YOU: a lesson has no clock,
   // so a board that has stopped moving is a board waiting for a move.
   | 'yourMove'
