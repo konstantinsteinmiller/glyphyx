@@ -7,11 +7,11 @@ import NextUnlockTeaser from '@/components/game/NextUnlockTeaser.vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
 import type { GameIconName } from '@/components/icons/iconNames'
 import { FACTION_DEFS, RUNES, type NodeConfig, type RuneType } from '@/game/rules'
-import { NODES_PER_CHAPTER, chapterOf, isLessonNode, nodeId } from '@/game/campaign'
+import { NODES_PER_CHAPTER, chapterOf, nodeId } from '@/game/campaign'
 import useCampaign from '@/use/useCampaign'
 import useBattle from '@/use/useBattle'
 import { playFx } from '@/use/useGameAudio'
-import { adInFlight, showPacedInterstitial } from '@/use/useAdGate'
+import { adInFlight, mayBreakAt, showPacedInterstitial } from '@/use/useAdGate'
 
 /**
  * ─── The campaign map ───────────────────────────────────────────────────────
@@ -74,11 +74,12 @@ const play = async (row: Row): Promise<void> => {
   playFx('uiOpen')
   model.value = false
   // A natural break: the map closes and a node starts. Only when no match is
-  // live (the map opened from the result screen), and only past the 121 s
-  // pace — inside the gap this is a no-op.
-  // …and never on the way INTO a lesson: the tutorial arc is ad-free, for the
-  // same reason `GameScene.adsAllowedAfter` keeps ads out of its handovers.
-  if (!battle.matchActive.value && !isLessonNode(row.cfg.id)) await showPacedInterstitial()
+  // live (the map opened from the result screen), only where the beat may
+  // carry a break at all (`mayBreakAt` — never on the way INTO a lesson), and
+  // only past the 121 s pace — inside the gap this is a no-op.
+  if (!battle.matchActive.value && mayBreakAt('nodeStart', { nodeId: row.cfg.id })) {
+    await showPacedInterstitial()
+  }
   setCurrentNode(row.cfg.id)
   battle.startNode(row.cfg.id)
 }

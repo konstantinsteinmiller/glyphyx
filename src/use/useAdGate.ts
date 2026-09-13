@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { isLessonNode } from '@/game/campaign'
 import { isCrazyWeb } from '@/use/useUser'
 import { isCrazyGamesFullRelease } from '@/use/useMatch'
 import { adProviderName, isInterstitialReady, isRewardedReady, showMidgameAd, showRewardedAd } from '@/use/useAds'
@@ -416,4 +417,56 @@ export const showPacedInterstitial = async (o: { delayMs?: number } = {}): Promi
   } finally {
     adInFlight.value = false
   }
+}
+
+// ─── Where a break may LAND ─────────────────────────────────────────────────
+//
+// Pacing answers "has enough time passed"; this answers "is this moment a
+// moment the player already experiences as a stop". They are independent, and
+// both have to say yes: an ad that is due but arrives mid-flow is read as a
+// bug, not as an ad.
+//
+// The rules below are not taste. Each one is a thing blind testers reported
+// (2026-09-11/12), and each was enforced until now by an expression written
+// inline in `GameScene.vue` and a second copy of it in `CampaignModal.vue` —
+// two untested copies of the placement rule the playtest paid for. They live
+// here as one function so there is one copy and it can be pinned.
+
+/** The beats a break can be requested at. Anything not named here is mid-flow. */
+export type AdBeat =
+  /** A match has just ended, before any overlay is shown. */
+  | 'matchEnd'
+  /** The player tapped off the result screen themselves — Next or Retry. */
+  | 'leavingResult'
+  /** A node is being started from the campaign map. */
+  | 'nodeStart'
+
+/**
+ * May an interstitial be shown at this beat?
+ *
+ * NOT ANYWHERE IN THE TUTORIAL, whatever the beat. A lesson hands over
+ * silently — the coins fly, the next lesson starts — so a break at a lesson
+ * boundary reads as one dropped into the middle of a fight. Camila's fired at
+ * a clean 1-6 → 1-7 handover and she reported it as "it cut into an active
+ * fight". The whole six-lesson arc is about two minutes long and is the part
+ * of the game that decides whether anybody plays the rest of it. `isLessonNode`
+ * is the authority, so the late lessons (2-3's clash, and the three rune
+ * lessons carved out of the generated chapters) are covered by the same rule
+ * without a second table to keep in sync.
+ *
+ * NOT IN FRONT OF A DEFEAT. The ad-before-the-overlay ordering exists so a WIN
+ * is never celebrated and then guillotined mid-jingle, and for a win it stays
+ * exactly that. A loss is the other case: the player has just lost and still
+ * does not know why, and both desktop testers called an ad there the worst
+ * possible moment. So `matchEnd` is a win-only beat; a defeat's ad waits for
+ * the player's own next tap, which arrives as `leavingResult`.
+ *
+ * This is a placement rule only — it says nothing about pacing, inventory or
+ * whether another ad is in flight. `showPacedInterstitial` owns those, and a
+ * caller needs both.
+ */
+export const mayBreakAt = (beat: AdBeat, o: { nodeId: number; won?: boolean }): boolean => {
+  if (isLessonNode(o.nodeId)) return false
+  if (beat === 'matchEnd') return o.won === true
+  return true
 }

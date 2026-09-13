@@ -18,7 +18,7 @@ import { useScreenshake } from '@/use/useScreenshake'
 import { frameStart, frameEnd, phaseStart, phaseEnd } from '@/use/usePerfProbe'
 import { isGamePaused, isAdShowing, isVisibilityHidden, isPlatformPaused } from '@/use/useGamePause'
 import {
-  showPacedInterstitial, adInFlight, canOfferReward, claimReward
+  showPacedInterstitial, mayBreakAt, adInFlight, canOfferReward, claimReward
 } from '@/use/useAdGate'
 import { signalGameplayLoaded, triggerHappytime } from '@/use/useCrazyGames'
 import { syncGameplayLifecycle, isGameplayLive } from '@/use/useGameplayLifecycle'
@@ -27,7 +27,6 @@ import { isMobileLandscape, isShortViewport } from '@/use/useUser'
 import { playFirstStartInterstitial } from '@/use/useFirstStartInterstitial'
 import { leaderboardEnabled } from '@/use/useLeaderboard'
 import { getState, setState } from '@/use/useGlyphyxState'
-import { isLessonNode } from '@/game/campaign'
 import type { Rect } from '@/game/view'
 import { AIMED_KEY, GOAL_SEEN_KEY, RESULTS_SEEN_KEY, TUTORIAL_KEY } from '@/keys'
 import { spawnCoinExplosion } from '@/use/useCoinExplosion'
@@ -537,40 +536,23 @@ const beat = (ms: number): Promise<void> => new Promise((resolve) => { window.se
 let alive = true
 
 /**
- * Show an interstitial, if one is due. The pacing rule (121 s between ads, a
- * no-fill refunds the gap) lives in `useAdGate.showPacedInterstitial`; this is
- * the match-end placement, delayed a beat so the verdict lands first.
+ * Show an interstitial, if one is due AND this is a moment the player reads as
+ * a stop. Two independent questions with two owners: `useAdGate.mayBreakAt`
+ * says whether the BEAT may carry a break (never in a lesson, never in front
+ * of a defeat — both rules come from the blind tests, and the reasoning is
+ * documented there), and `showPacedInterstitial` owns pacing, inventory and
+ * the in-flight guard. This is the match-end placement, delayed a beat so the
+ * verdict lands first.
  */
-/**
- * ─── Where an interstitial may NOT go ───────────────────────────────────────
- *
- * Both rules come from watching blind testers meet them (2026-09-11/12).
- *
- * NOT INSIDE THE TUTORIAL. A lesson hands over silently — the coins fly, the
- * next lesson starts — so an ad at a lesson boundary reads as an ad dropped
- * into the middle of one. Camila's fired at a clean 1-6 → 1-7 handover and she
- * reported it as "it cut into an active fight". The whole six-lesson arc is
- * about two minutes long and is the part of the game that decides whether
- * anybody plays the rest of it.
- *
- * NOT IN FRONT OF A DEFEAT. The ad-before-the-overlay ordering exists so a WIN
- * is never celebrated and then guillotined mid-jingle, and for a win it stays
- * exactly as it was. A loss is the other case: the player has just lost and
- * still does not know why, and both desktop testers called an ad there the
- * worst possible moment. So a defeat shows its result screen first, and the ad
- * comes with the player's own next tap — Retry or Next, in `onRetry`/`onNext`.
- */
-const adsAllowedAfter = (s: MatchSummary): boolean => !isLessonNode(s.node.id)
-
 const maybeShowInterstitial = async (s: MatchSummary): Promise<void> => {
-  if (!adsAllowedAfter(s) || !s.result.won) return
+  if (!mayBreakAt('matchEnd', { nodeId: s.node.id, won: s.result.won })) return
   await showPacedInterstitial({ delayMs: RESULT_AD_DELAY_MS })
 }
 
 /** The break the player asked for: their tap off a result screen. */
 const interstitialOnLeavingResult = async (): Promise<void> => {
   const s = summary.value
-  if (!s || !adsAllowedAfter(s)) return
+  if (!s || !mayBreakAt('leavingResult', { nodeId: s.node.id })) return
   await showPacedInterstitial()
 }
 
@@ -637,7 +619,7 @@ const presentResult = async (s: MatchSummary): Promise<void> => {
   await beat(s.result.won ? VICTORY_BEAT_MS : DEFEAT_BEAT_MS)
   if (!alive) return
 
-  // Ad FIRST, overlay second — for a WIN. See `adsAllowedAfter`.
+  // Ad FIRST, overlay second — for a WIN. See `useAdGate.mayBreakAt`.
   await maybeShowInterstitial(s)
 
   // The ceremony is for a GIFT — a new rune, a new skin. Coins alone were

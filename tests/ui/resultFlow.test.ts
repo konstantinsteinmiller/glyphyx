@@ -99,9 +99,14 @@ describe('the result screen', () => {
     // Both measured on blind testers: an ad at a lesson handover reads as an
     // ad inside the lesson (the handover is silent), and an ad in front of a
     // defeat screen makes the player watch it before learning what happened.
-    expect(scene).toMatch(/const adsAllowedAfter = \(s: MatchSummary\): boolean => !isLessonNode\(s\.node\.id\)/)
+    // The rule itself lives in `useAdGate.mayBreakAt` and is pinned by
+    // behaviour in `tests/platforms/interstitialPlacement.test.ts`. What this
+    // scan owns is that the SCENE still asks it, at both of its beats — the
+    // regression would be a call site quietly dropping the question.
     const gate = between(scene, 'const maybeShowInterstitial', 'const interstitialOnLeavingResult')
-    expect(gate).toMatch(/if \(!adsAllowedAfter\(s\) \|\| !s\.result\.won\) return/)
+    expect(gate).toMatch(/if \(!mayBreakAt\('matchEnd', \{ nodeId: s\.node\.id, won: s\.result\.won \}\)\) return/)
+    expect(between(scene, 'const interstitialOnLeavingResult', 'const resultsSeen'))
+      .toMatch(/if \(!s \|\| !mayBreakAt\('leavingResult', \{ nodeId: s\.node\.id \}\)\) return/)
     // A defeat's ad rides the player's own tap off the screen instead.
     expect(between(scene, 'const onRetry', 'const onSkinsFromResult')).toMatch(/await interstitialOnLeavingResult\(\)/)
     expect(between(scene, 'const onNext', 'const onRetry')).toMatch(/await interstitialOnLeavingResult\(\)/)
