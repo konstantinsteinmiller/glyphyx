@@ -18,10 +18,12 @@
  *
  * ── Determinism is the point ──
  *
- * Every number below comes out of a seeded PRNG, so re-running this produces a
- * byte-identical file. A board that churned on every run would move every
- * player's rank for no reason, and a rank that moves without the player doing
- * anything is worse than no rank.
+ * Every number below comes out of a seeded PRNG, so re-running this produces
+ * the same board down to the byte — same names, same scores, same histogram.
+ * (The two timestamps are wall-clock and do move, so the FILE differs by two
+ * lines between runs while the board does not.) A board that churned on every
+ * run would move every player's rank for no reason, and a rank that moves
+ * without the player doing anything is worse than no rank.
  *
  *     pnpm leaderboard:seed
  */
@@ -35,7 +37,7 @@ export const SEED_FILE = resolve(
 )
 
 /** How many players the board claims. */
-const TOTAL = 154_331 // modelled population; the score axis is the campaign NODE reached
+const TOTAL = 9_821 // modelled population; the score axis is the campaign NODE reached
 
 /** Rows the board publishes, matching the Worker's `TOP_N`. */
 const TOP_N = 100
@@ -53,14 +55,22 @@ const TOP_N = 100
  *   5 → 0.620    31 % gave up on 3-4         "most players quit on 3 and 4"
  *  11 → 0.250    37 % gave up on 5-10        "most players play till 5-10"
  *  21 → 0.080    17 % gave up on 11-20
- *  44 → 0.00065  the top ~100 of 154 331     "the best players reach 40+"
+ *  44 → 0.00065  a thinning tail            "the best players reach 40+"
  *
- * The far tail is anchored on the POPULATION, not chosen for its own sake: the
- * published hundred is the top 0.065 % of 154 331, so wherever the curve crosses
- * that fraction is where the visible board starts. The anchors put it at stage
- * 46, which is what "the best reach 40+" means at this size — at a tenth of the
- * population the same phrasing would want a much shallower tail, so re-check
- * this line before changing `TOTAL`.
+ * The far tail decides where the VISIBLE board starts, and that depends on the
+ * population: the published hundred is the top 100/`TOTAL`, so the board begins
+ * wherever the curve crosses that fraction. At 9 821 players that is 1.02 %,
+ * and the curve crosses it at stage 35 — so the hundred published rows run 35
+ * to 50, with 36 of them past 40. "The best players reach 40+" is a statement
+ * about the top of the board and it still holds.
+ *
+ * The curve itself is deliberately NOT re-anchored to the population. It
+ * describes how far players get, which is a fact about the game and not about
+ * how many people have played it; moving the tail to hold the cut at a chosen
+ * stage would mean claiming that 1 % of everybody reaches 46, when 8 % reach
+ * 21. So when `TOTAL` changes, the cut moves and the curve stays — but LOOK at
+ * the printed summary afterwards, because a much smaller population thins the
+ * tail until the top rows are single players and the rank walk gets lumpy.
  *
  * The anchors between 21 and 30 are close together for one reason: the bands
  * the spec asks for imply a WALL at 20 (17 % of everyone stops in 11-20, and
