@@ -31,6 +31,7 @@
     "build:gamemonetize": "vite build --mode gamemonetize --base=./ && cd dist && tar -a -cf ../glyphyx-gamemonetize.zip * && cd .. && move glyphyx-gamemonetize.zip dist\\",
     "build:yandex": "vite build --mode yandex --base=./ && cd dist && tar -a -cf ../glyphyx-yandex.zip * && cd .. && move glyphyx-yandex.zip dist\\",
     "build:poki": "vite build --mode poki --base=./ && cd dist && tar -a -cf ../glyphyx-poki.zip * && cd .. && move glyphyx-poki.zip dist\\",
+    "deploy:poki": "node tools/poki-deploy/deploy.mjs",
     "build-github-main": "vite build --base=/glyphyx/ --outDir=dist",
     "build-github-develop": "vite build --base=/glyphyx/develop/ --outDir=dist/develop",
     "deploy": "vite build && surge dist/ --domain glyphyx.surge.sh",
