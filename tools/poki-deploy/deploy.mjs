@@ -48,7 +48,7 @@ const flag = n => argv.includes(`--${n}`)
 const arg = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 && i + 1 < argv.length ? argv[i + 1] : d }
 
 const CONFIG_PATH = resolve(arg('config', join(here, 'poki.config.mjs')))
-if (!existsSync(CONFIG_PATH)) die(`no config at ${CONFIG_PATH}`, 'copy poki.config.mjs and fill in team + gameId from your P4D URL')
+if (!existsSync(CONFIG_PATH)) die(`no config at ${CONFIG_PATH}`, 'copy poki.config.mjs and fill in team + gameName (gameId is optional — it is looked up by name)')
 const cfg = (await import(pathToFileURL(CONFIG_PATH).href)).default
 
 const DRY = flag('dry-run')
