@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 /**
@@ -23,13 +24,28 @@ interface Props {
   suddenDeath?: boolean
   /** What winning THIS match means. Named here because nowhere else named it. */
   objective?: 'conquest' | 'eliminate' | 'siege' | null
+  /**
+   * Where to centre the banner vertically, in CSS px — the BOARD's own centre,
+   * handed over by the scene.
+   *
+   * Without it the banner sat at a flat 34% of the viewport, which knows
+   * nothing about where the board ended up. In landscape the goal track is
+   * positioned from the renderer's geometry just above the board, and 34% of a
+   * short screen lands on top of it: the banner and the track printed over each
+   * other. Anchoring to the board cannot collide with something that sits
+   * outside the board by construction.
+   */
+  centerY?: number | null
 }
-withDefaults(defineProps<Props>(), { suddenDeath: false, objective: null })
+const props = withDefaults(defineProps<Props>(), { suddenDeath: false, objective: null, centerY: null })
+
+/** Falls back to the old 34% when the scene has no geometry yet. */
+const placement = computed(() => (props.centerY == null ? {} : { top: `${props.centerY}px` }))
 </script>
 
 <template lang="pug">
   Transition(name="turn-banner")
-    div.turn-banner(v-if="show" :class="{ 'is-sudden': suddenDeath }" aria-live="polite")
+    div.turn-banner(v-if="show" :class="{ 'is-sudden': suddenDeath }" :style="placement" aria-live="polite")
       template(v-if="suddenDeath")
         div.turn-banner__sudden {{ t('hud.suddenDeath') }}
       template(v-else)

@@ -240,6 +240,13 @@ const stripRoomPx = ref(Infinity)
  */
 const counterRects = ref<{ you: Rect; foe: Rect } | null>(null)
 
+/**
+ * Where the turn banner centres itself, in CSS px: the BOARD's own middle.
+ * A flat percentage of the viewport does not know where the board ended up,
+ * and in landscape it printed over the goal track that sits just above it.
+ */
+const bannerCenterY = ref<number | null>(null)
+
 const applyInsets = (): void => {
   if (!renderer || cssW === 0) return
   renderer.resize(cssW, cssH, dpr, measureInsets())
@@ -247,6 +254,7 @@ const applyInsets = (): void => {
   const geom = renderer.layout()
   stripRoomPx.value = geom.board.y - topBottom
   counterRects.value = { you: geom.counters.you, foe: geom.counters.foe }
+  bannerCenterY.value = geom.board.y + geom.board.h / 2
 }
 
 const resize = (): void => {
@@ -1078,6 +1086,7 @@ onUnmounted(() => {
         :objective="nodeCfg.objective"
         :foe="leadFactionName"
         :sudden-death="bannerSudden"
+        :center-y="bannerCenterY"
       )
 
       //- ── Bottom bar: the corners only — the canvas owns the hand between. ──

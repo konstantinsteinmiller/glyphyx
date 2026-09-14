@@ -199,7 +199,12 @@ const onUnlockNuker = async (): Promise<void> => {
   // respectively — the card is only a stone, a name, five stars and a price,
   // and it sizes to its own width (`container-type`), so it survives being
   // narrow instead of wrapping its buttons and growing every row.
-  grid-template-columns: repeat(auto-fit, minmax(clamp(4.6rem, 26vw, 5.9rem), 1fr))
+  // FEWER, WIDER cards. The old floor (4.6rem) let six columns fit a portrait
+  // tablet and three a 360 px phone, which left a 90 px card holding a 75 px
+  // buy button — a coin glyph, a price and nothing to breathe. Raising the
+  // floor is what reduces the column count; the count itself is never named,
+  // so one rule serves every width.
+  grid-template-columns: repeat(auto-fit, minmax(clamp(7.5rem, 40vw, 9.5rem), 1fr))
   gap: clamp(0.35rem, 1.8vw, 0.6rem)
   // The gift ribbon sits above its card's top edge; without a little room the
   // first row would clip it against the grid's bounding box. Two lines' worth,
@@ -296,6 +301,8 @@ const onUnlockNuker = async (): Promise<void> => {
 
 @media (orientation: landscape) and (max-height: 30rem)
   .ranks__grid
-    grid-template-columns: repeat(5, minmax(0, 1fr))
+    // Four, not five: the fifth column cost every card 20 px and bought back
+    // one row of a list that scrolls anyway.
+    grid-template-columns: repeat(4, minmax(0, 1fr))
     gap: 0.3rem
 </style>

@@ -501,7 +501,7 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
 
 .skins__list
   display: grid
-  grid-template-columns: repeat(auto-fit, minmax(clamp(4.4rem, 24vw, 6.2rem), 1fr))
+  grid-template-columns: repeat(auto-fit, minmax(clamp(6.8rem, 34vw, 8.4rem), 1fr))
   gap: clamp(0.3rem, 1.6vw, 0.55rem)
 
 .card
@@ -616,7 +616,7 @@ const rimOf = (id: SkinId) => ({ '--rim': SKINS[id].rim, '--stone': SKINS[id].ba
     font-size: clamp(0.58rem, 1.9vh, 0.78rem)
 
   .skins__list
-    grid-template-columns: repeat(3, minmax(0, 1fr))
+    grid-template-columns: repeat(2, minmax(0, 1fr))
     gap: 0.35rem
 
   .card__stone
