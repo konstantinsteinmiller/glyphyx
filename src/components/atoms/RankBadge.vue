@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GameIcon from '@/components/icons/GameIcon.vue'
 import { OUTSIDE_BOARD, leaderboardEnabled, leaderboardFailed, playerTotal, rankFor } from '@/use/useLeaderboard'
+import { formatCount } from '@/utils/localeNumber'
 
 /**
  * ─── "🏆 #1130 of 2345" ─────────────────────────────────────────────────────
@@ -49,7 +50,18 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { compact: false })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+/**
+ * Both numbers in this pill are GROUPED for the active locale — `#41,032 of
+ * 154,331` rather than `#41032 of 154331`. Reading `locale.value` inside a
+ * render keeps it reactive, so switching language in Options re-groups the
+ * number rather than leaving the old separators behind.
+ */
+const fmt = (n: number): string => formatCount(n, locale.value)
+
+/** The population, grouped — used by both the visible tail and the aria label. */
+const totalLabel = computed(() => fmt(playerTotal.value))
 
 /**
  * The rank as PROSE — `#42`, `…`, or empty.
@@ -61,7 +73,7 @@ const { t } = useI18n()
 const label = computed<string>(() => {
   if (!leaderboardEnabled) return ''
   const rank = rankFor(props.score)
-  if (rank > 0) return `#${rank}`
+  if (rank > 0) return `#${fmt(rank)}`
   // `0` means "nothing honest to say yet" and `OUTSIDE_BOARD` means "no
   // histogram to say it with". Until the endpoint has actually failed, the
   // first is a request still in flight, so hold the slot; after that, and for
@@ -81,7 +93,7 @@ const showTotal = computed(() => !props.compact && playerTotal.value > 0)
  * "number 1130 of 2345 players" with no idea what is being counted.
  */
 const ariaLabel = computed(() => (showTotal.value
-  ? `${t('leaderboard.title')}: ${label.value} ${t('leaderboard.of', { n: playerTotal.value })}`
+  ? `${t('leaderboard.title')}: ${label.value} ${t('leaderboard.of', { n: totalLabel.value })}`
   : `${t('leaderboard.title')}: ${label.value}`))
 </script>
 
@@ -90,7 +102,7 @@ const ariaLabel = computed(() => (showTotal.value
   div.rank-badge(v-if="label" role="img" :aria-label="ariaLabel")
     GameIcon.rank-badge__icon(name="trophy")
     span.rank-badge__rank {{ label }}
-    span.rank-badge__of(v-if="showTotal") {{ t('leaderboard.of', { n: playerTotal }) }}
+    span.rank-badge__of(v-if="showTotal") {{ t('leaderboard.of', { n: totalLabel }) }}
 </template>
 
 <style scoped lang="sass">

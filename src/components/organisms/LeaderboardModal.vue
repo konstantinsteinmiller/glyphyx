@@ -9,6 +9,7 @@ import {
   OUTSIDE_BOARD, boardSize, ensureBoard, leaderboard, leaderboardFailed,
   leaderboardPending, playerTotal, rankFor
 } from '@/use/useLeaderboard'
+import { formatCount } from '@/utils/localeNumber'
 
 /**
  * ─── The global board ───────────────────────────────────────────────────────
@@ -25,7 +26,15 @@ import {
  * that footer is the whole reason a player who is #4 000 opens this screen.
  */
 const model = defineModel<boolean>({ required: true })
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+/**
+ * Every number on this board is GROUPED for the active locale — the ranks down
+ * the left, the `N+` fallback and the population in the footer. A hundred rows
+ * of ungrouped six-digit ranks is the exact case grouping exists for. Reading
+ * `locale.value` inside a render keeps it reactive across a language change.
+ */
+const fmt = (n: number): string => formatCount(n, locale.value)
 
 const entries = computed(() => leaderboard.value?.entries ?? [])
 
@@ -51,7 +60,7 @@ const onBoard = computed(() => entries.value.some((e) => isYou(e.name)))
 const ownRank = computed(() => rankFor(bestNode.value))
 
 const ownRankLabel = computed(() =>
-  ownRank.value === OUTSIDE_BOARD ? `${boardSize.value}+` : String(ownRank.value)
+  ownRank.value === OUTSIDE_BOARD ? `${fmt(boardSize.value)}+` : fmt(ownRank.value)
 )
 
 const showOwnRank = computed(() => !onBoard.value && ownRank.value !== 0)
@@ -91,7 +100,7 @@ watch(model, (open) => {
           :key="`${entry.rank}-${entry.name}-${i}`"
           :class="{ 'is-you': isYou(entry.name) }"
         )
-          span.board-row__rank {{ entry.rank }}
+          span.board-row__rank {{ fmt(entry.rank) }}
           span.board-row__name
             span.board-row__name-text {{ entry.name }}
             span.board-row__you(v-if="isYou(entry.name)") {{ t('leaderboard.you') }}
@@ -100,7 +109,7 @@ watch(model, (open) => {
 
       div.board__footer(v-if="showOwnRank")
         span.board__footer-rank {{ t('leaderboard.yourRank', { n: ownRankLabel }) }}
-        span.board__footer-total(v-if="playerTotal > 0") {{ t('leaderboard.of', { n: playerTotal }) }}
+        span.board__footer-total(v-if="playerTotal > 0") {{ t('leaderboard.of', { n: fmt(playerTotal) }) }}
 </template>
 
 <style scoped lang="sass">
