@@ -3,12 +3,12 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import useBattle, { type BattleEvent, type MatchSummary } from '@/use/useBattle'
-import useCampaign from '@/use/useCampaign'
+import useCampaign, { unlockedRunes } from '@/use/useCampaign'
 import useEconomy from '@/use/useEconomy'
 import useStreak from '@/use/useStreak'
 import useSkins from '@/use/useSkins'
 import { activeSkin } from '@/use/useSkins'
-import { computeArenaLayout, createArenaRenderer } from '@/use/useArenaArt'
+import { computeArenaLayout, createArenaRenderer, setPebblePrimeScope } from '@/use/useArenaArt'
 import { attachArenaInput } from '@/use/useArenaInput'
 import { __winMatchNow, setDragMetrics } from '@/use/useBattle'
 import { renderScaleTier } from '@/use/useVfx'
@@ -358,6 +358,27 @@ const nodeIndex = computed(() => nodeCfg.value.index)
  * A lesson (`eliminate`) counts enemy stones; everything else counts tiles.
  */
 const isEliminate = computed(() => nodeCfg.value.objective === 'eliminate')
+
+/**
+ * Tell the sprite baker what this node will actually show. A match has one
+ * faction and the player owns a handful of runes; baking the whole cast up
+ * front is what held a low-end phone at 15-30 fps through the opening of every
+ * session. Authored presets are included because a lesson hands the player a
+ * rune they have not unlocked yet.
+ */
+watch(
+  () => [
+    nodeCfg.value.enemies.map((e) => e.faction).join('|'),
+    unlockedRunes.value.join('|'),
+    nodeCfg.value.presets.map((pr) => pr.type).join('|')
+  ].join('#'),
+  () => {
+    const factions = [...new Set(nodeCfg.value.enemies.map((e) => e.faction))]
+    const types = [...new Set([...unlockedRunes.value, ...nodeCfg.value.presets.map((pr) => pr.type)])]
+    setPebblePrimeScope(factions.length > 0 ? factions : null, types.length > 0 ? types : null)
+  },
+  { immediate: true }
+)
 /** How many enemy stones the node STARTED with, for the pips that go dark. */
 const enemiesTotal = computed(() => nodeCfg.value.presets.filter((p) => p.side === 'enemy').length)
 const enemies = computed(() => nodeCfg.value.enemies)

@@ -958,6 +958,28 @@ const guessTileSize = (): number => {
  * glyph glows, the facing arrows, the tile tints, the flames and the finger.
  * `skin` is the player's equipped skin; the other skins bake on demand.
  */
+/**
+ * What the next prime should bake. `null` means "nothing is in play yet", which
+ * is the state the PRELOAD runs in.
+ */
+let primeFactions: readonly Faction[] | null = null
+let primeTypes: readonly RuneType[] | null = null
+
+/** Tell the baker what this match will actually show. Setting it re-primes. */
+export const setPebblePrimeScope = (
+  factions: readonly Faction[] | null,
+  types: readonly RuneType[] | null = null
+): void => {
+  const same = (a: readonly string[] | null, b: readonly string[] | null): boolean =>
+    (a ?? []).length === (b ?? []).length && (a ?? []).every((v, i) => v === (b ?? [])[i])
+  if (same(primeFactions, factions) && same(primeTypes, types)) return
+  primeFactions = factions
+  primeTypes = types
+  // Past the "same size, already primed" early return: the size has not moved
+  // but the set to bake has.
+  primedSize = -1
+}
+
 export const primePebbleSprites = (sizeCss?: number, levelLabel = primedLabel, skin: SkinId = STARTING_SKIN): void => {
   const size = bucket(sizeCss ?? guessTileSize())
   if (size === primedSize && bakeTotal > 0) return
@@ -965,9 +987,24 @@ export const primePebbleSprites = (sizeCss?: number, levelLabel = primedLabel, s
   primedLabel = levelLabel
   bakeQueue = []
   const dpr = bakeDpr()
+  // ── Bake what is in play, not the whole cast ────────────────────────────────
+  //
+  // This enqueued every rune at both levels for the player AND all four
+  // factions: 10 x 2 x 5 = 100 stones, each painted from paths. Measured on a
+  // fresh save (one rune owned) that was 110 of the 349 canvases a session
+  // bakes and 5.4 of its 13.7 M pixels — the single biggest item — and the game
+  // renders at 15-30 fps for as long as it takes.
+  //
+  // `pebbleSprite` bakes on a cache miss, so anything not primed still appears;
+  // it costs one stone's bake the first time it is seen.
   const tints: Array<[Side, Faction | null]> = [['player', null]]
-  for (const f of Object.keys(FACTION_DEFS) as Faction[]) tints.push(['enemy', f])
-  for (const type of Object.keys(RUNES) as RuneType[]) {
+  for (const f of primeFactions ?? []) tints.push(['enemy', f])
+  // No scope yet means the PRELOAD, before any node exists: it bakes no stones,
+  // because the scene sets the scope as it mounts and the stones that matter
+  // are the ones in that match. Tiles, arrows, glows and flames below are small
+  // and shared, so they stay.
+  const stoneTypes = primeTypes ?? []
+  for (const type of stoneTypes) {
     for (const level of [1, 2] as const) {
       for (const [side, faction] of tints) {
         const key = pebbleKey(type, level, tintKey(side, skin, faction), size)
@@ -976,7 +1013,9 @@ export const primePebbleSprites = (sizeCss?: number, levelLabel = primedLabel, s
     }
   }
   const skinDef = SKINS[skin] ?? SKINS.river
-  for (const type of Object.keys(RUNES) as RuneType[]) {
+  // The glows follow the stones: a glyph the player cannot place needs no halo
+  // primed for it either. Same bake-on-miss safety net.
+  for (const type of stoneTypes) {
     bakeQueue.push(() => { glyphGlow(type, resolveGlow(skinDef, type), size, dpr) })
     if (skinDef.glow) bakeQueue.push(() => { glyphGlow(type, RUNES[type].color, size, dpr) })
   }
