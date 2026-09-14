@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import IconCoin from '@/components/icons/IconCoin.vue'
 import useEconomy from '@/use/useEconomy'
+import { registerAdChordTap, type AdChordSource } from '@/use/useAdChord'
 
 /**
  * The wallet. Every coin the game pays flies INTO this badge, so it is exposed
@@ -16,10 +17,22 @@ const { coins } = useEconomy()
 
 const rootEl = ref<HTMLElement | null>(null)
 defineExpose({ rootEl })
+
+// The badge doubles as the hidden QA trigger: 30 consecutive taps force an
+// interstitial past the pacing clock, so a portal reviewer can see one on
+// demand instead of having to play past the tutorial and win at the right
+// moment. Silent by design — no counter, no feedback until the ad opens.
+// See `useAdChord.ts`. Both listeners are bound; the module counts each
+// physical tap once.
+const onChordTap = (source: AdChordSource): void => { registerAdChordTap(source) }
 </script>
 
 <template lang="pug">
-  div.coin-badge(ref="rootEl")
+  div.coin-badge(
+    ref="rootEl"
+    @pointerdown="onChordTap('pointer')"
+    @click="onChordTap('click')"
+  )
     div.coin-badge__icon
       IconCoin(class="coin-badge__coin w-5 h-5")
     span.game-text.coin-badge__value {{ coins }}
@@ -47,6 +60,14 @@ defineExpose({ rootEl })
   border: 2px solid #fcd34d
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 4px rgba(0, 0, 0, 0.4)
   overflow: hidden
+  // The badge is the QA ad chord's trigger (see the script block), so thirty
+  // fast taps have to land as thirty taps: `manipulation` drops the
+  // double-tap-zoom wait on touch, and suppressing selection stops the rapid
+  // clicking from turning the wallet into a highlighted text run.
+  touch-action: manipulation
+  -webkit-user-select: none
+  user-select: none
+  -webkit-tap-highlight-color: transparent
 
   // The sheen sweeps by TRANSFORM, not by `background-position`.
   // Background-position is not a compositable property: animating it repaints
