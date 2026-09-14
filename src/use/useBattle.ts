@@ -6,7 +6,7 @@ import {
   PLANNING_MAX_MS, PLANNING_MS,
   MAX_LEVEL, RESET_MS, RESOLVE_MS, REVEAL_MS, RUNES, RUNE_TYPES,
   TURN_LIMIT, WIN_COINS_BASE, WIN_COINS_PER_KILL, WIN_COINS_PER_TILE, defaultDir, dirFromCellPoint, dirsFor,
-  isAimChosen, snapDir,
+  isAimChosen, isCentreTie, snapDir,
   streakMultiplier,
   type BoardState, type Cell, type ChestReward, type Dir, type MatchPhase, type MatchResult, type MatchState,
   type Move, type NodeConfig, type RuneType, type Tile
@@ -1108,18 +1108,42 @@ const aimFromPosition = (drag: DragState, cell: Cell, x: number, y: number): boo
   // edge nearest the hand — so a drop in the middle of a tile faced down on a
   // phone and right on a desktop, away from the enemy either way. Until
   // something is chosen the unaimed facing is `heldFacing`'s answer instead.
-  if (!isAimChosen(f.fx, f.fy)) {
-    drag.region = null
-    // "Holds" means holds a CHOICE — a key, a stroke, a region the player moved
-    // into. While `entryRegion` is unspent, the only thing that has aimed this
-    // pebble is the edge it was carried in through, and holding that is what
-    // pointed a centre drop back at the player's own side.
-    if (!chosenOnTile) drag.dir = heldFacing(drag.type, cell)
-    return true
-  }
   const dir = dirFromCellPoint(drag.type, f.fx, f.fy)
   if (!dirsFor(drag.type).includes(dir)) { drag.region = null; return true }
   drag.region = dir
+
+  // ── The middle is not a CHOICE, but the stone still follows the pointer ────
+  //
+  // These are two different questions and they used to share one answer. The
+  // centre must not count as a choice: it is where a pebble snaps and where a
+  // pointer arrives, so treating it as deliberate would overwrite a pre-aimed
+  // arrow key and would spend the correction window a player needs when they
+  // dropped a rune without caring which way it faced.
+  //
+  // But the old code also stopped the stone TURNING in there, and that reads as
+  // a broken game: drag towards the top-left, watch the rune keep pointing
+  // bottom-left. Near the centre of a tile the four regions meet, so the dead
+  // zone is exactly where small movements cross between facings — the one place
+  // the stone most obviously ought to follow.
+  //
+  // So it turns everywhere, and only a position OUTSIDE the dead zone counts as
+  // having chosen. A facing already chosen — by a key, a stroke, or a region
+  // the player moved into — still holds through the middle.
+  if (!isAimChosen(f.fx, f.fy)) {
+    // `keyDir` as well as `chosenOnTile`: a key pressed BEFORE the pebble lands
+    // aims it without going through `applyAim`, so it never sets `chosenOnTile`
+    // — and that is the exact case this dead zone was written for. Without it
+    // here, carrying a key-aimed pebble over a tile centre silently threw the
+    // key away.
+    if (!chosenOnTile && keyDir === null) {
+      // Dead centre, where the regions meet and the pointer is not really
+      // pointing anywhere, an unaimed pebble still takes the USEFUL facing —
+      // the blind-playtest fix that stopped fresh runes aiming back at the
+      // player's own side. One step off it, the pointer rules.
+      drag.dir = isCentreTie(f.fx, f.fy) ? heldFacing(drag.type, cell) : dir
+    }
+    return true
+  }
   if (dir === entryRegion && !chosenOnTile) {
     // The edge it was carried in through, SHOWN — the pebble points that way
     // while the pointer is there, and the compass says so — but not CHOSEN, so
@@ -1505,7 +1529,22 @@ const endDrag = (commit: boolean): void => {
   // there is one, else the facing a key chose on the way, else the default
   // (toward the enemy).
   if (drag.over && isValidKind(drag.kind)) {
-    const dir = drag.region !== null ? drag.region : heldFacing(drag.type, drag.over)
+    // `drag.dir`, not `drag.region`. The region is only what the pointer is
+    // NAMING; the facing is what the pebble has actually been aimed at, and
+    // `aimFromPosition` maintains it on every move with the precedence that
+    // matters: a chosen facing (a key, a stroke, a region moved into) holds,
+    // an unaimed pebble follows the pointer, and at the exact centre — where
+    // four regions meet and the pointer names one of them arbitrarily — it
+    // takes the useful direction. Reading the region here instead threw a
+    // pre-aimed key away on release.
+    //
+    // With one exception, which is why this is not simply `drag.dir`: released
+    // with the pointer OUTSIDE the tile and nothing ever aimed, there is no
+    // pointer answer to honour, and the useful direction is the right default —
+    // the rule that stopped unaimed drops facing into empty board.
+    const dir = drag.region !== null || chosenOnTile || keyDir !== null
+      ? drag.dir
+      : heldFacing(drag.type, drag.over)
     commitMove(drag.type, drag.over, dir, 'drag', aimed)
     return
   }

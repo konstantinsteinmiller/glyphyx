@@ -352,9 +352,11 @@ describe('the drag protocol', () => {
     advance(battle, AIM_LAND_MS + 10)
     battle.updateDrag(127, 185, { col: 1, row: 2 })
     expect(drag.dir).toBe('up')
-    // Back toward the middle: inside the dead zone, so the facing holds.
+    // Back toward the middle: the stone still points where the pointer is —
+    // the middle names a region like everywhere else — and since the pointer is
+    // still in the upper half, nothing flips.
     battle.updateDrag(127, 203, { col: 1, row: 2 })
-    expect(drag.region).toBeNull()
+    expect(drag.region).toBe('up')
     expect(drag.dir).toBe('up')
     // Across to the far half: now it is a different choice.
     battle.updateDrag(127, 245, { col: 1, row: 2 })
@@ -1317,6 +1319,26 @@ describe('aiming by position', () => {
     return { battle, drag: battle.view.drag as NonNullable<typeof battle.view.drag> }
   }
 
+  it('the stone follows the pointer INSIDE the old dead zone', async () => {
+    // The bug this pair of changes fixes, reported from a real game: drag the
+    // pointer to the top-left of a tile and the rune keeps pointing bottom-left.
+    // A radius of 0.18 around the centre used to freeze the facing entirely,
+    // and that radius covers exactly where the four regions meet — the one
+    // place small movements are MEANT to change the answer. A stone that
+    // ignores the pointer reads as a broken game.
+    //
+    // The tile here is ~71 px across, centred on (127.5, 212.5), so 7 px off
+    // centre is about 0.10 of the tile: well inside the old dead zone, and
+    // outside the tiny tie circle that still answers with the useful facing.
+    const { battle, drag } = await swordDrag()
+    for (const [x, y, dir] of [
+      [127.5, 205.5, 'up'], [120.5, 212.5, 'left'], [127.5, 219.5, 'down'], [134.5, 212.5, 'right']
+    ] as const) {
+      battle.updateDrag(x, y, { col: 1, row: 2 })
+      expect(drag.dir, `${x},${y}`).toBe(dir)
+    }
+  })
+
   it('reads each of the four triangles of a cardinal rune', async () => {
     const { battle, drag } = await swordDrag()
     for (const [x, y, dir] of [
@@ -1362,7 +1384,7 @@ describe('aiming by position', () => {
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
   })
 
-  it('the centre of a tile is NOT a choice: the facing HOLDS there', async () => {
+  it('the centre of a tile is NOT a choice: a chosen facing HOLDS there', async () => {
     // The middle is simply where you click a tile, so nothing is picked there.
     // The case that decides it: a player pre-aims with a key and then clicks
     // the tile centre. If the centre counted as a choice it would silently
@@ -1371,7 +1393,9 @@ describe('aiming by position', () => {
     battle.aimKey('right')
     expect(drag.dir).toBe('right')
     battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
-    expect(drag.region).toBeNull()
+    // The region under the pointer is named — the renderer draws it — but a
+    // facing the player CHOSE is not overwritten by the middle of a tile.
+    expect(drag.region).toBe('up')
     expect(drag.dir).toBe('right')
     battle.endDrag(true)
     expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'right' })
@@ -1422,7 +1446,10 @@ describe('aiming by position', () => {
     expect(drag.region).toBe('down')
     // … and to rest in the middle of it.
     battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
-    expect(drag.region).toBeNull()
+    // Dead centre: the region is named, but an unaimed pebble takes the USEFUL
+    // facing there rather than the coin-toss between four regions that meet at
+    // this exact point.
+    expect(drag.region).toBe('up')
     expect(drag.dir).toBe('left')
     battle.endDrag(true)
     // 1-1's skeleton is at (0,2): left of the tile, and now on the receiving end.
@@ -1462,11 +1489,16 @@ describe('aiming by position', () => {
     // The pebble knows which tile it is actually on, not wherever the finger is.
     expect(drag.over).toEqual({ col: 1, row: 2 })
     battle.endDrag(true)
-    // 1-1's skeleton is at (0,2), left of the tile it was dropped on.
-    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'left' })
+    // The drag ends up-and-left of the tile's centre, and the stone faces where
+    // the pointer is: `up`. It used to answer `left` — the useful direction, at
+    // 1-1's skeleton on (0,2) — because anything within the old dead zone was
+    // ignored in favour of that default, which is the bug this pair of changes
+    // fixes. The useful facing still wins at the EXACT centre; see the tray-drop
+    // test above.
+    expect(battle.view.playerMove).toMatchObject({ col: 1, row: 2, dir: 'up' })
   })
 
-  it('crossing the dead zone changes nothing, then choosing again does', async () => {
+  it('crossing the middle keeps a CHOSEN facing, then choosing again changes it', async () => {
     // Not a flicker: the absence of one. The facing simply holds while the
     // pointer is near the middle.
     //
@@ -1483,7 +1515,8 @@ describe('aiming by position', () => {
     battle.updateDrag(92, 212.5, { col: 1, row: 2 })
     expect(drag.dir).toBe('left')
     battle.updateDrag(127.5, 212.5, { col: 1, row: 2 })
-    expect(drag.region).toBeNull()
+    expect(drag.region).toBe('up')
+    // Chosen already, so the middle does not take it back.
     expect(drag.dir).toBe('left')
     battle.updateDrag(163, 212.5, { col: 1, row: 2 })
     expect(drag.region).toBe('right')

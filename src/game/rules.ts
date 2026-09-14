@@ -573,6 +573,30 @@ export const snapDir = (
  */
 export const AIM_CENTRE_DEAD_ZONE = 0.18
 
+/**
+ * The much smaller radius in which a pebble that has never been aimed keeps the
+ * USEFUL facing instead of the pointer's region.
+ *
+ * Not a second dead zone. `AIM_CENTRE_DEAD_ZONE` above answers "has the player
+ * CHOSEN?" — it gates the correction window and stops a click overwriting a
+ * key. This one answers a different question: where the four regions meet, the
+ * region under the pointer is a coin-toss between them, and a pebble carried up
+ * from the tray and released dead-centre used to face whatever it drifted into
+ * — which is how a blind playtest ended with runes aimed back at the player's
+ * own side. Within this radius the unaimed answer is `usefulDir`'s instead.
+ *
+ * It is deliberately tiny: the stone must visibly follow the pointer, and a
+ * player who moves at all has left this circle.
+ */
+export const AIM_CENTRE_TIE = 0.06
+
+/** True when the pointer is within the tie circle at the tile's exact centre. */
+export const isCentreTie = (fx: number, fy: number): boolean => {
+  const x = Number.isFinite(fx) ? fx : 0.5
+  const y = Number.isFinite(fy) ? fy : 0.5
+  return Math.hypot(x - 0.5, y - 0.5) <= AIM_CENTRE_TIE
+}
+
 /** True when the pointer is far enough from the tile's centre to have chosen. */
 export const isAimChosen = (fx: number, fy: number): boolean => {
   const x = Number.isFinite(fx) ? fx : 0.5
