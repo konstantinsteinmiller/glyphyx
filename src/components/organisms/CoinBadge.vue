@@ -31,6 +31,12 @@ defineExpose({ rootEl })
   display: inline-flex
   align-items: center
   gap: clamp(0.25rem, 1.4vw, 0.5rem)
+  // NEVER SHRINK. On a landscape phone `.scene__player` turns into a row, and
+  // a flex item's default `flex-shrink: 1` let this badge be squeezed narrower
+  // than its own number — which `overflow: hidden` (there for the sheen) then
+  // cut off, so a six-figure wallet rendered as "148". The row wraps instead;
+  // see `.scene__player`.
+  flex: 0 0 auto
   // The badge must stay a real touch-height so the forge that hangs under it
   // has something to centre on, and never shrink to a sliver in a tight row.
   min-height: 2rem
@@ -80,6 +86,9 @@ defineExpose({ rootEl })
 
 .coin-badge__value
   position: relative
+  // The wallet reaches six figures; wrapping it inside a pill would break the
+  // badge's height rather than its width, which is worse.
+  white-space: nowrap
   color: #fff7d6
   font-weight: 900
   font-size: clamp(0.8rem, 3.6vw, 1.1rem)

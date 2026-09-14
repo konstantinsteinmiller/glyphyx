@@ -8,7 +8,7 @@ import useEconomy from '@/use/useEconomy'
 import useStreak from '@/use/useStreak'
 import useSkins from '@/use/useSkins'
 import { activeSkin } from '@/use/useSkins'
-import { createArenaRenderer } from '@/use/useArenaArt'
+import { computeArenaLayout, createArenaRenderer } from '@/use/useArenaArt'
 import { attachArenaInput } from '@/use/useArenaInput'
 import { __winMatchNow, setDragMetrics } from '@/use/useBattle'
 import { renderScaleTier } from '@/use/useVfx'
@@ -111,12 +111,90 @@ let dpr = 1
 const isLandscapeCompact = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth > window.innerHeight && window.innerHeight <= 480
 
-const measureInsets = (): { top: number; bottom: number; left: number; right: number } => ({
+type Insets = { top: number; bottom: number; left: number; right: number }
+
+const barPart = (bar: HTMLElement | null, sel: string): DOMRect | null =>
+  (bar?.querySelector(sel) as HTMLElement | null)?.getBoundingClientRect() ?? null
+
+/**
+ * How wide the CONTENT of a HUD column actually is.
+ *
+ * Not its own width: the top bar is a `minmax(0, 1fr) auto minmax(0, 1fr)`
+ * grid, so each side column is stretched to a third of the screen — 538 px of
+ * a 1280 px window — while the chips inside it are about 120 px. Measuring the
+ * column instead of its children priced the gutters so high that the board came
+ * out SMALLER than the stacked layout, which is how this was caught.
+ */
+const contentWidth = (el: HTMLElement | null): number => {
+  if (!el) return 0
+  let left = Number.POSITIVE_INFINITY
+  let right = Number.NEGATIVE_INFINITY
+  for (const child of Array.from(el.children)) {
+    const r = child.getBoundingClientRect()
+    if (r.width === 0 && r.height === 0) continue
+    left = Math.min(left, r.left)
+    right = Math.max(right, r.right)
+  }
+  return Number.isFinite(left) && right > left ? right - left : 0
+}
+
+const widestIn = (sels: string[]): number => Math.max(0, ...sels.map(s =>
+  contentWidth(document.querySelector(s) as HTMLElement | null)))
+
+/**
+ * ─── Two ways to give the board room, and the bigger one wins ───────────────
+ *
+ * STACKED is the original: the bars are horizontal bands, so the board starts
+ * below the top one and ends above the bottom one. That is right in portrait,
+ * where the bars really do span the width.
+ *
+ * In LANDSCAPE they do not. The top bar is three columns — the player's chips
+ * left, the stage badge in the middle, the enemy right — and the bottom bar is
+ * `space-between` with nothing in the centre at all. So the only thing actually
+ * above a centred board is the stage badge, while the tall left column (streak,
+ * wallet, forge, chest) sits in a gutter the board never reaches. Insetting by
+ * the whole bar's height charges the board for furniture beside it: at
+ * 1280x720 that cost 288 px of vertical budget and left the board 318 px wide
+ * in a 1280 px window, with ~480 px of empty ridge on either side.
+ *
+ * GUTTER prices it properly — inset by the middle strip vertically and by the
+ * side columns horizontally — and then the two are compared and the one that
+ * yields the bigger board is used. Comparing rather than switching on a
+ * breakpoint is what makes this safe: a wrapped chip row on a small landscape
+ * phone makes GUTTER worse, and there the STACKED number simply wins.
+ */
+const stackedInsets = (): Insets => ({
   top: (topBarRef.value?.getBoundingClientRect().height ?? 0) + (isLandscapeCompact() ? 2 : 6),
   bottom: isLandscapeCompact() ? 0 : (bottomBarRef.value?.getBoundingClientRect().height ?? 0) + 4,
   left: 0,
   right: 0
 })
+
+const gutterInsets = (): Insets => {
+  const stage = barPart(topBarRef.value, '.scene__stage')
+  // A little air so a chip never touches the board's frame.
+  const pad = 12
+  // The bottom inset goes to zero, so the bottom corners now share the gutters
+  // with the top ones and the board has to clear whichever is wider.
+  return {
+    top: (stage?.height ?? 0) + 6,
+    bottom: 0,
+    left: widestIn(['.scene__player', '.scene__meta']) + pad,
+    right: widestIn(['.scene__enemy', '.scene__skins']) + pad
+  }
+}
+
+const measureInsets = (): Insets => {
+  const stacked = stackedInsets()
+  // Portrait keeps the stacked bands: there the bars genuinely do span the width.
+  if (cssW === 0 || cssW <= cssH) return stacked
+  const gutter = gutterInsets()
+  // Ask the real layout which set leaves more board, rather than guessing from
+  // a breakpoint. `computeArenaLayout` is pure and this runs on resize only.
+  const a = computeArenaLayout(cssW, cssH, stacked).board.w
+  const b = computeArenaLayout(cssW, cssH, gutter).board.w
+  return b > a ? gutter : stacked
+}
 
 // ─── Overlay state ──────────────────────────────────────────────────────────
 //
@@ -1388,6 +1466,11 @@ onUnmounted(() => {
     flex-direction: row
     align-items: flex-start
     gap: 0.35rem
+    // The chips keep their own size (none of them may be squeezed into
+    // illegibility), so when the wallet grows to six figures the row runs out
+    // of width — and wrapping onto a second line is the only outcome that
+    // neither clips a number nor pushes a chip off the screen.
+    flex-wrap: wrap
 
   // The primer leaves the flow: on a landscape phone the free real estate is
   // the column LEFT of the board, not a row above it — a row above is the one
