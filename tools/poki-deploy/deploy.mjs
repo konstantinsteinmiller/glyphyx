@@ -35,7 +35,7 @@ import { Cdp, DEFAULT_PROFILE, launch } from './lib/chrome.mjs'
 import { runGates } from './lib/gates.mjs'
 import { zipDir } from './lib/zip.mjs'
 import { bold, bytes, cyan, die, dim, fail, info, pass, step, warn, yellow, green, red } from './lib/log.mjs'
-import { inspectorUrl, openVersions, readVersions, uploadVersion, versionsUrl, gameFrameOrigin } from './lib/p4d.mjs'
+import { inspectorUrl, openVersions, readVersions, resolveGameId, uploadVersion, versionsUrl, gameFrameOrigin } from './lib/p4d.mjs'
 import { STEPS, applyVerdicts, runInspectorQa } from './lib/inspector.mjs'
 import { bumpPatch, readVersion, writeVersion } from './lib/version.mjs'
 
@@ -65,7 +65,7 @@ const PORT = Number(arg('port', 9333))
 const PROFILE = arg('profile', DEFAULT_PROFILE)
 
 console.log(bold(`\nPoki deploy — ${cfg.gameName}`))
-console.log(dim(`  team ${cfg.team} · game ${cfg.gameId}`))
+console.log(dim(`  team ${cfg.team} · game ${cfg.gameId || `"${cfg.gameName}" (looked up by name)`}`))
 if (DRY) console.log(yellow('  --dry-run: nothing will actually be uploaded'))
 
 // ── 1. version ──────────────────────────────────────────────────────────────
@@ -130,6 +130,27 @@ info(adopted ? 'adopted the Chrome already on this port' : 'launched a headed Ch
 
 const cdp = await Cdp.open(port, 'about:blank')
 let versionId = arg('version-id', null)
+
+// `gameId` is OPTIONAL. With none configured, find it by NAME on the team page
+// rather than making somebody copy a uuid out of a URL by hand — that lookup is
+// the only manual step in setting this pipeline up. Resolved here, after the
+// browser is up and before anything needs the id, and printed so it can be
+// pasted into the config to skip the lookup on later runs.
+let gameId = arg('game-id', cfg.gameId)
+if (!gameId || /^TODO/i.test(gameId)) {
+  step('Find the game')
+  gameId = await resolveGameId(cdp, {
+    team: cfg.team,
+    gameName: cfg.gameName,
+    onLoginNeeded: () => {
+      console.log(`\n   ${yellow('▸ Sign in to Poki in the Chrome window that just opened.')}`)
+      console.log(`   ${dim('This is a one-off: the profile keeps the session for every run after this.')}`)
+      console.log(`   ${dim('Waiting up to 5 minutes…')}\n`)
+    },
+    log: m => info(m),
+  })
+  info('add this to poki.config.mjs to skip the lookup', `gameId: '${gameId}'`)
+}
 // Cleared at the end of a clean run; a failure leaves the tab open to look at.
 let failedRun = true
 
@@ -139,7 +160,7 @@ try {
     step('Upload to P4D')
     await openVersions(cdp, {
       team: cfg.team,
-      gameId: cfg.gameId,
+      gameId,
       onLoginNeeded: () => {
         console.log(`\n   ${yellow('▸ Sign in to Poki in the Chrome window that just opened.')}`)
         console.log(`   ${dim('This is a one-off: the profile keeps the session for every run after this.')}`)
@@ -159,11 +180,11 @@ try {
       })
       versionId = up.id
       pass(`uploaded as "${up.label}"`, `version ${up.id} — ${up.status}`)
-      info('served at', gameFrameOrigin(cfg.gameId, up.id))
+      info('served at', gameFrameOrigin(gameId, up.id))
     }
   } else {
     step('Target version')
-    await openVersions(cdp, { team: cfg.team, gameId: cfg.gameId, onLoginNeeded: () => console.log(yellow('   ▸ sign in to Poki in the Chrome window')) })
+    await openVersions(cdp, { team: cfg.team, gameId, onLoginNeeded: () => console.log(yellow('   ▸ sign in to Poki in the Chrome window')) })
     const rows = await readVersions(cdp)
     versionId = versionId ?? rows[0]?.id
     if (!versionId) die('no versions in P4D to QA')
@@ -192,7 +213,7 @@ try {
   }
 
   console.log(`\n${green('✔')} done — ${bold(versionName)}`)
-  console.log(`  ${dim('P4D')}        ${versionsUrl(cfg.team, cfg.gameId)}`)
+  console.log(`  ${dim('P4D')}        ${versionsUrl(cfg.team, gameId)}`)
   if (versionId) console.log(`  ${dim('Inspector')}  ${inspectorUrl(versionId)}`)
   console.log(`  ${dim('Setting the version live is still a manual click in P4D.')}\n`)
   failedRun = false

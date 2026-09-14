@@ -216,7 +216,16 @@ export const runInspectorQa = async (cdp, {
     }
     if (!frame || m.sessionId !== frame) return
     if (m.method === 'Network.requestWillBeSent') {
-      try { const h = new URL(m.params.request.url).hostname; netHosts.set(h, (netHosts.get(h) ?? 0) + 1) } catch { /* data: */ }
+      // A HOSTLESS url is not an external resource. `data:`, `blob:` and
+      // `about:` never leave the machine — and `new URL()` does NOT throw on
+      // them, it returns `hostname === ''`, so the old `catch` here never fired
+      // and every inline asset was counted as a host called "". Which then read
+      // back as `unapproved host(s):  (1)` and crossed a box over a base64
+      // image the game inlined at build time.
+      try {
+        const h = new URL(m.params.request.url).hostname
+        if (h) netHosts.set(h, (netHosts.get(h) ?? 0) + 1)
+      } catch { /* not a url we can parse at all */ }
     }
     if (m.method === 'Runtime.exceptionThrown') {
       consoleErrors.push(m.params.exceptionDetails?.exception?.description ?? m.params.exceptionDetails?.text ?? 'exception')

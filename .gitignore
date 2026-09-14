@@ -101,3 +101,6 @@ __screenshots__/
 # Poki release-audit screenshots (scripts/poki-release-audit.mjs) — one per
 # graded viewport, rewritten on every run.
 /scripts/audit/
+
+# Poki QA report (tools/poki-deploy) — regenerated on every `pnpm deploy:poki`.
+/poki-qa-report.json
