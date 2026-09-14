@@ -1048,6 +1048,27 @@ export const bakePebbleSlice = (budgetMs: number): number => {
 export const pebbleSpritesReady = (): boolean => bakeQueue.length === 0
 export const pebbleBakeProgress01 = (): number => (bakeTotal === 0 ? 1 : bakeDone / bakeTotal)
 
+/**
+ * The caches whose bakes have WORDS in them, and nothing else.
+ *
+ * `document.fonts.ready` drops bakes so a level label made against the fallback
+ * face is re-made against the real one. That is worth doing — but dropping the
+ * arrows, tiles, glows, flames and sockets as well makes the entire startup
+ * bake run TWICE, for a font none of them contains: measured at 8 arrow
+ * colours baked 15 times in one session. These four are the ones that can
+ * actually hold a glyph of type.
+ */
+const invalidateTextSprites = (): void => {
+  pebbleCache.clear()   // the level label is baked into the stone
+  ornamentCache.clear() // the Lv 2 crest carries `labels.level(n)`
+  captionCache.clear()  // YOU / FOE / REROLL
+  damageCache.clear()   // the floating numbers
+  bakeQueue = []
+  bakeTotal = 0
+  bakeDone = 0
+  primedSize = 0
+}
+
 const invalidateSprites = (): void => {
   pebbleCache.clear()
   ornamentCache.clear()
@@ -1428,7 +1449,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
       // Only the SPRITES — not the backdrop or the plate. Neither of those has
       // a word in it, and dropping the backdrop would buy a full-screen re-bake
       // and three `getImageData` readbacks to fix a font it never used.
-      invalidateSprites()
+      invalidateTextSprites()
       primePebbleSprites(geom.tile, labels ? labels.level(2) : primedLabel, lastSkin ?? STARTING_SKIN)
     })
   } catch {
