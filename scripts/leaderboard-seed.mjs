@@ -229,7 +229,7 @@ export const buildSeed = () => {
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
   const seed = buildSeed()
   mkdirSync(dirname(SEED_FILE), { recursive: true })
-  writeFileSync(SEED_FILE, JSON.stringify(seed, null, 2) + '\n', 'utf-8')
+  writeFileSync(SEED_FILE, `${JSON.stringify(seed, null, 2)}\n`, 'utf-8')
 
   const above = (x) => seed.dist.filter(([s]) => s > x).reduce((a, [, n]) => a + n, 0)
   const band = (lo, hi) => seed.dist.filter(([s]) => s >= lo && s <= hi).reduce((a, [, n]) => a + n, 0)

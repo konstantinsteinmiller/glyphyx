@@ -313,22 +313,21 @@ export const showMidgameAd = async (): Promise<MidgameOutcome> => {
       )
       dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
       return outcomeOf(end)
-    } else {
-      // Default: kill audio BEFORE the SDK shows. GamePix-style SDKs resolve
-      // `interstitialAd()` before the ad visually closes, so up front is the
-      // only safe moment to mute; then yield AUDIO_DRAIN_MS so the audio
-      // thread flushes its buffer before the ad layer paints (GamePix
-      // submission is rejected if any background audio is still audible).
-      killAudioForAd()
-      await new Promise<void>((resolve) => setTimeout(resolve, AUDIO_DRAIN_MS))
-      dlog(`${TAG} ▶ interstitial START (provider=${provider.name})`)
-      const end = await awaitAdBounded(
-        provider.showMidgameAd(() => { opened = true }).then(noteAnswer),
-        () => opened
-      )
-      dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
-      return outcomeOf(end)
     }
+    // Default: kill audio BEFORE the SDK shows. GamePix-style SDKs resolve
+    // `interstitialAd()` before the ad visually closes, so up front is the
+    // only safe moment to mute; then yield AUDIO_DRAIN_MS so the audio
+    // thread flushes its buffer before the ad layer paints (GamePix
+    // submission is rejected if any background audio is still audible).
+    killAudioForAd()
+    await new Promise<void>((resolve) => setTimeout(resolve, AUDIO_DRAIN_MS))
+    dlog(`${TAG} ▶ interstitial START (provider=${provider.name})`)
+    const end = await awaitAdBounded(
+      provider.showMidgameAd(() => { opened = true }).then(noteAnswer),
+      () => opened
+    )
+    dlog(`${TAG} ⏹ interstitial END (provider=${provider.name})`)
+    return outcomeOf(end)
   } catch (e) {
     // Same "cut off due to error" safety net as the rewarded path: never
     // leave the game muted/paused if the interstitial backend throws.

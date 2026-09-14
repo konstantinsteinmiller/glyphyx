@@ -147,7 +147,7 @@ export const useMusic = () => {
     }
     stopProcedural()
     if (!bgMusic.value) return
-    const src = prependBaseUrl('audio/music/' + currentTrackFile())
+    const src = prependBaseUrl(`audio/music/${currentTrackFile()}`)
     const cached = resourceCache.audio.get(src)
     bgMusic.value.pause()
     bgMusic.value.volume = 0

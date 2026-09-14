@@ -125,7 +125,7 @@ const { values: opt, positionals } = parseArgs({ allowPositionals: true, options
 if (process.env.npm_config_user_agent?.startsWith('npm/')) {
   const lost = Object.keys(options).filter((k) => process.env[`npm_config_${k.replaceAll('-', '_')}`] !== undefined && !process.argv.includes(`--${k}`))
   if (lost.length || positionals.length > 1) {
-    console.error(`npm swallowed flags: ${lost.map((k) => `--${k}`).join(' ') || '(their values arrived as extra positionals: ' + positionals.slice(1).join(' ') + ')'}`)
+    console.error(`npm swallowed flags: ${lost.map((k) => `--${k}`).join(' ') || `(their values arrived as extra positionals: ${positionals.slice(1).join(' ')})`}`)
     console.error(`put them behind "--":   npm run compress-folder -- ${positionals[0] ?? '<dir>'} ${lost.map((k) => `--${k}`).join(' ')}`)
     console.error('or call   node scripts/compress-images.mjs <dir> …   directly (pnpm forwards flags as they are)')
     process.exit(2)
@@ -164,8 +164,8 @@ const backupPathFor = (file) => {
   const name = basename(file, ext) + CONFIG.backupSuffix + ext
   return backupDir ? join(backupDir, relative(ROOT, dirname(file)), name) : join(dirname(file), name)
 }
-const kb = (n) => (n / 1024).toFixed(1) + ' KB'
-const pct = (a, b) => (b === 0 ? '0%' : ((a / b - 1) * 100).toFixed(1) + '%')
+const kb = (n) => `${(n / 1024).toFixed(1)} KB`
+const pct = (a, b) => (b === 0 ? '0%' : `${((a / b - 1) * 100).toFixed(1)}%`)
 
 async function* walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {

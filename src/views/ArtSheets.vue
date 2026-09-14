@@ -571,7 +571,7 @@ const exportAll = async (): Promise<void> => {
       await save(name, { text })
       files++
     }
-    await save('sheet-index.json', { text: JSON.stringify(buildIndex(fits), null, 2) + '\n' })
+    await save('sheet-index.json', { text: `${JSON.stringify(buildIndex(fits), null, 2)}\n` })
     files++
     status.value = `wrote ${files} files to art-sheets/`
       + (stubbed.value ? ` — ${stubbed.value} panels drew the STUB painter; re-export once arenaPainters lands` : '')

@@ -376,7 +376,7 @@ const burstStone = (h: Hit, hx: number, hy: number, a: number, api: FxApi, lv2: 
   }
   // Chips of the stone, their edges burning.
   const stone = api.stoneOf(h.target)
-  const chip = poolSprite('cleave.chip|' + stone, () => hotChipSprite(stone))
+  const chip = poolSprite(`cleave.chip|${stone}`, () => hotChipSprite(stone))
   const nc = count(4 * more)
   for (let j = 0; j < nc; j++) {
     const b = a + (Math.random() - 0.5) * 2.4

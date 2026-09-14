@@ -61,7 +61,7 @@ function installVirtualClock() {
   let dateSkew = 0   // virtual Date.now() === dateSkew + t
   const errors = []
   const note = (where, err) => {
-    if (errors.length < 50) errors.push(where + ': ' + ((err && err.message) || String(err)))
+    if (errors.length < 50) errors.push(`${where}: ${(err && err.message) || String(err)}`)
   }
 
   // ── rAF queue, plus the shadow of what is still on the real clock ──

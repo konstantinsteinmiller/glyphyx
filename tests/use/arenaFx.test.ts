@@ -403,7 +403,7 @@ describe('the aim compass', () => {
         const [dx, dy] = DIR_VEC[dir]
         const n = Math.hypot(dx, dy) || 1
         const dot = (peak[0] - 0.5) * (dx / n) + (peak[1] - 0.5) * (dy / n)
-        expect(dot, type + '/' + dir + ' chevron').toBeGreaterThan(0.5)
+        expect(dot, `${type}/${dir} chevron`).toBeGreaterThan(0.5)
       }
     }
   })

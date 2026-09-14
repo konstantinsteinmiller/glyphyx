@@ -161,7 +161,7 @@ if (!sel.length) { console.error('no inputs'); process.exit(1) }
 // after every file so a crash or Ctrl-C keeps what was measured; an input
 // that vanished or cannot be decoded is skipped, not fatal.
 const parallel = Number(opt.parallel ?? 4)
-console.error(`sharp/libvips ${sharp.versions.vips}; ${C.length} candidates; ${sel.length} inputs; ${parallel} in parallel${notes.length ? '\n' + notes.join('\n') : ''}`)
+console.error(`sharp/libvips ${sharp.versions.vips}; ${C.length} candidates; ${sel.length} inputs; ${parallel} in parallel${notes.length ? `\n${notes.join('\n')}` : ''}`)
 const results = []
 async function bench(inp) {
   const buf = readFileSync(inp.file)
@@ -202,7 +202,7 @@ results.sort((a, b) => sel.findIndex((i) => i.id === a.id) - sel.findIndex((i) =
 
 // ---- report ----------------------------------------------------------------
 const kb = (n) => (n / 1024).toFixed(1)
-const pct = (a, b) => ((a / b - 1) * 100).toFixed(1) + '%'
+const pct = (a, b) => `${((a / b - 1) * 100).toFixed(1)}%`
 let md = `# Image compression benchmark\n\n_${new Date().toISOString().slice(0, 10)} · sharp/libvips ${sharp.versions.vips} · ${sel.length} inputs_\n${notes.map((n) => `\n> ${n}`).join('')}\n`
 for (const row of results.filter((r) => r.set === 'samples')) {
   md += `\n## ${row.id} (${row.fmt}, ${row.width}x${row.height}, ${kb(row.origBytes)} KB)\n\n| candidate | KB | vs original | SSIM | PSNR | ms |\n|---|---:|---:|---:|---:|---:|\n`

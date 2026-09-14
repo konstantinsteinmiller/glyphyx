@@ -24,7 +24,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 // build with no network bakes the last known board instead of quietly shipping
 // without the feature.
 const SNAPSHOT_VIRTUAL_ID = 'virtual:leaderboard-snapshot'
-const SNAPSHOT_RESOLVED = '\0' + SNAPSHOT_VIRTUAL_ID
+const SNAPSHOT_RESOLVED = `\0${SNAPSHOT_VIRTUAL_ID}`
 const SNAPSHOT_FILE = resolve(
   fileURLToPath(new URL('./data/leaderboard-snapshot.json', import.meta.url))
 )

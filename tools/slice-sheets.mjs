@@ -432,7 +432,7 @@ const identify = (file, w, h) => {
 
 const chromePath = CHROME_CANDIDATES.find((p) => existsSync(p))
 if (!chromePath) {
-  console.error('No Chrome found. Tried:\n  ' + CHROME_CANDIDATES.join('\n  '))
+  console.error(`No Chrome found. Tried:\n  ${CHROME_CANDIDATES.join('\n  ')}`)
   process.exit(1)
 }
 
@@ -613,7 +613,7 @@ async function prepareInPage (a) {
   // Reported: the grounds the magenta key would not have reached on its own.
   report.grounds = grounds
     .filter((c) => Math.abs(c[0] - 255) + c[1] + Math.abs(c[2] - 255) >= 150)
-    .map((c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join(''))
+    .map((c) => `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`)
   const P = new Uint8Array(N)
   for (let k = 0, i = 0; k < N; k++, i += 4) {
     const r = d[i], gg = d[i + 1], b = d[i + 2]
@@ -2587,6 +2587,6 @@ try {
   }
   shutdown(failed ? 1 : 0)
 } catch (e) {
-  console.error('\nERROR: ' + e.message)
+  console.error(`\nERROR: ${e.message}`)
   shutdown(1)
 }

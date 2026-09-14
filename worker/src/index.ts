@@ -100,6 +100,7 @@ const cleanName = (raw: unknown): string => {
   if (typeof raw !== 'string') return 'Anon'
   const out = raw
     // eslint-disable-next-line no-control-regex
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping C0/C1 controls, zero-width and bidi marks is exactly what this sanitiser is for
     .replace(/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\uFEFF]/g, '')
     .trim()
     .slice(0, 16)

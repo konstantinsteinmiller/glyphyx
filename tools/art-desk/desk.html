@@ -126,7 +126,7 @@ aside h4 { margin: 0 0 8px; font-size: 13px; display: flex; align-items: center;
   <label class="tog"><input type="checkbox" id="singles"> singles</label>
   <span class="spacer"></span>
   <span class="hint">copy → paste in Gemini → press its download button — the desk does the rest</span>
-  <button id="rescan" title="Re-read everything from disk">↻</button>
+  <button type="button" id="rescan" title="Re-read everything from disk">↻</button>
 </header>
 <main>
   <div id="list"></div>
@@ -136,14 +136,14 @@ aside h4 { margin: 0 0 8px; font-size: 13px; display: flex; align-items: center;
       <h4><span class="dot" id="gemdot"></span> Gemini queue <span class="spacer"></span><span class="hint" id="used"></span></h4>
       <div class="phase" id="phase">idle</div>
       <div class="btnrow">
-        <button class="go" id="start">▶ Start</button>
-        <button class="stop" id="stopq">■ Stop</button>
-        <button id="signIn" title="Opens the desk's Chrome profile WITHOUT its automation port, the only way Google lets you sign in. Sign in, then close that window.">Sign in</button>
-        <button id="openGem" title="Open the desk's own Chrome window at Gemini, to watch it work">Gemini window</button>
+        <button type="button" class="go" id="start">▶ Start</button>
+        <button type="button" class="stop" id="stopq">■ Stop</button>
+        <button type="button" id="signIn" title="Opens the desk's Chrome profile WITHOUT its automation port, the only way Google lets you sign in. Sign in, then close that window.">Sign in</button>
+        <button type="button" id="openGem" title="Open the desk's own Chrome window at Gemini, to watch it work">Gemini window</button>
       </div>
       <div class="btnrow">
-        <button id="queueTodo" title="Queue every job in the current list that still needs painting">+ all to paint</button>
-        <button id="clearq">Clear</button>
+        <button type="button" id="queueTodo" title="Queue every job in the current list that still needs painting">+ all to paint</button>
+        <button type="button" id="clearq">Clear</button>
       </div>
       <ul class="qlist" id="qlist"></ul>
       <details>
@@ -214,7 +214,7 @@ const visible = () => {
 }
 const renderChips = () => {
   const p = pool()
-  $('#chips').innerHTML = FILTERS.map(([k, label, f]) => `<button class="chip${k === filter ? ' on' : ''}" data-f="${k}">${label}<b>${p.filter(f).length}</b></button>`).join('')
+  $('#chips').innerHTML = FILTERS.map(([k, label, f]) => `<button type="button" class="chip${k === filter ? ' on' : ''}" data-f="${k}">${label}<b>${p.filter(f).length}</b></button>`).join('')
   const docs = [...new Set(S.jobs.map((j) => j.doc))]
   $('#doc').innerHTML = `<option value="">all prompt files</option>${docs.map((d) => `<option value="${esc(d)}"${d === doc ? ' selected' : ''}>${esc(d.replace(/^PROMPTS-|\.md$/g, ''))}</option>`).join('')}`
 }
@@ -237,7 +237,7 @@ const renderList = () => {
           ${j.cells.length ? `<span class="badge" title="sliced sprites on disk">${j.onDisk}/${j.cells.length}</span>` : ''}
           ${busy ? '<span class="badge busy">working…</span>' : q.has(j.stem) ? '<span class="badge q">queued</span>' : ''}
           ${S.armed?.stem === j.stem ? '<span class="badge q">⏺ armed</span>' : ''}
-          ${j.aspectWarning ? '<span class="badge warn" title="' + esc(j.aspectWarning) + '">shape!</span>' : ''}</div>
+          ${j.aspectWarning ? `<span class="badge warn" title="${esc(j.aspectWarning)}">shape!</span>` : ''}</div>
       </div></div>`
   }).join('')
   $('.item.sel')?.scrollIntoView({ block: 'nearest' })
@@ -266,28 +266,28 @@ const renderDetail = async () => {
     painted: fig(paintUrl, paintUrl ? `painted/${esc(j.painting)} — ${aspect(j.paintingSize)}` : 'nothing painted yet'),
     both: `${fig(refUrl, 'reference')}${fig(paintUrl, paintUrl ? 'painted' : 'nothing painted yet')}`
   }
-  const tabBtn = (k, label) => `<button data-tab="${k}" class="${tab === k ? 'on' : ''}">${label}</button>`
+  const tabBtn = (k, label) => `<button type="button" data-tab="${k}" class="${tab === k ? 'on' : ''}">${label}</button>`
   $('#detail').innerHTML = `
     <h2>${esc(j.title)} <span class="badge ${cls}">${j.mark} ${word}</span></h2>
     <div class="meta"><code>${esc(j.stem)}</code><span>${esc(j.doc)}</span><span>reference ${aspect(j.refSize)}</span>${j.rev ? `<span>rev <code>${j.rev}</code></span>` : ''}<span>${esc(j.state)}</span></div>
     ${j.aspectWarning ? `<div class="alert">The painting's shape does not match the reference: ${esc(j.aspectWarning)}. The slicer will most likely refuse it — repaint, and set the aspect ratio in Gemini if it offers one.</div>` : ''}
-    ${!j.ref ? '<div class="alert bad">This prompt has no reference image on disk yet. Export it first (the bench, or <code>pnpm art:export</code>' + (j.kind === 'single' ? ' <code>-- --singles</code>' : '') + ').</div>' : ''}
+    ${!j.ref ? `<div class="alert bad">This prompt has no reference image on disk yet. Export it first (the bench, or <code>pnpm art:export</code>${j.kind === 'single' ? ' <code>-- --singles</code>' : ''}).</div>` : ''}
     <div class="actions">
-      <button class="primary" data-act="both" ${j.ref ? '' : 'disabled'} title="Copies the image now, and the prompt the moment you come back to this window  (b)">⧉ Copy image, then prompt</button>
-      <button data-act="img" ${j.ref ? '' : 'disabled'} title="(i)">Copy image</button>
-      <button data-act="prompt" title="(c)">Copy prompt</button>
-      <button data-act="open" title="Open Gemini in a new tab  (o)">↗ Gemini</button>
+      <button type="button" class="primary" data-act="both" ${j.ref ? '' : 'disabled'} title="Copies the image now, and the prompt the moment you come back to this window  (b)">⧉ Copy image, then prompt</button>
+      <button type="button" data-act="img" ${j.ref ? '' : 'disabled'} title="(i)">Copy image</button>
+      <button type="button" data-act="prompt" title="(c)">Copy prompt</button>
+      <button type="button" data-act="open" title="Open Gemini in a new tab  (o)">↗ Gemini</button>
       <span class="sep"></span>
-      <button class="go" data-act="paint" ${j.ref && !busy ? '' : 'disabled'} title="Queue it first and start the Gemini queue  (g)">⚡ Paint with Gemini</button>
-      <button data-act="queue" ${j.ref ? '' : 'disabled'} title="(q)">+ Queue</button>
-      ${j.painting ? `<button data-act="slice" ${busy ? 'disabled' : ''} title="Slice and compress the painting that is already in painted/">✂ Slice + compress</button>` : ''}
+      <button type="button" class="go" data-act="paint" ${j.ref && !busy ? '' : 'disabled'} title="Queue it first and start the Gemini queue  (g)">⚡ Paint with Gemini</button>
+      <button type="button" data-act="queue" ${j.ref ? '' : 'disabled'} title="(q)">+ Queue</button>
+      ${j.painting ? `<button type="button" data-act="slice" ${busy ? 'disabled' : ''} title="Slice and compress the painting that is already in painted/">✂ Slice + compress</button>` : ''}
     </div>
     <div class="drop${armed ? ' armed' : ''}" id="drop">
       <span class="dot${armed ? ' live' : ''}"></span>
       <span style="flex:1;min-width:220px">${busy ? '<b>Working on it…</b> see the log.' : armed
         ? `<b>Watching ${esc(S.watchDir ?? 'Downloads')}</b> — press Gemini's download button and the image is filed as <code>${esc(j.stem)}</code>, sliced and compressed.`
         : 'Drop the returned image here, or paste it (<kbd>Ctrl</kbd>+<kbd>V</kbd>). Copying from this job also watches your Downloads folder for it.'}</span>
-      ${armed ? '<button data-act="latest">Use newest download</button><button data-act="disarm">Stop watching</button>' : `<button data-act="arm" ${j.ref ? '' : 'disabled'}>Watch Downloads</button>`}
+      ${armed ? '<button type="button" data-act="latest">Use newest download</button><button type="button" data-act="disarm">Stop watching</button>' : `<button type="button" data-act="arm" ${j.ref ? '' : 'disabled'}>Watch Downloads</button>`}
     </div>
     <div class="tabs">${tabBtn('ref', 'Reference')}${tabBtn('key', 'Key')}${tabBtn('painted', 'Painted')}${tabBtn('both', 'Side by side')}</div>
     <div class="view${tab === 'both' ? ' two' : ''}">${views[tab] ?? views.ref}</div>
@@ -388,7 +388,7 @@ const renderAuto = () => {
   $('#phase').textContent = phase
   $('#start').disabled = !!a.running || !a.queue?.length
   $('#stopq').disabled = !a.running
-  $('#qlist').innerHTML = (a.queue ?? []).map((s) => `<li class="${a.running && s === a.current ? 'cur' : ''}"><span>${esc(s)}</span>${a.running && s === a.current ? '<span>▶</span>' : `<button data-deq="${esc(s)}">×</button>`}</li>`).join('')
+  $('#qlist').innerHTML = (a.queue ?? []).map((s) => `<li class="${a.running && s === a.current ? 'cur' : ''}"><span>${esc(s)}</span>${a.running && s === a.current ? '<span>▶</span>' : `<button type="button" data-deq="${esc(s)}">×</button>`}</li>`).join('')
   for (const [id, k] of [['#s-gap', 'gapSeconds'], ['#s-jit', 'jitterSeconds'], ['#s-cap', 'dailyCap'], ['#s-ret', 'retries']]) {
     if (document.activeElement !== $(id)) $(id).value = a.settings?.[k] ?? ''
   }

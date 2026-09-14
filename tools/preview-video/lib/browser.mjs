@@ -30,7 +30,7 @@ async function loadChromium() {
     }
   }
   throw new Error(
-    'Could not load Playwright. Install it with `pnpm add -D @playwright/test`.\n  ' + tried.join('\n  ')
+    `Could not load Playwright. Install it with \`pnpm add -D @playwright/test\`.\n  ${tried.join('\n  ')}`
   )
 }
 

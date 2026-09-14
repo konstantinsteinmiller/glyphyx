@@ -67,7 +67,7 @@ describe('source files carry no raw control characters', () => {
     // file would otherwise carry the very bytes the other test forbids, and a
     // test that reintroduces the bug in order to check for it is not a test.
     const { cleanName } = await import('@/use/usePlayerIdentity')
-    const ch = (code: number): string => 'a' + String.fromCharCode(code) + 'b'
+    const ch = (code: number): string => `a${String.fromCharCode(code)}b`
 
     expect(cleanName(ch(0x00))).toBe('ab')   // NUL -- the one that broke the build
     expect(cleanName(ch(0x1f))).toBe('ab')   // C0 controls

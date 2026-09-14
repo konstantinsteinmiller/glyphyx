@@ -143,9 +143,9 @@ export const pinSprite = (): HTMLCanvasElement | null =>
   pin !== undefined ? pin : (pin = coreSprite(GOLD, 48))
 
 /** The pool keys of the ember sprites (stock `core|<colour>` pins). */
-export const EMBER_KEY = 'core|' + CORE
+export const EMBER_KEY = `core|${CORE}`
 export const emberSprite = (): HTMLCanvasElement | null => coreSprite(CORE, 48)
-export const GOLD_KEY = 'core|' + GOLD
+export const GOLD_KEY = `core|${GOLD}`
 export const goldSprite = (): HTMLCanvasElement | null => coreSprite(GOLD, 48)
 
 /**

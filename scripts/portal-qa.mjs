@@ -346,7 +346,7 @@ if (plat.fingerprint) {
 }
 
 const server = createServer((req, res) => {
-  let p = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+  const p = decodeURIComponent(new URL(req.url, 'http://x').pathname)
   if (p === '/' || p === '/index.html') {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
     res.end(patched)
@@ -471,8 +471,8 @@ try {
   }
   check('game booted to a live run', booted)
   if (!booted) {
-    console.log('  body    : ' + await ev('document.body.innerText.slice(0,300)'))
-    console.log('  console : ' + await ev('JSON.stringify(window.__qa.console.slice(-15))'))
+    console.log(`  body    : ${await ev('document.body.innerText.slice(0,300)')}`)
+    console.log(`  console : ${await ev('JSON.stringify(window.__qa.console.slice(-15))')}`)
     throw new Error('never reached gameplay')
   }
   // ── Wait for the game to actually be PLAYABLE ───────────────────────────
@@ -604,7 +604,7 @@ try {
 } finally {
   const failed = results.filter(r => !r.pass)
   console.log(`\n${results.length - failed.length}/${results.length} checks passed`)
-  if (failed.length) console.log('FAILED: ' + failed.map(f => f.name).join('; '))
+  if (failed.length) console.log(`FAILED: ${failed.map(f => f.name).join('; ')}`)
   if (!KEEP) {
     ws.close()
     await fetch(`${api}/close/${target.id}`).catch(() => {})

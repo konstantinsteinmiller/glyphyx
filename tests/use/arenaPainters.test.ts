@@ -52,7 +52,6 @@ const EXACT: StoneCut[] = ['carved', 'polished', 'faceted', 'quarried', 'step', 
 const STYLES: GlyphStyle[] = ['engraved', 'neon', 'inlay', 'gem', 'carved', 'ember', 'starcut', 'blood', 'prism']
 const widthOf = (pts: { x: number }[]): number => Math.max(...pts.map((q) => Math.abs(q.x)))
 const heightOf = (pts: { y: number }[]): number => Math.max(...pts.map((q) => Math.abs(q.y)))
-const SKIN_IDS = Object.keys(SKINS) as SkinId[]
 const FACTIONS = Object.keys(FACTION_DEFS) as Faction[]
 
 beforeAll(() => {

@@ -194,7 +194,7 @@ export const resolveTurn = (input: BoardState, moves: Move[], opts: ResolveOptio
   const sweepDead = (step: ResolveStep): void => {
     const dead = Object.values(board.runes).filter((r) => r.hp <= 0).sort((a, b) => a.id - b.id)
     const base = stepEnd(step) - SHATTER_LEAD_MS
-    dead.forEach((r, i) => shatter(r, base + Math.min(i * 20, 60)))
+    dead.forEach((r, i) => { shatter(r, base + Math.min(i * 20, 60)) })
   }
 
   // Temporary buffs are rebuilt from zero every resolution.

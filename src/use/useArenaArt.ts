@@ -1235,7 +1235,7 @@ export const createArenaRenderer = (canvas: HTMLCanvasElement): ArenaRenderer =>
   /** The board on screen: the timeline's working copy while resolving, else the view's. */
   let disp: BoardState | null = null
   let dispSource: BoardState | null = null
-  let runeList: Rune[] = []
+  const runeList: Rune[] = []
   const rebuildRuneList = (): void => {
     runeList.length = 0
     if (!disp) return

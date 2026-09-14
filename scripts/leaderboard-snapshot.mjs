@@ -130,7 +130,7 @@ export const refreshSnapshot = async (source = process.env.LEADERBOARD_SNAPSHOT_
   }
   const snapshot = buildSnapshot(top, origin)
   mkdirSync(dirname(SNAPSHOT_FILE), { recursive: true })
-  writeFileSync(SNAPSHOT_FILE, JSON.stringify(snapshot, null, 2) + '\n', 'utf-8')
+  writeFileSync(SNAPSHOT_FILE, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf-8')
   return snapshot
 }
 

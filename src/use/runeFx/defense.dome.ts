@@ -526,7 +526,7 @@ export const paintDome = (ctx: CanvasRenderingContext2D, d: DomeLook, tier: 0 | 
     ctx.translate(-cx, -cy)
   }
   // The spread from the struck point: everything below but the cells is clipped to it.
-  const clipped = tier >= 1 && d.reveal < 2.2 && d.hx === d.hx
+  const clipped = tier >= 1 && d.reveal < 2.2 && !Number.isNaN(d.hx)
   if (clipped) {
     if (d.reveal <= 0.02) { ctx.restore(); return }
     ctx.beginPath()
@@ -559,7 +559,7 @@ export const paintDome = (ctx: CanvasRenderingContext2D, d: DomeLook, tier: 0 | 
 
   // 2 · the lit cells.
   if (tier >= 1 && d.cells > 0.01) {
-    const hasHit = d.hx === d.hx
+    const hasHit = !Number.isNaN(d.hx)
     const band = 0.3
     for (let i = 0; i < CELL_N; i++) {
       const px = CELL_X[i]!

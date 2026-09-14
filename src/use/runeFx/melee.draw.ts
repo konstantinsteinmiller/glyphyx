@@ -93,7 +93,7 @@ export const ringCoreSprite = (): HTMLCanvasElement | null =>
 let ring: HTMLCanvasElement | null | undefined
 
 /** The pool key of the crimson ember (the stock `core|<colour>` pin, shared with anything else crimson). */
-export const EMBER_KEY = 'core|' + CORE
+export const EMBER_KEY = `core|${CORE}`
 export const emberSprite = (): HTMLCanvasElement | null => coreSprite(CORE, 48)
 
 /** A thin sliver of steel for the pool: a long needle with one bright facet. */

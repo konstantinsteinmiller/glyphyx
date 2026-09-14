@@ -59,6 +59,7 @@ export const cleanName = (raw: unknown): string => {
   // release pass to find, because the dev server and the multi-file builds
   // keep the byte intact and are completely unaffected.
   // eslint-disable-next-line no-control-regex
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping C0/C1 controls, zero-width and bidi marks is exactly what this sanitiser is for
   return raw.replace(/[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\ufeff]/g, '')
     .trim()
     .slice(0, NAME_MAX)

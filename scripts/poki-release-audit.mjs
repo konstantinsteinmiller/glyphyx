@@ -34,7 +34,7 @@ const OUT = path.join(HERE, 'audit'); fs.mkdirSync(OUT, { recursive: true })
 
 let pass = 0, fail = 0
 const check = (name, ok, detail = '') => {
-  console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`)
+  console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ` — ${detail}` : ''}`)
   ok ? pass++ : fail++
 }
 
@@ -67,11 +67,11 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true, args:
   const page = await ctx.newPage()
   const errors = []
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 140)) })
-  page.on('pageerror', (e) => errors.push('pageerror: ' + String(e).slice(0, 140)))
+  page.on('pageerror', (e) => errors.push(`pageerror: ${String(e).slice(0, 140)}`))
   await ctx.addInitScript({ content: STUB })
   await ctx.route('https://game-cdn.poki.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '/* stubbed by the audit */' }))
   const t0 = Date.now()
-  await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded' })
+  await page.goto(`${ORIGIN}/`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => !document.getElementById('static-splash'), null, { timeout: 30000 }).catch(() => {})
   const loadMs = Date.now() - t0
   console.log('\n── Boot ──')
@@ -108,7 +108,7 @@ for (const [w, h] of [[640, 360], [836, 470], [1031, 580], [360, 640], [470, 836
   const page = await ctx.newPage()
   await ctx.addInitScript({ content: STUB })
   await ctx.route('https://game-cdn.poki.com/**', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '/* stubbed by the audit */' }))
-  await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded' })
+  await page.goto(`${ORIGIN}/`, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(6000)
   const m = await page.evaluate(() => {
     const c = document.querySelector('canvas')

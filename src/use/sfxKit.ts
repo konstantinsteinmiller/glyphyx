@@ -130,7 +130,7 @@ export const startAt = (ctx: AudioCtx, delay = 0): number => {
  * room. Every instrument ends here.
  */
 export const land = (ctx: AudioCtx, node: AudioNode, amount: number): void => {
-  let b
+  let b: ReturnType<typeof busFor> | null
   try { b = busFor(ctx) } catch { b = null }
   if (!b) {
     node.connect(ctx.destination)
